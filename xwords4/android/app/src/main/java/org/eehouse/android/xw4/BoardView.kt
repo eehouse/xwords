@@ -190,8 +190,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
                 }
                 canvas.drawBitmap(bitmap!!, 0f, 0f, Paint())
                 ConnStatusHandler.draw(
-                    mContext, canvas, resources,
-                    mConnTypes, mIsSolo
+                    mContext, canvas, mConnTypes, mIsSolo
                 )
             }
         }
@@ -311,16 +310,15 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
 
     // SyncedDraw interface implementation
     override fun doJNIDraw() {
-        var drew = false
         synchronized(this) {
-            if (null != mJniGamePtr) {
-                drew = XwJNI.board_draw(mJniGamePtr)
+            mJniGamePtr?.let {
+                XwJNI.board_draw(it)
             }
         }
 
         // Force update now that we have bits to copy. I don't know why (yet),
-        // but on older versions of Android we need to run this even if drew
-        // is false
+        // but on older versions of Android we need to run this even if
+        // XwJNI.board_draw() returned false
         mParent?.runOnUiThread(mInvalidator)
     }
 

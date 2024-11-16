@@ -1826,7 +1826,7 @@ class BoardDelegate(delegator: Delegator) :
         if (success && firstStart) {
             mHandler = Handler()
             success = mJniThreadRef!!.configure(
-                mActivity, mView, mUtils, this,
+                mActivity, mView!!, mUtils, this,
                 makeJNIHandler()
             )
             if (success) {

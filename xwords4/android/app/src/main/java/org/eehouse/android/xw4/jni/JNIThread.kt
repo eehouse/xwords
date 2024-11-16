@@ -163,10 +163,10 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     )
 
     fun configure(
-        context: Context, drawer: SyncedDraw?,
+        context: Context, drawer: SyncedDraw,
         utils: UtilCtxtImpl?,
-        xportHandler: TPMsgHandler?,
-        handler: Handler?
+        xportHandler: TPMsgHandler,
+        handler: Handler
     ): Boolean {
         m_context = context
         m_drawer = drawer
@@ -257,7 +257,9 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // (like blocking on a socket) so might as well let it
             // take however log it takes.  If that's too long, fix it.
             interrupt()
-            join()
+            Log.d(TAG, "trying to join; currently handling $mCurElem")
+            join()              // getting ANRs here
+            Log.d(TAG, "join() done")
             // Assert.assertFalse( isAlive() );
         } catch (ie: InterruptedException) {
             Log.ex(TAG, ie)
@@ -426,6 +428,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         }
     }
 
+    private var mCurElem: QueueElem? = null
     override fun run() {
         Log.d(TAG, "run() starting")
         val barr = BooleanArray(2) // scratch boolean
@@ -456,6 +459,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             val elem: QueueElem
             try {
                 elem = m_queue.take()
+                mCurElem = elem
             } catch (ie: InterruptedException) {
                 Log.w(TAG, "interrupted; killing thread")
                 break
@@ -718,6 +722,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
                 checkButtons()
             }
+            mCurElem = null
         }
 
         if (null != mJNIGamePtr) {

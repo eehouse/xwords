@@ -19,7 +19,6 @@
 package org.eehouse.android.xw4
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -28,6 +27,7 @@ import android.graphics.Rect
 import android.os.Handler
 import android.provider.Settings
 import android.text.format.DateUtils
+import androidx.core.content.ContextCompat
 
 import java.io.Serializable
 import kotlin.math.abs
@@ -49,7 +49,6 @@ object ConnStatusHandler {
     private const val SUCCESS_IN = 0
     private const val SUCCESS_OUT = 1
     private const val SHOW_SUCCESS_INTERVAL = 1000
-    private const val SOLO_NOGREEN = true
 
     private var s_rect: Rect? = null
     private var s_downOnMe = false
@@ -255,13 +254,6 @@ object ConnStatusHandler {
         updateStatusImpl(context, null, connType, success, true)
     }
 
-    fun updateStatusOut(
-        context: Context, cbacks: ConnStatusCBacks?,
-        connType: CommsConnType, success: Boolean
-    ) {
-        updateStatusImpl(context, cbacks, connType, success, false)
-    }
-
     fun updateStatusOut(context: Context, connType: CommsConnType, success: Boolean) {
         updateStatusImpl(context, null, connType, success, false)
     }
@@ -271,10 +263,9 @@ object ConnStatusHandler {
         connType: CommsConnType, success: Boolean,
         isIn: Boolean
     ) {
-        var cbacks = cbacks
-        if (null == cbacks) {
-            cbacks = s_cbacks
-        }
+        val cbacks =
+            if (null == cbacks) s_cbacks
+            else cbacks
 
         synchronized(ConnStatusHandler::class.java) {
             val record = recordFor(context, connType, isIn)
@@ -297,21 +288,8 @@ object ConnStatusHandler {
         showSuccess(cbcks, false)
     }
 
-    // public static void noteStall( CommsConnType connType, long ageMS )
-    // {
-    //     Log.d( TAG, "noteStall(%s, age=%s)", connType, age / 1000 );
-    //     StallStats
-    // }
-    fun noteIntentHandled(
-        context: Context, connType: CommsConnType?,
-        ageMS: Long
-    ) {
-        // Log.d( TAG, "noteIntentHandled(%s, ageMS=%d)", connType, ageMS );
-        StallStats.get(context, connType, true)!!.append(context, ageMS)
-    }
-
     fun draw(
-        context: Context, canvas: Canvas, res: Resources,
+        context: Context, canvas: Canvas,
         connTypes: CommsConnTypeSet?, isSolo: Boolean
     ) {
         if (!isSolo && null != s_rect) {
@@ -326,14 +304,14 @@ object ConnStatusHandler {
                 scratchR.bottom -= (2 * quarterHeight)
                 fillHalf(context, canvas, scratchR, connTypes, enabled, false)
                 scratchR.bottom -= quarterHeight
-                drawArrow(canvas, res, scratchR, false)
+                drawArrow(context, canvas, scratchR, false)
 
                 // bottom half and arrow
                 scratchR.top = s_rect!!.top + (2 * quarterHeight)
                 scratchR.bottom = s_rect!!.bottom
                 fillHalf(context, canvas, scratchR, connTypes, enabled, true)
                 scratchR.top += quarterHeight
-                drawArrow(canvas, res, scratchR, true)
+                drawArrow(context, canvas, scratchR, true)
 
                 // Center the icon in the remaining (vertically middle) rect
                 scratchR.top = s_rect!!.top + quarterHeight
@@ -345,7 +323,7 @@ object ConnStatusHandler {
                 scratchR.inset(dx, dy)
                 Assert.assertTrueNR(1 >= abs((scratchR.width()
                                               - scratchR.height()).toDouble()))
-                drawIn(canvas, res, R.drawable.ic_multigame, scratchR)
+                drawIn(context, canvas, R.drawable.ic_multigame, scratchR)
                 if (XWPrefs.moveCountEnabled(context)) {
                     var str = ""
                     if (0 < s_moveCount) {
@@ -372,20 +350,19 @@ object ConnStatusHandler {
         connTypes: CommsConnTypeSet, enabled: Boolean,
         isIn: Boolean
     ) {
-        var enabled = enabled
-        enabled = enabled && null != newestSuccess(context, connTypes, isIn)
+        val enabled = enabled && null != newestSuccess(context, connTypes, isIn)
         s_fillPaint.color = if (enabled) XWApp.GREEN else XWApp.RED
         canvas.drawRect(rect, s_fillPaint)
     }
 
     private fun drawArrow(
-        canvas: Canvas, res: Resources, rect: Rect,
+        context: Context, canvas: Canvas, rect: Rect,
         isIn: Boolean
     ) {
         val showSuccesses = s_showSuccesses[if (isIn) SUCCESS_IN else SUCCESS_OUT]
         val color = if (showSuccesses) ORANGE else Color.WHITE
         val arrowID = if (isIn) R.drawable.ic_in_arrow else R.drawable.ic_out_arrow
-        drawIn(canvas, res, arrowID, rect, color)
+        drawIn(context, canvas, arrowID, rect, color)
     }
 
     // This gets rid of lint warning, but I don't like it as it
@@ -460,13 +437,11 @@ object ConnStatusHandler {
     }
 
     private fun drawIn(
-        canvas: Canvas,
-        res: Resources,
+        context: Context, canvas: Canvas,
         id: Int,
-        rect: Rect,
-        color: Int = Color.WHITE
+        rect: Rect, color: Int = Color.WHITE
     ) {
-        var icon = res.getDrawable(id)
+        var icon = ContextCompat.getDrawable(context, id)!!
         if (Color.WHITE != color) {
             icon = icon.mutate()
             icon.setColorFilter(color, PorterDuff.Mode.MULTIPLY)

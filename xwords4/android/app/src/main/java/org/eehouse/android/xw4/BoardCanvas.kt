@@ -28,6 +28,7 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import androidx.core.content.ContextCompat
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -719,23 +720,24 @@ open class BoardCanvas private constructor(
         drawBitmap(bitmap, null, rect, mDrawPaint)
     }
 
-    private fun positionDrawTile(rect: Rect, text: String?, `val`: Int) {
+    private fun positionDrawTile(rect: Rect, text: String?, tileVal: Int) {
         var text: String? = text
         val offset = 2
-        if (null != text) {
+        text?.let {
             if (null == mLetterRect) {
                 mLetterRect = Rect(
                     0, 0, rect.width() - offset,
                     rect.height() * 3 / 4
                 )
             }
-            mLetterRect!!.offsetTo(rect.left + offset, rect.top + offset)
-            drawIn(text, mLetterRect!!, mFontDims, Align.LEFT)
+            val letterRect = mLetterRect!!
+            letterRect.offsetTo(rect.left + offset, rect.top + offset)
+            drawIn(it, letterRect, mFontDims, Align.LEFT)
             if (FRAME_TRAY_RECTS) {
-                drawRect(mLetterRect!!, mStrokePaint)
+                drawRect(letterRect, mStrokePaint)
             }
         }
-        if (`val` >= 0) {
+        if (tileVal >= 0) {
             val divisor = if (mHasSmallScreen) 3 else 4
             if (null == mValRect) {
                 mValRect = Rect(
@@ -748,7 +750,7 @@ open class BoardCanvas private constructor(
                 rect.right - rect.width() / divisor,
                 rect.bottom - rect.height() / divisor
             )
-            text = String.format("%d", `val`)
+            text = String.format("%d", tileVal)
             mFillPaint.textSize = mValRect!!.height().toFloat()
             mFillPaint.textAlign = Align.RIGHT
             drawText(
@@ -873,7 +875,7 @@ open class BoardCanvas private constructor(
 
     private fun loadAndRecolor(resID: Int, useDark: Boolean): Drawable {
         val res = mContext.resources
-        var arrow = res.getDrawable(resID)
+        var arrow = ContextCompat.getDrawable(mContext, resID)!!
         if (!useDark) {
             val bitmap = Bitmap.createBitmap(
                 arrow.intrinsicWidth,
@@ -890,7 +892,7 @@ open class BoardCanvas private constructor(
                     }
                 }
             }
-            arrow = BitmapDrawable(bitmap)
+            arrow = BitmapDrawable(mContext.resources, bitmap)
         }
         return arrow
     }
@@ -929,7 +931,7 @@ open class BoardCanvas private constructor(
         mFillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mStrokePaint = Paint()
         mStrokePaint.style = Paint.Style.STROKE
-        mOrigin = res.getDrawable(R.drawable.ic_origin)
+        mOrigin = ContextCompat.getDrawable(mContext, R.drawable.ic_origin)!!
         mPrefs = CommonPrefs.get(mContext)
         mPlayerColors = mPrefs.playerColors
         mBonusColors = mPrefs.bonusColors
