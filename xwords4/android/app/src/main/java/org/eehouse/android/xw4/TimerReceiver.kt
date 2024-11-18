@@ -174,7 +174,7 @@ class TimerReceiver : BroadcastReceiver() {
                     setNextTimer(context, data)
                 }
             })
-            Log.d(TAG, "onReceiveImpl(timerID=%d, src=%s) DONE", timerID, src)
+            Log.d(TAG, "onReceiveImpl() DONE")
         }
 
         // fun statsStr(context: Context): String {
@@ -235,6 +235,7 @@ class TimerReceiver : BroadcastReceiver() {
                     setTimer(context, data, backoffMS, true, cback)
                 }
             })
+            Log.d(TAG, "setBackoff() DONE")
         }
 
         // This one's public. Sets a one-time timer. Any backoff or re-set the
@@ -251,12 +252,15 @@ class TimerReceiver : BroadcastReceiver() {
             context: Context, cback: TimerCallback,
             fireMS: Long
         ) {
+            Log.d(TAG, "setTimer(client=%s, fireMS=%ds)",
+                  className(cback), fireMS / 1000)
             load(context, object : WithData {
                 override fun withData(data: Data) {
                     data.setFor(cback, KEY_FIREWHEN, fireMS)
                     setNextTimer(context, data)
                 }
             })
+            Log.d(TAG, "setTimer() DONE")
         }
 
         fun allTimersFired(context: Context) {
@@ -484,7 +488,7 @@ class TimerReceiver : BroadcastReceiver() {
 
         private val sDataWrapper = arrayOf<Data?>(null)
         fun load(context: Context, proc: WithData) {
-            Log.d(TAG, "load() waiting on sDataWrapper")
+            // Log.d(TAG, "load() waiting on sDataWrapper")
             val now = System.currentTimeMillis()
             synchronized(sDataWrapper) {
                 var data = sDataWrapper[0]

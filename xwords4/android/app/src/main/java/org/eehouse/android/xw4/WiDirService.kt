@@ -80,6 +80,7 @@ class WiDirService : XWService() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand(%s); enabled=${enabled()}", intent)
         val result: Int
 
         if (enabled()) {
@@ -498,38 +499,40 @@ class WiDirService : XWService() {
         }
 
         fun init(context: Context) {
-            Log.d(TAG, "init()")
             s_enabled = XWPrefs.getPrefsBoolean(
                 context, R.string.key_enable_p2p,
                 false
             )
 
-            Assert.assertNull(s_peersSet)
-            s_peersSet = HashSet()
-            val peers = DBUtils.getStringFor(context, PEERS_LIST_KEY)
-            if (null != peers) {
-                val macs = TextUtils.split(peers, ",")
-                for (mac in macs) {
-                    s_peersSet!!.add(mac)
+            Log.d(TAG, "init(); enabled=${enabled()}")
+            if ( enabled() ) {
+                Assert.assertNull(s_peersSet)
+                s_peersSet = HashSet()
+                val peers = DBUtils.getStringFor(context, PEERS_LIST_KEY)
+                if (null != peers) {
+                    val macs = TextUtils.split(peers, ",")
+                    for (mac in macs) {
+                        s_peersSet!!.add(mac)
+                    }
                 }
-            }
-            Log.d(TAG, "loaded saved peers: %s", s_peersSet!!.toString())
+                Log.d(TAG, "loaded saved peers: %s", s_peersSet!!.toString())
 
-            try {
-                val listener =
-                    WifiP2pManager.ChannelListener { Log.d(TAG, "onChannelDisconnected()") }
-                sChannel = mgr.initialize(
-                    context, Looper.getMainLooper(),
-                    listener
-                )
-                s_discoverer = ServiceDiscoverer()
-                sHavePermission = true
-            } catch (ndf: NoClassDefFoundError) { // old os version
-                sHavePermission = false
-            } catch (se: SecurityException) {               // perm not in manifest
-                sHavePermission = false
-            } catch (npe: NullPointerException) { // Seeing this on Oreo emulator
-                sHavePermission = false
+                try {
+                    val listener =
+                        WifiP2pManager.ChannelListener { Log.d(TAG, "onChannelDisconnected()") }
+                    sChannel = mgr.initialize(
+                        context, Looper.getMainLooper(),
+                        listener
+                    )
+                    s_discoverer = ServiceDiscoverer()
+                    sHavePermission = true
+                } catch (ndf: NoClassDefFoundError) { // old os version
+                    sHavePermission = false
+                } catch (se: SecurityException) {               // perm not in manifest
+                    sHavePermission = false
+                } catch (npe: NullPointerException) { // Seeing this on Oreo emulator
+                    sHavePermission = false
+                }
             }
         }
 
