@@ -58,8 +58,10 @@ class PatTableRow(context: Context, aset: AttributeSet?) :
         mEdit!!.setOnEditorActionListener(this)
     }
 
+    // onEditorAction is supposed to take a non-null KeyEvent, but it's
+    // sometimes null. So declare it that way.
     override fun onEditorAction(tv: TextView, actionId: Int,
-                                event: KeyEvent): Boolean
+                                event: KeyEvent?): Boolean
     {
         return EditorInfo.IME_ACTION_SEND == actionId
             && mEnterProc?.enterPressed() ?: false
