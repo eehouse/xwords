@@ -7,20 +7,12 @@
               android:layout_weight="1"
               >
 
-  <ScrollView android:id="@+id/scroll"
-              android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              >
-
-    <!-- contents inserted at runtime -->
-    <TableLayout android:id="@+id/chat_history"
-                 android:layout_width="fill_parent" 
-                 android:layout_height="wrap_content"
-                 />
-
-  </ScrollView>
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/history"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      />
 
   <LinearLayout
       android:orientation="horizontal"
