@@ -36,6 +36,7 @@ import java.util.Formatter
 import java.util.Locale
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.zip.GZIPOutputStream
+import kotlin.concurrent.thread
 
 object Log {
     private val TAG: String = Log::class.java.simpleName
@@ -146,8 +147,8 @@ object Log {
     private fun initDB(): LogDBHelper {
         if (null == s_dbHelper) {
             val context = sContextRef!!.get()
-            if (null != context) {
-                s_dbHelper = LogDBHelper(context)
+            context?.let {
+                s_dbHelper = LogDBHelper(it)
                 // force any upgrade
                 s_dbHelper!!.writableDatabase.close()
             }
@@ -321,23 +322,24 @@ object Log {
             db.execSQL(cmd)
         }
 
-        private var mQueue: LinkedBlockingQueue<Runnable>? = null
+
+        private var mQueue: LinkedBlockingQueue<Runnable>
 
         private fun enqueue(runnable: Runnable) {
-            if (null == mQueue) {
-                mQueue = LinkedBlockingQueue()
-                Thread {
-                    while (true) {
-                        try {
-                            mQueue!!.take().run()
-                        } catch (ie: InterruptedException) {
-                            break
-                        }
-                    }
-                }.start()
-            }
+            mQueue.add(runnable)
+        }
 
-            mQueue!!.add(runnable)
+        init {
+            mQueue = LinkedBlockingQueue()
+            thread {
+                while (true) {
+                    try {
+                        mQueue.take().run()
+                    } catch (ie: InterruptedException) {
+                        break
+                    }
+                }
+            }
         }
     }
 }

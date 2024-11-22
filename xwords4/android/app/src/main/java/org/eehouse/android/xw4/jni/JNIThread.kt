@@ -142,19 +142,19 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         }
     }
 
-    private val m_gsi = GameStateInfo()
+    private val mGsi = GameStateInfo()
 
-    private var m_stopped = false
-    private var m_saveOnStop = false
+    private var mStopped = false
+    private var mSaveOnStop = false
     private var mJNIGamePtr: GamePtr? = null
-    private var m_lastSavedState = 0
-    private var m_context: Context? = null
+    private var mLastSavedState = 0
+    private var mContext: Context? = null
     private var mGi: CurGameInfo? = null
-    private var m_handler: Handler? = null
-    private var m_drawer: SyncedDraw? = null
-    private var m_newDict: String? = null
-    private var m_refCount = 0
-    private var m_xport: CommsTransport? = null
+    private var mHandler: Handler? = null
+    private var mDrawer: SyncedDraw? = null
+    private var mNewDict: String? = null
+    private var mRefCount = 0
+    private var mXport: CommsTransport? = null
     private var mSummary: GameSummary? = null
 
     private inner class QueueElem(
@@ -174,9 +174,9 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         xportHandler: TPMsgHandler,
         handler: Handler
     ): Boolean {
-        m_context = context
-        m_drawer = drawer
-        m_handler = handler
+        mContext = context
+        mDrawer = drawer
+        mHandler = handler
 
         // If this isn't true then the queue has to be allowed to empty,
         // working on the old game state, before we can re-use any of this.
@@ -211,7 +211,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             mSummary = DBUtils.getSummary(context, lock)
 
             if (mGi!!.serverRole != DeviceRole.SERVER_STANDALONE) {
-                m_xport = CommsTransport(
+                mXport = CommsTransport(
                     context, xportHandler!!, m_rowid,
                     mGi!!.serverRole
                 )
@@ -228,7 +228,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             synchronized(this) {
                 mJNIGamePtr = XwJNI.initFromStream(
                     m_rowid, stream, mGi!!,
-                    utils, null, cp, m_xport
+                    utils, null, cp, mXport
                 )
 
                 if (null == mJNIGamePtr) {
@@ -237,7 +237,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 } else {
                     (this as Object).notifyAll()
 
-                    m_lastSavedState = stream.contentHashCode()
+                    mLastSavedState = stream.contentHashCode()
                     DupeModeTimer.gameOpened(context, m_rowid)
                 }
             }
@@ -253,8 +253,8 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     private fun waitToStop(save: Boolean) {
         synchronized(this) {
-            m_stopped = true
-            m_saveOnStop = save
+            mStopped = true
+            mSaveOnStop = save
         }
         handle(JNICmd.CMD_NONE) // tickle it
         try {
@@ -300,8 +300,8 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     fun getGameStateInfo(): GameStateInfo
     {
-        synchronized( m_gsi ) {
-            return GameStateInfo(m_gsi)
+        synchronized( mGsi ) {
+            return GameStateInfo(mGsi)
         }
     }
 
@@ -309,7 +309,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     // rewriting game loading code or running into cross-threading
     // issues.
     fun setSaveDict(newDict: String?) {
-        m_newDict = newDict
+        mNewDict = newDict
     }
 
     private fun toggleTray(): Boolean {
@@ -324,7 +324,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     }
 
     private fun sendForDialog(titleArg: Int, text: String?) {
-        Message.obtain(m_handler, DIALOG, titleArg, 0, text).sendToTarget()
+        Message.obtain(mHandler, DIALOG, titleArg, 0, text).sendToTarget()
     }
 
     private fun doLayout(
@@ -333,7 +333,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     ) {
         val dims = BoardDims()
 
-        val squareTiles = XWPrefs.getSquareTiles(m_context!!)
+        val squareTiles = XWPrefs.getSquareTiles(mContext!!)
         XwJNI.board_figureLayout(
             mJNIGamePtr, mGi, 0, 0, width, height,
             150,  /*scorePct*/200,  /*trayPct*/
@@ -356,7 +356,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
         XwJNI.board_applyLayout(mJNIGamePtr, dims)
 
-        m_drawer!!.dimsChanged(dims)
+        mDrawer!!.dimsChanged(dims)
     }
 
     private fun nextSame(cmd: JNICmd): Boolean {
@@ -373,10 +373,10 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     } // processKeyEvent
 
     private fun checkButtons() {
-        synchronized(m_gsi) {
-            XwJNI.game_getState(mJNIGamePtr!!, m_gsi)
+        synchronized(mGsi) {
+            XwJNI.game_getState(mJNIGamePtr!!, mGsi)
         }
-        Message.obtain(m_handler, TOOLBAR_STATES).sendToTarget()
+        Message.obtain(mHandler, TOOLBAR_STATES).sendToTarget()
     }
 
     private fun save_jni() {
@@ -388,12 +388,12 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         // And let it tell the relay (if any) it's leaving
         // XwJNI.comms_stop( m_jniGamePtr );
         XwJNI.game_getGi(mJNIGamePtr, mGi)
-        if (null != m_newDict) {
-            mGi!!.dictName = m_newDict
+        mNewDict?.let {
+            mGi!!.dictName = it
         }
         val state = XwJNI.game_saveToStream(mJNIGamePtr, mGi)
         val newHash = state.contentHashCode()
-        val hashesEqual = m_lastSavedState == newHash
+        val hashesEqual = mLastSavedState == newHash
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         if (hashesEqual) {
@@ -401,7 +401,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         } else {
             // Don't need this!!!! this only runs on the run() thread
             synchronized(this) {
-                val context = m_context!!
+                val context = mContext!!
                 Assert.assertNotNull(m_lock)
                 val summary = GameSummary(mGi!!)
                 XwJNI.game_summarize(mJNIGamePtr, summary)
@@ -410,7 +410,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded(mJNIGamePtr)
-                m_lastSavedState = newHash
+                mLastSavedState = newHash
 
                 val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
                 DBUtils.saveThumbnail(context, m_lock!!, thumb)
@@ -443,7 +443,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // from inside a synchronized block. So I save a string inside and
             // use it after to break or continue.
             val action = synchronized(this) {
-                if (m_stopped) "BREAK"
+                if (mStopped) "BREAK"
                 else if (null == mJNIGamePtr) {
                     try {
                         (this as Object).wait()
@@ -540,7 +540,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     // board_prefsChanged's return value isn't enough.
                     XwJNI.board_invalAll(mJNIGamePtr)
                     XwJNI.board_server_prefsChanged(mJNIGamePtr,
-                                                    CommonPrefs.get(m_context!!))
+                                                    CommonPrefs.get(mContext!!))
                     draw = true
                 }
 
@@ -644,7 +644,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                             ((args[1] as Boolean))
                         )
                     if ((args[2] as Boolean)) {
-                        Message.obtain(m_handler, MSGS_SENT, nSent).sendToTarget()
+                        Message.obtain(mHandler, MSGS_SENT, nSent).sendToTarget()
                     }
                 }
 
@@ -663,7 +663,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     if (XwJNI.server_getGameIsOver(mJNIGamePtr)) {
                         handle(JNICmd.CMD_POST_OVER)
                     } else {
-                        Message.obtain(m_handler, QUERY_ENDGAME).sendToTarget()
+                        Message.obtain(mHandler, QUERY_ENDGAME).sendToTarget()
                     }
 
                 JNICmd.CMD_ENDGAME -> {
@@ -678,7 +678,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     else R.string.finalscores_title
 
                     val text = XwJNI.server_writeFinalScores(mJNIGamePtr)
-                    Message.obtain(m_handler, GAME_OVER, titleID, 0, text)
+                    Message.obtain(mHandler, GAME_OVER, titleID, 0, text)
                         .sendToTarget()
                 }
 
@@ -724,21 +724,21 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 // do the drawing in this thread but in BoardView
                 // where it can be synchronized with that class's use
                 // of the same bitmap for blitting.
-                m_drawer!!.doJNIDraw()
+                mDrawer!!.doJNIDraw()
 
                 checkButtons()
             }
             mCurElem = null
         }
 
-        if (null != mJNIGamePtr) {
-            if (m_saveOnStop) {
-                XwJNI.comms_stop(mJNIGamePtr)
+        mJNIGamePtr?.let {
+            if (mSaveOnStop) {
+                XwJNI.comms_stop(it)
                 save_jni()
             } else {
                 Log.w(TAG, "run(): exiting without saving")
             }
-            mJNIGamePtr!!.release()
+            it.release()
             mJNIGamePtr = null
         }
 
@@ -766,12 +766,12 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     }
 
     fun notifyPause(pauser: Int, isPause: Boolean, msg: String?) {
-        Message.obtain(m_handler, GOT_PAUSE, msg)
+        Message.obtain(mHandler, GOT_PAUSE, msg)
             .sendToTarget()
     }
 
     fun handle(cmd: JNICmd, vararg args: Any) {
-        if (m_stopped && JNICmd.CMD_NONE != cmd) {
+        if (mStopped && JNICmd.CMD_NONE != cmd) {
             Log.w(TAG, "handle(%s): NOT adding to stopped thread!!!", cmd)
             // DbgUtils.printStack( TAG );
         } else {
@@ -779,9 +779,9 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         }
     }
     private fun retain_sync() {
-        ++m_refCount
-        // Log.i( TAG, "retain_sync(rowid=%d): m_refCount raised to %d",
-        //        m_rowid, m_refCount );
+        ++mRefCount
+        // Log.i( TAG, "retain_sync(rowid=%d): mRefCount raised to %d",
+        //        m_rowid, mRefCount );
     }
 
     fun retain(): JNIThread {
@@ -795,18 +795,18 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     fun release(save: Boolean = true) {
         var stop = false
         synchronized(s_instances) {
-            if (0 == --m_refCount) {
+            if (0 == --mRefCount) {
                 s_instances.remove(m_rowid)
                 stop = true
             }
         }
 
-        // Log.i( TAG, "release(rowid=%d): m_refCount dropped to %d",
-        //        m_rowid, m_refCount );
+        // Log.i( TAG, "release(rowid=%d): mRefCount dropped to %d",
+        //        m_rowid, mRefCount );
         if (stop) {
             waitToStop(true)
             DupeModeTimer.gameClosed(m_rowid)
-        } else if (save && 0 != m_lastSavedState) { // has configure() run?
+        } else if (save && 0 != mLastSavedState) { // has configure() run?
             handle(JNICmd.CMD_SAVE) // in case releaser has made changes
         }
     }
