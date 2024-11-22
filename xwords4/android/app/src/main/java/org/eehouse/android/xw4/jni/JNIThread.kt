@@ -29,6 +29,7 @@ import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.CommsTransport
 import org.eehouse.android.xw4.ConnStatusHandler
 import org.eehouse.android.xw4.DBUtils
+import org.eehouse.android.xw4.DbgUtils
 import org.eehouse.android.xw4.DictUtils.DictPairs
 import org.eehouse.android.xw4.DictUtils.openDicts
 import org.eehouse.android.xw4.DupeModeTimer
@@ -160,7 +161,12 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         val m_cmd: JNICmd,
         val m_isUIEvent: Boolean,
         val m_args: Array<Any>
-    )
+    ) {
+        override fun toString(): String
+        {
+            return "QueueElem{cmd: $m_cmd, args: ${DbgUtils.fmtAny(m_args)}}"
+        }
+    }
 
     fun configure(
         context: Context, drawer: SyncedDraw,
@@ -270,8 +276,8 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     @Synchronized
     private fun unlockOnce() {
-        if (null != m_lock) {
-            m_lock!!.release()
+        m_lock?.let {
+            it.release()
             m_lock = null
         }
     }
