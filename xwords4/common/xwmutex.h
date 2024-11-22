@@ -56,7 +56,10 @@ void mtx_crashToTest();
 
 # define MUTEX_INIT_CHECKED(STATE, RECURSIVE, WS)                 \
                    mtx_init_prv((STATE), (RECURSIVE), (WS), __func__)
-# define MUTEX_INIT(STATE, RECURSIVE) MUTEX_INIT_CHECKED(STATE, RECURSIVE, 0)
+# ifndef MUTEX_CHECK_SECS
+#  define MUTEX_CHECK_SECS 3
+# endif
+# define MUTEX_INIT(STATE, RECURSIVE) MUTEX_INIT_CHECKED(STATE, RECURSIVE, MUTEX_CHECK_SECS)
 #else
 # define mtx_crashToTest()
 # define MUTEX_INIT(STATE, RECURSIVE) mtx_init_prv((STATE), (RECURSIVE))

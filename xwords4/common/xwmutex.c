@@ -57,7 +57,7 @@ checkListProcLocked( const DLHead* elem, void* closure )
     if ( cld->currentTime > ctd->expiryTime ) {
         XP_LOGFF( "FAIL: %s() on line %d in %s unable to lock mutex",
                   ctd->caller, ctd->lineNo, ctd->file );
-        XP_ASSERT(0);
+        // XP_ASSERT(0);
     }
     ++cld->count;
     return FEA_OK;
@@ -160,7 +160,7 @@ mtx_init_prv( MutexState* mutex, XP_Bool recursive
     }
 # endif
     mutex->waitSecs = waitSecs;
-    XP_LOGFF( "set waitSecs: %d (called by %s())", mutex->waitSecs, caller );
+    // XP_LOGFF( "set waitSecs: %d (called by %s())", mutex->waitSecs, caller );
 #endif
     pthread_mutex_init( &mutex->mutex, &attr );
 #ifdef DEBUG

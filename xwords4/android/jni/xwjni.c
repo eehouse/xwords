@@ -67,7 +67,7 @@ typedef struct _EnvThreadEntry {
 } EnvThreadEntry;
 
 struct _EnvThreadInfo {
-    pthread_mutex_t mtxThreads;
+    MutexState mtxThreads;
     int nEntries;
     EnvThreadEntry* entries;
     MPSLOT
@@ -160,7 +160,7 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 {
     pthread_t self = pthread_self();
 
-    pthread_mutex_lock( &ti->mtxThreads );
+    WITH_MUTEX( &ti->mtxThreads );
 
     XP_Bool found = false;
     int nEntries = ti->nEntries;
@@ -215,13 +215,13 @@ map_thread_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 #endif
     }
 
-    pthread_mutex_unlock( &ti->mtxThreads );
+    END_WITH_MUTEX();
 } /* map_thread_prv */
 
 static void
 map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
 {
-    pthread_mutex_init( &ti->mtxThreads, NULL );
+    MUTEX_INIT( &ti->mtxThreads, XP_TRUE );
     MPASSIGN( ti->mpool, mpool );
     MAP_THREAD( ti, env );
 }
@@ -232,7 +232,7 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 {
     XP_Bool found = false;
 
-    pthread_mutex_lock( &ti->mtxThreads );
+    WITH_MUTEX( &ti->mtxThreads );
     for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
         found = env == entry->env;
@@ -258,7 +258,7 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
             entry->owner = 0;
         }
     }
-    pthread_mutex_unlock( &ti->mtxThreads );
+    END_WITH_MUTEX();
 
     if ( !found ) {
         RAW_LOG( "ERROR: mapping for env %p not found when called from %s()",
@@ -270,7 +270,7 @@ map_remove_prv( EnvThreadInfo* ti, JNIEnv* env, const char* caller )
 static void
 map_destroy( EnvThreadInfo* ti )
 {
-    pthread_mutex_destroy( &ti->mtxThreads );
+    MUTEX_DESTROY( &ti->mtxThreads );
 }
 
 static JNIEnv*
@@ -278,14 +278,14 @@ prvEnvForMe( EnvThreadInfo* ti )
 {
     JNIEnv* result = NULL;
     pthread_t self = pthread_self();
-    pthread_mutex_lock( &ti->mtxThreads );
+    WITH_MUTEX( &ti->mtxThreads );
     for ( int ii = 0; !result && ii < ti->nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
         if ( self == entry->owner ) {
             result = entry->env;
         }
     }
-    pthread_mutex_unlock( &ti->mtxThreads );
+    END_WITH_MUTEX();
 
     if ( !result ) {
         // JNI_VERSION_1_6 works, whether right or not
