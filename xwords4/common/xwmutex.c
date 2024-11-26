@@ -135,7 +135,7 @@ mtx_unlock_prv( MutexState* state )
 void
 mtx_init_prv( MutexState* mutex, XP_Bool recursive
 #ifdef DEBUG
-              , XP_U16 waitSecs, const char* caller
+              , XP_U16 waitSecs, const char* XP_UNUSED(caller)
 #endif
           )
 {
