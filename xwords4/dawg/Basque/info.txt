@@ -1,0 +1,69 @@
+# -*- mode: conf; -*-
+
+# Copyright 2002-2024 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:eu_EU
+LANGNAME:Basque
+CHARSET: utf-8
+
+NEEDSSORT:true
+BUILD_FLAGS:ALLOWS_DUPLICATES
+
+LANGINFO: <p>Basque has 100 tiles</p>
+
+LANGINFO: <p>The file you upload should be encoded in UTF-8.</p>
+
+# MSDos LF chars go bye-bye
+LANGFILTER: tr -d '\r'
+
+# LANGFILTER: Not done yet!!!!
+
+D2DARGS: -r -term 0 -enc UTF-8
+
+# High bit means "official".  Next 7 bits are an enum where
+# Basque==0x1A.  Low byte is padding
+XLOC_HEADER:0x9A00
+
+<BEGIN_TILES>
+{"_"}                      0    2
+'A|a'  					   1   14
+'B|b' 					   4    3
+'D|d' 					   3 	4
+'E|e' 					   1   12
+'F|f' 					  10 	1
+'G|g' 					   5    2
+'H|h' 					   5 	2
+'I|i' 					   1 	9
+'J|j' 					   8 	1
+'K|k' 					   2 	5
+'L|l' 					   5 	2
+'M|m' 					   8 	1
+'N|n' 					   1 	8
+'O|o' 					   1 	6
+'P|p' 					   8 	1
+'R|r' 					   2 	5
+{"RR|Rr|rr|rR"}			   8 	1
+'S|s' 					   5 	2
+'T|t' 					   1 	6
+{"TS|Ts|ts|tS"} 		   8 	1
+{"TX|Tx|tx|tX"} 		   8 	1
+{"TZ|Tz|tz|tZ"} 		   8 	1
+'U|u' 					   1 	6
+'X|x' 					  10 	1
+'Z|z' 					   4 	3
+<END_TILES>
