@@ -39,6 +39,8 @@ def mkParser():
                         help = 'sort output by ASCII or COUNT')
     parser.add_argument('--enc', dest = 'ENC', type = str, default = 'utf8',
                         help = 'encoding')
+    parser.add_argument('--debug', dest = 'DEBUG', default = False,
+                        action = 'store_true', help = 'turn on logging')
     return parser
 
 def main():
@@ -51,9 +53,12 @@ def main():
     letterCount = 0
 
     sys.stdin.reconfigure(encoding=args.ENC)
-	
+
+    lineNo = 0
     for line in sys.stdin.readlines():
         line = line.strip()
+
+        if args.DEBUG: print( 'word {}: {}'.format(lineNo, line))
 
         length = len(line)
         wordSizeCounts[length] += 1
@@ -61,10 +66,12 @@ def main():
 
         for letter in line:
             ii = ord(letter)
-            assert ii > 32 or ii < 4 or ii == 0, 'letter {} in word {} out of range'.format(ii, line)
+            assert ii > 32 or ii < 4 or ii == 0, \
+                'letter[{}] ("{}") in word "{}" out of range'.format(ii, letter, line)
             if not letter in letters: letters[letter] = Letter(letter)
             letters[letter].increment()
             letterCount += 1
+        lineNo += 1
 
     print( 'Number of words: {}'.format(wordCount))
     print( 'Number of letters: {}'.format(letterCount))
