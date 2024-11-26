@@ -1164,8 +1164,8 @@ class DictsDelegate(delegator: Delegator) :
                 val isoCode = ISOCode.newIf(langObj.optString("lc", null))
                 val urlLangName = langObj.getString("lang")
                 var localLangName: String? = null
-                if (null != isoCode) {
-                    localLangName = DictLangCache.getLangNameForISOCode(mActivity, isoCode)
+                isoCode?.let {
+                    localLangName = DictLangCache.getLangNameForISOCode(mActivity, it)
                 }
                 if (null == localLangName) {
                     localLangName = urlLangName
@@ -1253,8 +1253,8 @@ class DictsDelegate(delegator: Delegator) :
                     Log.d(TAG, "digestData(%s)", jsonData)
                     val obj = JSONObject(jsonData)
                     val langs = obj.optJSONArray("langs")
-                    if (null != langs) {
-                        val closedLangs = parseLangs(langs)
+                    langs?.let {
+                        val closedLangs = parseLangs(it)
                         closedLangs.remove(mFilterLang)
                         mClosedLangs.addAll(closedLangs)
                         success = true
