@@ -233,25 +233,26 @@ class DictsDelegate(delegator: Delegator) :
         private fun makeLangItems(langName: String): ArrayList<Any> {
             val result = ArrayList<Any>()
             val locals = HashSet<String>()
-            val isoCode = DictLangCache.getLangIsoCode(m_context, langName)
-            val dals = DictLangCache.getDALsHaveLang(m_context, isoCode!!)
-            dals.map{locals.add(it.name)}
+            DictLangCache.getLangIsoCode(m_context, langName)?.let {
+                val dals = DictLangCache.getDALsHaveLang(m_context, it)
+                dals.map{locals.add(it.name)}
 
-            if (mShowRemote && null != mRemoteInfo) {
-                val infos = mRemoteInfo!![langName]
-                if (null != infos) {
-                    for (info in infos) {
-                        if (!locals.contains(info.m_name)) {
-                            result.add(info)
+                if (mShowRemote && null != mRemoteInfo) {
+                    val infos = mRemoteInfo!![langName]
+                    if (null != infos) {
+                        for (info in infos) {
+                            if (!locals.contains(info.m_name)) {
+                                result.add(info)
+                            }
                         }
+                    } else {
+                        Log.w(TAG, "No remote info for lang %s", langName)
                     }
-                } else {
-                    Log.w(TAG, "No remote info for lang %s", langName)
                 }
-            }
 
-            // Now append locals
-            result.addAll(Arrays.asList(*dals))
+                // Now append locals
+                result.addAll(Arrays.asList(*dals))
+            }
             return result
         }
     }
@@ -1171,7 +1172,7 @@ class DictsDelegate(delegator: Delegator) :
                     localLangName = urlLangName
                     DictLangCache.setLangNameForISOCode(
                         mContext,
-                        isoCode,
+                        isoCode!!,
                         urlLangName
                     )
                 }
@@ -1365,10 +1366,8 @@ class DictsDelegate(delegator: Delegator) :
         }
 
         private fun listDictsProc(lc: ISOCode?): String {
-            var proc = String.format(
-                "listDicts?vc=%d",
-                BuildConfig.VERSION_CODE
-            )
+            val vc = BuildConfig.VERSION_CODE + 1 // REMOVEME remove +1
+            var proc = "listDicts?vc=$vc"
             if (null != lc) {
                 proc += String.format("&lc=%s", lc)
             }

@@ -290,6 +290,7 @@
     <item>hu</item><item>@string/lang_name_hungarian</item>
     <item>ro</item><item>@string/lang_name_romanian</item>
     <item>fi</item><item>@string/lang_name_finnish</item>
+    <item>eu</item><item>@string/lang_name_basque</item>
   </string-array>
 
   <!-- Triples of Name, supported codes, and URL format string -->

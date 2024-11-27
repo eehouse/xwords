@@ -45,12 +45,12 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
 	| grep '^[abdefghijklmnñoprstuxz]*$$' \
 	| tr 'ñ' 'n' \
 	| sed -e 's/[[:lower:]]*/\U&/' \
-	| sed 's/RR/1/g' \
-	| sed 's/TS/2/g' \
-	| sed 's/TX/3/g' \
-	| sed 's/TZ/4/g' \
+	| sed -e 's,^\(.*\)RR\(.*\)$$,\11\2\n\1RR\2,g' \
+	| sed -e 's,^\(.*\)TS\(.*\)$$,\12\2\n\1TS\2,g' \
+	| sed -e 's,^\(.*\)TX\(.*\)$$,\13\2\n\1TX\2,g' \
+	| sed -e 's,^\(.*\)TZ\(.*\)$$,\14\2\n\1TZ\2,g' \
 	| tr '1234' '\001\002\003\004' \
 	| gzip - > $@
 
 clean: clean_common
-	rm -rf *.saved
+	rm -rf *.saved $(XWLANG)Main.dict.gz

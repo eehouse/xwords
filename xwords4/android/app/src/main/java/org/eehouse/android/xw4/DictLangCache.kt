@@ -205,8 +205,8 @@ object DictLangCache {
     }
 
     fun setLangNameForISOCode(
-        context: Context, isoCode: ISOCode?,
-        langName: String?
+        context: Context, isoCode: ISOCode,
+        langName: String
     ) {
         // Log.d( TAG, "setLangNameForISOCode(%s=>%s)", isoCode, langName );
         DLCache.get(context).use { cache ->
@@ -286,9 +286,9 @@ object DictLangCache {
                 Log.w(TAG, "bad lang name for dal name %s", dal.name)
 
                 val di = getInfo(context, dal)
-                name = di.langName
+                name = di.langName!!
                 DLCache.get(context).use { cache ->
-                    cache!!.put(di.isoCode(), name)
+                    cache!!.put(di.isoCode()!!, name)
                 }
             }
             if (null != name && 0 < name.length) {
@@ -445,7 +445,7 @@ object DictLangCache {
     }
 
     private class DLCache : AutoCloseable {
-        private var mLangNames = HashMap<ISOCode?, String?>()
+        private var mLangNames = HashMap<ISOCode, String?>()
         private var mCurRev = 0
 
         @Transient
@@ -456,7 +456,7 @@ object DictLangCache {
 
         constructor()
 
-        constructor(data: HashMap<ISOCode?, String?>, rev: Int) {
+        constructor(data: HashMap<ISOCode, String?>, rev: Int) {
             mLangNames = data
             mCurRev = rev
         }
@@ -483,7 +483,7 @@ object DictLangCache {
             return result
         }
 
-        fun put(code: ISOCode?, langName: String?) {
+        fun put(code: ISOCode, langName: String) {
             if (langName != mLangNames[code]) {
                 mDirty = true
                 mLangNames[code] = langName
@@ -518,7 +518,8 @@ object DictLangCache {
                 val entries = res.getStringArray(R.array.language_names)
                 var ii = 0
                 while (ii < entries.size) {
-                    val isoCode = ISOCode(entries[ii])
+                    val entry = entries[ii]
+                    val isoCode = ISOCode(entry)
                     val langName = entries[ii + 1]
                     put(isoCode, langName)
                     ii += 2
@@ -544,7 +545,7 @@ object DictLangCache {
         }
 
         companion object {
-            private val CACHE_KEY_DATA = TAG + "/cache_data"
+            private val CACHE_KEY_DATA = TAG + "/cache_data2"
             private val CACHE_KEY_REV = TAG + "/cache_rev"
             private val sCache = arrayOf<DLCache?>(null)
 
@@ -553,20 +554,21 @@ object DictLangCache {
                 synchronized(sCache) {
                     result = sCache[0]
                     if (null == result) {
-                        val data = DBUtils.getSerializableFor(
-                            context,
-                            CACHE_KEY_DATA
-                        ) as HashMap<ISOCode?, String?>?
-                        if (null != data) {
+                        (DBUtils.getSerializableFor(
+                             context,
+                             CACHE_KEY_DATA
+                         ) as HashMap<ISOCode, String?>?)?.let {
                             val rev = DBUtils.getIntFor(context, CACHE_KEY_REV, 0)
-                            result = DLCache(data, rev)
-                            Log.d(TAG, "loaded cache: %s", result)
+                            result = DLCache(it, rev)
+                            Log.d(TAG, "loaded cache: $result")
                         }
                     }
                     if (null == result) {
                         result = DLCache()
                     }
-                    result!!.update(context)
+                    val result = result!!
+
+                    result.update(context)
                     sCache[0] = result
                     try {
                         while (!result!!.tryLock(context)) {

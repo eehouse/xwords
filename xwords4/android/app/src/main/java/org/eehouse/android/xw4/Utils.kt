@@ -880,13 +880,10 @@ object Utils {
     }
 
     // Let's get some type safety between language name and iso code.
-    class ISOCode(code: String) : Serializable {
-        val mISOCode: String
+    class ISOCode(val mISOCode: String) : Serializable {
 
         init {
-            // Log.d( TAG, "ISOCode(%s)", code );
-            Assert.assertTrueNR(8 > code.length)
-            mISOCode = code
+            Assert.assertTrueNR(8 > mISOCode.length)
         }
 
         override fun toString(): String {
@@ -903,6 +900,7 @@ object Utils {
 
         companion object {
             private val sMap: MutableMap<String, ISOCode> = HashMap()
+
             fun newIf(code: String?): ISOCode? {
                 var result: ISOCode? = null
                 if (!TextUtils.isEmpty(code)) {
