@@ -151,7 +151,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     private var mContext: Context? = null
     private var mGi: CurGameInfo? = null
     private var mHandler: Handler? = null
-    private var mDrawer: SyncedDraw? = null
     private var mNewDict: String? = null
     private var mRefCount = 0
     private var mXport: CommsTransport? = null
@@ -169,13 +168,10 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     }
 
     fun configure(
-        context: Context, drawer: SyncedDraw,
-        utils: UtilCtxtImpl?,
-        xportHandler: TPMsgHandler,
-        handler: Handler
+        context: Context, utils: UtilCtxtImpl?,
+        xportHandler: TPMsgHandler, handler: Handler
     ): Boolean {
         mContext = context
-        mDrawer = drawer
         mHandler = handler
 
         // If this isn't true then the queue has to be allowed to empty,
@@ -244,7 +240,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         }
         Log.d(TAG, "configure() => %b", success)
         return success
-    }
+    } // configure()
 
     fun getGamePtr() : GamePtr? { return mJNIGamePtr }
     fun getGI(): CurGameInfo { return mGi!! }
@@ -356,7 +352,8 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
         XwJNI.board_applyLayout(mJNIGamePtr, dims)
 
-        mDrawer!!.dimsChanged(dims)
+        Message.obtain(mHandler, DIMMS_CHANGED, dims)
+            .sendToTarget()
     }
 
     private fun nextSame(cmd: JNICmd): Boolean {
@@ -514,7 +511,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     handle(JNICmd.CMD_ZOOM, 0)
                 }
 
-                JNICmd.CMD_START -> draw = tryConnect(mJNIGamePtr, mGi)
+                JNICmd.CMD_START -> draw = tryConnect(mJNIGamePtr!!, mGi!!)
                 JNICmd.CMD_DO -> {
                     if (nextSame(JNICmd.CMD_DO)) {
                         continue
@@ -724,8 +721,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 // do the drawing in this thread but in BoardView
                 // where it can be synchronized with that class's use
                 // of the same bitmap for blitting.
-                mDrawer!!.doJNIDraw()
-
+                Message.obtain(mHandler, DO_DRAW).sendToTarget()
                 checkButtons()
             }
             mCurElem = null
@@ -825,11 +821,13 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         const val GOT_PAUSE: Int = 5
         const val GAME_OVER: Int = 6
         const val MSGS_SENT: Int = 7
+        const val DO_DRAW: Int = 8
+        const val DIMMS_CHANGED: Int = 9
 
-        fun tryConnect(gamePtr: GamePtr?, gi: CurGameInfo?): Boolean {
-            Log.d(TAG, "tryConnect(rowid=%d)", gamePtr!!.rowid)
+        fun tryConnect(gamePtr: GamePtr, gi: CurGameInfo): Boolean {
+            Log.d(TAG, "tryConnect(rowid=%d)", gamePtr.rowid)
             XwJNI.comms_start(gamePtr)
-            if (gi!!.serverRole == DeviceRole.SERVER_ISCLIENT) {
+            if (gi.serverRole == DeviceRole.SERVER_ISCLIENT) {
                 XwJNI.server_initClientConnection(gamePtr)
             }
             return XwJNI.server_do(gamePtr)

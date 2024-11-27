@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.TilePickAlert.TilePickState
 import org.eehouse.android.xw4.Toolbar.Buttons
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.gen.PrefsWrappers
+import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType
@@ -1826,7 +1827,7 @@ class BoardDelegate(delegator: Delegator) :
         if (success && firstStart) {
             mHandler = Handler()
             success = mJniThreadRef!!.configure(
-                mActivity, mView!!, mUtils, this,
+                mActivity, mUtils, this,
                 makeJNIHandler()
             )
             if (success) {
@@ -1905,6 +1906,14 @@ class BoardDelegate(delegator: Delegator) :
                     JNIThread.GOT_PAUSE -> runOnUiThread {
                         makeOkOnlyBuilder(msg.obj as String)
                             .show()
+                    }
+
+                    JNIThread.DO_DRAW -> {
+                        mView?.doJNIDraw();
+                    }
+
+                    JNIThread.DIMMS_CHANGED -> {
+                        mView?.dimsChanged(msg.obj as BoardDims)
                     }
                 }
             }

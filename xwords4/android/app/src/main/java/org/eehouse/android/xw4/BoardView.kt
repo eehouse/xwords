@@ -41,16 +41,14 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.JNIThread.JNICmd
-import org.eehouse.android.xw4.jni.SyncedDraw
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
 class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     mContext, attrs
-), BoardHandler, SyncedDraw {
+), BoardHandler {
     private val mDefaultFontHt: Int
     private val mMediumFontHt: Int
-    private val mInvalidator: Runnable
     private var mJniGamePtr: GamePtr? = null
     private var mGi: CurGameInfo? = null
     private var mIsSolo = false
@@ -71,7 +69,6 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         val scale = resources.displayMetrics.density
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
-        mInvalidator = Runnable { invalidate() }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -308,8 +305,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         mCanvas?.setJNIThread(null)
     }
 
-    // SyncedDraw interface implementation
-    override fun doJNIDraw() {
+    fun doJNIDraw() {
         synchronized(this) {
             mJniGamePtr?.let {
                 XwJNI.board_draw(it)
@@ -319,10 +315,11 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         // Force update now that we have bits to copy. I don't know why (yet),
         // but on older versions of Android we need to run this even if
         // XwJNI.board_draw() returned false
-        mParent?.runOnUiThread(mInvalidator)
+        DbgUtils.assertOnUIThread()
+        invalidate()
     }
 
-    override fun dimsChanged(dims: BoardDims) {
+    fun dimsChanged(dims: BoardDims) {
         mDims = dims
         mParent!!.runOnUiThread { requestLayout() }
     }
