@@ -23,6 +23,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.text.TextUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -165,7 +168,7 @@ object NetUtils {
         context: Context, resultKey: Int,
         api: String?, jsonParams: String
     ) {
-        thread {
+        GlobalScope.launch(Dispatchers.IO) {
             val conn = makeHttpMQTTConn(context, api)
             val directJson = true
             val result = runConn(conn, jsonParams, directJson)
