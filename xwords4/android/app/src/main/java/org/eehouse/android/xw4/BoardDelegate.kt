@@ -487,8 +487,11 @@ class BoardDelegate(delegator: Delegator) :
                     if (mResumeSkipped) {
                         doResume(false)
                     }
-                    if (mSummary!!.quashed && !inArchiveGroup()) {
-                        postDeleteOnce(null)
+
+                    mSummary?.let {
+                        if ( it.quashed && !inArchiveGroup()) {
+                            postDeleteOnce(null)
+                        }
                     }
                 }
             }

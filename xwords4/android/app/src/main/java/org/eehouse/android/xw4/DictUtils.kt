@@ -251,10 +251,8 @@ object DictUtils {
         name: String,
         loc: DictLoc = DictLoc.UNKNOWN
     ): ByteArray? {
-        var name = name
         var bytes: ByteArray? = null
-
-        name = addDictExtn(name)
+        val name = addDictExtn(name)
 
         if (loc == DictLoc.UNKNOWN || loc == DictLoc.BUILT_IN) {
             try {
@@ -357,14 +355,13 @@ object DictUtils {
         for (ii in names.indices) {
             var bytes: ByteArray? = null
             var path: String? = null
-            val name = names[ii]
-            if (null != name) {
-                path = getDictPath(context, name)
+            names[ii]?.let {
+                path = getDictPath(context, it)
                 if (null == path) {
-                    bytes = seen[name]
+                    bytes = seen[it]
                     if (null == bytes) {
-                        bytes = openDict(context, name)
-                        seen[name] = bytes
+                        bytes = openDict(context, it)
+                        seen[it] = bytes
                     }
                 }
             }
@@ -633,10 +630,11 @@ object DictUtils {
         fun anyMissing(names: Array<String?>): Boolean {
             var missing = false
             for (ii in m_paths.indices) {
-                if (names[ii] != null) {
+                names[ii]?.let {
                     // It's ok for there to be no dict IFF there's no
                     // name.  That's a player using the default dict.
-                    if (null == m_paths[ii] && null == m_bytes[ii]) {
+                    if (null == m_bytes[ii] && null == m_paths[ii]) {
+                        Log.d(TAG, "anyMissing(): no bytes or path for $it")
                         missing = true
                         break
                     }
