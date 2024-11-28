@@ -1102,4 +1102,5 @@
     <string name="tile_back_recent">上次移动的卡牌背景</string>
     <string name="url_scheme_default">使用系统默认</string>
     <string name="title_url_scheme">网络 API 协议</string>
+    <string name="lang_name_basque">巴斯克语</string>
 </resources>
