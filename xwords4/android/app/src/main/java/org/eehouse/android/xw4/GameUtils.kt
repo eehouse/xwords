@@ -1666,8 +1666,6 @@ object GameUtils {
                 }
             }
 
-            Wrapper
-            
             GameLock.tryLockRO(rowid).use { lock ->
                 if (null != lock) {
                     val gi = CurGameInfo(context)
