@@ -29,6 +29,9 @@ import android.os.Handler
 import android.provider.Settings
 import android.provider.Telephony
 import android.text.Html
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 import java.io.File
 import java.io.FileOutputStream
@@ -534,7 +537,9 @@ object GameUtils {
             )
             sendTimes[0] = now
 
-            Resender(context, filter, proc).start()
+            GlobalScope.launch(Dispatchers.IO) {
+                resendImpl(context, filter, proc)
+            }
         }
     }
 
@@ -1644,78 +1649,62 @@ object GameUtils {
         }
     }
 
-    private class Resender(
-        private val m_context: Context, private val m_filter: CommsConnType?,
-        private val m_doneProc: ResendDoneProc?
-    ) : Thread() {
-        private var m_handler: Handler? = null
+    private fun resendImpl(context: Context,
+                           filter: CommsConnType?,
+                           doneProc: ResendDoneProc?)
+    {
+        var sentTotal = 0
+        val games = DBUtils.getGamesWithSendsPending(context)
 
-        init {
-            if (null != m_doneProc) {
-                m_handler = Handler()
-            }
-        }
+        for ( rowid in games.keys ) {
 
-        override fun run() {
-            var nSentTotal = 0
-            val games = DBUtils.getGamesWithSendsPending(m_context)
-
-            val iter: Iterator<Long> = games.keys.iterator()
-            while (iter.hasNext()) {
-                val rowid = iter.next()
-
-                // If we're looking for a specific type, check
-                if (null != m_filter) {
-                    val gameSet = games[rowid]
-                    if (gameSet != null && !gameSet.contains(m_filter)) {
-                        continue
-                    }
+            // If we're looking for a specific type, check
+            filter?.let {
+                val gameSet = games[rowid]
+                if (gameSet != null && !gameSet.contains(it)) {
+                    continue
                 }
+            }
 
-                GameLock.tryLockRO(rowid).use { lock ->
-                    if (null != lock) {
-                        val gi = CurGameInfo(m_context)
-                        val sink = MultiMsgSink(m_context, rowid)
-                        loadMakeGame(m_context, gi, sink, lock).use { gamePtr ->
-                            if (null != gamePtr) {
-                                val nSent = XwJNI.comms_resendAll(
-                                    gamePtr, true,
-                                    m_filter, false
-                                )
-                                nSentTotal += sink.numSent()
-                                // Log.d( TAG, "Resender.doInBackground(): sent %d "
-                                //        + "messages for rowid %d (total now %d)",
-                                //        nSent, rowid, nSentTotal );
-                            } else {
-                                Log.d(
-                                    TAG, "Resender.doInBackground(): loadMakeGame()"
-                                            + " failed for rowid %d", rowid
-                                )
-                            }
+            Wrapper
+            
+            GameLock.tryLockRO(rowid).use { lock ->
+                if (null != lock) {
+                    val gi = CurGameInfo(context)
+                    val sink = MultiMsgSink(context, rowid)
+                    loadMakeGame(context, gi, sink, lock).use { gamePtr ->
+                        if (null != gamePtr) {
+                            val nSent = XwJNI.comms_resendAll(
+                                gamePtr, true,
+                                filter, false
+                            )
+                            sentTotal += sink.numSent()
+                            // Log.d( TAG, "Resender.doInBackground(): sent $nSent "
+                            //        + "messages for $rowid (total now $sentTotal)")
+                        } else {
+                            Log.d(TAG, "resendImpl(): loadMakeGame()"
+                                + " failed for rowid $rowid")
                         }
-                    } else {
-                        JNIThread.getRetained(rowid).use { thread ->
-                            if (null != thread) {
-                                thread.handle(
-                                    JNIThread.JNICmd.CMD_RESEND, false,
-                                    false, false
-                                )
-                            } else {
-                                Log.w(
-                                    TAG, "Resender.doInBackground: unable to unlock %d",
-                                    rowid
-                                )
-                            }
+                    }
+                } else {
+                    JNIThread.getRetained(rowid).use { thread ->
+                        if (null != thread) {
+                            thread.handle(
+                                JNIThread.JNICmd.CMD_RESEND, false,
+                                false, false
+                            )
+                        } else {
+                            Log.w(TAG, "resendImpl(): unable to unlock $rowid")
                         }
                     }
                 }
             }
-
-            if (null != m_doneProc) {
-                val fSentTotal = nSentTotal
-                m_handler!!
-                    .post(Runnable { m_doneProc.onResendDone(m_context, fSentTotal) })
-            }
         }
+
+        doneProc?.let {
+            (context as Activity)
+                .runOnUiThread{it.onResendDone(context, sentTotal) }
+        }
+        Log.d(TAG, "resendImpl() sent to ${games.size} devices")
     }
 }
