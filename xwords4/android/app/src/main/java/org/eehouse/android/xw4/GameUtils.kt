@@ -487,20 +487,20 @@ object GameUtils {
         context: Context, filter: CommsConnType?,
         force: Boolean = false, showUI: Boolean = false
     ) {
-        var proc: ResendDoneProc? = null
-        if (showUI) {
-            proc = object : ResendDoneProc {
-                override fun onResendDone(context: Context, nSent: Int) {
-                    val msg = LocUtils
-                        .getQuantityString(
-                            context,
-                            R.plurals.resent_msgs_fmt,
-                            nSent, nSent
-                        )
-                    DbgUtils.showf(context, msg)
+        val proc =
+            if (showUI) {
+                object : ResendDoneProc {
+                    override fun onResendDone(context: Context, nSent: Int) {
+                        val msg = LocUtils
+                            .getQuantityString(
+                                context,
+                                R.plurals.resent_msgs_fmt,
+                                nSent, nSent
+                            )
+                        DbgUtils.showf(context, msg)
+                    }
                 }
-            }
-        }
+            } else null
         resendAllIf(context, filter, force, proc)
     }
 

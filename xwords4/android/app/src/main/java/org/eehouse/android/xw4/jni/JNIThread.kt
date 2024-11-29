@@ -396,22 +396,19 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         if (hashesEqual) {
             // Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
-            // Don't need this!!!! this only runs on the run() thread
-            synchronized(this) {
-                val context = mContext!!
-                Assert.assertNotNull(m_lock)
-                val summary = GameSummary(mGi!!)
-                XwJNI.game_summarize(mJNIGamePtr, summary)
-                DBUtils.saveGame(context, m_lock!!, state, false)
-                DBUtils.saveSummary(context, m_lock!!, summary)
+            val context = mContext!!
+            val lock = m_lock!!
+            val summary = GameSummary(mGi!!)
+            XwJNI.game_summarize(mJNIGamePtr, summary)
+            DBUtils.saveGame(context, lock, state, false)
+            DBUtils.saveSummary(context, lock, summary)
 
-                // There'd better be no way for saveGame above to fail!
-                XwJNI.game_saveSucceeded(mJNIGamePtr)
-                mLastSavedState = newHash
+            // There'd better be no way for saveGame above to fail!
+            XwJNI.game_saveSucceeded(mJNIGamePtr)
+            mLastSavedState = newHash
 
-                val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
-                DBUtils.saveThumbnail(context, m_lock!!, thumb)
-            }
+            val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
+            DBUtils.saveThumbnail(context, lock, thumb)
         }
     }
 
@@ -443,6 +440,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 if (mStopped) "BREAK"
                 else if (null == mJNIGamePtr) {
                     try {
+                        Log.d(TAG, "run(): waiting on non-null mJNIGamePtr")
                         (this as Object).wait()
                         "CONTINUE"
                     } catch (iex: InterruptedException) {
