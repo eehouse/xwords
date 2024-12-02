@@ -196,14 +196,14 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
         mpool->stats.maxBytes = mpool->stats.curBytes;
     }
 
+    result = entry->ptr;
+    END_WITH_MUTEX();
+
 #ifdef MPOOL_DEBUG
     XP_LOGFF( "(size=%d,index=%d,file=%s,lineNo=%d)=>%p",
              size, entry->index, file, lineNo, entry->ptr );
 #endif
 
-    result = entry->ptr;
-    END_WITH_MUTEX();
-    
     return result;
 } /* mpool_alloc */
 
