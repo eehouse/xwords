@@ -35,14 +35,27 @@ enum {
     ,JCACHE_COUNT
 };
 
+typedef struct _ObjCacheElem {
+    jobject obj;
+#ifdef DEBUG
+    pthread_t owner;
+#endif
+} ObjCacheElem;
+
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
 #ifdef MAP_THREAD_TO_ENV
     EnvThreadInfo* ti;
 #endif
+#ifdef DEBUG
+    struct {
+        pthread_t thread;
+        JNIEnv* env;
+    } creator;
+#endif
     jobject jdraw;             /* global ref; free it! */
     XP_UCHAR curISOCode[MAX_ISO_CODE_LEN+1];
-    jobject jCache[JCACHE_COUNT];
+    ObjCacheElem jCache[JCACHE_COUNT];
     jobject jTvType;
     XP_UCHAR miniTextBuf[128];
     MPSLOT
@@ -52,14 +65,45 @@ typedef struct _AndDraw {
 #define DSI_PATH "jni/DrawCtx$DrawScoreInfo"
 #define TVT_PATH "jni/CommonPrefs$TileValueType"
 
+/* There are concurrency problems with this cache, and I'm not sure a mutex
+   will fix them. So for now I'm leaving this logging in place but
+   disabled. Removing the cache and changing where the DrawCtxts are
+   allocated are both too high-risk for now. */
+#if 0
+# define AND_DRAW_START(DCTX, ENV) {                            \
+        pthread_t self = pthread_self();                        \
+        pthread_t* other = &((AndDraw*)DCTX)->creator.thread;   \
+        if ( !*other ) {                                        \
+            /* do nothing */                                    \
+        } else if ( self != *other ) {                          \
+            XP_LOGFF( "unexpected thread change: "              \
+                      "initial: %lX; current %lX",              \
+                      *other, self );                           \
+        }                                                       \
+        *other = self;                                          \
+
+/* if ( ENV != ((AndDraw*)dctx)->creator.env ) {           \ */
+        /*     XP_LOGFF( "unexpected env change" );                \ */
+        /* }                                                       \ */
+
+# define  AND_DRAW_END() }
+#else
+# define AND_DRAW_START(DCTX, ENV) {
+# define AND_DRAW_END() }
+#endif
+
 static void deleteGlobalRef( JNIEnv* env, jobject jobj );
 
 static jobject
-makeJRect( AndDraw* draw, JNIEnv* env, int indx, const XP_Rect* rect )
+makeJRect( AndDraw* draw, JNIEnv* env, const int indx, const XP_Rect* rect )
 {
-    jobject robj = draw->jCache[indx];
+    ObjCacheElem* elem = &draw->jCache[indx];
+    jobject robj = elem->obj;
 #ifdef DEBUG
-    XP_ASSERT( CHECKOUT_MARKER != robj );
+    if ( CHECKOUT_MARKER == robj ) {
+        XP_LOGFF( "Error: cache obj[%d] taken by %lX (I am %lX)",
+                  indx, elem->owner, pthread_self() );
+    }
 #endif
     int right = rect->left + rect->width;
     int bottom = rect->top + rect->height;
@@ -68,9 +112,9 @@ makeJRect( AndDraw* draw, JNIEnv* env, int indx, const XP_Rect* rect )
         robj = makeObject(env, "android/graphics/Rect", "(IIII)V",
                           rect->left, rect->top, right, bottom );
                  
-        draw->jCache[indx] = (*env)->NewGlobalRef( env, robj );
+        elem->obj = (*env)->NewGlobalRef( env, robj );
         deleteLocalRef( env, robj );
-        robj = draw->jCache[indx];
+        robj = elem->obj;
     } else {
         setInt( env, robj, "left", rect->left );
         setInt( env, robj, "top", rect->top );
@@ -79,17 +123,22 @@ makeJRect( AndDraw* draw, JNIEnv* env, int indx, const XP_Rect* rect )
     }
 
 #ifdef DEBUG
-    draw->jCache[indx] = CHECKOUT_MARKER;
+    elem->obj = CHECKOUT_MARKER;
+    elem->owner = pthread_self();
 #endif
     return robj;
 } /* makeJRect */
 
 #ifdef DEBUG
 static void
-returnJRect( AndDraw* draw, int indx, jobject used )
+returnJRect( AndDraw* draw, const int indx, jobject used )
 {
-    XP_ASSERT( CHECKOUT_MARKER == draw->jCache[indx] );
-    draw->jCache[indx] = used;
+    ObjCacheElem* elem = &draw->jCache[indx];
+    if ( CHECKOUT_MARKER != elem->obj ) { /* failed!! */
+        XP_LOGFF( "ERROR: obj[%d] already in use by thread: %lX. "
+                  "Me: %lX", indx, elem->owner, pthread_self() );
+    }
+    elem->obj = used;
 }
 #else
 # define returnJRect( draw, indx, used )
@@ -109,12 +158,13 @@ static jobject
 makeJRects( AndDraw* draw, XWEnv xwe, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 {
     JNIEnv* env = xwe;
-    jobject jrects = draw->jCache[indx];
+    ObjCacheElem* elem = &draw->jCache[indx];
+    jobject jrects = elem->obj;
     if ( !jrects ) {
         jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
         jrects = (*env)->NewObjectArray( env, nPlayers, rclass, NULL );
-        draw->jCache[indx] = (*env)->NewGlobalRef( env, jrects );
-        jrects = draw->jCache[indx];
+        elem->obj = (*env)->NewGlobalRef( env, jrects );
+        jrects = elem->obj;
 
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
                                                 "()V" );
@@ -140,18 +190,19 @@ makeJRects( AndDraw* draw, XWEnv xwe, int indx, XP_U16 nPlayers, const XP_Rect r
 }
 
 static jobject
-makeDSIs( AndDraw* draw, XWEnv xwe, int indx, XP_U16 nPlayers,
+makeDSIs( AndDraw* draw, XWEnv xwe, const int indx, XP_U16 nPlayers,
           const DrawScoreInfo dsis[] )
 {
     JNIEnv* env = xwe;
-    jobject dsiobjs = draw->jCache[indx];
+    ObjCacheElem* elem = &draw->jCache[indx];
+    jobject dsiobjs = elem->obj;
 
     if ( !dsiobjs ) {
         jclass clas = (*env)->FindClass( env, PKG_PATH(DSI_PATH) );
         dsiobjs = (*env)->NewObjectArray( env, nPlayers, clas, NULL );
-        draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobjs );
+        elem->obj = (*env)->NewGlobalRef( env, dsiobjs );
         deleteLocalRef( env, dsiobjs );
-        dsiobjs = draw->jCache[indx];
+        dsiobjs = elem->obj;
 
         jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
         for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -183,17 +234,18 @@ makeDSIs( AndDraw* draw, XWEnv xwe, int indx, XP_U16 nPlayers,
 #else
 
 static jobject
-makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
+makeDSI( AndDraw* draw, XWEnv xwe, const int indx, const DrawScoreInfo* dsi )
 {
     JNIEnv* env = xwe;
-    jobject dsiobj = draw->jCache[indx];
+    ObjCacheElem* elem = &draw->jCache[indx];
+    jobject dsiobj = elem->obj;
 
     if ( !dsiobj ) {
         dsiobj = makeObjectEmptyConstr( env, PKG_PATH(DSI_PATH) );
 
-        draw->jCache[indx] = (*env)->NewGlobalRef( env, dsiobj );
+        elem->obj = (*env)->NewGlobalRef( env, dsiobj );
         deleteLocalRef( env, dsiobj );
-        dsiobj = draw->jCache[indx];
+        dsiobj = elem->obj;
     }
 
     setInt( env, dsiobj, "playerNum", dsi->playerNum );
@@ -213,11 +265,13 @@ makeDSI( AndDraw* draw, XWEnv xwe, int indx, const DrawScoreInfo* dsi )
 #define DRAW_CBK_HEADER(nam,sig) {                              \
     JNIEnv* env = xwe;                                          \
     AndDraw* draw = (AndDraw*)dctx;                             \
+    AND_DRAW_START(draw, env);                                  \
     ASSERT_ENV( draw->ti, env );                                \
     XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( xwe, draw->jdraw, nam, sig )   \
 
-#define DRAW_CBK_HEADER_END() }
+#define DRAW_CBK_HEADER_END() }                 \
+    AND_DRAW_END();                             \
 
 static XP_Bool
 and_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
@@ -397,8 +451,10 @@ and_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 player
 }
 
 /* Not used on android yet */
-static XP_Bool and_draw_beginDraw( DrawCtx* XP_UNUSED(dctx),
-                                   XWEnv XP_UNUSED(xwe) ) {
+static XP_Bool and_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
+{
+    AND_DRAW_START(dctx, xwe);
+    AND_DRAW_END();
     return XP_TRUE;
 }
 static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) ) {}
@@ -408,13 +464,14 @@ and_draw_boardBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* XP_UNUSED(rect),
                      XP_U16 XP_UNUSED(cellWidth), XP_U16 XP_UNUSED(cellHeight),
                      DrawFocusState XP_UNUSED(dfs), TileValueType tvType )
 {
+    AND_DRAW_START(dctx, xwe);
     JNIEnv* env = xwe;
     AndDraw* draw = (AndDraw*)dctx;
 
     jobject jTvType = intToJEnum( env, tvType, PKG_PATH(TVT_PATH) );
     draw->jTvType = (*env)->NewGlobalRef( env, jTvType );
     deleteLocalRef( env, jTvType );
-
+    AND_DRAW_END();
     return XP_TRUE;
 }
 
@@ -464,12 +521,14 @@ and_draw_drawBoardArrow( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 }
 
 static XP_Bool
-and_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
+and_draw_vertScrollBoard( DrawCtx* dctx, XWEnv xwe,
                           XP_Rect* XP_UNUSED(rect), XP_S16 XP_UNUSED(dist),
                           DrawFocusState XP_UNUSED(dfs) )
 {
+    AND_DRAW_START(dctx, xwe);
     /* Scrolling a bitmap in-place isn't any faster than drawing every cell
        anew so no point in calling into java. */
+    AND_DRAW_END();
     return XP_FALSE;
 }
 
@@ -699,6 +758,10 @@ makeDraw( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
     draw->ti = ti;
 #endif
+#ifdef DEBUG
+    // draw->creator.thread = pthread_self();
+    // draw->creator.env = env;
+#endif
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     if ( NULL != jdraw ) {
         draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
@@ -765,7 +828,7 @@ destroyDraw( DrawCtx** dctx, JNIEnv* env )
         deleteGlobalRef( env, draw->jdraw );
 
         for ( int ii = 0; ii < JCACHE_COUNT; ++ii ) {
-            deleteGlobalRef( env, draw->jCache[ii] );
+            deleteGlobalRef( env, draw->jCache[ii].obj );
         }
 
         XP_FREE( draw->mpool, draw->vtable );
