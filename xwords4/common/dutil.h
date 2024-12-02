@@ -140,77 +140,66 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 /* This one cheats: direct access */
 #define dutil_getVTManager(duc) (duc)->vtMgr
 
-#define dutil_getCurSeconds(duc, e)               \
-    (duc)->vtable.m_dutil_getCurSeconds((duc), (e))
-#define dutil_getUserString( duc, e, c )             \
-    (duc)->vtable.m_dutil_getUserString((duc),(e), (c))
-#define dutil_getUserQuantityString( duc, e, c, q )                 \
-    (duc)->vtable.m_dutil_getUserQuantityString((duc),(e), (c),(q))
+#define dutil_getCurSeconds(duc, ...)               \
+    (duc)->vtable.m_dutil_getCurSeconds((duc), __VA_ARGS__)
+#define dutil_getUserString( duc, ... )             \
+    (duc)->vtable.m_dutil_getUserString((duc), __VA_ARGS__)
+#define dutil_getUserQuantityString( duc, ... )                 \
+    (duc)->vtable.m_dutil_getUserQuantityString((duc), __VA_ARGS__)
 
-#define dutil_storeStream(duc, e, k, s)                         \
-    (duc)->vtable.m_dutil_storeStream((duc), (e), (k), (s));
-#define dutil_storePtr(duc, e, k, p, l)                         \
-    (duc)->vtable.m_dutil_storePtr((duc), (e), (k), (p), (l))
-#define dutil_loadStream(duc, e, k, s)                      \
-    (duc)->vtable.m_dutil_loadStream((duc), (e), (k), (s))
-#define dutil_loadPtr(duc, e, k, p, l)                         \
-    (duc)->vtable.m_dutil_loadPtr((duc), (e), (k), (p), (l))
-# define dutil_forEach( duc, xwe, keys, proc, closure )                 \
-    (duc)->vtable.m_dutil_forEach((duc), (xwe), (keys), (proc), (closure) )
-#define dutil_remove(duc, keys)                 \
-    (duc)->vtable.m_dutil_remove((duc), (keys))
+#define dutil_storeStream(duc, ...)                         \
+    (duc)->vtable.m_dutil_storeStream((duc), __VA_ARGS__)
+#define dutil_storePtr(duc, ...)                         \
+    (duc)->vtable.m_dutil_storePtr((duc), __VA_ARGS__)
+#define dutil_loadStream(duc, ...)                      \
+    (duc)->vtable.m_dutil_loadStream((duc), __VA_ARGS__)
+#define dutil_loadPtr(duc, ...)                         \
+    (duc)->vtable.m_dutil_loadPtr((duc), __VA_ARGS__)
+# define dutil_forEach( duc, ... )                                      \
+    (duc)->vtable.m_dutil_forEach((duc), __VA_ARGS__ )
+#define dutil_remove(duc, ...)                 \
+    (duc)->vtable.m_dutil_remove((duc), __VA_ARGS__)
 
 #ifdef XWFEATURE_SMS
-# define dutil_phoneNumbersSame(duc,e,p1,p2)                    \
-    (duc)->vtable.m_dutil_phoneNumbersSame( (duc), (e), (p1), (p2) )
-#endif
-
-#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
-# define dutil_getDevID( duc, e, t )             \
-    (duc)->vtable.m_dutil_getDevID((duc), (e),(t))
-# define dutil_deviceRegistered( duc, e, typ, id )                       \
-    (duc)->vtable.m_dutil_deviceRegistered( (duc), (e), (typ), (id) )
+# define dutil_phoneNumbersSame(duc, ...)                    \
+    (duc)->vtable.m_dutil_phoneNumbersSame( (duc), __VA_ARGS__)
 #endif
 
 #ifdef DUTIL_TIMERS
-# define dutil_setTimer( duc, xwe, when, key )                  \
-    (duc)->vtable.m_dutil_setTimer((duc), (xwe), (when), (key))
-# define dutil_clearTimer( duc, xwe, key )                  \
-    (duc)->vtable.m_dutil_clearTimer((duc), (xwe), (key) )
+# define dutil_setTimer( duc, ... )                  \
+    (duc)->vtable.m_dutil_setTimer((duc), __VA_ARGS__)
+# define dutil_clearTimer( duc, ... )                  \
+    (duc)->vtable.m_dutil_clearTimer((duc), __VA_ARGS__)
 #endif
 
-# define dutil_md5sum( duc, e, p, l, b )                    \
-    (duc)->vtable.m_dutil_md5sum((duc), (e), (p), (l), (b))
+# define dutil_md5sum( duc, ... )                    \
+    (duc)->vtable.m_dutil_md5sum((duc), __VA_ARGS__)
+#define dutil_getUsername(duc, ...)                                     \
+    (duc)->vtable.m_dutil_getUsername((duc), __VA_ARGS__)
+#define dutil_notifyPause( duc, ... )                     \
+    (duc)->vtable.m_dutil_notifyPause( (duc), __VA_ARGS__)
 
-#define dutil_getUsername(duc, xwe, num, isLocal, isRobot, buf, lenp)   \
-    (duc)->vtable.m_dutil_getUsername((duc), (xwe), (num), (isLocal),    \
-                                      (isRobot), (buf), (lenp))
+#define dutil_haveGame( duc, ... )                      \
+    (duc)->vtable.m_dutil_haveGame( (duc), __VA_ARGS__)
 
-#define dutil_notifyPause( duc, e, id, ip, p, n, m )                     \
-    (duc)->vtable.m_dutil_notifyPause( (duc), (e), (id), (ip), (p), (n), (m) )
+#define dutil_onDupTimerChanged(duc, ...)                           \
+    (duc)->vtable.m_dutil_onDupTimerChanged( (duc), __VA_ARGS__)
+#define dutil_onInviteReceived(duc, ...)                        \
+    (duc)->vtable.m_dutil_onInviteReceived( (duc), __VA_ARGS__)
+#define dutil_onMessageReceived(duc, ...)                       \
+    (duc)->vtable.m_dutil_onMessageReceived((duc), __VA_ARGS__)
+#define dutil_onCtrlReceived(duc, ... )                         \
+    (duc)->vtable.m_dutil_onCtrlReceived((duc), __VA_ARGS__ )
+#define dutil_onGameGoneReceived(duc, ...)         \
+    (duc)->vtable.m_dutil_onGameGoneReceived((duc), __VA_ARGS__)
+#define dutil_sendViaWeb( duc, ... )        \
+    (duc)->vtable.m_dutil_sendViaWeb((duc), __VA_ARGS__)
+#define dutil_makeEmptyDict(duc, ...)                   \
+    (duc)->vtable.m_dutil_makeEmptyDict((duc), __VA_ARGS__)
+#define dutil_getDict(duc, ...)                      \
+    (duc)->vtable.m_dutil_getDict((duc), __VA_ARGS__)
 
-#define dutil_haveGame( duc, xwe, gameID, channel )                     \
-    (duc)->vtable.m_dutil_haveGame( (duc), (xwe), (gameID), (channel) )
-
-#define dutil_onDupTimerChanged(duc, e, id, ov, nv)                      \
-    (duc)->vtable.m_dutil_onDupTimerChanged( (duc), (e), (id), (ov), (nv))
-
-#define dutil_onInviteReceived(duc, xwe, nli)                       \
-    (duc)->vtable.m_dutil_onInviteReceived( (duc), (xwe), (nli) )
-#define dutil_onMessageReceived(duc, xwe, gameID, from, buf, len)           \
-    (duc)->vtable.m_dutil_onMessageReceived((duc),(xwe),(gameID),(from),(buf),(len))
-#define dutil_onCtrlReceived(duc, xwe, buf, len )             \
-    (duc)->vtable.m_dutil_onCtrlReceived((duc),(xwe),(buf),(len))
-#define dutil_onGameGoneReceived(duc, xwe, gameID, from)         \
-    (duc)->vtable.m_dutil_onGameGoneReceived((duc),(xwe),(gameID),(from))
-#define dutil_sendViaWeb( duc, xwe, resultKey, api, params )        \
-    (duc)->vtable.m_dutil_sendViaWeb((duc), (xwe), (resultKey), (api), (params))
-#define dutil_makeEmptyDict(duc, xwe)                   \
-    (duc)->vtable.m_dutil_makeEmptyDict((duc), (xwe))
-#define dutil_getDict(duc, xwe, isoCode, dictName)                      \
-    (duc)->vtable.m_dutil_getDict((duc), (xwe), (isoCode), (dictName))
-
-#define dutil_getRegValues( duc, xwe ) \
-    (duc)->vtable.m_dutil_getRegValues( (duc), (xwe) )
+#define dutil_getRegValues( duc, ... ) \
+    (duc)->vtable.m_dutil_getRegValues( (duc), __VA_ARGS__)
 
 #endif

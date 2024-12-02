@@ -199,124 +199,112 @@ struct XW_UtilCtxt {
     MPSLOT
 };
 
-#define util_makeStreamFromAddr(uc,e,a) \
-         (uc)->vtable->m_util_makeStreamFromAddr((uc), (e),(a))
+#define util_makeStreamFromAddr(uc,...)                         \
+    (uc)->vtable->m_util_makeStreamFromAddr((uc), __VA_ARGS__)
+#define util_userError(uc,...)                          \
+    (uc)->vtable->m_util_userError((uc), __VA_ARGS__)
+#define util_notifyMove(uc,...)                         \
+    (uc)->vtable->m_util_notifyMove((uc), __VA_ARGS__)
+#define util_notifyTrade(uc,...)                                \
+    (uc)->vtable->m_util_notifyTrade((uc), __VA_ARGS__)
+#define util_notifyPickTileBlank( uc,...)                               \
+    (uc)->vtable->m_util_notifyPickTileBlank( (uc), __VA_ARGS__ )
 
-#define util_userError(uc,e,err)                    \
-         (uc)->vtable->m_util_userError((uc),(e),(err))
+#define util_informNeedPickTiles( uc, ...) \
+    (uc)->vtable->m_util_informNeedPickTiles( (uc), __VA_ARGS__ )
 
-#define util_notifyMove(uc,e, str)                         \
-         (uc)->vtable->m_util_notifyMove((uc), (e), (str))
+#define util_informNeedPassword( uc, ... )                              \
+    (uc)->vtable->m_util_informNeedPassword( (uc), __VA_ARGS__ )
 
-#define util_notifyTrade(uc,e, tx, nt)                            \
-        (uc)->vtable->m_util_notifyTrade((uc), (e), (tx), (nt))
+#define util_trayHiddenChange( uc, ...)                         \
+    (uc)->vtable->m_util_trayHiddenChange((uc), __VA_ARGS__)
 
-#define util_notifyPickTileBlank( uc,e, c, r, n, tx, nt )                  \
-        (uc)->vtable->m_util_notifyPickTileBlank( (uc), (e), (c), (r), (n), (tx), (nt) )
-
-#define util_informNeedPickTiles( uc,e, ii, pl, np, nt, fc, cn )           \
-        (uc)->vtable->m_util_informNeedPickTiles( (uc), (e), (ii), (pl), (np), (nt), (fc), (cn) )
-
-#define util_informNeedPassword( uc,e, pn, n ) \
-         (uc)->vtable->m_util_informNeedPassword( (uc), (e), (pn), (n) )
-
-#define util_trayHiddenChange( uc,e, b, n ) \
-         (uc)->vtable->m_util_trayHiddenChange((uc), (e), (b), (n))
-
-#define util_yOffsetChange( uc,e, m, o, n )                        \
-         (uc)->vtable->m_util_yOffsetChange((uc), (e), (m), (o), (n) )
+#define util_yOffsetChange( uc, ...)                        \
+    (uc)->vtable->m_util_yOffsetChange((uc), __VA_ARGS__)
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-# define util_turnChanged( uc,e, t )                    \
-        (uc)->vtable->m_util_turnChanged( (uc), (e), (t) )
+# define util_turnChanged( uc, ... )                    \
+    (uc)->vtable->m_util_turnChanged( (uc), __VA_ARGS__)
 #else
-# define util_turnChanged( uc,e, t )
+# define util_turnChanged( uc, ... )
 #endif
 
-#define util_notifyDupStatus(uc,e, h, m)                      \
-    (uc)->vtable->m_util_notifyDupStatus( (uc), (e), (h), (m) )
-#define util_informMove(uc,e,t,ex,w)                               \
-         (uc)->vtable->m_util_informMove( (uc), (e), (t), (ex), (w))
-#define util_informUndo(uc,e) \
-         (uc)->vtable->m_util_informUndo( (uc), (e))
-#define util_informNetDict(uc,e, cd, on, nn, ns, pa )                      \
-         (uc)->vtable->m_util_informNetDict( (uc), (e), (cd), (on), (nn), (ns), \
-                                             (pa) )
-#define util_notifyGameOver( uc,e, q )                  \
-         (uc)->vtable->m_util_notifyGameOver((uc), (e), (q))
+#define util_notifyDupStatus(uc,...)                            \
+    (uc)->vtable->m_util_notifyDupStatus( (uc), __VA_ARGS__ )
+#define util_informMove(uc,...)                         \
+    (uc)->vtable->m_util_informMove( (uc), __VA_ARGS__)
+#define util_informUndo(uc,...) \
+    (uc)->vtable->m_util_informUndo( (uc), __VA_ARGS__)
+#define util_informNetDict(uc, ... )                      \
+    (uc)->vtable->m_util_informNetDict( (uc), __VA_ARGS__)
+#define util_notifyGameOver( uc, ... )                  \
+    (uc)->vtable->m_util_notifyGameOver((uc), __VA_ARGS__)
 
 #ifdef XWFEATURE_HILITECELL
-# define util_hiliteCell( uc,e, c, r ) \
-         (uc)->vtable->m_util_hiliteCell((uc), (e), (c), (r))
+# define util_hiliteCell( uc, ... ) \
+    (uc)->vtable->m_util_hiliteCell((uc), __VA_ARGS__)
 #endif
 
-#define util_engineProgressCallback( uc,e ) \
-         (uc)->vtable->m_util_engineProgressCallback((uc), (e))
+#define util_engineProgressCallback( uc, ... ) \
+    (uc)->vtable->m_util_engineProgressCallback((uc), __VA_ARGS__)
 
-#define util_setTimer( uc,e, why, when, proc, clos ) \
-         (uc)->vtable->m_util_setTimer((uc), (e),(why),(when),(proc),(clos))
-#define util_clearTimer( uc,e, why ) \
-         (uc)->vtable->m_util_clearTimer((uc), (e),(why))
+#define util_setTimer( uc, ... )                        \
+    (uc)->vtable->m_util_setTimer((uc), __VA_ARGS__ )
+#define util_clearTimer( uc, ... ) \
+    (uc)->vtable->m_util_clearTimer((uc), __VA_ARGS__)
+#define util_requestTime( uc, ... ) \
+    (uc)->vtable->m_util_requestTime((uc), __VA_ARGS__)
 
-#define util_requestTime( uc,e ) \
-         (uc)->vtable->m_util_requestTime((uc), (e))
+#define util_altKeyDown( uc, ... )                 \
+    (uc)->vtable->m_util_altKeyDown((uc), __VA_ARGS__)
+#define util_notifyIllegalWords( uc, ... )                      \
+    (uc)->vtable->m_util_notifyIllegalWords((uc), __VA_ARGS__)
+#define util_remSelected( uc,... )                        \
+    (uc)->vtable->m_util_remSelected((uc), __VA_ARGS__)
 
-#define util_altKeyDown( uc,e )                 \
-    (uc)->vtable->m_util_altKeyDown((uc),(e))
+#define util_timerSelected( uc, ... )                        \
+    (uc)->vtable->m_util_timerSelected((uc), __VA_ARGS__)
 
-#define util_notifyIllegalWords( uc,e, w, d, p, b, k )                    \
-    (uc)->vtable->m_util_notifyIllegalWords((uc), (e), (w), (d), (p), (b), (k))
-
-#define util_remSelected( uc,e )                        \
-         (uc)->vtable->m_util_remSelected((uc), (e))
-
-#define util_timerSelected( uc,e, dm, cp )                        \
-         (uc)->vtable->m_util_timerSelected((uc), (e), (dm), (cp))
-
-#define util_formatPauseHistory( uc,e, s, typ, turn, secsPrev, secsCur, msg ) \
-    (uc)->vtable->m_util_formatPauseHistory( (uc), (e), (s), (typ), (turn),  \
-                                             (secsPrev), (secsCur), (msg) )
-
+#define util_formatPauseHistory( uc, ...)                               \
+    (uc)->vtable->m_util_formatPauseHistory( (uc), __VA_ARGS__)
 #ifndef XWFEATURE_MINIWIN
-# define util_bonusSquareHeld( uc,e, b )                                  \
-         (uc)->vtable->m_util_bonusSquareHeld( (uc), (e), (b) )
-# define util_playerScoreHeld( uc,e, player )                                \
-         (uc)->vtable->m_util_playerScoreHeld( (uc), (e), (player) )
+# define util_bonusSquareHeld( uc, ... )                                  \
+    (uc)->vtable->m_util_bonusSquareHeld( (uc), __VA_ARGS__ )
+# define util_playerScoreHeld( uc, ... )                                \
+    (uc)->vtable->m_util_playerScoreHeld( (uc), __VA_ARGS__ )
 #endif
 #ifdef XWFEATURE_BOARDWORDS
-#define util_cellSquareHeld(uc,e, s)                      \
-    (uc)->vtable->m_util_cellSquareHeld( (uc), (e), (s) )
+#define util_cellSquareHeld(uc, ...)                      \
+    (uc)->vtable->m_util_cellSquareHeld( (uc), __VA_ARGS__)
 #endif
 
-#define util_informMissing( uc, e, is, ha, sa, nd, nm, ni, fr )     \
-    (uc)->vtable->m_util_informMissing((uc), (e), (is), (ha), (sa), \
-                                       (nd), (nm), (ni), (fr) )
-
-#define util_informWordsBlocked(uc,e, c, w, d)                        \
-    (uc)->vtable->m_util_informWordsBlocked( (uc), (e), (c), (w), (d) )
-#define util_getInviteeName(uc, xwe, plyrNum, buf, len )              \
-    (uc)->vtable->m_util_getInviteeName( (uc), (xwe), (plyrNum), (buf), (len) )
+#define util_informMissing( uc, ...)                    \
+    (uc)->vtable->m_util_informMissing((uc), __VA_ARGS__)
+#define util_informWordsBlocked(uc, ...)                        \
+    (uc)->vtable->m_util_informWordsBlocked( (uc), __VA_ARGS__)
+#define util_getInviteeName(uc, ... )              \
+    (uc)->vtable->m_util_getInviteeName( (uc), __VA_ARGS__ )
 
 #ifdef XWFEATURE_SEARCHLIMIT
-#define util_getTraySearchLimits(uc,e,min,max) \
-         (uc)->vtable->m_util_getTraySearchLimits((uc), (e), (min), (max))
+#define util_getTraySearchLimits(uc, ...) \
+    (uc)->vtable->m_util_getTraySearchLimits((uc), __VA_ARGS__)
 #endif
 
 #ifdef XWFEATURE_CHAT
-# define util_showChat( uc,e, m, f, ts ) (uc)->vtable->m_util_showChat((uc), (e),(m),(f), (ts))
+# define util_showChat( uc, ... ) (uc)->vtable->m_util_showChat((uc), __VA_ARGS__)
 #endif
 
 # ifdef SHOW_PROGRESS
-# define util_engineStarting( uc,e, nb ) \
-         (uc)->vtable->m_util_engineStarting((uc), (e),(nb))
-# define util_engineStopping( uc,e ) \
-         (uc)->vtable->m_util_engineStopping((uc), (e))
+# define util_engineStarting( uc, ... ) \
+    (uc)->vtable->m_util_engineStarting((uc), __VA_ARGS__)
+# define util_engineStopping( uc, ... ) \
+    (uc)->vtable->m_util_engineStopping((uc), __VA_ARGS__)
 # else
-# define util_engineStarting( uc,e, nb )
-# define util_engineStopping( uc,e )
+# define util_engineStarting( uc, ... )
+# define util_engineStopping( uc, ... )
 # endif
 
-# define util_getDevUtilCtxt(uc,e) \
-    (uc)->vtable->m_util_getDevUtilCtxt( (uc), (e) )
+# define util_getDevUtilCtxt(uc, ...) \
+    (uc)->vtable->m_util_getDevUtilCtxt( (uc), __VA_ARGS__)
 
 #endif
