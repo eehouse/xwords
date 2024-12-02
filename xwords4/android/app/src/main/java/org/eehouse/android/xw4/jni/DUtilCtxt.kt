@@ -24,6 +24,10 @@ import android.os.Build
 import android.telephony.PhoneNumberUtils
 
 import kotlin.concurrent.thread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
@@ -139,8 +143,8 @@ class DUtilCtxt {
         val startMS = if (BuildConfig.DEBUG) System.currentTimeMillis() else 0
         synchronized(sCleared) {sCleared.add(key)}
 
-        thread {
-            Thread.sleep(inMS.toLong())
+        GlobalScope.launch(Dispatchers.Default) {
+            delay(inMS.toLong())
             if (BuildConfig.DEBUG) {
                 val wakeMS = System.currentTimeMillis()
                 Log.d(TAG, "setTimer(): firing; set for $inMS, "
