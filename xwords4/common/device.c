@@ -1152,7 +1152,7 @@ dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* code,
 void
 dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
 {
-    XP_LOGFF( "(key: %d)", key );
+    // XP_LOGFF( "(key: %d)", key );
     tmr_fired( dutil, xwe, key );
 }
 #endif

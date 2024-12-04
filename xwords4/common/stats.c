@@ -239,7 +239,7 @@ setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
             tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
         XP_LOGFF( "tmr_set() => %d", key );
     } else {
-        XP_LOGFF( "timer already set" );
+        // XP_LOGFF( "timer already set" );
     }
 #else
     XP_USE(dutil);

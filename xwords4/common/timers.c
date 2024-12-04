@@ -88,7 +88,7 @@ static void
 timerFired( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, TimerState* timer,
             XP_Bool fired )
 {
-    XP_LOGFF( "(timer=%p); key=%d", timer, timer->key );
+    // XP_LOGFF( "(timer=%p); key=%d", timer, timer->key );
     (*timer->proc)( timer->closure, xwe, fired );
     XP_FREE( dutil->mpool, timer );
 }
@@ -114,7 +114,6 @@ findByKeyProc( const DLHead* elem, void* closure )
 void
 tmr_fired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
 {
-    XP_LOGFF( "(key=%d)", key );
     TimerMgrState* timersState = (TimerMgrState*)dutil->timersState;
     XP_ASSERT( !!timersState );
 

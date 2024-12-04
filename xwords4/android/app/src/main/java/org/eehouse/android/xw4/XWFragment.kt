@@ -95,9 +95,8 @@ abstract class XWFragment: Fragment(), Delegator {
 
     fun onCreate( dlgt: DelegateBase, sis: Bundle?, hasOptionsMenu: Boolean )
     {
-        Log.d( TAG, "%H/%s.onCreate() called", this, this::class.java.getSimpleName() )
         mHasOptionsMenu = hasOptionsMenu
-        this.onCreate( dlgt, sis )
+        onCreate( dlgt, sis )
     }
 
     fun onCreate( dlgt: DelegateBase, sis: Bundle? )

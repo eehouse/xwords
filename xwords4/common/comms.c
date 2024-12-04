@@ -1090,7 +1090,7 @@ elemToStream( MsgQueueElem* elem, void* closure )
 
         stream_putU32VL( stream, elem->smp.len );
         stream_putU32( stream, elem->smp.createdStamp );
-        COMMS_LOGFF( "writing msg elem with sum: %s", elem->sb.buf );
+        COMMS_LOGFFV( "writing msg elem with sum: %s", elem->sb.buf );
         if ( 0 == elem->smp.len ) {
             XP_ASSERT( 0 == elem->msgID );
             XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
@@ -1937,8 +1937,8 @@ printElem( MsgQueueElem* elem, void* closure )
 {
     int* iip = (int*)closure;
     CNO_FMT( cbuf, elem->channelNo );
-    XP_LOGFF( "%d: %s; msgID=" XP_LD "; sum=%s",
-              *iip, cbuf, elem->msgID, elem->sb.buf );
+    XP_LOGFFV( "%d: %s; msgID=" XP_LD "; sum=%s",
+               *iip, cbuf, elem->msgID, elem->sb.buf );
     ++*iip;
     return FEA_OK;
 }
@@ -1966,7 +1966,7 @@ _assertQueueOk( const CommsCtxt* comms, const char* XP_UNUSED(func) )
         XP_ASSERT(0);
     }
     if ( count >= 10 ) {
-        COMMS_LOGFF( "queueLen unexpectedly high: %d", count );
+        COMMS_LOGFFV( "queueLen unexpectedly high: %d", count );
     }
 }
 
@@ -2130,8 +2130,8 @@ checkPrevProc( MsgQueueElem* elem, void* closure )
          && (cpsp->elem->channelNo & CHANNEL_MASK) == (elem->channelNo & CHANNEL_MASK) ) {
         if ( 0 == cpsp->elem->msgID || elem->msgID < cpsp->elem->msgID ) {
             ++cpsp->count;
-            XP_LOGFF( "found one! their id: %d; my id: %d", elem->msgID,
-                      cpsp->elem->msgID );
+            XP_LOGFFV( "found one! their id: %d; my id: %d", elem->msgID,
+                       cpsp->elem->msgID );
         }
     }
     return FEA_OK;
@@ -2318,7 +2318,6 @@ send_relay_ack( CommsCtxt* comms, XWEnv xwe )
 XP_S16
 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool force )
 {
-    COMMS_LOGFF( "(force=%s)", boolToStr(force) );
     XP_S16 count = 0;
     XP_ASSERT( !!comms );
 
@@ -2363,7 +2362,7 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
         COMMS_LOGFF( "backoff now %d", comms->resendBackoff );
         comms->nextResend = now + comms->resendBackoff;
     }
-    COMMS_LOGFF( TAGFMT() "=> %d", TAGPRMS, count );
+    COMMS_LOGFF( TAGFMT() "(force=%s) => %d", TAGPRMS, boolToStr(force), count );
     return count;
 }
 

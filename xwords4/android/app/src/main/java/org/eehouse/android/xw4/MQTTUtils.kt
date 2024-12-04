@@ -399,6 +399,7 @@ object MQTTUtils {
 
         override fun onDisconnected(context: MqttClientDisconnectedContext) {
             Log.d(TAG, "onDisconnected(cause=${context.getCause()})")
+            // try: context.getCause().printStackTrace()
             updateStatus(false)
             mStats.updateState(false)
         }
@@ -478,8 +479,8 @@ object MQTTUtils {
                     .callback(this@Conn)
                     .send()
                     .whenComplete{ ack, throwable ->
-                        // Log.d( TAG, "$this.whenComplete(); topic=$mTopic, "
-                        //        + "ack=$ack, err=$throwable")
+                        Log.d( TAG, "$this.whenComplete(); topic=$mTopic, "
+                               + "ack=$ack, err=$throwable")
                     }
             }
         }
