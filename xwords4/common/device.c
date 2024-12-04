@@ -193,46 +193,50 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     *devID = bogusID;
 
 #else
-
-    MQTTDevID tmp = 0;
-    XP_U32 len = sizeof(tmp);
-    if ( !forceNew ) {
-        dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, &len );
-    }
-
-    /* XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) ); */
-    if ( forceNew || len != sizeof(tmp) ) { /* not found, or bogus somehow */
-        int total = 0;
-        for ( int ii = 0; ii < NUM_RUNS; ++ii ) {
-            tmp = XP_RANDOM();
-            tmp <<= 27;
-            tmp ^= XP_RANDOM();
-            tmp <<= 27;
-            tmp ^= XP_RANDOM();
-
-            int count = 0;
-            MQTTDevID tmp2 = tmp;
-            while ( 0 != tmp2 ) {
-                if ( 0 != (1 & tmp2) ) {
-                    ++count;
-                    ++total;
-                }
-                tmp2 >>= 1;
-            }
-            XP_LOGFF( "got: %" PRIX64 " (set: %d/%zd)", tmp, count, sizeof(tmp2)*8 );
+    /* Use the cached value if present and if we're not forcing new */
+    if ( !dutil->devID || forceNew ) {
+        XP_U32 len = sizeof(dutil->devID);
+        if ( !forceNew ) {
+            dutil_loadPtr( dutil, xwe, MQTT_DEVID_KEY, &dutil->devID, &len );
         }
-        XP_LOGFF( "average bits set: %d", total / NUM_RUNS );
 
-        dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &tmp, sizeof(tmp) );
+        /* XP_LOGFF( "len: %d; sizeof(tmp): %zu", len, sizeof(tmp) ); */
+        if ( forceNew || len != sizeof(dutil->devID) ) { /* not found, or bogus somehow */
+            int total = 0;
+            MQTTDevID tmp;
+            for ( int ii = 0; ii < NUM_RUNS; ++ii ) {
+                tmp = XP_RANDOM();
+                tmp <<= 27;
+                tmp ^= XP_RANDOM();
+                tmp <<= 27;
+                tmp ^= XP_RANDOM();
+
+                int count = 0;
+                MQTTDevID tmp2 = tmp;
+                while ( 0 != tmp2 ) {
+                    if ( 0 != (1 & tmp2) ) {
+                        ++count;
+                        ++total;
+                    }
+                    tmp2 >>= 1;
+                }
+                XP_LOGFF( "got: %" PRIX64 " (set: %d/%zd)", tmp, count, sizeof(tmp2)*8 );
+            }
+            XP_LOGFF( "average bits set: %d", total / NUM_RUNS );
+
+            dutil->devID = tmp;
+            dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, &dutil->devID, sizeof(dutil->devID) );
+        }
 
 # ifdef DEBUG
         XP_UCHAR buf[32];
-        formatMQTTDevID( &tmp, buf, VSIZE(buf) );
+        formatMQTTDevID( &dutil->devID, buf, VSIZE(buf) );
         /* This log statement is required by discon_ok2.py!!! (keep in sync) */
         XP_LOGFF( "generated id: %s; key: %s", buf, MQTT_DEVID_KEY );
 # endif
     }
-    *devID = tmp;
+    XP_ASSERT( dutil->devID );
+    *devID = dutil->devID;
 #endif
     // LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
 }
@@ -247,6 +251,7 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
 void
 dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID )
 {
+    dutil->devID = *devID;
     dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, devID, sizeof(*devID) );
 }
 

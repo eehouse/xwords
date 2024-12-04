@@ -119,6 +119,7 @@ typedef struct _DUtilVtable {
 
 struct XW_DUtilCtxt {
     DUtilVtable vtable;
+    MQTTDevID devID;
     void* closure;
     void* devCtxt;              /* owned by device.c */
     void* statsState;           /* owned by stats.c */
