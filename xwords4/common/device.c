@@ -536,17 +536,22 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
 }
 
 static XP_Bool
-isDevMsg( const MQTTDevID* myID, const XP_UCHAR* topic, XP_U32* gameID )
+isDevMsg( const MQTTDevID* myID, const XP_UCHAR* topic, XP_U32* gameIDP )
 {
     XP_UCHAR buf[64];
     formatMQTTDevTopic( myID, buf, VSIZE(buf) );
     size_t topicLen = XP_STRLEN(buf);
+    XP_ASSERT( topicLen < VSIZE(buf)-1 );
+    /* Does topic match xw4/device/<devid> at least  */
     XP_Bool success = 0 == strncmp( buf, topic, topicLen );
     if ( success ) {
+        /* Now get the gameID if it's there */
         const XP_UCHAR* gameIDPart = topic + topicLen;
-        sscanf( gameIDPart, "/%X", gameID );
+        int count =
+            sscanf( gameIDPart, "/%X", gameIDP );
+        XP_ASSERT( 1 == count || 0 == *gameIDP ); /* firing */
     }
-    // XP_LOGFF( "(%s) => %s (gameID=%X)", topic, boolToStr(success), *gameID );
+    XP_LOGFF( "(%s) => %s (gameID=%X)", topic, boolToStr(success), *gameIDP );
     return success;
 }
 
@@ -659,11 +664,10 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
 
-    XP_LOGFF( "got myID" );
+    // XP_LOGFF( "got myID" );     /* gets here */
 
     XP_U32 gameID = 0;
     if ( isDevMsg( &myID, topic, &gameID ) ) {
-        XP_LOGFF( "is msg; gameID: %X", gameID );
         XWStreamCtxt* stream = mkStream( dutil );
         stream_putBytes( stream, buf, len );
 
@@ -722,7 +726,6 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         }
         stream_destroy( stream );
     } else if ( isCtrlMsg( &myID, topic ) ) {
-        XP_LOGFF( "is ctrl msg" );
         dutil_onCtrlReceived( dutil, xwe, buf, len );
     } else {
         XP_LOGFF( "OTHER" );
