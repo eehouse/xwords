@@ -409,17 +409,36 @@ object MQTTUtils {
                                              CommsAddrRec.CommsConnType.COMMS_CONN_MQTT,
                                              success)
 
+        final val DUP_THRESHHOLD_MS = 5000
+        private val mSeenSums = HashMap<String, Long>()
+        @Synchronized
+        private fun isRecentDuplicate(packet: ByteArray): Boolean
+        {
+            val sum = Utils.getMD5SumFor(packet)!!
+            val now = System.currentTimeMillis()
+            val past = mSeenSums[sum]
+            val isDup = past?.let {
+                now < it + DUP_THRESHHOLD_MS
+            } ?: false
+            mSeenSums[sum] = now
+            Log.d(TAG, "%H: isRecentDuplicate($sum) => $isDup", this)
+            return isDup
+        }
+
         override fun accept(pub: Mqtt3Publish) {
             val payload = pub.payload
             val topic = pub.topic
 
             if (pub.payload.isPresent()) {
-                Log.d(TAG, "accept($pub)")
+                // Log.d(TAG, "accept($pub)")
                 val byteBuf = pub.payload.get()
                 val packet = ByteArray(byteBuf.capacity())
                 byteBuf.get(packet)
-                add(IncomingTask(topic.toString(), packet))
-                XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
+                if ( ! isRecentDuplicate(packet) ) {
+                    add(IncomingTask(topic.toString(), packet))
+                    XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
+                }
+
             } else {
                 // Unretain message posted by server; no need to log!! In fact
                 // it'd be nice if it weren't transmitted at all
@@ -441,7 +460,7 @@ object MQTTUtils {
                             .send()
                             .also{ ack -> Log.d(TAG, "connect.also($ack)") }
                     } else {
-                        Log.d(TAG, "$this: already connected")
+                        Log.d(TAG, "$this: skipping connect; already connected")
                     }
                 } catch (ex: Exception) {
                     Log.ex(TAG, ex)
@@ -498,11 +517,12 @@ object MQTTUtils {
                         .retain(true)
                         .send()
                         .whenComplete { mqtt3Publish, throwable ->
-                            // Log.d(TAG, "whenComplete(): $mqtt3Publish")
                             mStats.addSend(throwable == null)
                             if (throwable != null) {
                                 // Handle failure to publish
                             } else {
+                                val sum = Utils.getMD5SumFor(pr.second)
+                                Log.d(TAG, "whenComplete(): $mqtt3Publish; sum: $sum")
                                 // Handle successful publish, e.g. logging or incrementing a metric
                                 TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
                                 XwJNI.sts_increment(STAT.STAT_MQTT_SENT)
@@ -583,7 +603,8 @@ object MQTTUtils {
         override fun toString(): String
         {
             val age = (System.currentTimeMillis() - mStart) / 1000
-            return "client: {connected: ${mClient.state.isConnected}; age: ${age}s"
+            return String.format("Conn %H: {connected: ${mClient.state.isConnected}; "
+                                 + "age: ${age}s", this)
         }
     }
 
