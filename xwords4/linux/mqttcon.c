@@ -56,8 +56,11 @@ sendQueueHead( MQTTConStorage* storage )
 #endif
                     mosquitto_publish( storage->mosq, &elem->mid, elem->topic,
                                        elem->len, elem->buf, elem->qos, true );
-                XP_LOGFF( "mosquitto_publish(topic=%s, msgLen=%d) => %s; mid=%d", elem->topic,
-                          elem->len, mosquitto_strerror(err), elem->mid );
+                gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
+                                                          elem->buf, elem->len );
+                XP_LOGFF( "mosquitto_publish(topic=%s, msgLen=%d, sum=%s) => %s; mid=%d",
+                          elem->topic, elem->len, sum, mosquitto_strerror(err), elem->mid );
+                g_free(sum);
                 /* Remove this so all are resent together? */
                 sts_increment( storage->params->dutil, NULL_XWE, STAT_MQTT_SENT );
                 break;
@@ -232,6 +235,10 @@ onMessageReceived( struct mosquitto* XP_UNUSED_DBG(mosq), void *userdata,
     len = htons( len );
     write( msgPipe, &len, sizeof(len) );
     write( msgPipe, message->payload, message->payloadlen );
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
+                                              message->payload, message->payloadlen );
+    XP_LOGFF("got message with sum %s", sum );
+    g_free( sum );
 }
 
 static void
