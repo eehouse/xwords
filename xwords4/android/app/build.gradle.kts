@@ -409,7 +409,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0")
     annotationProcessor( "androidx.lifecycle:lifecycle-compiler:2.0.+" )
 
-    implementation("com.hivemq:hivemq-mqtt-client:1.3.3")
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.4")
 
     implementation( "com.google.zxing:core:3.3.+" )
     implementation( "com.jakewharton:process-phoenix:2.1.2" )
