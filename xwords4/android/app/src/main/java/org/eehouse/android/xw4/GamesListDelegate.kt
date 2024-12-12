@@ -1514,13 +1514,16 @@ class GamesListDelegate(delegator: Delegator) :
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         m_menuPrepared = null != m_mySIS
         if (m_menuPrepared) {
-            val nGamesSelected = m_mySIS!!.selGames.size // NPE
+            val nGamesSelected = m_mySIS!!.selGames.size
             val nGroupsSelected = m_mySIS!!.selGroupIDs.size
-            val groupCount = m_adapter!!.groupCount
             m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected
 
             if (m_menuPrepared) {
                 val nothingSelected = 0 == (nGroupsSelected + nGamesSelected)
+                val singleSummary =
+                    if (1 == nGamesSelected) {
+                        GameUtils.getSummary(mActivity, m_mySIS!!.selGames.iterator().next())
+                    } else null
 
                 val showDbg = (BuildConfig.NON_RELEASE
                         || XWPrefs.getDebugEnabled(mActivity))
@@ -1587,6 +1590,9 @@ class GamesListDelegate(delegator: Delegator) :
                     menu, R.id.games_game_move,
                     0 < nGamesSelected
                 )
+
+                enable = singleSummary?.let{!it.isMultiGame} ?: false
+                Utils.setItemVisible(menu, R.id.games_game_copy, enable)
 
                 // Hide rate-me if not a google play app
                 enable = nothingSelected && Utils.isGooglePlayApp(mActivity)
