@@ -259,10 +259,8 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // (like blocking on a socket) so might as well let it
             // take however log it takes.  If that's too long, fix it.
             interrupt()
-            Log.d(TAG, "trying to join; currently handling $mCurElem")
-            join()              // getting ANRs here
-            Log.d(TAG, "join() done")
-            // Assert.assertFalse( isAlive() );
+            Log.d(TAG, "%H: NOT calling join()", this)
+            // join()              // getting ANRs when this doesn't return
         } catch (ie: InterruptedException) {
             Log.ex(TAG, ie)
         }
@@ -396,19 +394,20 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         if (hashesEqual) {
             // Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
-            val context = mContext!!
-            val lock = m_lock!!
-            val summary = GameSummary(mGi!!)
-            XwJNI.game_summarize(mJNIGamePtr, summary)
-            DBUtils.saveGame(context, lock, state, false)
-            DBUtils.saveSummary(context, lock, summary)
+            m_lock?.let { lock ->
+                val context = mContext!!
+                val summary = GameSummary(mGi!!)
+                XwJNI.game_summarize(mJNIGamePtr, summary)
+                DBUtils.saveGame(context, lock, state, false)
+                DBUtils.saveSummary(context, lock, summary)
 
-            // There'd better be no way for saveGame above to fail!
-            XwJNI.game_saveSucceeded(mJNIGamePtr)
-            mLastSavedState = newHash
+                // There'd better be no way for saveGame above to fail!
+                XwJNI.game_saveSucceeded(mJNIGamePtr)
+                mLastSavedState = newHash
 
-            val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
-            DBUtils.saveThumbnail(context, lock, thumb)
+                val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
+                DBUtils.saveThumbnail(context, lock, thumb)
+            }
         }
     }
 
