@@ -1369,15 +1369,15 @@ class BoardDelegate(delegator: Delegator) :
                 Assert.assertTrue(0 <= m_mySIS!!.nGuestDevs)
                 nli.forceChannel = 1 + m_mySIS!!.nGuestDevs
 
-                mConnTypes!!.map{
-                    when (it) {
+                mConnTypes!!.map{ typ ->
+                    when (typ) {
                         CommsConnType.COMMS_CONN_RELAY -> Log.e(TAG, "Relay not supported")
                         CommsConnType.COMMS_CONN_BT -> nli.addBTInfo(mActivity)
                         CommsConnType.COMMS_CONN_SMS -> nli.addSMSInfo(mActivity)
                         CommsConnType.COMMS_CONN_P2P -> nli.addP2PInfo(mActivity)
                         CommsConnType.COMMS_CONN_NFC -> nli.addNFCInfo()
                         CommsConnType.COMMS_CONN_MQTT -> nli.addMQTTInfo()
-                        else -> Log.w(TAG, "Not doing NFC join for conn type $it")
+                        else -> Log.w(TAG, "Not doing NFC join for conn type $typ")
                     }
                 }
                 nli.asByteArray()

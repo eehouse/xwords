@@ -1485,7 +1485,7 @@ object DBUtils {
 
     fun clearDBChangeListener(listener: DBChangeListener) {
         synchronized(s_listeners) {
-            Assert.assertTrue(s_listeners.contains(listener))
+            Assert.assertTrueNR(s_listeners.contains(listener))
             s_listeners.remove(listener)
         }
     }
@@ -2194,10 +2194,9 @@ object DBUtils {
         change: GameChangeType
     ) {
         synchronized(s_listeners) {
-            val iter: Iterator<DBChangeListener> = s_listeners.iterator()
-            while (iter.hasNext()) {
-                iter.next().gameSaved(context, rowid, change)
-            }
+            s_listeners.toTypedArray()
+        }.map { proc ->
+            proc.gameSaved(context, rowid, change)
         }
     }
 
