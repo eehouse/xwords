@@ -219,20 +219,23 @@ object DBUtils {
         context: Context, lock: GameLock,
         summary: GameSummary?
     ) {
-        Assert.assertTrue(lock.canWrite())
-        val rowid = lock.rowid
-        val selection = String.format(ROW_ID_FMT, rowid)
-        var values: ContentValues? = null
-        if (null != summary) {
-            values = ContentValues()
-				.putAnd(DBHelper.NUM_MOVES, summary.nMoves)
-				.putAnd(DBHelper.NUM_PLAYERS, summary.nPlayers)
-				.putAnd(DBHelper.MISSINGPLYRS, summary.missingPlayers)
-				.putAnd(DBHelper.TURN, summary.turn)
-				.putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
-				.putAnd(DBHelper.GIFLAGS, summary.giflags())
-				.putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
-            Assert.assertTrueNR(null != summary.isoCode)
+        if ( !lock.canWrite() ) {
+            Log.d(TAG, "saveSummary(): lock not writeable")
+        } else {
+            Assert.assertTrue(lock.canWrite())
+            val rowid = lock.rowid
+            val selection = String.format(ROW_ID_FMT, rowid)
+            var values: ContentValues? = null
+            summary?.let { summary ->
+                values = ContentValues()
+				    .putAnd(DBHelper.NUM_MOVES, summary.nMoves)
+				    .putAnd(DBHelper.NUM_PLAYERS, summary.nPlayers)
+				    .putAnd(DBHelper.MISSINGPLYRS, summary.missingPlayers)
+				    .putAnd(DBHelper.TURN, summary.turn)
+				    .putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
+				    .putAnd(DBHelper.GIFLAGS, summary.giflags())
+				    .putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
+                Assert.assertTrueNR(null != summary.isoCode)
 				values.putAnd(DBHelper.ISOCODE, summary.isoCode.toString())
 					.putAnd(DBHelper.GAMEID, summary.gameID)
 					.putAnd(DBHelper.GAME_OVER, if (summary.gameOver) 1 else 0)
@@ -241,62 +244,63 @@ object DBUtils {
 					.putAnd(DBHelper.NEXTDUPTIMER, summary.dupTimerExpires)
 					.putAnd(DBHelper.CAN_REMATCH, if (summary.canRematch) 1 else 0)
 
-            // Don't overwrite extras! Sometimes this method is called from
-            // JNIThread which has created the summary from common code that
-            // doesn't know about Android additions. Leave those unset to
-            // avoid overwriting.
-            val extras = summary.extras
-            if (null != extras) {
-                values.put(DBHelper.EXTRAS, summary.extras)
-            }
-            val nextNag = if (summary.nextTurnIsLocal()) NagTurnReceiver.figureNextNag(
-                context,
-                1000 * summary.lastMoveTime.toLong()
-            ) else 0
-            values.putAnd(DBHelper.NEXTNAG, nextNag)
-				.putAnd(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
-            if (null != summary.scores) {
-                val sb = StringBuffer()
-                for (score in summary.scores) {
-                    sb.append(String.format("%d ", score))
+                // Don't overwrite extras! Sometimes this method is called from
+                // JNIThread which has created the summary from common code that
+                // doesn't know about Android additions. Leave those unset to
+                // avoid overwriting.
+                val extras = summary.extras
+                if (null != extras) {
+                    values.put(DBHelper.EXTRAS, summary.extras)
                 }
-                values.put(DBHelper.SCORES, sb.toString())
-            }
-            if (null != summary.conTypes) {
-                values.putAnd(DBHelper.CONTYPE, summary.conTypes!!.toInt())
-					.putAnd(DBHelper.SEED, summary.seed)
-					.putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
-                val iter: Iterator<CommsConnType> = summary.conTypes!!.iterator()
-                while (iter.hasNext()) {
-                    when (val typ = iter.next()) {
-                        CommsConnType.COMMS_CONN_RELAY -> {
-                            val relayID = summary.relayID
-                            values.putAnd(DBHelper.ROOMNAME, summary.roomName)
-								.putAnd(DBHelper.RELAYID, summary.relayID)
-                        }
+                val nextNag = if (summary.nextTurnIsLocal()) NagTurnReceiver.figureNextNag(
+                                                                 context,
+                                                                 1000 * summary.lastMoveTime.toLong()
+                                                             ) else 0
+                values.putAnd(DBHelper.NEXTNAG, nextNag)
+				    .putAnd(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
+                if (null != summary.scores) {
+                    val sb = StringBuffer()
+                    for (score in summary.scores) {
+                        sb.append(String.format("%d ", score))
+                    }
+                    values.put(DBHelper.SCORES, sb.toString())
+                }
+                if (null != summary.conTypes) {
+                    values.putAnd(DBHelper.CONTYPE, summary.conTypes!!.toInt())
+					    .putAnd(DBHelper.SEED, summary.seed)
+					    .putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
+                    val iter: Iterator<CommsConnType> = summary.conTypes!!.iterator()
+                    while (iter.hasNext()) {
+                        when (val typ = iter.next()) {
+                            CommsConnType.COMMS_CONN_RELAY -> {
+                                val relayID = summary.relayID
+                                values.putAnd(DBHelper.ROOMNAME, summary.roomName)
+								    .putAnd(DBHelper.RELAYID, summary.relayID)
+                            }
 
-                        CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
-							-> values.put(DBHelper.REMOTEDEVS,
-										  summary.summarizeDevs() )
-                        else -> {} // Log.d( TAG, "unexpected type ${typ}")
+                            CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
+							    -> values.put(DBHelper.REMOTEDEVS,
+										      summary.summarizeDevs() )
+                            else -> {} // Log.d( TAG, "unexpected type ${typ}")
+                        }
                     }
                 }
+                values.put(DBHelper.SERVERROLE, summary.serverRole!!.ordinal)
             }
-            values.put(DBHelper.SERVERROLE, summary.serverRole!!.ordinal)
-        }
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            if (null == summary) {
-                delete(TABLE_NAMES.SUM, selection)
-            } else {
-                val result = update(TABLE_NAMES.SUM, values, selection).toLong()
-                Assert.assertTrue(result >= 0)
+            initDB(context)
+            synchronized(s_dbHelper!!) {
+                if (null == summary) {
+                    delete(TABLE_NAMES.SUM, selection)
+                } else {
+                    val result = update(TABLE_NAMES.SUM, values, selection).toLong()
+                    Assert.assertTrue(result >= 0)
+                }
+                notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
+                invalGroupsCache()
             }
-            notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
-            invalGroupsCache()
-        }
-        if (null != summary) { // nag time may have changed
-            NagTurnReceiver.setNagTimer(context)
+            summary?.let { // nag time may have changed
+                NagTurnReceiver.setNagTimer(context)
+            }
         }
     } // saveSummary
 

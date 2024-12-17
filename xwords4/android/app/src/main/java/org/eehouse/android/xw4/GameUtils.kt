@@ -395,9 +395,7 @@ object GameUtils {
     ): GamePtr? {
         var gamePtr: GamePtr? = null
 
-        if (null == stream) {
-            Log.w(TAG, "loadMakeGame: no saved game!")
-        } else {
+        stream?.let {
             XwJNI.giFromStream(gi, stream)
             val dictNames = gi.dictNames()
             val pairs = DictUtils.openDicts(context, dictNames)
@@ -429,6 +427,8 @@ object GameUtils {
                     }
                 }
             }
+        } ?: run {
+            Log.w(TAG, "loadMakeGame(): no saved game!")
         }
         return gamePtr
     }

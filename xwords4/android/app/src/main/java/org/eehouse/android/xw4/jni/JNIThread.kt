@@ -395,19 +395,20 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
             m_lock?.let { lock ->
-                val context = mContext!!
-                val summary = GameSummary(mGi!!)
-                XwJNI.game_summarize(mJNIGamePtr, summary)
-                DBUtils.saveGame(context, lock, state, false)
-                DBUtils.saveSummary(context, lock, summary)
+                mContext?.let { context ->
+                    val summary = GameSummary(mGi!!)
+                    XwJNI.game_summarize(mJNIGamePtr, summary)
+                    DBUtils.saveGame(context, lock, state, false)
+                    DBUtils.saveSummary(context, lock, summary)
 
-                // There'd better be no way for saveGame above to fail!
-                XwJNI.game_saveSucceeded(mJNIGamePtr)
-                mLastSavedState = newHash
+                    // There'd better be no way for saveGame above to fail!
+                    XwJNI.game_saveSucceeded(mJNIGamePtr)
+                    mLastSavedState = newHash
 
-                val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
-                DBUtils.saveThumbnail(context, lock, thumb)
-            }
+                    val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
+                    DBUtils.saveThumbnail(context, lock, thumb)
+                } ?: run { Log.d(TAG, "save_jni(): null context") }
+            } ?: run { Log.d(TAG, "save_jni(): null lock") }
         }
     }
 
