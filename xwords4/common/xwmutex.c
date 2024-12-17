@@ -105,6 +105,7 @@ void
 mtx_lock_prv( MutexState* state, XP_U16 waitSecs,
               const char* file, const char* caller, int lineNo )
 {
+    // XP_RAW_LOGFF( "(waitSecs=%d)", waitSecs );
     if ( 0 == waitSecs ) {
         waitSecs = state->waitSecs;
     }
@@ -123,6 +124,7 @@ mtx_lock_prv( MutexState* state, XP_U16 waitSecs,
     if ( 0 < waitSecs ) {
         removeCheckee( &ctd );
     }
+    // XP_RAW_LOGFF( "DONE" );
 }
 
 void

@@ -420,7 +420,7 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
-    // LOG_FUNC();
+    // XP_LOGFF( "(jniGlobalPtr: %p)", jniGlobalPtr );
     if ( 0 != jniGlobalPtr ) {
         setGlobalState( env, NULL );
         JNIGlobalState* globalState = (JNIGlobalState*)jniGlobalPtr;

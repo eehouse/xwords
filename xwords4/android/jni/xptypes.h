@@ -99,6 +99,7 @@ void android_gid_debugff(XP_U32 gid, const char* func, const char* file, int lin
 #define XP_DEBUGF(...) android_debugf( __VA_ARGS__ )
 #define XP_LOGF(...) android_debugf( __VA_ARGS__ )
 #define XP_LOGFF(...) android_debugff( __func__, __FILE__, __LINE__, __VA_ARGS__ )
+#define XP_RAW_LOGFF(...) raw_log( __func__, __VA_ARGS__ )
 #define XP_GID_LOGFF( GID, ... )                                    \
     android_gid_debugff( (GID), __func__, __FILE__, __LINE__, __VA_ARGS__ )
 
@@ -109,6 +110,7 @@ void android_gid_debugff(XP_U32 gid, const char* func, const char* file, int lin
 #define XP_LOGFF(...)
 #define XP_GID_LOGFF( GID, FMT, ... )
 #define XP_WARNF(...)
+#define XP_RAW_LOGFF(...)
 #endif
 
 XP_U32 and_ntohl(XP_U32 l);

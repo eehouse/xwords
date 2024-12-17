@@ -92,12 +92,14 @@ extern void linux_debugff(const char* func, const char* file, int line, const ch
     linux_debugff( __func__, SHORTFILE, __LINE__, FMT, ##__VA_ARGS__ )
 #define XP_LOG(STR) \
     linux_debugff( __func__, SHORTFILE, "%s", STR )
+#define XP_RAW_LOGFF XP_LOGFF
 
 #else
 # define XP_DEBUGF(ch,...)
 # define XP_LOGFF(fmt,...)
 # define XP_LOG(fmt)
-#endif
+#define XP_RAW_LOGFF(...)
+#endif  /* #ifdef DEBUG */
 
 #define XP_WARNF XP_DEBUGF
 
