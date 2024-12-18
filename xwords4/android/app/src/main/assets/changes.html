@@ -13,10 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>CrossWords 4.4.204 release</h2>
+  <h2>CrossWords 4.4.205 release</h2>
 
-  <p>This release remembers phonies you've already ok'd and fixes
-      Bluetooth invitations</p>
+  <p>This release features a complete rewrite in Kotlin, the language
+      Google now prefers for Android development.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,13 +26,20 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Add option to remember "phonies" you allow so you aren't
-          asked about them again</li>
-      <li>Put built-in BasEnglish wordlist back (was accidentally
-          excluded a few releases ago)</li>
-      <li>Fix invitations using Bluetooth</li>
-      <li>Hide Studylist (and "Legal Phonies") menus until there's
-          something there</li>
+      <li>Convert all Java files to Kotlin</li>
+      <li>Add option to sort Known Players by how recently they've
+          played</li>
+      <li>Allow board sizes up to 21x21</li>
+      <li>Use HiveMQ's MQTT library instead of Paho</li>
+      <li>Fix tile-picking bug</li>
+      <li>Fix rematch bug</li>
+      <li>Fix failure to quit after too many passes</li>
+      <li>Remove obsolete menu options</li>
+      <li>Fix downloading from Wordlists screen</li>
+      <li>Add support for play in Basque</li>
+      <li>Translations via Weblate in: Catalan, Chinese, French,
+          German, Italian, Japanese, Polish, Portuguese (Brazil),
+          Portuguese, Slovak, Spanish, Tamil, and Turkish</li>
   </ul>
 
   <h3>Coming soon</h3>
