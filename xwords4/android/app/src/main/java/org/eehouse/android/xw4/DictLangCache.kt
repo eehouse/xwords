@@ -20,6 +20,7 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.widget.ArrayAdapter
 
 import java.util.Arrays
@@ -335,7 +336,7 @@ object DictLangCache {
 
     fun setLast(lastItem: String?) {
         s_last = lastItem
-        s_handler = Handler()
+        s_handler = Handler(Looper.getMainLooper())
     }
 
     fun getLangsAdapter(context: Context): LangsArrayAdapter {

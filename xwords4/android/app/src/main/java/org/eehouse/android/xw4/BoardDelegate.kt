@@ -25,6 +25,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.text.TextUtils
 import android.text.format.DateUtils
@@ -494,7 +495,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
         }
-        GameLock.getLockThen(mRowid, 100L, Handler(), then)
+        GameLock.getLockThen(mRowid, 100L, Handler(Looper.getMainLooper()), then)
     } // getLock
 
     override fun onStart() {
@@ -1818,7 +1819,7 @@ class BoardDelegate(delegator: Delegator) :
         var success = null != mJniThreadRef
         val firstStart = null == mHandler
         if (success && firstStart) {
-            mHandler = Handler()
+            mHandler = Handler(Looper.getMainLooper())
             success = mJniThreadRef!!.configure(
                 mActivity, mUtils, this,
                 makeJNIHandler()
@@ -1861,7 +1862,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun makeJNIHandler(): Handler {
-        return object : Handler() {
+        return object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     JNIThread.DIALOG -> showDialogFragment(

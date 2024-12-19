@@ -22,6 +22,7 @@ import android.app.Activity
 import android.app.Dialog
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
@@ -738,7 +739,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         if (!enable) {
             mResetChecker = null
         } else if (null == mResetChecker) {
-            val handler = Handler()
+            val handler = Handler(Looper.getMainLooper())
             val resetButton = findViewById(R.id.button_clear) as Button
             mResetChecker = Runnable {
                 if (null != mResetChecker) {

@@ -23,6 +23,7 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.os.Handler
+import android.os.Looper
 
 import java.io.Serializable
 
@@ -342,7 +343,7 @@ class DlgDelegate(
 
     private val m_dictName: String? = null
     private var m_progress: ProgressDialog? = null
-    private val m_handler = Handler()
+    private val m_handler = Handler(Looper.getMainLooper())
 
     fun onPausing() {
         stopProgress()

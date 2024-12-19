@@ -20,6 +20,7 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import androidx.preference.Preference
 
@@ -38,7 +39,7 @@ class LangListPreference(private val mContext: Context, attrs: AttributeSet?)
 
     override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
         val newLang = newValue as String
-        Handler().post { forceDictsMatch(newLang) }
+        Handler(Looper.getMainLooper()).post { forceDictsMatch(newLang) }
         return true
     }
 

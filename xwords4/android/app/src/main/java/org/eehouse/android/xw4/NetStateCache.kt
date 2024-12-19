@@ -26,6 +26,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 
 import java.util.concurrent.atomic.AtomicBoolean
@@ -178,7 +179,7 @@ object NetStateCache {
             DbgUtils.assertOnUIThread()
 
             if (null == mHandler) {
-                mHandler = Handler()
+                mHandler = Handler(Looper.getMainLooper())
             }
 
             if (intent.action == ConnectivityManager.CONNECTIVITY_ACTION) {

@@ -30,6 +30,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.view.ContextMenu
 import android.view.ContextMenu.ContextMenuInfo
@@ -829,7 +830,7 @@ class GamesListDelegate(delegator: Delegator) :
         val isFirstLaunch = null == savedInstanceState
         m_origTitle = getTitle()
 
-        m_handler = Handler()
+        m_handler = Handler(Looper.getMainLooper())
 
         // Next line useful if contents of DB are crashing app on start
         // DBUtils.saveDB( m_activity );
