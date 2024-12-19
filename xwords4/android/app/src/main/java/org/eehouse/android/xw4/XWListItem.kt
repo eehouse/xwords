@@ -70,9 +70,7 @@ class XWListItem(private val mContext: Context, aset: AttributeSet?) :
 
     fun setExpanded(expanded: Boolean) {
         m_expanded = expanded
-        if (null != m_expListener) {
-            m_expListener!!.expanded(this, m_expanded)
-        }
+        m_expListener?.expanded(this, m_expanded)
     }
 
     fun addExpandedView(view: View?) {
@@ -101,10 +99,10 @@ class XWListItem(private val mContext: Context, aset: AttributeSet?) :
     }
 
     fun setComment(text: String?) {
-        if (null != text) {
+        text?.let {
             val view = findViewById<View>(R.id.text_item2) as TextView
             view.visibility = VISIBLE
-            view.text = text
+            view.text = it
         }
     }
 

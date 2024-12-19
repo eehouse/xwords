@@ -213,9 +213,7 @@ abstract class XWFragment: Fragment(), Delegator {
     override fun addFragment( fragment: XWFragment, extras: Bundle? )
     {
         val main = getActivity() as MainActivity?
-        if ( null != main ) {   // I've seen this come back null
-            main.addFragment( fragment, extras )
-        }
+        main?.addFragment( fragment, extras )
     }
 
     override fun addFragmentForResult( fragment: XWFragment, extras: Bundle,

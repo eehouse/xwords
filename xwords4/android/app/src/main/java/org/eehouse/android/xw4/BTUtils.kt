@@ -212,8 +212,8 @@ object BTUtils {
         var result: Array<String?>? = null
         if (havePermissions(context)) {
             val adapter = getAdapterIf()
-            if (null != adapter) {
-                result = arrayOf(adapter.name, sMyMacAddr)
+            adapter?.let {
+                result = arrayOf(it.name, sMyMacAddr)
             }
         }
         return result
@@ -239,10 +239,7 @@ object BTUtils {
     }
 
     private fun nameForAddr(adapter: BluetoothAdapter?, btAddr: String): String? {
-        var result: String? = null
-        if (null != adapter) {
-            result = adapter.getRemoteDevice(btAddr).name
-        }
+        val result = adapter?.getRemoteDevice(btAddr)?.name ?: null as String
         return result
     }
 
@@ -936,9 +933,9 @@ object BTUtils {
                 )
             } catch (ioe: InterruptedException) {
             } finally {
-                if (null != socket) {
+                socket?.let {
                     try {
-                        socket.close()
+                        it.close()
                     } catch (ex: Exception) {
                     }
                 }
@@ -1261,8 +1258,7 @@ object BTUtils {
 
             internal fun getOrStart(): Unit
             {
-                val adapter = getAdapterIf()
-                if (null != adapter) {
+                getAdapterIf()?.let { adapter ->
                     synchronized(sInstance) {
                         var thread = sInstance.get() as SecureListenThread?
                         if (null == thread) {
@@ -1278,9 +1274,9 @@ object BTUtils {
                 synchronized(sInstance) {
                     val self = sInstance.get() as SecureListenThread?
                     Log.d(TAG, "SecureListenThread.stopSelf(): self: %s", self)
-                    if (null != self) {
+                    self?.let {
                         sInstance.set(null)
-                        self.closeListener()
+                        it.closeListener()
                     }
                 }
             }

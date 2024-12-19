@@ -238,17 +238,16 @@ class BTInviteDelegate(delegator: Delegator) :
     }
 
     private fun incrementProgressIn(inSeconds: Int) {
-        mHandler.postDelayed({
-            if (null != mProgressBar) {
-                val curProgress = mProgressBar!!.progress
-                if (curProgress >= mProgressBar!!.max) {
-                    hideProgress() // create illusion it's done
-                } else {
-                    mProgressBar!!.progress = curProgress + 1
-                    incrementProgressIn(1)
-                }
-            }
-        }, (1000 * inSeconds).toLong())
+        mHandler.postDelayed({ mProgressBar?.let {
+                                   val curProgress = it.progress
+                                   if (curProgress >= it.max) {
+                                       hideProgress() // create illusion it's done
+                                   } else {
+                                       it.progress = curProgress + 1
+                                       incrementProgressIn(1)
+                                   }
+                               }
+                             }, (1000 * inSeconds).toLong())
     }
 
     private fun updateListIn(inSecs: Long) {
@@ -297,11 +296,8 @@ class BTInviteDelegate(delegator: Delegator) :
                 activity, BTInviteActivity::class.java,
                 nMissing, info
             )
-            if (null != info) {
-                val lastDev = info.getLastDev(InviteMeans.BLUETOOTH)
-                if (null != lastDev) {
-                    intent.putExtra(INTENT_KEY_LASTDEV, lastDev)
-                }
+            info?.getLastDev(InviteMeans.BLUETOOTH)?.let {
+                intent.putExtra(INTENT_KEY_LASTDEV, it)
             }
             activity.startActivityForResult(intent, requestCode.ordinal)
         }

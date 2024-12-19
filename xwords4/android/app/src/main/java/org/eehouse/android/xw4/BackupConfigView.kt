@@ -41,8 +41,8 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
     fun init(uri: Uri?) {
         mLoadFile = uri
         mIsStore = null == uri
-        if (null != uri) {
-            mShowWhats = ZipUtils.getHasWhats(context, uri)
+        uri?.let {
+            mShowWhats = ZipUtils.getHasWhats(context, it)
         }
         initOnce()
     }
@@ -62,7 +62,7 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
         = countChecks()
 
     private fun countChecks() {
-        if (null != mDialog) {
+        mDialog?.let {
             var haveCheck = false
             for (box in mCheckBoxes.values) {
                 if (box.isChecked) {
@@ -71,17 +71,17 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
                 }
             }
             Utils.enableAlertButton(
-                mDialog!!, AlertDialog.BUTTON_POSITIVE,
+                it, AlertDialog.BUTTON_POSITIVE,
                 haveCheck
             )
         }
     }
 
     private fun initOnce() {
-        if (null != mIsStore) {
+        mIsStore?.let { isStore ->
             val tv = (findViewById<View>(R.id.explanation) as TextView)
             val context = context
-            if (mIsStore!!) {
+            if (isStore) {
                 tv.setText(R.string.archive_expl_store)
             } else {
                 val name = ZipUtils.getFileName(context, mLoadFile)
@@ -99,7 +99,7 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
                     val box = item.findViewById<View>(R.id.check) as CheckBox
                     box.setText(what.titleID())
                     mCheckBoxes[what] = box
-                    box.isChecked = !mIsStore!!
+                    box.isChecked = !isStore
                     box.setOnCheckedChangeListener(this)
                     (item.findViewById<View>(R.id.expl) as TextView)
                         .setText(what.explID())
@@ -110,8 +110,9 @@ class BackupConfigView(cx: Context, aset: AttributeSet?) : LinearLayout(cx, aset
     }
 
     val alertTitle: Int
-        get() = if (mIsStore!!
-        ) R.string.gamel_menu_storedb else R.string.gamel_menu_loaddb
+        get() =
+        if (mIsStore!!) R.string.gamel_menu_storedb
+        else R.string.gamel_menu_loaddb
 
     val posButtonTxt: Int
         get() = if (mIsStore!!

@@ -43,10 +43,9 @@ abstract class XWDialogFragment : DialogFragment() {
     override fun onResume() {
         super.onResume()
 
-        if (null != m_buttonMap) {
-            val dialog = dialog as AlertDialog?
-            if (null != dialog) {
-                for (but in m_buttonMap!!.keys) {
+        m_buttonMap?.let { buttonMap ->
+            (dialog as AlertDialog?)?.let { dialog ->
+                for (but in buttonMap.keys) {
                     // final int fbut = but;
                     dialog.getButton(but) // NPE!!!
                         .setOnClickListener { view -> dialogButtonClicked(view, but) }

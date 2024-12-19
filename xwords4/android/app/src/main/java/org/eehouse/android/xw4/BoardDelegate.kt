@@ -137,12 +137,10 @@ class BoardDelegate(delegator: Delegator) :
     ) : Runnable {
         override fun run() {
             mTimers.remove(m_why)
-            if (null != mJniThread) {
-                mJniThread!!.handleBkgrnd(
-                    JNICmd.CMD_TIMER_FIRED,
-                    m_why, m_when, m_handle
-                )
-            }
+            mJniThread?.handleBkgrnd(
+                JNICmd.CMD_TIMER_FIRED,
+                m_why, m_when, m_handle
+            )
         }
     }
 
@@ -590,11 +588,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun getBundledData(bundle: Bundle?) {
-        m_mySIS = if (null != bundle) {
-            bundle.getSerializable(SAVE_MYSIS) as MySIS?
-        } else {
-            MySIS()
-        }
+        m_mySIS = bundle?.getSerializable(SAVE_MYSIS) as MySIS? ?: MySIS()
     }
 
     override fun onActivityResult(
@@ -612,14 +606,14 @@ class BoardDelegate(delegator: Delegator) :
                     RequestCode.P2P_INVITE_RESULT -> InviteMeans.WIFIDIRECT
                     else -> null
                 }
-            if (null != missingMeans) {
+            missingMeans?.let {
                 // onActivityResult is called immediately *before* onResume --
                 // meaning m_gi etc are still null.
                 val data = data!!
                 mMissingDevs = data.getStringArrayExtra(InviteDelegate.DEVS)
                 mMissingCounts = data.getIntArrayExtra(InviteDelegate.COUNTS)
                 mRemotesAreRobots = data.getBooleanExtra(InviteDelegate.RAR, false)
-                mMissingMeans = missingMeans
+                mMissingMeans = it
                 post { tryInvites() }
             }
         }
@@ -701,7 +695,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     protected fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (null != mJniThread) {
+        mJniThread?.let {
             val xpKey = keyCodeToXPKey(keyCode)
             if (XP_Key.XP_KEY_NONE != xpKey) {
                 handleViaThread(JNICmd.CMD_KEYDOWN, xpKey)
@@ -712,7 +706,7 @@ class BoardDelegate(delegator: Delegator) :
 
     protected fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         var handled = false
-        if (null != mJniThread) {
+        mJniThread?.let {
             val xpKey = keyCodeToXPKey(keyCode)
             if (XP_Key.XP_KEY_NONE != xpKey) {
                 handleViaThread(JNICmd.CMD_KEYUP, xpKey)
@@ -726,11 +720,11 @@ class BoardDelegate(delegator: Delegator) :
         var inTrade = false
         var strId: Int
         var enable: Boolean
-        if (null != mGsi) {
-            inTrade = mGsi!!.inTrade
+        mGsi?.let { gsi ->
+            inTrade = gsi.inTrade
             menu.setGroupVisible(R.id.group_done, !inTrade)
             menu.setGroupVisible(R.id.group_exchange, inTrade)
-            strId = if (UtilCtxt.TRAY_REVEALED == mGsi!!.trayVisState) {
+            strId = if (UtilCtxt.TRAY_REVEALED == gsi.trayVisState) {
                 R.string.board_menu_tray_hide
             } else {
                 R.string.board_menu_tray_show
@@ -739,47 +733,47 @@ class BoardDelegate(delegator: Delegator) :
             item.setTitle(getString(strId))
             Utils.setItemVisible(
                 menu, R.id.board_menu_flip,
-                mGsi!!.visTileCount >= 1
+                gsi.visTileCount >= 1
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_juggle,
-                mGsi!!.canShuffle
+                gsi.canShuffle
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_undo_current,
-                mGsi!!.canRedo
+                gsi.canRedo
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_hint_prev,
-                mGsi!!.canHint
+                gsi.canHint
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_hint_next,
-                mGsi!!.canHint
+                gsi.canHint
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_chat,
-                mGsi!!.canChat
+                gsi.canChat
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_tray,
-                !inTrade && mGsi!!.canHideRack
+                !inTrade && gsi.canHideRack
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_trade,
-                mGsi!!.canTrade
+                gsi.canTrade
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_undo_last,
-                mGsi!!.canUndo
+                gsi.canUndo
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_game_pause,
-                mGsi!!.canPause
+                gsi.canPause
             )
             Utils.setItemVisible(
                 menu, R.id.board_menu_game_unpause,
-                mGsi!!.canUnpause
+                gsi.canUnpause
             )
         }
 
@@ -1393,8 +1387,8 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun deleteAndClose() {
-        if (null != mJniThread) { // this does still happen
-            GameUtils.deleteGame(mActivity, mJniThread!!.getLock(), false, false)
+        mJniThread?.let { // this does still happen
+            GameUtils.deleteGame(mActivity, it.getLock(), false, false)
         }
         waitCloseGame(false)
         finish()
@@ -1441,9 +1435,7 @@ class BoardDelegate(delegator: Delegator) :
     private inner class BoardUtilCtxt : UtilCtxtImpl() {
         override fun requestTime() {
             runOnUiThread {
-                if (null != mJniThread) {
-                    mJniThread!!.handleBkgrnd(JNICmd.CMD_DO)
-                }
+                mJniThread?.handleBkgrnd(JNICmd.CMD_DO)
             }
         }
 
@@ -1515,9 +1507,8 @@ class BoardDelegate(delegator: Delegator) :
         }
 
         override fun clearTimer(why: Int) {
-            val timer = mTimers.remove(why)
-            if (null != timer) {
-                removeCallbacks(timer)
+            mTimers.remove(why)?.let {
+                removeCallbacks(it)
             }
         }
 
@@ -1637,12 +1628,11 @@ class BoardDelegate(delegator: Delegator) :
             if (null == msg && resid != 0) {
                 msg = getString(resid)
             }
-            if (null != msg) {
+            msg?.let {
                 if (asToast) {
-                    val msgf: String = msg
-                    runOnUiThread { showToast(msgf) }
+                    runOnUiThread { showToast(it) }
                 } else {
-                    nonBlockingDialog(DlgID.DLG_OKONLY, msg)
+                    nonBlockingDialog(DlgID.DLG_OKONLY, it)
                 }
             }
         } // userError
@@ -1812,9 +1802,9 @@ class BoardDelegate(delegator: Delegator) :
                 DUtilCtxt.AUTOPAUSED -> result =
                     LocUtils.getString(mActivity, R.string.history_autopause)
             }
-            if (null != msg) {
+            msg?.let {
                 result += " " + LocUtils
-                    .getString(mActivity, R.string.history_msg_fmt, msg)
+                    .getString(mActivity, R.string.history_msg_fmt, it)
             }
             return result
         }
@@ -1880,17 +1870,19 @@ class BoardDelegate(delegator: Delegator) :
                     )
 
                     JNIThread.QUERY_ENDGAME -> showDialogFragment(DlgID.QUERY_ENDGAME)
-                    JNIThread.TOOLBAR_STATES -> if (null != mJniThread) {
-                        mGsi = mJniThread!!.getGameStateInfo()
-                        updateToolbar()
-                        if (m_mySIS!!.inTrade != mGsi!!.inTrade) {
-                            m_mySIS!!.inTrade = mGsi!!.inTrade
+                    JNIThread.TOOLBAR_STATES ->
+                        mJniThread?.let {
+                            mGsi = it.getGameStateInfo()
+                            updateToolbar()
+                            val inTrade = mGsi!!.inTrade
+                            if (m_mySIS!!.inTrade != inTrade) {
+                                m_mySIS!!.inTrade = inTrade
+                            }
+                            mView!!.setInTrade(inTrade)
+                            showTradeToastOnce(inTrade)
+                            adjustTradeVisibility()
+                            invalidateOptionsMenuIf()
                         }
-                        mView!!.setInTrade(m_mySIS!!.inTrade)
-                        showTradeToastOnce(m_mySIS!!.inTrade)
-                        adjustTradeVisibility()
-                        invalidateOptionsMenuIf()
-                    }
 
                     JNIThread.GAME_OVER -> if (mIsFirstLaunch) {
                         handleGameOver(msg.arg1, msg.obj as String)
@@ -1941,8 +1933,8 @@ class BoardDelegate(delegator: Delegator) :
                 } else if (deleteAfter) {
                     postAction = Action.DELETE_ACTION
                 }
-                if (null != postAction) {
-                    post { onPosButton(postAction, *postArgs.toTypedArray()) }
+                postAction?.let {
+                    post { onPosButton(it, *postArgs.toTypedArray()) }
                 }
             }
         }

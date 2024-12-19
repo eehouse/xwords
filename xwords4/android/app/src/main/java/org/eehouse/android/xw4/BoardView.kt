@@ -127,8 +127,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         // Log.d( TAG, "onMeasure(width: %s, height: %s)",
         //        MeasureSpec.toString( widthMeasureSpec ),
         //        MeasureSpec.toString( heightMeasureSpec ) );
-        if (null != mDims) {
-            if (BoardContainer.getIsPortrait() != mDims!!.height > mDims!!.width) {
+        mDims?.let { dims ->
+            if (BoardContainer.getIsPortrait() != dims.height > dims.width) {
                 // square possible; will break above! No. tested by forceing square
                 Log.d(TAG, "onMeasure: discarding m_dims")
                 if (++mDimsTossCount < 4) {
@@ -138,7 +138,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
                 } else {
                     Log.d(
                         TAG, "onMeasure(): unexpected width (%d) to height (%d) ratio"
-                                + "; proceeding", mDims!!.width, mDims!!.height
+                                + "; proceeding", dims.width, dims.height
                     )
                 }
             }
@@ -290,8 +290,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         sCurGameID = mGi!!.gameID
 
         // Set the jni layout if we already have one
-        if (null != mDims) {
-            handle(JNICmd.CMD_LAYOUT, mDims!!)
+        mDims?.let {
+            handle(JNICmd.CMD_LAYOUT, it)
         }
 
         // Make sure we draw.  Sometimes when we're reloading after

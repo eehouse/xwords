@@ -285,29 +285,33 @@ open class BoardCanvas private constructor(
         rect: Rect, player: Int,
         secondsLeft: Int, turnDone: Boolean
     ) {
-        if (null == mActivity) {
-            // Do nothing
-        } else if (mLastSecsLeft != secondsLeft || mLastTimerPlayer != player || mLastTimerTurnDone != turnDone) {
-            val rectCopy = Rect(rect)
-            val secondsLeftCopy = secondsLeft
-            mActivity.runOnUiThread(Runnable {
-                if (null != mJniThread) {
-                    mLastSecsLeft = secondsLeftCopy
-                    mLastTimerPlayer = player
-                    mLastTimerTurnDone = turnDone
-                    val negSign = if (secondsLeftCopy < 0) "-" else ""
-                    val secondsLeft = abs(secondsLeftCopy.toDouble()).toInt()
-                    val time = String.format(
-                        "%s%d:%02d", negSign,
-                        secondsLeft / 60, secondsLeft % 60
-                    )
-                    fillRectOther(rectCopy, CommonPrefs.COLOR_BACKGRND)
-                    mFillPaint.setColor(mPlayerColors[player])
-                    rectCopy.inset(0, rectCopy.height() / 5)
-                    drawCentered(time, rectCopy, null)
-                    mJniThread!!.handle(JNIThread.JNICmd.CMD_DRAW)
-                }
-            })
+        mActivity?.let { activity ->
+            if (mLastSecsLeft != secondsLeft
+                    || mLastTimerPlayer != player
+                    || mLastTimerTurnDone != turnDone) {
+                val rectCopy = Rect(rect)
+                val secondsLeftCopy = secondsLeft
+                activity.runOnUiThread(
+                    Runnable {
+                        mJniThread?.let {
+                            mLastSecsLeft = secondsLeftCopy
+                            mLastTimerPlayer = player
+                            mLastTimerTurnDone = turnDone
+                            val negSign = if (secondsLeftCopy < 0) "-" else ""
+                            val secondsLeft = abs(secondsLeftCopy.toDouble()).toInt()
+                            val time = String.format(
+                                "%s%d:%02d", negSign,
+                                secondsLeft / 60, secondsLeft % 60
+                            )
+                            fillRectOther(rectCopy, CommonPrefs.COLOR_BACKGRND)
+                            mFillPaint.setColor(mPlayerColors[player])
+                            rectCopy.inset(0, rectCopy.height() / 5)
+                            drawCentered(time, rectCopy, null)
+                            it.handle(JNIThread.JNICmd.CMD_DRAW)
+                        }
+                    }
+                )
+            }
         }
     }
 
@@ -442,9 +446,9 @@ open class BoardCanvas private constructor(
     override fun trayBegin(rect: Rect, owner: Int, score: Int): Boolean {
         curPlayer = owner
         mPendingScore = score
-        if (null != mTileStrokePaint) {
+        mTileStrokePaint?.let {
             // force new color just in case it's changed
-            mTileStrokePaint!!.setColor(mOtherColors[CommonPrefs.COLOR_CELLLINE])
+            it.setColor(mOtherColors[CommonPrefs.COLOR_CELLLINE])
         }
         return true
     }
@@ -551,9 +555,7 @@ open class BoardCanvas private constructor(
                 mDictChars = null
                 doPost = true
             }
-            if (null != mDict) {
-                mDict!!.release()
-            }
+            mDict?.release()
             mDict = DictWrapper(newPtr)
         }
 
@@ -924,8 +926,8 @@ open class BoardCanvas private constructor(
         val scale = res.displayMetrics.density
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
-        if (null != dims) {
-            mMinRemWidth = dims.cellSize
+        dims?.let {
+            mMinRemWidth = it.cellSize
         }
         mDrawPaint = Paint()
         mFillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
