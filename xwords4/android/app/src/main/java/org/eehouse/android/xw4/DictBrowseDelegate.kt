@@ -742,7 +742,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             val handler = Handler(Looper.getMainLooper())
             val resetButton = findViewById(R.id.button_clear) as Button
             mResetChecker = Runnable {
-                if (null != mResetChecker) {
+                mResetChecker?.let {
                     val curMin = MIN_LEN + mSpinnerMin!!.selectedItemPosition
                     val curMax = MIN_LEN + mSpinnerMax!!.selectedItemPosition
                     var hasState = curMin != MIN_LEN || curMax != MAX_LEN
@@ -752,12 +752,10 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                         ++ii
                     }
                     resetButton.setEnabled(hasState)
-                    val tmp = mResetChecker!!
-                    handler.postDelayed(tmp, sResetCheckMS.toLong())
+                    handler.postDelayed(it, sResetCheckMS)
                 }
             }
-            val tmp = mResetChecker!!
-            handler.postDelayed(tmp, sResetCheckMS.toLong())
+            handler.postDelayed(mResetChecker!!, sResetCheckMS)
         }
     }
 
@@ -772,7 +770,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         private const val MIN_LEN = 2
         private const val MAX_LEN = 15
         private val sTileRowIDs = intArrayOf(R.id.face, R.id.count, R.id.value)
-        private const val sResetCheckMS = 500
+        private const val sResetCheckMS = 500L
         private fun launch(delegator: Delegator, bundle: Bundle) {
             delegator.addFragment(
                 DictBrowseFrag.newInstance(delegator),

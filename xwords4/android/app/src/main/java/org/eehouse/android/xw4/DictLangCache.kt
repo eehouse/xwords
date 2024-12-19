@@ -257,22 +257,11 @@ object DictLangCache {
             getInfo(context, dal)
         }
 
-        if (null != s_handler) {
-            s_handler!!.post {
-                if (null != s_dictsAdapter) {
-                    rebuildAdapter(
-                        s_dictsAdapter,
-                        getHaveLang
-                            (
-                            context,
-                            s_adaptedLang
-                        )
-                    )
-                }
-                if (null != s_langsAdapter) {
-                    s_langsAdapter!!.rebuild()
-                }
+        s_handler?.post {
+            s_dictsAdapter?.let {
+                rebuildAdapter( it, getHaveLang(context, s_adaptedLang))
             }
+            s_langsAdapter?.rebuild()
         }
     }
 
