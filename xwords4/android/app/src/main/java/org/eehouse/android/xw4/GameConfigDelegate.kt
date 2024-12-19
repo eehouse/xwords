@@ -515,27 +515,30 @@ class GameConfigDelegate(delegator: Delegator) :
             if (null == mGi) {
                 mGi = CurGameInfo(mGiOrig!!)
             }
-            mCarOrig = if (mIsNewGame) {
-                if (mNewGameIsSolo) {
-                    CommsAddrRec() // empty
-                } else {
+            mCarOrig =
+                if (mIsNewGame) {
+                    if (mNewGameIsSolo) {
+                        CommsAddrRec() // empty
+                    } else {
+                        CommsAddrRec.getSelfAddr(mActivity)
+                    }
+                } else if (XwJNI.game_hasComms(gamePtr)) {
+                    XwJNI.comms_getSelfAddr(gamePtr)
+                } else if (!localOnlyGame()) {
                     CommsAddrRec.getSelfAddr(mActivity)
+                } else {
+                    // Leaving this null breaks stuff: an empty set, rather than a
+                    // null one, represents a standalone game
+                    CommsAddrRec()
                 }
-            } else if (XwJNI.game_hasComms(gamePtr)) {
-                XwJNI.comms_getSelfAddr(gamePtr)
-            } else if (!localOnlyGame()) {
-                CommsAddrRec.getSelfAddr(mActivity)
-            } else {
-                // Leaving this null breaks stuff: an empty set, rather than a
-                // null one, represents a standalone game
-                CommsAddrRec()
-            }
 
             // load if the first time through....
             if (null == mConTypes) {
                 mConTypes = mCarOrig!!.conTypes!!.clone() as CommsConnTypeSet
-                if (nfcAvail(mActivity)[0]) {
+                // add NFC IFF it's a networked game
+                if (0 < mConTypes!!.types.size && nfcAvail(mActivity)[0]) {
                     mConTypes!!.add(CommsConnType.COMMS_CONN_NFC)
+                    mCarOrig!!.conTypes!!.add(CommsConnType.COMMS_CONN_NFC)
                 }
             }
             if (!mIsNewGame) {

@@ -100,15 +100,14 @@ class CommsAddrRec : Serializable {
         }
 
         override fun toString(): String {
-            return if (BuildConfig.NON_RELEASE) {
-                val tmp: MutableList<String?> = ArrayList()
-                for (typ in types) {
-                    tmp.add(typ.toString())
+            val result =
+                if (BuildConfig.NON_RELEASE) {
+                    val tmp = types.map{ "$it" }
+                    "[" + TextUtils.join(",", tmp) + "]"
+                } else {
+                    super.toString()
                 }
-                TextUtils.join(",", tmp)
-            } else {
-                super.toString()
-            }
+            return result
         }
 
         fun toString(context: Context, longVersion: Boolean): String {
@@ -353,21 +352,18 @@ class CommsAddrRec : Serializable {
 
     override fun toString(): String {
         return if (BuildConfig.NON_RELEASE) {
-            val list = ArrayList<String?>()
-            for (typ in conTypes!!) {
-                var elem: String
-                elem = when (typ) {
+            val list = conTypes!!.map { typ ->
+                when (typ) {
                     CommsConnType.COMMS_CONN_MQTT -> String.format("%s: %s", typ, mqtt_devID)
-                    CommsConnType.COMMS_CONN_SMS -> String.format(
-                        "%s: {phone: %s, port: %d}",
-                        typ, sms_phone, sms_port
-                    )
-
+                    CommsConnType.COMMS_CONN_SMS ->
+                        String.format(
+                            "%s: {phone: %s, port: %d}",
+                            typ, sms_phone, sms_port
+                        )
                     else -> typ.toString()
                 }
-                list.add(elem)
             }
-            "{" + TextUtils.join(", ", list) + "}"
+            "{" + TextUtils.join(",", list) + "}"
         } else {
             super.toString()
         }
