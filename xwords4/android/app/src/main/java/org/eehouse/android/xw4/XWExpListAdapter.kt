@@ -36,15 +36,15 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
         fun isTheChild(item: Any?): Boolean
     }
 
-    private var m_listObjs: Array<Any>? = null
-    private val m_groupClass = childClasses[0]
+    private var mListObjs: Array<Any>? = null
+    private val mGroupClass = childClasses[0]
     var groupCount: Int = 0
         private set
-    private val m_types: MutableMap<Class<*>, Int> = HashMap()
+    private val mTypes: MutableMap<Class<*>, Int> = HashMap()
 
     init {
         for (ii in childClasses.indices) {
-            m_types[childClasses[ii]] = ii
+            mTypes[childClasses[ii]] = ii
         }
     }
 
@@ -52,23 +52,23 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     abstract fun getView(dataObj: Any, convertView: View?): View
 
     override fun getCount(): Int {
-        if (null == m_listObjs) {
-            m_listObjs = makeListData()
-            groupCount = m_listObjs!!.filter{it.javaClass == m_groupClass}.size
+        if (null == mListObjs) {
+            mListObjs = makeListData()
+            groupCount = mListObjs!!.filter{it.javaClass == mGroupClass}.size
         }
-        return m_listObjs!!.size
+        return mListObjs!!.size
     }
 
     override fun getItemViewType(position: Int): Int {
-        return m_types[m_listObjs!![position]!!.javaClass]!!
+        return mTypes[mListObjs!![position]!!.javaClass]!!
     }
 
     override fun getViewTypeCount(): Int {
-        return m_types.size
+        return mTypes.size
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val result = getView(m_listObjs!![position], convertView)
+        val result = getView(mListObjs!![position], convertView)
         // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result,
         //                result.getClass().getName() );
         return result
@@ -76,9 +76,9 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
 
     protected fun findGroupItem(test: GroupTest): Int {
         var result = -1
-        for (ii in m_listObjs!!.indices) {
-            val obj = m_listObjs!![ii]
-            if (obj!!.javaClass == m_groupClass && test.isTheGroup(obj)) {
+        for (ii in mListObjs!!.indices) {
+            val obj = mListObjs!![ii]
+            if (obj!!.javaClass == mGroupClass && test.isTheGroup(obj)) {
                 result = ii
                 break
             }
@@ -89,9 +89,9 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     protected fun indexForPosition(posn: Int): Int {
         var result = -1
         var curGroup = 0
-        for (ii in m_listObjs!!.indices) {
-            val obj = m_listObjs!![ii]
-            if (obj!!.javaClass == m_groupClass) {
+        for (ii in mListObjs!!.indices) {
+            val obj = mListObjs!![ii]
+            if (obj!!.javaClass == mGroupClass) {
                 if (curGroup == posn) {
                     result = ii
                     break
@@ -104,19 +104,20 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
 
     protected fun removeChildrenOf(groupIndex: Int) {
         if (0 <= groupIndex) {
-            Assert.assertTrue(m_groupClass == m_listObjs!![groupIndex]!!.javaClass)
+            Assert.assertTrue(mGroupClass == mListObjs!![groupIndex]!!.javaClass)
             val end = findGroupEnd(groupIndex)
             val nChildren = end - groupIndex - 1 // 1: don't remove parent
-            val newArray = arrayOfNulls<Any>(m_listObjs!!.size - nChildren)
-            System.arraycopy(m_listObjs, 0, newArray, 0, groupIndex + 1) // 1: include parent
-            val nAbove = m_listObjs!!.size - (groupIndex + nChildren + 1)
-            if (end < m_listObjs!!.size) {
+            val newArray = arrayOfNulls<Any>(mListObjs!!.size - nChildren)
+            val listObjs = mListObjs!!
+            System.arraycopy(listObjs, 0, newArray, 0, groupIndex + 1) // 1: include parent
+            val nAbove = listObjs.size - (groupIndex + nChildren + 1)
+            if (end < listObjs.size) {
                 System.arraycopy(
-                    m_listObjs, end, newArray, groupIndex + 1,
-                    m_listObjs!!.size - end
+                    listObjs, end, newArray, groupIndex + 1,
+                    listObjs.size - end
                 )
             }
-            m_listObjs = newArray as Array<Any>
+            mListObjs = newArray as Array<Any>
             notifyDataSetChanged()
         }
     }
@@ -124,8 +125,8 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     protected fun addChildrenOf(groupIndex: Int, children: List<Any?>) {
         Assert.assertTrueNR(0 <= groupIndex)
         val nToAdd = children.size
-        val newArray = arrayOfNulls<Any>(m_listObjs!!.size + nToAdd)
-        System.arraycopy(m_listObjs, 0, newArray, 0, groupIndex + 1) // up to and including parent
+        val newArray = arrayOfNulls<Any>(mListObjs!!.size + nToAdd)
+        System.arraycopy(mListObjs!!, 0, newArray, 0, groupIndex + 1) // up to and including parent
 
         val iter = children.iterator()
         var ii = 0
@@ -134,11 +135,11 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
             ++ii
         }
         System.arraycopy(
-            m_listObjs, groupIndex + 1,
+            mListObjs!!, groupIndex + 1,
             newArray, groupIndex + 1 + nToAdd,
-            m_listObjs!!.size - groupIndex - 1
+            mListObjs!!.size - groupIndex - 1
         )
-        m_listObjs = newArray as Array<Any>
+        mListObjs = newArray as Array<Any>
         notifyDataSetChanged()
     }
 
@@ -146,19 +147,19 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
         // Run over the array testing non-parents. For each that passes, mark
         // it as null.  Then reallocate.
         var nLost = 0
-        for (ii in m_listObjs!!.indices) {
-            val obj = m_listObjs!![ii]
-            if (obj!!.javaClass != m_groupClass && test.isTheChild(obj)) {
+        val listObjs = mListObjs!!
+        for (ii in listObjs.indices) {
+            val obj = listObjs[ii]
+            if (obj!!.javaClass != mGroupClass && test.isTheChild(obj)) {
                 ++nLost
             } else if (0 < nLost) {
-                m_listObjs!![ii - nLost] = obj
+                listObjs[ii - nLost] = obj
             }
         }
 
         if (0 < nLost) {
-            m_listObjs = Arrays.copyOfRange(
-                m_listObjs,
-                0, m_listObjs!!.size - nLost
+            mListObjs = Arrays.copyOfRange(
+                listObjs, 0, listObjs.size - nLost
             )
             notifyDataSetChanged()
         }
@@ -167,9 +168,9 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
     protected fun findParent(test: ChildTest): Any? {
         var result: Any? = null
         var curParent: Any? = null
-        for (ii in m_listObjs!!.indices) {
-            val obj = m_listObjs!![ii]
-            if (obj!!.javaClass == m_groupClass) {
+        for (ii in mListObjs!!.indices) {
+            val obj = mListObjs!![ii]
+            if (obj!!.javaClass == mGroupClass) {
                 curParent = obj
             } else if (test.isTheChild(obj)) {
                 result = curParent
@@ -196,23 +197,24 @@ internal abstract class XWExpListAdapter(childClasses: Array<Class<*>>) :
 
         // copy out the lower group subarray
         val groupEnd1 = findGroupEnd(groupIndx1)
-        val tmp1 = Arrays.copyOfRange(m_listObjs, groupIndx1, groupEnd1)
+        val listObjs = mListObjs!!
+        val tmp1 = Arrays.copyOfRange(listObjs, groupIndx1, groupEnd1)
 
         val groupEnd2 = findGroupEnd(groupIndx2)
         val nToCopy = groupEnd2 - groupEnd1
-        System.arraycopy(m_listObjs, groupEnd1, m_listObjs, groupIndx1, nToCopy)
+        System.arraycopy(listObjs, groupEnd1, listObjs, groupIndx1, nToCopy)
 
         // copy the saved subarray back in
-        System.arraycopy(tmp1, 0, m_listObjs, groupIndx1 + nToCopy, tmp1.size)
+        System.arraycopy(tmp1, 0, listObjs, groupIndx1 + nToCopy, tmp1.size)
 
         notifyDataSetChanged()
     }
 
     private fun findGroupEnd(indx: Int): Int {
-        var indx = indx
-        ++indx
-        while (indx < m_listObjs!!.size
-                   && m_listObjs!![indx]!!.javaClass != m_groupClass) {
+        var indx = indx + 1
+        val listObjs = mListObjs!!
+        while (indx < listObjs.size
+                   && listObjs[indx].javaClass != mGroupClass) {
             ++indx
         }
         return indx
