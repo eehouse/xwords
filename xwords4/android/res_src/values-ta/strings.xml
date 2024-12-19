@@ -222,7 +222,7 @@
     <string name="err_dup_invite_fmt">நகல் அழைப்பிதழ் நிராகரிக்கப்பட்டது: சாதனம் “%1$s” ஏற்கனவே இந்த விளையாட்டுக்கான அழைப்பை ஏற்றுக்கொண்டது.</string>
     <string name="invite_multi_title">பலவற்றை அழைக்கவும்</string>
     <string name="invite_multi_summary">தொலைநிலை சாதனத்திற்கு பல பிளேயர்களை அழைப்பதை இயக்கவும்</string>
-    <string name="connection_via_label">தொடர்பு தொடர்பு</string>
+    <string name="connection_via_label">வழியாகத் தொடர்பு மாற்று</string>
     <string name="set_pref">பொத்தான்களை மறைக்கவும்</string>
     <string name="advanced">பிழைத்திருத்தத்திற்காக</string>
     <string name="advanced_summary">உங்களுக்கு ஒருபோதும் இது தேவையில்லை…</string>
@@ -390,7 +390,7 @@
     <string name="button_save">சேமி</string>
     <string name="info_title">FYI</string>
     <string name="not_again_done">ரேக்கின் வலது முனையில் தோன்றும் “பி.டி.எச்” கவுண்டரைத் தட்டுவது ஒரு நகர்வை மேற்கொள்ள எளிதான வழியாகும்.</string>
-    <string name="filter_sum_pat_fmt">காண்பிக்க: %1$s, நீளம் %2$d-%3$d ( %4$d சொற்கள்)</string>
+    <string name="filter_sum_pat_fmt">காண்பிக்கிறது: %1$s, நீளங்கள் %2$d-%3$d (%4$d சொற்கள்)</string>
     <string name="show_tiles_button">ஓடுகளைக் காட்டு</string>
     <string name="show_tiles_menu">ஓடுகள்</string>
     <string name="show_tiles_title_fmt">%1$s க்கான ஓடுகள்</string>
@@ -446,8 +446,8 @@
     <string name="sms_send_failed">எச்எம்எச் அனுப்பு தோல்வியுற்றது</string>
     <string name="toast_no_permission">இசைவு வழங்கப்படவில்லை</string>
     <string name="duplicate_check">நகல் பயன்முறை</string>
-    <string name="dup_tag">Dup</string>
-    <string name="dupe_title_fmt">%1$s (dup.)</string>
+    <string name="dup_tag">நகல்</string>
+    <string name="dupe_title_fmt">%1$s (நகல்.)</string>
     <string name="offerdupmode_title">“நகல்-பயன்முறையில்” விளையாடுங்கள்</string>
     <string name="offerdupmode_sum">(சோதனை !!!) அனைத்து வீரர்களும் ஒரே ஓடுகளைக் கொண்ட விளையாட்டின் பாணி</string>
     <string name="lmi_tiles_dup">அனைத்து வீரர்களுக்கும் அதே ஓடுகள் ஒதுக்கப்படுகின்றன</string>
@@ -458,7 +458,7 @@
     <string name="dup_host_received_fmt">%1$d %2$d வீரர்கள் தங்கள் நகர்வுகளைப் புகாரளித்துள்ளனர். எல்லா நகர்வுகளும் பெறப்பட்டபோது, அது மீண்டும் உங்கள் முறையாக இருக்கும்.</string>
     <string name="dup_timer_expl">நகல்-முறை டைமர்கள் இயங்கும்</string>
     <string name="dup_paused_expl">விளையாட்டுகள் இடைநிறுத்தப்பட்டு, காரணமின்றி இருப்பதற்கான அறிவிப்பு</string>
-    <string name="board_menu_game_unpause">ஒரு ஒரு நங்கூரம்</string>
+    <string name="board_menu_game_unpause">நங்கூரம்-நீக்கு</string>
     <string name="unpause_expl">இந்த விளையாட்டை செலுத்துதல் அனைத்து சாதனங்களிலும் டைமர்களை மறுதொடக்கம் செய்யும்.</string>
     <string name="dup_traded_fmt">நகர்வுகள் எதுவும் செய்யப்படவில்லை; வணிகம் %1$d ஓடுகள்</string>
     <string name="dup_onescore_fmt">%1$s: %2$d புள்ளிகள்\n</string>
@@ -550,7 +550,7 @@
     <string name="use_timer">விளையாட்டு டைமரை இயக்கவும்</string>
     <string name="use_duptimer">ஒவ்வொரு நகரும் டைமரை இயக்கவும்</string>
     <string name="minutes_label">ஒரு வீரருக்கு நிமிடங்கள்</string>
-    <string name="robot_iq_label">ரோபோ ஏ.கே.</string>
+    <string name="robot_iq_label">பொறியன் ஐகியு</string>
     <string name="phonies_label">ஃபோனிகள்</string>
     <string name="robot_spinner_prompt">ரோபோ பிளேயர் எவ்வளவு புத்திசாலித்தனமாக இருக்க வேண்டும்?</string>
     <string name="robot_smart">அறிவுள்ள ரோபோ</string>
@@ -574,8 +574,8 @@
     <string name="no_moves_made">(இன்னும் நகர்வுகள் இல்லை)</string>
     <string name="invites_unsent">தொலைதூர வீரரை எதிர்பார்க்க இந்த விளையாட்டு கட்டமைக்கப்பட்டுள்ளது.\n\n நீங்கள் ஒருவரை அழைக்க விரும்புகிறீர்களா?</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">இந்த விளையாட்டு ஒரு தொலைதூர வீரர் அழைப்பைப் பெற்று பதிலளிக்க காத்திருக்கிறது.\n\n அழைக்கப்பட்ட வீரர் பதிலளிக்கும் வரை இந்த செய்தியைக் காண்பீர்கள்.</item>
-        <item quantity="other">இந்த விளையாட்டு %1$d தொலை வீரர்கள் அழைப்புகளுக்கு பதிலளிக்க காத்திருக்கிறது.\n எதிர்பார்த்த அனைத்து வீரர்களும் பதிலளிக்கும் வரை இந்த செய்தியைக் காண்பீர்கள்.</item>
+        <item quantity="one">இந்த விளையாட்டு ஒரு தொலைதூர வீரர் அழைப்பைப் பெற்று பதிலளிக்க காத்திருக்கிறது.\n\nஅழைக்கப்பட்ட வீரர் பதிலளிக்கும் வரை இந்தச் செய்தியைக் காண்பீர்கள்.</item>
+        <item quantity="other">இந்த விளையாட்டு %1$d தொலை வீரர்கள் அழைப்புகளுக்குப் பதிலளிக்க காத்திருக்கிறது.\n\nஎதிர்பார்த்த அனைத்து வீரர்களும் பதிலளிக்கும் வரை இந்தச் செய்தியைக் காண்பீர்கள்.</item>
     </plurals>
     <string name="invite_msg_extra_norematch">நீங்கள் அனுப்பிய அழைப்பிதழ் இழந்துவிட்டதாக நீங்கள் சந்தேகித்தால், இன்னொன்றை அனுப்புவதில் எந்தத் தீங்கும் இல்லை.</string>
     <string name="robot_label">ரோபோ வீரர்</string>
@@ -606,7 +606,7 @@
         <item quantity="other">வேர்ட்லிச்டுகள் %1$s ஐ நீக்க விரும்புகிறீர்களா?</item>
     </plurals>
     <string name="confirm_deleteonly_dicts_fmt">%1$s ஐ நீக்குவது எந்த %2$s வார்த்தைகள் இல்லாமல் உங்களை விட்டுச்செல்லும். ஒன்று அல்லது அதற்கு மேற்பட்ட விளையாட்டுகள் திறக்க முடியாததாக இருக்கும் (மாற்று பட்டியலை நீங்கள் பதிவிறக்கும் வரை.)</string>
-    <string name="invit_expl_sms_fmt">டேட்டா எச்எம்எச் வழியாக தொலைபேசி எண் %1$s க்கு %2$s க்கு அனுப்பவும்</string>
+    <string name="invit_expl_sms_fmt">தரவுக் குறுஞ்செய்தி வழியாகத் தொலைபேசி எண் %1$s க்கு %2$s அன்று அனுப்பியது</string>
     <string name="invit_expl_usrsms_fmt">%1$s இல் SMS வழியாக அனுப்பப்பட்ட அழைப்பு</string>
     <string name="sms_invite_flakey">இந்த விருப்பம் உங்கள் இயல்புநிலை எச்எம்எச் பயன்பாட்டை அனுப்பத் தயாராக அழைப்போடு தொடங்குகிறது the இது வேலை செய்யும் போது. ஒவ்வொரு எச்எம்எச் பயன்பாடும் வேறுபட்டது, சிலர் ஒத்துழைக்க மாட்டார்கள்.</string>
     <string name="sms_invite_fail">எச்எம்எச் பயன்பாட்டை தொடங்க முடியவில்லை</string>
@@ -678,7 +678,7 @@
     <string name="not_again_turnchanged">ச்கோர்போர்டில் பெரியதாக இருக்கும் வீரர்.\n\n அந்த வீரரின் மிகச் அண்மைக் கால நகர்வு குறித்த விவரங்களைப் பெற ச்கோர்போர்டில் ஒரு பெயரில் உங்கள் விரலைப் பிடித்துக் கொள்ளுங்கள்.</string>
     <string name="default_name_title">இயல்புநிலை பிளேயர் பெயர்</string>
     <string name="default_name_message">உங்கள் பெயரை இங்கே உள்ளிடவும். புதிய விளையாட்டுகளை உருவாக்கும்போது இது பயன்படுத்தப்படும். (அமைப்புகளின் “புதிய விளையாட்டு இயல்புநிலை” பிரிவில் நீங்கள் அதை பின்னர் மாற்றலாம்.)</string>
-    <string name="about_vers_fmt2">தகவலை உருவாக்கு:\n மாறுபாடு: %1$s\n பதிப்பு பெயர்: %2$s\n பதிப்பு குறியீடு: %3$d\n மூல (கிட்) ரெவ்: %4$s\n கட்டப்பட்டது: %5$s</string>
+    <string name="about_vers_fmt2">உருவாக்கத் தகவல்:\n\tமாறுபாடு: %1$s\n\tபதிப்புப் பெயர்: %2$s\n\tபதிப்புக் குறியீடு: %3$d\n\tமூல (கிட்) ரெவ்: %4$s\n\tகட்டப்பட்டது: %5$s</string>
     <string name="about_devid_fmt">சாதன ஐடி: %1$s</string>
     <string name="about_btaddr_fmt">BT MAC ADDR: %1$s</string>
     <string name="about_copyright">ஆண்ட்ராய்டு க்கான குறுக்கெழுத்துக்கள்\n பதிப்புரிமை (சி) 1998-2024 எரிக் அவுச். இந்த இலவச/திறந்த மூல மென்பொருள் குனு பொது உரிமத்தின் கீழ் வெளியிடப்படுகிறது.</string>
@@ -719,7 +719,7 @@
     <string name="email_logs_msg">பதிவுகள் இணைக்கப்பட்டுள்ளன</string>
     <string name="email_logs_subject">குறுக்கெழுத்துக்கள் பதிவுகள்</string>
     <string name="email_author_chooser">கருத்து அனுப்பவும்</string>
-    <string name="email_body_rev_fmt">. %4 $ s).)</string>
+    <string name="email_body_rev_fmt">(பொருந்தும் எனில், குறுக்குபிழைநீக்கு பதிப்பு (“%1$s”), உருவாக்கம்/வடிவம் (“%2$s”) மற்றும் கைபேசியின் இயக்கமுறைமை பதிப்பு (%3$s) மற்றும் வளர்அடையாளத்தை (%4$s) சேர்க்கவும்.)</string>
     <string name="bt_pick_clear_button">அகற்று</string>
     <string name="bt_pair_settings">மேலும் இணை</string>
     <string name="button_scan">ரெச்கான்</string>
@@ -763,7 +763,7 @@
     </plurals>
     <string name="confirm_clear_bt_postscript">\n\n(புளூடூத் வரம்பிற்குள் இருக்கும் சாதனங்களை மட்டுமே நீங்கள் மீண்டும் சேர்க்க முடியும்.)</string>
     <string name="connstat_net_noaddr">இந்த பிணையம் விளையாட்டுக்கு இணைக்க வழி இல்லை மற்றும் விளையாட முடியாது.\n\n (இது உங்கள் சாதனம் ஆதரிக்கும் எந்த வழியையும் குறிப்பிடாத ஒரு அழைப்பிலிருந்து உருவாக்கப்பட்டிருக்கலாம், அல்லது நீங்கள் அண்மைக் காலத்தில் அதன் கடைசி வழியை அகற்றியிருக்கலாம்.)</string>
-    <string name="connstat_net_fmt">விளையாட்டுக்கான பிணைய நிலை (ஐடி = %2$x) %1$s வழியாக இணைக்கப்பட்டுள்ளது:</string>
+    <string name="connstat_net_fmt">விளையாட்டுக்கான பிணைய நிலை (ஐடி = %2$X) %1$s வழியாக இணைக்கப்பட்டுள்ளது:</string>
     <string name="menu_net_stat">பிணைய நிலை</string>
     <string name="menu_net_url">முகவரி ஐ நகலெடுக்கவும்</string>
     <string name="menu_about_peers">சகாக்களின் நிலை</string>
