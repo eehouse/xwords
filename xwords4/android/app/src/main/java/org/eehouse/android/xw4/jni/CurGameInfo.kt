@@ -340,16 +340,10 @@ class CurGameInfo: Serializable {
         return matter
     }
 
-    // I have no f*cking clue why behavior here is different for DEBUG and
-    // release builds. I think this override should simple be removed. AFAIK
-    // CurGameInfo is Serializable only so it can be a Dialog parameter; that
-    // is, there's no saved state that would be lost because the format was
-    // changed (by removing a method.) FIXME
-    //
-    // NB: I can't get this method to be called. So maybe it is dead code. :-)
     override fun equals(obj: Any?): Boolean {
-        val result =
-            if (BuildConfig.DEBUG) {
+        val fromSuper = super.equals(obj)
+        if (BuildConfig.DEBUG) {
+            val result =
                 if (null != obj && obj is CurGameInfo) {
                     val other = obj as CurGameInfo
                     TextUtils.equals(isoCodeStr, other.isoCodeStr)
@@ -375,10 +369,9 @@ class CurGameInfo: Serializable {
                             else phoniesAction == other.phoniesAction)
                         && TextUtils.equals(name, other.name)
                 } else false
-            } else {
-                super.equals(obj)
-            }
-        return result
+            Assert.assertTrue(result == fromSuper)
+        }
+        return fromSuper
     }
 
     fun remoteCount(): Int {
