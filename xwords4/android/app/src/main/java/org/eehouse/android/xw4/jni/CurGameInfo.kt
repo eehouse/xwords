@@ -39,13 +39,13 @@ import java.util.Arrays
 import java.util.Random
 import kotlin.math.abs
 
-class CurGameInfo : Serializable {
+class CurGameInfo: Serializable {
     enum class XWPhoniesChoice {
         PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW, PHONIES_BLOCK,
     }
 
     enum class DeviceRole {
-        SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT
+        SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT,
     }
 
     @JvmField
@@ -312,20 +312,27 @@ class CurGameInfo : Serializable {
      * local-only game but illegal for a connected one.
      */
     fun changesMatter(other: CurGameInfo): Boolean {
-        var matter =
-            nPlayers != other.nPlayers || serverRole != other.serverRole || !TextUtils.equals(
-                isoCodeStr,
-                other.isoCodeStr
-            ) || boardSize != other.boardSize || traySize != other.traySize || bingoMin != other.bingoMin || hintsNotAllowed != other.hintsNotAllowed || inDuplicateMode != other.inDuplicateMode || tradeSub7 != other.tradeSub7 || allowPickTiles != other.allowPickTiles || phoniesAction != other.phoniesAction
+        var matter = nPlayers != other.nPlayers
+            || serverRole != other.serverRole
+            || !TextUtils.equals(isoCodeStr, other.isoCodeStr)
+            || boardSize != other.boardSize
+            || traySize != other.traySize
+            || bingoMin != other.bingoMin
+            || hintsNotAllowed != other.hintsNotAllowed
+            || inDuplicateMode != other.inDuplicateMode
+            || tradeSub7 != other.tradeSub7
+            || allowPickTiles != other.allowPickTiles
+            || phoniesAction != other.phoniesAction
 
         if (!matter) {
             matter = dictName != other.dictName
             var ii = 0
             while (!matter && ii < nPlayers) {
-                val me = players[ii]
-                val him = other.players[ii]
-                matter =
-                    me!!.isRobot() != him!!.isRobot() || me.isLocal != him.isLocal || me.name != him.name
+                val me = players[ii]!!
+                val him = other.players[ii]!!
+                matter = me.isRobot() != him.isRobot()
+                    || me.isLocal != him.isLocal
+                    || me.name != him.name
                 ++ii
             }
         }
@@ -333,28 +340,44 @@ class CurGameInfo : Serializable {
         return matter
     }
 
+    // I have no f*cking clue why behavior here is different for DEBUG and
+    // release builds. I think this override should simple be removed. AFAIK
+    // CurGameInfo is Serializable only so it can be a Dialog parameter; that
+    // is, there's no saved state that would be lost because the format was
+    // changed (by removing a method.) FIXME
+    //
+    // NB: I can't get this method to be called. So maybe it is dead code. :-)
     override fun equals(obj: Any?): Boolean {
-        var result: Boolean
-        if (BuildConfig.DEBUG) {
-            var other: CurGameInfo? = null
-            result = null != obj && obj is CurGameInfo
-            if (result) {
-                other = obj as CurGameInfo?
-                result = (TextUtils.equals(
-                    isoCodeStr,
-                    other!!.isoCodeStr
-                ) && gameID == other.gameID && gameSeconds == other.gameSeconds && nPlayers == other.nPlayers && boardSize == other.boardSize && traySize == other.traySize && bingoMin == other.bingoMin && forceChannel == other.forceChannel && hintsNotAllowed == other.hintsNotAllowed && inDuplicateMode == other.inDuplicateMode && tradeSub7 == other.tradeSub7 && timerEnabled == other.timerEnabled && allowPickTiles == other.allowPickTiles && allowHintRect == other.allowHintRect && m_smartness == other.m_smartness && players.contentDeepEquals(
-                    other.players
-                ) && TextUtils.equals(dictName, other.dictName)
+        val result =
+            if (BuildConfig.DEBUG) {
+                if (null != obj && obj is CurGameInfo) {
+                    val other = obj as CurGameInfo
+                    TextUtils.equals(isoCodeStr, other.isoCodeStr)
+                        && gameID == other.gameID
+                        && gameSeconds == other.gameSeconds
+                        && nPlayers == other.nPlayers
+                        && boardSize == other.boardSize
+                        && traySize == other.traySize
+                        && bingoMin == other.bingoMin
+                        && forceChannel == other.forceChannel
+                        && hintsNotAllowed == other.hintsNotAllowed
+                        && inDuplicateMode == other.inDuplicateMode
+                        && tradeSub7 == other.tradeSub7
+                        && timerEnabled == other.timerEnabled
+                        && allowPickTiles == other.allowPickTiles
+                        && allowHintRect == other.allowHintRect
+                        && m_smartness == other.m_smartness
+                        && players.contentDeepEquals(other.players)
+                        && TextUtils.equals(dictName, other.dictName)
                         && (if ((null == serverRole)) (null == other.serverRole)
-                else serverRole == other.serverRole)
+                            else serverRole == other.serverRole)
                         && (if ((null == phoniesAction)) (null == other.phoniesAction)
-                else phoniesAction == other.phoniesAction)
-                        && TextUtils.equals(name, other.name))
+                            else phoniesAction == other.phoniesAction)
+                        && TextUtils.equals(name, other.name)
+                } else false
+            } else {
+                super.equals(obj)
             }
-        } else {
-            result = super.equals(obj)
-        }
         return result
     }
 
