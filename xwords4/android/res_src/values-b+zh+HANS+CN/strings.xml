@@ -761,9 +761,7 @@
     <string name="tiles_left_title">剩余卡牌</string>
     <string name="button_lookup_study">查询/学习单词</string>
     <string name="get_sms_title">手动输入</string>
-    <string name="reboot_after_setFmt">MQTT devID 已修改为 “%1$s”。
-\n
-\n请重新启动此应用，以确保使用新的值。</string>
+    <string name="reboot_after_setFmt">MQTT devID 已修改为 “%1$s”。 \n \n请重新启动此应用，以确保使用新的值。</string>
     <string name="games_menu_copyDevid">复制 MQTT devID</string>
     <string name="dupe_title_fmt">%1$s（副本）</string>
     <string name="rename_group_label">新分组名：</string>
