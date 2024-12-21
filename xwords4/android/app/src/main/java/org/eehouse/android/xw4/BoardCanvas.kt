@@ -173,7 +173,7 @@ open class BoardCanvas private constructor(
     }
 
     override fun measureRemText(
-        r: Rect, nTilesLeft: Int, width: IntArray,
+        rect: Rect, nTilesLeft: Int, width: IntArray,
         height: IntArray
     ): Boolean {
         val showREM = 0 <= nTilesLeft
@@ -181,10 +181,8 @@ open class BoardCanvas private constructor(
             // should cache a formatter
             mRemText = String.format("%d", nTilesLeft)
             mFillPaint.textSize = mMediumFontHt.toFloat()
-            mFillPaint.getTextBounds(
-                mRemText, 0, mRemText!!.length,
-                mBoundsScratch
-            )
+            mFillPaint.getTextBounds(mRemText, 0, mRemText!!.length,
+                                     mBoundsScratch)
             var minWidth = mBoundsScratch.width()
             if (minWidth < mMinRemWidth) {
                 minWidth = mMinRemWidth // it's a button; make it bigger
@@ -263,15 +261,15 @@ open class BoardCanvas private constructor(
         } else if (DEBUG_DRAWFRAMES && dsi.selected) {
             fillRectOther(rOuter, CommonPrefs.COLOR_FOCUS)
         }
-        val texts = mScores!![dsi.playerNum]
+        val texts = mScores!![dsi.playerNum]!!
         var color = mPlayerColors[dsi.playerNum]
         if (!mPrefs.allowPeek) {
             color = adjustColor(color)
         }
         mFillPaint.setColor(color)
-        val height = rOuter.height() / texts!!.size
+        val height = rOuter.height() / texts.size
         rOuter.bottom = rOuter.top + height
-        for (text in texts!!) {
+        texts.map { text ->
             drawCentered(text, rOuter, null)
             rOuter.offset(0, height)
         }
@@ -425,20 +423,20 @@ open class BoardCanvas private constructor(
             mRightArrow = null
             mDownArrow = mRightArrow
         }
-        val arrow: Drawable?
-        if (vert) {
-            if (null == mDownArrow) {
-                mDownArrow = loadAndRecolor(R.drawable.ic_downarrow, useDark)
+        val arrow =
+            if (vert) {
+                if (null == mDownArrow) {
+                    mDownArrow = loadAndRecolor(R.drawable.ic_downarrow, useDark)
+                }
+                mDownArrow!!
+            } else {
+                if (null == mRightArrow) {
+                    mRightArrow = loadAndRecolor(R.drawable.ic_rightarrow, useDark)
+                }
+                mRightArrow!!
             }
-            arrow = mDownArrow
-        } else {
-            if (null == mRightArrow) {
-                mRightArrow = loadAndRecolor(R.drawable.ic_rightarrow, useDark)
-            }
-            arrow = mRightArrow
-        }
         rect.inset(2, 2)
-        arrow!!.bounds = rect
+        arrow.bounds = rect
         arrow.draw(this@BoardCanvas)
         postNAHint(R.string.not_again_arrow, R.string.key_notagain_arrow)
     }
@@ -542,7 +540,7 @@ open class BoardCanvas private constructor(
     }
 
     override fun dictChanged(newPtr: Long) {
-        val curPtr = if (null == mDict) 0 else mDict!!.dictPtr
+        val curPtr = mDict?.dictPtr ?: 0
         var doPost = false
         if (curPtr != newPtr) {
             if (0L == newPtr) {
@@ -748,19 +746,20 @@ open class BoardCanvas private constructor(
                 )
                 mValRect!!.inset(offset, offset)
             }
-            mValRect!!.offsetTo(
+            val valRect = mValRect!!
+            valRect.offsetTo(
                 rect.right - rect.width() / divisor,
                 rect.bottom - rect.height() / divisor
             )
             text = String.format("%d", tileVal)
-            mFillPaint.textSize = mValRect!!.height().toFloat()
+            mFillPaint.textSize = valRect.height().toFloat()
             mFillPaint.textAlign = Align.RIGHT
             drawText(
-                text, mValRect!!.right.toFloat(), mValRect!!.bottom.toFloat(),
+                text, valRect.right.toFloat(), valRect.bottom.toFloat(),
                 mFillPaint
             )
             if (FRAME_TRAY_RECTS) {
-                drawRect(mValRect!!, mStrokePaint)
+                drawRect(valRect, mStrokePaint)
             }
         }
     }

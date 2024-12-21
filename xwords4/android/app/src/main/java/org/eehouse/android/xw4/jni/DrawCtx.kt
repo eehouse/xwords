@@ -35,8 +35,8 @@ interface DrawCtx {
     }
 
     fun scoreBegin(rect: Rect, numPlayers: Int, scores: IntArray, remCount: Int): Boolean
-    fun measureRemText(r: Rect, nTilesLeft: Int, width: IntArray, height: IntArray): Boolean
-    fun measureScoreText(r: Rect, dsi: DrawScoreInfo, width: IntArray, height: IntArray)
+    fun measureRemText(rect: Rect, nTilesLeft: Int, width: IntArray, height: IntArray): Boolean
+    fun measureScoreText(rect: Rect, dsi: DrawScoreInfo, width: IntArray, height: IntArray)
     fun drawRemText(rInner: Rect, rOuter: Rect, nTilesLeft: Int, focussed: Boolean)
     fun score_drawPlayer(rInner: Rect, rOuter: Rect, gotPct: Int, dsi: DrawScoreInfo)
 
