@@ -45,7 +45,7 @@
     <string name="rematch_name_fmt">%1$s</string>
     <string name="name_dict_fmt">%1$s／%2$s</string>
     <string name="gameOver">游戏结束</string>
-    <string name="summary_invites_out_fmt">受邀到房间 \"%1$s\" 的玩家</string>
+    <string name="summary_invites_out_fmt">受邀到房间 “%1$s” 的玩家</string>
     <string name="summary_invites_out">邀请的玩家</string>
     <plurals name="confirm_nameddeletes_fmt">
         <item quantity="other">您确定要删除游戏%1$s吗？ 删除后无法恢复。</item>
@@ -90,7 +90,7 @@
 \n\tVersion code: %3$d
 \n\tSource (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
-    <string name="invit_expl_player_fmt">通过 MQTT/internet 将邀请转发给了 %2$s 上的已知玩家 \"%1$s\"。</string>
+    <string name="invit_expl_player_fmt">通过 MQTT/互联网将邀请转发给了 %2$s 上的已知玩家“%1$s”。</string>
     <string name="disable_nag_title">禁用网络游戏提醒</string>
     <string name="force_expl">联机游戏中必须有至少一位本地玩家、一位远程玩家。请检查远程玩家。</string>
     <string name="warn_mqtt_havegames">确定要禁用互联网游戏吗？
