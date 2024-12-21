@@ -225,7 +225,7 @@
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
     <string name="invite_choice_title">Spelers uitnodigen: Hoe?</string>
-    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Druk hier&lt;/a&gt; (of druk op de volledige link hieronder, of, als je CrossWords al geïnstalleerd hebt, open de bijlage) om mijn uitnodiging te accepteren en het spel bij te treden. &lt;br \&gt; &lt;br \&gt; (volledige link: %1$s) </string>
+    <string name="invite_htm_fmt">"&lt;a href=%1$s&gt;Druk hier&lt;/a&gt; (of druk op de volledige link hieronder, of, als je CrossWords al geïnstalleerd hebt, open de bijlage) om mijn uitnodiging te accepteren en het spel bij te treden. &lt;br  &lt;br  (volledige link: %1$s)"</string>
     <string name="invite_chooser_fmt">Verstuur uitnodiging via %1$s</string>
     <string name="invite_chooser_email">email</string>
     <plurals name="query_trade_fmt">
