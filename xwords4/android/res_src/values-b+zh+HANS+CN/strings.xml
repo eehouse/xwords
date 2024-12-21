@@ -624,7 +624,7 @@
     <string name="game_paused_title">游戏已暂停</string>
     <string name="tray_size">牌架上的卡牌数</string>
     <string name="invite_sms_fmt">点击链接接受我的邀请，加入 CrossWords 游戏：%1$s</string>
-    <string name="badMQTTDevIDFmt">MQTT devID “%1$s” 非法。请重试。</string>
+    <string name="badMQTTDevIDFmt">伪造的 MQTT 设备ID 1$s，请重试。</string>
     <string name="chat_send">发送</string>
     <string name="entering_trade">交换卡牌中。点击进行选择…</string>
     <string name="background">棋盘背景</string>
@@ -761,7 +761,7 @@
     <string name="tiles_left_title">剩余卡牌</string>
     <string name="button_lookup_study">查询/学习单词</string>
     <string name="get_sms_title">手动输入</string>
-    <string name="reboot_after_setFmt">MQTT devID 已修改为 “%1$s”。 \n \n请重新启动此应用，以确保使用新的值。</string>
+    <string name="reboot_after_setFmt">MQTT devID 已改为 1$s\n \n请重新启动此应用，以确保使用新的值。</string>
     <string name="games_menu_copyDevid">复制 MQTT devID</string>
     <string name="dupe_title_fmt">%1$s（副本）</string>
     <string name="rename_group_label">新分组名：</string>
@@ -881,7 +881,7 @@
     <string name="invit_expl_bt_fmt">已通过蓝牙在 %2$s 向已配对设备“%1$s”发送邀请</string>
     <string name="hide_crosshairs_summary">不要突出显示触摸的棋盘方格</string>
     <string name="explain_robot">解释其他移动</string>
-    <string name="cannot_delete_default_group_fmt">无法删除保存新游戏的分组 %1$s。</string>
+    <string name="cannot_delete_default_group_fmt">目前无法删除 “%1$s”分组，因该组是放置新游戏的地方。</string>
     <string name="gamel_menu_logstore_off">禁用日志存储</string>
     <plurals name="confirm_seldeletes_fmt">
         <item quantity="other">确定要删除所选%1$d游戏吗？此操作不可逆。</item>
