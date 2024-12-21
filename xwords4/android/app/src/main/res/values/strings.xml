@@ -1935,8 +1935,9 @@
       deleted.)</item>
     </plurals>
     <string name="rename_group_label">Change the name of this group to:</string>
-    <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
-    cannot be deleted.</string>
+    <string name="cannot_delete_default_group_fmt">The group “%1$s”
+    cannot be deleted now because it is the group where new games are
+    placed.</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d game)</item>
         <item quantity="other">%1$s (%2$d games)</item>

@@ -1541,11 +1541,11 @@ class GamesListDelegate(delegator: Delegator) :
                 var enable = showDbg && nothingSelected
                 Utils.setItemVisible(menu, R.id.games_menu_checkupdates, enable)
 
-                var selGroupPos = -1
-                if (1 == nGroupsSelected) {
-                    val id = m_mySIS!!.selGroupIDs.iterator().next()
-                    selGroupPos = m_adapter!!.getGroupPosition(id)
-                }
+                val selGroupPos =
+                    if (1 == nGroupsSelected) {
+                        val id = m_mySIS!!.selGroupIDs.iterator().next()
+                        m_adapter!!.getGroupPosition(id)
+                    } else -1
 
                 // You can't delete the default group, nor make it the default.
                 // But we enable delete so a warning message later can explain.
@@ -1812,7 +1812,7 @@ class GamesListDelegate(delegator: Delegator) :
                 else R.id.games_game_deselect
             Utils.setItemVisible(menu, hideId, false)
 
-            if (null != gameItem) {
+            gameItem?.let { gameItem ->
                 val rowID = gameItem.rowID
 
                 // Deal with possibility summary's temporarily null....
@@ -1841,7 +1841,7 @@ class GamesListDelegate(delegator: Delegator) :
                 enable = !BoardDelegate.gameIsOpen(rowID)
                 Utils.setItemVisible(menu, R.id.games_game_delete, enable)
                 Utils.setItemVisible(menu, R.id.games_game_reset, enable)
-            } else {
+            } ?: run {          // Group case
                 enableGroupUpDown(menu, selGroupPos, true)
             }
         }
