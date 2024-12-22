@@ -412,7 +412,7 @@ object MQTTUtils {
         final val DUP_THRESHHOLD_MS = 5000
         private val mSeenSums = HashMap<String, Long>()
         @Synchronized
-        private fun isRecentDuplicate(packet: ByteArray): Boolean
+        private fun isRecentDuplicate(topic: String, packet: ByteArray): Boolean
         {
             val sum = Utils.getMD5SumFor(packet)!!
             val now = System.currentTimeMillis()
@@ -421,21 +421,21 @@ object MQTTUtils {
                 now < it + DUP_THRESHHOLD_MS
             } ?: false
             mSeenSums[sum] = now
-            Log.d(TAG, "%H: isRecentDuplicate($sum) => $isDup", this)
+            Log.d(TAG, "%H: isRecentDuplicate($sum) (on $topic)=> $isDup", this)
             return isDup
         }
 
         override fun accept(pub: Mqtt3Publish) {
             val payload = pub.payload
-            val topic = pub.topic
+            val topic = pub.topic.toString()
 
             if (pub.payload.isPresent()) {
                 // Log.d(TAG, "accept($pub)")
                 val byteBuf = pub.payload.get()
                 val packet = ByteArray(byteBuf.capacity())
                 byteBuf.get(packet)
-                if ( ! isRecentDuplicate(packet) ) {
-                    add(IncomingTask(topic.toString(), packet))
+                if ( ! isRecentDuplicate(topic, packet) ) {
+                    add(IncomingTask(topic, packet))
                     XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
                 }
 
@@ -498,8 +498,8 @@ object MQTTUtils {
                     .callback(this@Conn)
                     .send()
                     .whenComplete{ ack, throwable ->
-                        Log.d( TAG, "$this.whenComplete(); topic=$mTopic, "
-                               + "ack=$ack, err=$throwable")
+                        Log.d( TAG, "%H $this.whenComplete(); topic=$mTopic, "
+                               + "ack=$ack, err=$throwable", this@Conn)
                     }
             }
         }
@@ -522,7 +522,7 @@ object MQTTUtils {
                                 // Handle failure to publish
                             } else {
                                 val sum = Utils.getMD5SumFor(pr.second)
-                                Log.d(TAG, "whenComplete(): $mqtt3Publish; sum: $sum")
+                                Log.d(TAG, "%H: whenComplete(): $mqtt3Publish; sum: $sum", this)
                                 // Handle successful publish, e.g. logging or incrementing a metric
                                 TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
                                 XwJNI.sts_increment(STAT.STAT_MQTT_SENT)
@@ -604,7 +604,7 @@ object MQTTUtils {
         {
             val age = (System.currentTimeMillis() - mStart) / 1000
             return String.format("Conn %H: {connected: ${mClient.state.isConnected}; "
-                                 + "age: ${age}s", this)
+                                 + "age: ${age}s}", this)
         }
     }
 
