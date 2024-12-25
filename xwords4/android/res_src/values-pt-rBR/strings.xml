@@ -462,7 +462,7 @@
     <string name="button_reconnect">Reconectar</string>
     <string name="duplicate_group_name_fmt">O grupo “%1$s” já existe.</string>
     <string name="group_name_archive">Arquivo</string>
-    <string name="cannot_delete_default_group_fmt">O grupo para jogos novos, %1$s, não pode ser deletado.</string>
+    <string name="cannot_delete_default_group_fmt">O grupo “%1$s” não pode ser deletado porque é o grupo em que novos jogos são colocados.</string>
     <string name="rename_group_label">Mudar nome deste grupo para:</string>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">"
