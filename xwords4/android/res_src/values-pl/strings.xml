@@ -4,19 +4,19 @@
     <string name="summary_invites_out">Zaproszeni Gracze</string>
     <string name="gameOver">Koniec gry</string>
     <string name="button_delete">Usuń</string>
-    <string name="menu_prefs">Ustawienia aplikacji…</string>
-    <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju \"%1$s\"</string>
-    <string name="board_menu_file_about">O CrossWords…</string>
-    <string name="gamel_menu_dicts">Listy słów…</string>
-    <string name="list_item_config">Ustawienia gry…</string>
+    <string name="menu_prefs">Ustawienia aplikacji</string>
+    <string name="summary_invites_out_fmt">Gracze zaproszeni do pokoju „%1$s”</string>
+    <string name="board_menu_file_about">O CrossWords</string>
+    <string name="gamel_menu_dicts">Listy słów</string>
+    <string name="list_item_config">Ustawienia gry</string>
     <string name="str_game_name_fmt">%1$s (%2$s)</string>
-    <string name="list_item_rename">Zmień nazwę…</string>
-    <string name="list_item_move">Przenieś do grupy…</string>
+    <string name="list_item_rename">Zmień nazwę</string>
+    <string name="list_item_move">Przenieś do grupy</string>
     <string name="list_item_delete">Usuń grę</string>
     <string name="list_item_copy">Kopiuj</string>
     <string name="rename_label">Zmień nazwę tej gry na:</string>
     <string name="rename_label_caveat">Zmień nazwę tej gry (tylko na tym urządzeniu) na:</string>
-    <string name="download_more">Pobierz więcej…</string>
+    <string name="download_more">Pobierz więcej</string>
     <string name="loc_internal">Wewnętrzny</string>
     <string name="loc_external">Zewnętrzny</string>
     <string name="title_game_config_fmt">Ustawienia dla %1$s</string>
@@ -75,7 +75,7 @@
     <string name="prefs_colors">Indywidualne kolory</string>
     <string name="prefs_colors_summary">Edytuj kolory używane na planszy</string>
     <string name="bonus_l2x">Podwójna litera</string>
-    <string name="tile_back">Tło kafelka</string>
+    <string name="tile_back">Tło płytki</string>
     <string name="empty">Pusta komórka/tło</string>
     <string name="background">Tło planszy</string>
     <string name="red">Czerwony</string>
@@ -231,7 +231,7 @@
     <string name="robot_label">Gracz Robot</string>
     <string name="button_trade_commit">Potwierdź wymianę</string>
     <string name="button_trade_cancel">Anuluj wymianę</string>
-    <string name="entering_trade">Dotknij kafelków, aby wybrać…</string>
+    <string name="entering_trade">Wymiana płytek. Dotknij płytki, aby wybrać…</string>
     <plurals name="invite_msg_fmt">
         <item quantity="one">Ta gra czeka na %1$d zdalnego zawodnika. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
         <item quantity="few">Ta gra czeka na %1$d zdalnych zawodników. Czy chciałbyś zaprosić kogoś do przyłączenia się -- zakładając, że już tego nie zrobiłeś?</item>
@@ -249,19 +249,19 @@
     <string name="board_menu_tray_hide">Ukryj półkę</string>
     <string name="board_menu_tray_show">Pokaż półkę</string>
     <string name="board_menu_undo_last">Cofnij ostatnie</string>
-    <string name="board_submenu_game">Gra -&gt;</string>
-    <string name="board_menu_game_counts">Liczby i wartości…</string>
-    <string name="board_menu_game_left">Pozostałe kafelki…</string>
-    <string name="board_menu_game_history">Historia gry…</string>
+    <string name="board_submenu_game">Gra</string>
+    <string name="board_menu_game_counts">Liczby i wartości</string>
+    <string name="board_menu_game_left">Pozostałe płytki</string>
+    <string name="board_menu_game_history">Historia gry</string>
     <string name="board_menu_game_final">Wyniki końcowe</string>
     <string name="board_menu_game_resign">Zrezygnuj</string>
     <string name="board_menu_game_resend">Wyślij ponownie</string>
     <string name="str_robot_moved_fmt">"Robot %1$s wykonał ten ruch: "</string>
     <string name="strs_values_header_fmt">%1$s liczby/wartości:
 \n</string>
-    <string name="strd_remaining_tiles_add_fmt">+ %1$d [wszystkie pozostałe kafelki]</string>
-    <string name="strd_unused_tiles_sub_fmt">- %1$d [nieużywane kafelki]</string>
-    <string name="strs_new_tiles_fmt">Nowe kafelki: %1$s</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [wszystkie pozostałe płytki]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [nieużywane płytki]</string>
+    <string name="strs_new_tiles_fmt">Nowe płytki: %1$s</string>
     <string name="strd_cumulative_score_fmt">Skumulowany wynik: %1$d
 \n</string>
     <string name="str_remote_moved_fmt">"Zdalny gracz %1$s wykonał ten ruch: "</string>
@@ -279,14 +279,14 @@
     <string name="str_commit_confirm">Zatwierdzić bieżący ruch\?
 \n</string>
     <string name="str_nonlocal_name_fmt">%1$s (zdalny)</string>
-    <string name="str_bonus_all">Bonus za użycie wszystkich kafelków: 50
-\n</string>
+    <string name="str_bonus_all">Bonus za użycie wszystkich płytek: 50\n</string>
     <string name="strd_turn_score_fmt">Wynik kolejki: %1$d
 \n</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">%1$d kafelki pozostawione w puli.</item>
-        <item quantity="few"/>
-        <item quantity="many"/>
+        <item quantity="one">%1$d płytki pozostawione w puli.</item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
     </plurals>
     <string name="confirm_undo_last">Czy na pewno chcesz cofnąć ostatnią kolej\? (Nie ma opcji ponów.)</string>
     <string name="title_prefs">Ustawienia CrossWords</string>
@@ -307,7 +307,7 @@
     <string name="phonies_found_title">Znaleziono niepoprawne słowa</string>
     <string name="initial_player_minutes">Minut na każdego gracza</string>
     <string name="summary_field">Dołącz do listy gier</string>
-    <string name="show_arrow_summary">Dotknięte kafelki gry są umieszczane na tej strzałce, gdy są widoczne</string>
+    <string name="show_arrow_summary">Dotknięte płytki gry są umieszczane na tej strzałce, gdy są widoczne</string>
     <string name="bonus_l3x">Potrójna litera</string>
     <string name="bonus_w2x">Podwójne słowo</string>
     <string name="bonus_w3x">Potrójne słowo</string>
@@ -316,9 +316,9 @@
     <string name="explain_robot_summary">Wyświetl podsumowanie wyników po zakończeniu każdego robota lub zdalnego gracza</string>
     <string name="skip_confirm_turn">Pomiń potwierdzanie swojej kolejki</string>
     <string name="skip_confirm_turn_summary">NIE wyświetlaj podsumowania wyniku po każdej kolejce człowieka</string>
-    <string name="title_sort_tiles">Sortuj nowe kafelki</string>
-    <string name="summary_sort_tiles">Sortuj stoisko za każdym razem, gdy dodawane są nowe kafelki</string>
-    <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże kafelek gracza</string>
+    <string name="title_sort_tiles">Sortuj nowe płytki</string>
+    <string name="summary_sort_tiles">Sortuj stoisko za każdym razem, gdy dodawane są nowe płytki</string>
+    <string name="peek_other_summary">Stuknięcie w nazwę tablicy wyników pokaże płytkę gracza</string>
     <string name="notify_other_summary">Kiedy przeciwnik się rusza</string>
     <string name="invite_choice_bt">Bluetooth</string>
     <string name="invite_choice_nfc">NFC (Android beaming)</string>
@@ -326,9 +326,10 @@
     <string name="invite_choice_p2p">Tryb Wi-Fi Direct</string>
     <string name="invite_htm_fmt">"&lt;a href=\"%1$s\"&gt; Stuknij tutaj&lt;/a&gt; (lub dotknij pełnego linku poniżej lub, jeśli masz już zainstalowany CrossWords, otwórz załącznik), aby zaakceptować moje zaproszenie i dołączyć do tej gry. &lt;br \\&gt; &lt;br \\&gt;  (pełny link: %1$s )"</string>
     <plurals name="query_trade_fmt">
-        <item quantity="one">Czy na pewno chcesz wymienić wybrany kafelek (%2$s)\?</item>
-        <item quantity="few">"Czy na pewno chcesz wymienić wybrany kafelek  %1$d wybrane kafelki (%2$s)\?"</item>
-        <item quantity="many">"Czy na pewno chcesz wymienić wybrany kafelek  %1$d wybranych kafelków (%2$s)\?"</item>
+        <item quantity="one">Czy na pewno chcesz wymienić wybraną płytkę (%2$s)?</item>
+        <item quantity="few">Czy na pewno chcesz wymienić %1$d wybrane płytki (%2$s)?</item>
+        <item quantity="many">Czy na pewno chcesz wymienić %1$d wybranych płytek (%2$s)?</item>
+        <item quantity="other">Czy na pewno chcesz wymienić %1$d wybranych płytek (%2$s)?</item>
     </plurals>
     <string name="chat_title_fmt">Czatuj z %1$s</string>
     <string name="chat_other_id">"Nie ja: "</string>
@@ -336,10 +337,10 @@
     <string name="str_no_empties_in_turn">Puste kwadraty nie mogą rozdzielać zagranych płytek.</string>
     <string name="str_two_tiles_first_move">Podczas pierwszego ruchu muszą zagrać dwa lub więcej kawałków.</string>
     <string name="str_tiles_must_contact">Nowe elementy muszą stykać się z innymi będacymi już na miejscu (lub środkowym kwadratem w pierwszym ruchu)</string>
-    <string name="str_no_peek_robot_tiles">Nie zaglądaj w kafelki robota!</string>
-    <string name="str_no_peek_remote_tiles">Nie podglądaj kafelków zdalnych graczy!</string>
+    <string name="str_no_peek_robot_tiles">Nie zaglądaj w płytki robota!</string>
+    <string name="str_no_peek_remote_tiles">Nie podglądaj płytek zdalnych graczy!</string>
     <string name="str_too_few_tiles_left_to_trade">Zostało zbyt mało płytek do wymiany.</string>
-    <string name="str_cant_undo_tileassign">Nie można cofnąć przypisania kafelków.</string>
+    <string name="str_cant_undo_tileassign">Nie można cofnąć przypisania płytek.</string>
     <string name="button_close_game">Zamknij grę</string>
     <string name="no_dict_fmt">Gra \"%1$s\" wymaga listy słów %2$s. Proszę pobrać jedną przed otwarciem.</string>
     <string name="no_dict_subst_fmt">Nie można otworzyć gry \"%1$s\", ponieważ lista słów %2$s nie została znaleziona. (Mogła zostać usunięta lub zapisana na zewnętrznej karcie, która nie jest już dostępna).
@@ -352,33 +353,28 @@
     <string name="notify_title_fmt">Poruszaj się w grze %1$s</string>
     <string name="notify_chat_title_fmt">Wiadomość czatu w grze %1$s</string>
     <string name="info_title">INFORMUJĘ, ŻE.…</string>
-    <string name="title_blank_picker">Wybierz kafelek dla pustego</string>
-    <string name="tile_tray_picker">Wybierz nowe kafelki do zasobnika</string>
+    <string name="title_blank_picker">Wybierz płytkę dla pustego</string>
+    <string name="tile_tray_picker">Wybierz nowe płytki do zasobnika</string>
     <string name="tile_button_txt_fmt">%1$s (%2$d)</string>
     <string name="tile_pick_summary_fmt">Aktualny wybór: %1$s</string>
-    <string name="tiles_left_title">Pozostałe kafelki</string>
+    <string name="tiles_left_title">Pozostałe płytki</string>
     <string name="counts_values_title">Liczba płytek i wartości</string>
     <string name="finalscores_title">Wyniki końcowe‌</string>
     <string name="ids_endnow">Czy na pewno chcesz zrezygnować\?</string>
     <string name="query_title">Pytanie…</string>
-    <string name="not_again_trading">Wchodzisz w tryb wymiany kafelków.
-\n
-\nDotknij kafelków, aby dodać/usunąć je z zestawu do wymiany.
-\n
-\n</string>
+    <string name="not_again_trading">Wchodzisz w tryb wymiany płytek.\n\nDotknij płytki, aby dodać/usunąć je z zestawu do wymiany.\n\n</string>
     <string name="not_again_trading_buttons">Użyj przycisków, aby zatwierdzić swoją kolej lub wyjść z trybu wymiany.</string>
     <string name="not_again_trading_menu">Użyj menu lub paska akcji, aby zatwierdzić swoją kolej lub wyjść z trybu wymiany.</string>
-    <string name="not_again_hintprev">Ten przycisk pokazuje wszystkie możliwe ruchy w porządku rosnącym (przy użyciu kafelków po prawej stronie przegrody).</string>
+    <string name="not_again_hintprev">Ten przycisk pokazuje wszystkie możliwe ruchy w porządku rosnącym (przy użyciu płytek po prawej stronie przegrody).</string>
     <string name="not_again_hintnext">Ten przycisk pokazuje wszystkie możliwe ruchy w porządku malejącym (przy użyciu płytek po prawej stronie przegrody.)</string>
     <string name="not_again_juggle">Ten przycisk losowo rozmieszcza płytki na blacie.</string>
     <string name="not_again_flip">Ten przycisk odwraca planszę symetrycznie do przekątnej.</string>
     <string name="not_again_undo">Ten przycisk powoduje cofnięcie lub ponowne wykonanie bieżącej tury.</string>
     <string name="not_again_chat">en przycisk otwiera ekran do przesyłania wiadomości między urządzeniami w tej grze. Wiadomości będą przechowywane do momentu usunięcia gry, która je zawiera.</string>
-    <string name="not_again_values">Ten przycisk zmienia, czy plansza pokazuje litery na umieszczonych kafelkach lub ich wartości punktowe. Użyj go, aby przypomnieć sobie, jaka jest wartość płytki.</string>
+    <string name="not_again_values">Ten przycisk zmienia, czy plansza pokazuje wartości punktowe na umieszczonych płytkach przy literze. Użyj go, aby przypomnieć sobie, jaka jest wartość płytki.</string>
     <string name="not_again_done">Naciśnięcie przycisku \"pts\", który pojawia się na prawym końcu szafy jest najprostszym sposobem na wykonanie ruchu.</string>
     <string name="not_again_unlock">Ta gra jest w trakcie rozgrywki. Niektóre ustawienia, np. liczba graczy, nie mogą być zmienione bez ponownego uruchomienia. Kiedy opuścisz tę stronę, będziesz miał możliwość odrzucenia zmian, aby uniknąć ponownego uruchomienia.</string>
-    <string name="not_again_arrow">Przenoszenie kafelków na planszę: 
-\nMożesz przeciągnąć kafelki między blatem a planszą, lub możesz stuknąć pusty kwadrat, aby umieścić strzałkę planszy. Kafelki z blatu, które stukniesz zastąpią strzałkę (przesuwając ją o jeden kwadrat w kierunku, w którym wskazuje.) Stuknij strzałkę raz, aby zmienić jej orientację; drugi raz, aby ją ukryć. Pole wyboru w sekcji Wygląd w Ustawieniach ukryje je na stałe.</string>
+    <string name="not_again_arrow">Przenoszenie płytek na planszę: \nMożesz przeciągnąć płytki między blatem a planszą, lub możesz stuknąć pusty kwadrat, aby umieścić strzałkę planszy. Płytki z blatu, które stukniesz zastąpią strzałkę (przesuwając ją o jeden kwadrat w kierunku, w którym wskazuje.) Stuknij strzałkę raz, aby zmienić jej orientację; drugi raz, aby ją ukryć. Pole wyboru w sekcji Wygląd w Ustawieniach ukryje je na stałe.</string>
     <string name="not_again_turnchanged">Gracz, którego kolej jest umieszczany na tablicy wyników.
 \n
 \nPrzytrzymaj palec na nazwie w tablicy wyników, aby uzyskać szczegółowe informacje na temat ostatniego ruchu tego gracza.</string>
@@ -509,7 +505,7 @@
     <string name="button_rematch">Rewanż</string>
     <string name="duplicate_group_name_fmt">Grupa \"%1$s\" już istnieje.</string>
     <string name="button_reconnect">Połącz ponownie</string>
-    <string name="square_tiles">Kwadratowe kafelki</string>
+    <string name="square_tiles">Kwadratowe płytki</string>
     <string name="square_tiles_summary">Nawet jeśli mogą być wyższe</string>
     <string name="change_group">Przenieś wybrane gry do:</string>
     <string name="not_again_newselect">Stuknięcie w grę otwiera ją.
@@ -609,7 +605,7 @@
         <item quantity="many"/>
     </plurals>
     <string name="lmi_phony_fmt">%1$s stracił swoją kolej</string>
-    <string name="lmi_tiles_fmt">Kafelki przypisane do %1$s</string>
+    <string name="lmi_tiles_fmt">Płytki przypisane do %1$s</string>
     <string name="bt_no_devs">Obecnie nie masz sparowanych urządzeń Bluetooth (lub Bluetooth jest wyłączony). Czy chcesz otworzyć panel ustawień systemu Android, aby dodać jedno lub więcej urządzeń\? 
 \n 
 \n(Może być także konieczne otwarcie go na urządzeniu, które chcesz sparować.)</string>
@@ -702,9 +698,10 @@
     <string name="toast_no_permission">Pozwolenie nie zostało udzielone</string>
     <string name="list_item_netstats">Połączenia…</string>
     <plurals name="too_many_trade_fmt">
-        <item quantity="one">Zbyt wiele wybranych kafelków. Wybierz tylko jeden.</item>
-        <item quantity="few">Zbyt wiele wybranych kafelków. Wybierz nie więcej niż %1$d.</item>
-        <item quantity="many">Zbyt wiele wybranych kafelków. Wybierz mniej niż %1$d.</item>
+        <item quantity="one">Zbyt wiele wybranych płytek. Wybierz tylko jeden.Zbyt wiele wybranych płytek. Wybierz nie więcej niż %1$d.Zbyt wiele wybranych płytek. Wybierz mniej niż %1$d.</item>
+        <item quantity="few"></item>
+        <item quantity="many"></item>
+        <item quantity="other"></item>
     </plurals>
     <string name="button_scan">Skanuj ponownie</string>
     <plurals name="invite_bt_desc_fmt_2">
@@ -737,9 +734,9 @@
         <item quantity="many">Czy na pewno chcesz usunąć %1$d zaznaczony numer telefonu\?</item>
     </plurals>
     <string name="vs_join">" przeciwko. "</string>
-    <string name="peek_other">Pokaż kafelek poza kolejnością</string>
-    <string name="pick_faceup">Wybierz odkryte kafelki</string>
-    <string name="menu_juggle">Wymieszaj kafelki</string>
+    <string name="peek_other">Pokaż płytkę poza kolejnością</string>
+    <string name="pick_faceup">Wybierz odkryte płytki</string>
+    <string name="menu_juggle">Wymieszaj płytki</string>
     <string name="pct_suffix">" %."</string>
     <string name="add_to_study_fmt">Dodaj %1$s do listy nauki</string>
     <string name="title_studyon">Włącz listę nauki</string>
@@ -750,6 +747,7 @@
         <item quantity="one">wymienił jedną płytkę.</item>
         <item quantity="few">wymienił %1$d płytki.</item>
         <item quantity="many">wymienił %1$d płytek.</item>
+        <item quantity="other">wymienił %1$d płytek.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Jedna płytka pozostawiona w ukrytych tacach:
@@ -813,10 +811,10 @@
         <item quantity="other">Jesteś pewien, że chcesz usunąć gry %1$s\? Tej akcji nie da się cofnąć.</item>
     </plurals>
     <string name="invitee_fmt">(zaproszono %1$s)</string>
-    <string name="list_item_relaypage">Ruch w grze…</string>
+    <string name="list_item_relaypage">Ruch w grze</string>
     <string name="button_delete_game">Usuń grę</string>
     <string name="relaypage_url_copied">URL gry skopiowany do schowka</string>
     <string name="langUnknownFmt">Nieznane (%1$s)</string>
-    <string name="invites_unsent">Ta gra jest skonfigurowana w taki sposób, że oczekuje zdalnego gracza.\n\nCzy chcesz kogoś zaprosić?</string>
-    <string name="confirm_del_after_rematch_fmt">Rewanż ukończony.\n\nCzy chcesz teraz usunąć ukończąoną grę %1$s?\n\n(Ta akcja nie może zostać cofnięta.)</string>
+    <string name="invites_unsent">Ta gra jest skonfigurowana w taki sposób, że oczekuje zdalnego gracza. \n\nCzy chcesz kogoś zaprosić?</string>
+    <string name="confirm_del_after_rematch_fmt">Rewanż ukończony.\n\nCzy chcesz teraz usunąć ukończąoną grę %1$s? \n\n(Ta akcja nie może zostać cofnięta.)</string>
 </resources>
