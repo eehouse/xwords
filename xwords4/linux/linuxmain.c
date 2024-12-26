@@ -2707,9 +2707,11 @@ compLenAlpha(const DLHead* dl1, const DLHead* dl2)
 }
 
 static ForEachAct
-printProc(const DLHead* elem, void* closure)
+printProc(const DLHead* XP_UNUSED_DBG(elem), void* closure)
 {
+#ifdef DEBUG
     SortTestElem* ste = (SortTestElem*)elem;
+#endif
     int* counter = (int*)closure;
     ++*counter;
     XP_LOGFF( "word %d: %s", *counter, ste->buf );

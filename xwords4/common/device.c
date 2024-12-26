@@ -552,7 +552,9 @@ isDevMsg( const MQTTDevID* myID, const XP_UCHAR* topic, XP_U32* gameIDP )
     if ( success ) {
         /* Now get the gameID if it's there */
         const XP_UCHAR* gameIDPart = topic + topicLen;
+#ifdef DEBUG
         int count =
+#endif
             sscanf( gameIDPart, "/%X", gameIDP );
         XP_ASSERT( 1 == count || 0 == *gameIDP ); /* firing */
     }

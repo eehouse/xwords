@@ -639,17 +639,25 @@ streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 /****************************************************
  * These methods are stateless: no gamePtr
  ****************************************************/
-
-#define DVC_HEADER(PTR) {                                              \
+#ifdef DEBUG
+# define DVC_HEADER(PTR) {                                              \
     JNIGlobalState* globalState = (JNIGlobalState*)(PTR);              \
     XP_ASSERT( !!globalState );                                        \
     XP_ASSERT( !!globalState->dutil );                                 \
     MAP_THREAD( &globalState->ti, env );                               \
     /* LOG_FUNC();  <- NO LOGGING before MAP_THREAD()!! */             \
 
-#define DVC_HEADER_END()                        \
+# define DVC_HEADER_END()                        \
     /*LOG_RETURN_VOID();*/                      \
     }                                           \
+
+#else
+# define DVC_HEADER(PTR) {                                  \
+    JNIGlobalState* globalState = (JNIGlobalState*)(PTR);   \
+    XP_USE(globalState)                                     \
+
+# define DVC_HEADER_END() }
+#endif
 
 /* This signature's different to not require JvmStatic on the .kt end */
 JNIEXPORT jstring JNICALL

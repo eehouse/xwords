@@ -105,7 +105,7 @@ linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
 
 static XP_Bool
 linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                      XP_U32 gameID, XP_U8 channel )
+                      XP_U32 gameID, XP_U8 XP_UNUSED_DBG(channel) )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
@@ -308,6 +308,7 @@ linux_dutil_makeEmptyDict( XW_DUtilCtxt* duc, XWEnv xwe )
 {
     XP_DEBUGF( "linux_util_makeEmptyDict called" );
     LaunchParams* params = (LaunchParams*)duc->closure;
+    XP_USE(params);
     return linux_dictionary_make( MPPARM(params->mpool) xwe, NULL, NULL, XP_FALSE );
 }
 
