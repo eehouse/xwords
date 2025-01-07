@@ -464,13 +464,13 @@ tasks.named("preBuild") {
 tasks.create<Exec>("copyStringsXw4D") {
     workingDir( "./" )
     environment.put("APPNAME", "CrossDbg")
-    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4d/res/values/strings.xml" )
+    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4d/res/values/strings.xml", "src/xw4d/res/values/tmpstrings.xml" )
 }
 
 tasks.create<Exec>("copyStringsXw4DGPlay" ) {
     workingDir( "./" )
     environment.put("APPNAME", "CrossDbg")
-    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4dGPlay/res/values/strings.xml" )
+    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4dGPlay/res/values/strings.xml", "src/xw4d/res/values/tmpstrings.xml" )
 }
 
 tasks.create( "makeBuildAssets" ) {
