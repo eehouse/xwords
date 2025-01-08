@@ -60,6 +60,8 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
             )
         }
         setSafeToRun()
+
+        KAService.startIf(this)
     } // onCreate
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -542,6 +542,33 @@ object DBUtils {
         }
     }
 
+    fun haveGamesNeedingKA(context: Context): Boolean
+    {
+        var count = 0
+        val minHours = XWPrefs.getKAServiceHours(context)
+        val minLast = Utils.getCurSeconds() - (60*60*minHours)
+        val columns = arrayOf(DBHelper.CONTYPE, DBHelper.LASTMOVE)
+        val selection =
+            "${DBHelper.SERVERROLE} != ${DeviceRole.SERVER_STANDALONE.ordinal}" +
+            " AND ${DBHelper.GROUPID} != ${getArchiveGroup(context)}"
+        synchronized(s_dbHelper!!) {
+            val cursor = query(TABLE_NAMES.SUM, columns, selection)
+            val indx0 = cursor.getColumnIndex(columns[0])
+            val indx1 = cursor.getColumnIndex(columns[1])
+            while (cursor.moveToNext()) {
+                val types = CommsConnTypeSet(cursor.getInt(indx0))
+                if ( !types.contains(CommsConnType.COMMS_CONN_MQTT)) continue
+
+                val lastmove = cursor.getLong(indx1)
+                if (lastmove < minLast) continue
+
+                ++count
+            }
+        }
+        Log.d(TAG, "haveGamesNeedingKA(): found $count games that qualify")
+        return 0 < count
+    }
+
     fun getGamesWithSendsPending(context: Context): HashMap<Long, CommsConnTypeSet> {
         val result = HashMap<Long, CommsConnTypeSet>()
         val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)

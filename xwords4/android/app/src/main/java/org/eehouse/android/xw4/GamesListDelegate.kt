@@ -1618,6 +1618,10 @@ class GamesListDelegate(delegator: Delegator) :
                 Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
                 Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
 
+                enable = BuildConfig.NON_RELEASE
+                    && DBUtils.haveGamesNeedingKA(mActivity)
+                Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
+
                 Assert.assertTrue(m_menuPrepared)
             }
         }
@@ -1726,12 +1730,20 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_setDevid -> showDialogFragment(DlgID.SET_MQTTID)
-            R.id.games_menu_pingMqtt -> MQTTUtils.ping(mActivity, object : PingResult {
-                override fun onSuccess(host: String, elapsed: Long) {
-                    val txt = LocUtils.getString(mActivity, R.string.ping_result_fmt, host, elapsed)
-                    runOnUiThread { Utils.showToast(mActivity, txt) }
-                }
-            })
+            R.id.games_menu_pingMqtt -> {
+                MQTTUtils
+                    .ping(mActivity,
+                          object : PingResult {
+                              override fun onSuccess(host: String,
+                                                     elapsed: Long) {
+                                  val txt = LocUtils
+                                      .getString(mActivity,
+                                                 R.string.ping_result_fmt,
+                                                 host, elapsed)
+                                  runOnUiThread { Utils.showToast(mActivity, txt) }
+                              }
+                          })
+            }
 
             R.id.games_menu_mqttStats -> {
                 val stats = MQTTUtils.getStats( mActivity ).orEmpty()
@@ -1741,7 +1753,7 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_restart -> ProcessPhoenix.triggerRebirth(mActivity)
-
+            R.id.games_menu_ksconfig -> KAConfigAlert.launch(mActivity)
             R.id.games_menu_enableLogStorage -> Log.storeLogs = true
             R.id.games_menu_disableLogStorage -> Log.storeLogs = false
             R.id.games_menu_pruneLogStorage -> Log.pruneStored(this)
@@ -2472,6 +2484,14 @@ class GamesListDelegate(delegator: Delegator) :
         return result
     }
 
+    private fun tryKAConfigIntent(intent: Intent): Boolean {
+        val used = KAConfigAlert.isMyIntent(intent)
+        if (used) {
+            show(KAConfigAlert.newInstance(intent))
+        }
+        return used
+    }
+
     private fun askDefaultName() {
         val name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
         CommonPrefs.setDefaultPlayerName(mActivity, name)
@@ -2688,7 +2708,8 @@ class GamesListDelegate(delegator: Delegator) :
                 || startRematch(intent)
                 || startConfig(intent)
                 || tryAlert(intent)
-                || tryInviteIntent(intent))
+                || tryInviteIntent(intent)
+                || tryKAConfigIntent(intent))
 
         Log.d(TAG, "tryStartsFromIntent() => handled: %b", handled)
     }
@@ -2931,7 +2952,7 @@ class GamesListDelegate(delegator: Delegator) :
             context.startActivity(intent)
         }
 
-        private fun makeSelfIntent(context: Context): Intent {
+        fun makeSelfIntent(context: Context): Intent {
             val intent = Intent(context, MainActivity::class.java)
             addLaunchFlags(intent)
             return intent

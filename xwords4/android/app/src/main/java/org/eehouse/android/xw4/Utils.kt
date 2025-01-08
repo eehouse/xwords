@@ -351,9 +351,10 @@ object Utils {
            one way to avoid getting the same PendingIntent for similar
            Intents is to send a different second param each time,
            though the docs say that param's ignored.
-        */
-        val pi = if (null == intent
-        ) null else getPendingIntent(context, intent)
+         */
+        val pi = intent?.let {
+            getPendingIntent(context, it)
+        }
 
         val channelID = Channels.getChannelID(context, channel)
         val builder =
@@ -365,9 +366,8 @@ object Utils {
                 .setContentTitle(title)
                 .setContentText(body)
 
-
-        if (null != actionIntent) {
-            val actionPI = getPendingIntent(context, actionIntent)
+        actionIntent?.let {
+            val actionPI = getPendingIntent(context, it)
             builder.addAction(
                 0, LocUtils.getString(context, actionString),
                 actionPI

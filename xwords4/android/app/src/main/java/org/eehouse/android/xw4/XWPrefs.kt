@@ -475,6 +475,9 @@ open class XWPrefs {
             setPrefsInt(context, R.string.key_addrs_pref, flags)
         }
 
+        // PENDING: make this configurable
+        fun getKAServiceHours(context: Context): Int { return 24 }
+
         private var s_isTablet: Boolean? = null
         private fun isTablet(context: Context): Boolean {
             if (null == s_isTablet) {

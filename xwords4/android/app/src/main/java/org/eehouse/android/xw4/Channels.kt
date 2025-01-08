@@ -36,15 +36,11 @@ object Channels {
                 val notMgr =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-                var channel = notMgr.getNotificationChannel(name)
-                if (channel == null) {
-                    val channelDescription = context.getString(id.getDesc())
-                    channel = NotificationChannel(
-                        name, channelDescription,
-                        id.getImportance()
-                    )
-                    channel.enableVibration(true)
-                    notMgr.createNotificationChannel(channel)
+                if (null == notMgr.getNotificationChannel(name)) {
+                    id.makeChannel(context).also {
+                        it.enableVibration(true)
+                        notMgr.createNotificationChannel(it)
+                    }
                 }
             }
         }
@@ -94,12 +90,12 @@ object Channels {
     enum class ID(private val mExpl: Int,
                   private val mImp: Int = NotificationManager.IMPORTANCE_LOW)
     {
-        NBSPROXY(R.string.nbsproxy_channel_expl),
         GAME_EVENT(R.string.gameevent_channel_expl,
                    // HIGH seems to be required for sound
                    NotificationManager.IMPORTANCE_HIGH),
         DUP_TIMER_RUNNING(R.string.dup_timer_expl),
-        DUP_PAUSED(R.string.dup_paused_expl);
+        DUP_PAUSED(R.string.dup_paused_expl),
+        KEEP_ALIVE(R.string.keepalive_expl, NotificationManager.IMPORTANCE_HIGH);
 
         fun idFor(rowid: Long): Int {
             return notificationId(rowid, this)
@@ -107,6 +103,12 @@ object Channels {
 
         fun getDesc(): Int { return mExpl }
         fun getImportance(): Int { return mImp }
+        fun makeChannel(context: Context): NotificationChannel {
+            val channel = context.getString(getDesc()).let {
+                NotificationChannel(toString(), it, getImportance())
+            }
+            return channel
+        }
     }
 
     private class IdsData : Serializable {

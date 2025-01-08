@@ -57,4 +57,35 @@
   <string name="pref_item_allowMulti_title">Allow duplicate gameIDs</string>
   <string name="pref_item_allowMulti_summary">Usually this means accepting invitations from the same device</string>
 
+  <string name="keepalive_expl">Move Checker</string>
+  <string name="kaservice_title">CrossWords Move Checker</string>
+  <string name="kaservice_content">CrossWords is staying awake to
+  check for remote moves. Tap for more information.</string>
+
+  <string name="enable_kaservice_title">Always check for moves</string>
+  <string name="enable_kaservice_summary">Check for moves in the
+  background, even when CrossWords is not active or the device is
+  asleep.</string>
+
+  <string name="games_menu_ksconfig">KSConfig</string>
+  <string name="ksconfig_button_start">Start Checker</string>
+  <string name="ksconfig_button_stop">Stop Checker</string>
+
+  <string name="ksconfig_body_fmt">For the best experience with
+  multi-player games, CrossWords tries to remain active in the
+  background checking for incoming moves. This can impact battery
+  life, which is why Android discourages it, and why you will always
+  see a notification when it is happening.
+
+  \n\nCrossWords only does this when a move has been made in at least
+  one networked game in the last %1$d hours. And you can choose to
+  disable it altogether using the “%2$s” button below.
+  </string>
+
+  <string name="ksconfig_running">The Move Checker is currently running.</string>
+  <string name="ksconfig_notrunning">The Move Checker is not currently running.</string>
+
+  <string name="ksconfig_killed_title">CrossWords move checker died</string>
+  <string name="ksconfig_killed_body_fmt">Died at %1$s. Use this notification to relaunch.</string>
+  <string name="ksconfig_disable">Disable Checker</string>
 </resources>

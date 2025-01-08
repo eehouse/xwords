@@ -2388,8 +2388,6 @@
     <string name="button_deny">Deny</string>
     <string name="perms_rationale_title">Android Permission Explained</string>
     <string name="toast_no_permission">Permission not granted</string>
-    <!-- Explanation in settings for always-on BT notification -->
-    <string name="nbsproxy_channel_expl">Alerts about NBSProxy</string>
     <!-- Explanation in settings for traditional move-arrived notification -->
     <string name="gameevent_channel_expl">In-game events</string>
     <string name="not_again_emptybtscan">If a scan doesn’t find the device you expect:\n

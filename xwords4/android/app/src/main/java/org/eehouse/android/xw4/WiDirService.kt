@@ -81,29 +81,27 @@ class WiDirService : XWService() {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand(%s); enabled=${enabled()}", intent)
-        val result: Int
+        val result =
+            if (enabled()) {
+                val ordinal = intent.getIntExtra(KEY_CMD, -1)
+                if (-1 != ordinal) {
+                    val cmd = P2PAction.entries[ordinal]
+                    when (cmd) {
+                        P2PAction.GOT_MSG -> {
+                            handleGotMessage(intent)
+                            updateStatusIn(true)
+                        }
 
-        if (enabled()) {
-            result = START_STICKY
-
-            val ordinal = intent.getIntExtra(KEY_CMD, -1)
-            if (-1 != ordinal) {
-                val cmd = P2PAction.entries[ordinal]
-                when (cmd) {
-                    P2PAction.GOT_MSG -> {
-                        handleGotMessage(intent)
-                        updateStatusIn(true)
+                        P2PAction.GOT_INVITE -> handleGotInvite(intent)
+                        P2PAction.GAME_GONE -> handleGameGone(intent)
+                        else -> {Log.d(TAG, "unexpected cmd $cmd"); Assert.failDbg()}
                     }
-
-                    P2PAction.GOT_INVITE -> handleGotInvite(intent)
-                    P2PAction.GAME_GONE -> handleGameGone(intent)
-                    else -> {Log.d(TAG, "unexpected cmd $cmd"); Assert.failDbg()}
                 }
+                START_STICKY
+            } else {
+                stopSelf(startId)
+                START_NOT_STICKY
             }
-        } else {
-            result = START_NOT_STICKY
-            stopSelf(startId)
-        }
 
         return result
     }

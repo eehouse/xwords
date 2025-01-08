@@ -14,6 +14,7 @@
   <string name="key_disable_nag_solo">key_disable_nag_solo</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
+  <string name="key_enable_kaservice">key_enable_kaservice</string>
   <string name="key_skip_mqtt_add">key_skip_mqtt_add</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
   <string name="key_tile_valuetype">key_tile_valuetype</string>
