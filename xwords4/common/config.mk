@@ -22,42 +22,6 @@ INCLUDES += $(COMMON_INCS) -I./
 COMMONDIR ?= ../common
 COMMONOBJDIR = $(BUILD_PLAT_DIR)/common
 
-COMMONSRC = \
-	$(COMMONDIR)/board.c \
-	$(COMMONDIR)/boarddrw.c \
-	$(COMMONDIR)/dragdrpp.c \
-	$(COMMONDIR)/scorebdp.c \
-	$(COMMONDIR)/tray.c \
-	$(COMMONDIR)/draw.c \
-	$(COMMONDIR)/model.c \
-	$(COMMONDIR)/mscore.c \
-	$(COMMONDIR)/server.c \
-	$(COMMONDIR)/pool.c \
-	$(COMMONDIR)/game.c \
-	$(COMMONDIR)/nwgamest.c \
-	$(COMMONDIR)/dictnry.c \
-	$(COMMONDIR)/dictiter.c \
-	$(COMMONDIR)/engine.c \
-	$(COMMONDIR)/memstream.c \
-	$(COMMONDIR)/comms.c \
-	$(COMMONDIR)/nli.c \
-	$(COMMONDIR)/mempool.c \
-	$(COMMONDIR)/movestak.c \
-	$(COMMONDIR)/strutils.c \
-	$(COMMONDIR)/bufqueue.c \
-	$(COMMONDIR)/vtabmgr.c \
-	$(COMMONDIR)/dictmgr.c \
-	$(COMMONDIR)/dbgutil.c \
-	$(COMMONDIR)/smsproto.c \
-	$(COMMONDIR)/dutil.c \
-	$(COMMONDIR)/device.c \
-	$(COMMONDIR)/knownplyr.c \
-	$(COMMONDIR)/dllist.c \
-	$(COMMONDIR)/statc.c \
-	$(COMMONDIR)/md5.c \
-
-# PENDING: define this in terms of above!!!
-
 COMMON1 = \
 	$(COMMONOBJDIR)/board.o \
 	$(COMMONOBJDIR)/boarddrw.o \
