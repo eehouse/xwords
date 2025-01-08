@@ -775,7 +775,6 @@
     <string name="ok_with_robots">OK (maskinspiller)</string>
     <string name="invite_sms_fmt">Trykk på lenken for å godta min invitasjon og ta del i et CrossWords-spill: %1$s</string>
     <string name="invite_nbs_desc">En datamelding vil så leveres til enheten med det telefonnummeret. Hvis CrossWords er installert der og har nødvendige tilganger vil det motta invitasjonen og spillet kan begynne.</string>
-    <string name="nbsproxy_channel_expl">Varsler om NBSProxy</string>
     <string name="not_again_longtap_lookup">Du kan slå opp ord FØR de innsendes som trekk -- ved langtrykk, samme som innsendelse.
 \n
 \nDu kan bruke denne funksjonen for å sjekke gyldigheten av ord du tenker å bruke, eller å slå opp et ord du ikker er sikker på.</string>

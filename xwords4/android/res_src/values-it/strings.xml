@@ -91,7 +91,6 @@
 \n • Se il problema persiste, riavviare questo dispositivo
 \n</string>
     <string name="gameevent_channel_expl">Eventi della partita</string>
-    <string name="nbsproxy_channel_expl">Avviso su NBSProxy</string>
     <string name="toast_no_permission">Permessi non attivati</string>
     <string name="perms_rationale_title">Spiegazione dei permessi Android</string>
     <string name="sms_send_failed">Invio SMS fallito</string>

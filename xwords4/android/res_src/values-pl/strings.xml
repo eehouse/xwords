@@ -284,9 +284,9 @@
 \n</string>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">%1$d płytki pozostawione w puli.</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="few"/>
+        <item quantity="many"/>
+        <item quantity="other"/>
     </plurals>
     <string name="confirm_undo_last">Czy na pewno chcesz cofnąć ostatnią kolej\? (Nie ma opcji ponów.)</string>
     <string name="title_prefs">Ustawienia CrossWords</string>
@@ -699,9 +699,9 @@
     <string name="list_item_netstats">Połączenia…</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Zbyt wiele wybranych płytek. Wybierz tylko jeden.Zbyt wiele wybranych płytek. Wybierz nie więcej niż %1$d.Zbyt wiele wybranych płytek. Wybierz mniej niż %1$d.</item>
-        <item quantity="few"></item>
-        <item quantity="many"></item>
-        <item quantity="other"></item>
+        <item quantity="few"/>
+        <item quantity="many"/>
+        <item quantity="other"/>
     </plurals>
     <string name="button_scan">Skanuj ponownie</string>
     <plurals name="invite_bt_desc_fmt_2">
@@ -787,7 +787,6 @@
     <string name="missing_sms_perms">Ta gra jest skonfigurowana do komunikowania się za pośrednictwem Data SMS, ale CrossWords nie ma uprawnień do tego. Nadal możesz otworzyć grę, ale może nie być w stanie wysyłać ani odbierać ruchów.
 \n
 \nMożesz ponownie otworzyć go, aby zostać poproszony o pozwolenie ponownie. Możesz też usunąć ustawienia komunikacji Data SMS.</string>
-    <string name="nbsproxy_channel_expl">Alerty o NBSProxy</string>
     <string name="not_again_longtap_lookup">Możesz spojrzeć na słowa PRZED tym, jak są one popełnione jako ruchy - przez długie podsłuchiwanie, tak samo jak słowa popełnione.
 \n
 \nUżyj tej funkcji, aby sprawdzić poprawność słów, którymi zamierzasz zagrać, lub poszukaj nieznanego słowa podanego jako wskazówka.</string>

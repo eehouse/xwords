@@ -86,7 +86,6 @@
     <string name="button_ask">Запитуйте</string>
     <string name="dicts_storage_rationale">CrossWords може зберігати та читати списки слів у області завантажень вашого пристрою, але для доступу до них потрібно запитувати дозвіл. \n\nВи можете сміливо заборонити цей дозвіл, якщо ви ніколи не завантажуватимете списки слів, окрім як із CrossWords, і раніше не зберігали їх там.</string>
     <string name="button_deny">Заперечувати</string>
-    <string name="nbsproxy_channel_expl">Сповіщення про NBSProxy</string>
     <string name="gameevent_channel_expl">Події в грі</string>
     <string name="dup_tag">Дуп</string>
     <string name="lmi_pass_dup">Жоден гравець не знайшов ходу (усі пройшли)</string>

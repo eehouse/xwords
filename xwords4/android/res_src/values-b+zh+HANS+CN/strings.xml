@@ -865,7 +865,6 @@
     <string name="invite_dict_missing_body_fmt">%1$s 已邀请你用单词表 %2$s（在 %3$s 中）游玩 CrossWords，但还未安装。要下载单词表还是拒绝邀请？</string>
     <string name="pct_suffix">" %."</string>
     <string name="button_scan">重新扫描</string>
-    <string name="nbsproxy_channel_expl">发送 NBSProxy 相关提醒</string>
     <string name="not_again_hintprev">此按钮会按得分递增顺序，显示所有可用移动。
 \n
 \n（只会使用牌架分隔符右侧的卡牌。）</string>

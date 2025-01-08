@@ -2938,7 +2938,6 @@ pour la langue</string>
 \n
 \nUtilisez cette fonctionnalité pour vérifier la validité de mots que vous envisagez de jouer, ou pour rechercher un mot peu familier fourni comme indice.</string>
     <string name="gameevent_channel_expl">Événements dans la partie</string>
-    <string name="nbsproxy_channel_expl">Alertes sur NBSProxy</string>
     <string name="expl_mqtt_url">Adresse de la nouvelle API de relai basée sur MQTT</string>
     <string name="mqtt_qos">QOS MQTT</string>
     <string name="mqtt_port">Port MQTT</string>

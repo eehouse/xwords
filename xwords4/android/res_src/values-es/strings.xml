@@ -700,7 +700,6 @@
     <string name="sms_send_failed">Error al enviar SMS</string>
     <string name="button_deny">Denegar</string>
     <string name="remove_sms">Eliminar SMS</string>
-    <string name="nbsproxy_channel_expl">Alertas sobre NBSProxy</string>
     <string name="lmi_tiles_dup">Las mismas fichas asignadas a todos los jugadores</string>
     <string name="str_submit_confirm">¿Enviar el movimiento actual\?
 \n</string>

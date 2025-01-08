@@ -739,7 +739,6 @@ WiFi ダイレクト経由で接続可能なデバイスはありません。</s
     <string name="invite_nbs_desc">その後、データメッセージがその電話番号のデバイスに配信されます。クロスワードがインストールされていて、必要なアクセス許可がある場合は、招待状を受け取ってプレイを開始できます。</string>
     <string name="empty_bt_inviter">ペアリングされたデバイスはまだ検出されていません。</string>
     <string name="checkbox_archive">アーカイブに移動</string>
-    <string name="nbsproxy_channel_expl">NBSProxy に関するアラート</string>
     <string name="not_again_longtap_lookup">単語を移動としてコミットする前に -- 長押しして、コミットされた単語と同じように単語を調べることができます。
 \n
 \nこの機能を使用して、考えている単語の有効性を確認したり、ヒントとして提供される見慣れない単語を調べたりします。</string>

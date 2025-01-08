@@ -673,7 +673,6 @@
     <string name="pause_notify_expl_fmt">Jogador %1$s pausou este jogo, com esta explicação: %2$s</string>
     <string name="unpause_notify_expl_fmt">Jogador %1$s despausou este jogo, com esta explicação: %2$s</string>
     <string name="unhide_dupmode_summary">(É experimental demais no momento)</string>
-    <string name="nbsproxy_channel_expl">Alertas sobre NBSProxy</string>
     <string name="gameevent_channel_expl">Eventos do jogo</string>
     <string name="pick_tiles_title_fmt">Escolha uma escrita do quadrado para “%1$s”</string>
     <string name="no_tiles_exist">“%1$s” não pode ser escrito com quadrados de %2$s.</string>
