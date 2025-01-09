@@ -430,7 +430,7 @@
     <string name="button_juggle_players">Перемішайте гравців</string>
     <string name="settings_label">Інші налаштування</string>
     <string name="lang_name_portuguese">португальська</string>
-    <string name="reboot_after_setFmt">MQTT devID змінено на 1$s\n\nПерезапуск, щоб забезпечити використання.</string>
+    <string name="reboot_after_setFmt">MQTT devID змінено на \"%1$s\".\n\nПерезапуск, щоб забезпечити використання.</string>
     <string name="title_pasteDevid">MQTT devID запрошеного</string>
     <plurals name="moves_fmt">
         <item quantity="one">%1$d зіграно хід</item>
@@ -581,7 +581,7 @@
     <string name="wordlist_custom_note">(Кастом)</string>
     <string name="games_menu_setDevid">Встановіть MQTT devID</string>
     <string name="set_devid_title">Новий ідентифікатор пристрою MQTT</string>
-    <string name="badMQTTDevIDFmt">Підроблений MQTT devID 1$s Будь ласка, повторіть спробу.</string>
+    <string name="badMQTTDevIDFmt">Підроблений ідентифікатор пристрою MQTT \"%1$s\". Спробуйте ще раз.</string>
     <string name="backup_only_on_9">Експорт працює на Android 9 (і всіх інших версіях), а імпорт — ні. Отже, ви можете виконати експорт на цьому пристрої, щоб перейти на новіший телефон, але ви не зможете імпортувати отриманий файл на цьому пристрої.</string>
     <string name="no_restore_on_9">Імпорт не працює на Android 9.</string>
     <string name="na_rematch_edit">Назва гри не зміниться після редагування, якщо вона не буде порожньою.</string>
