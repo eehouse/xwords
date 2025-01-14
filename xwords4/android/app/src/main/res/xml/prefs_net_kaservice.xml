@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  >
+
+  <PreferenceCategory android:title="@string/prefs_net_kaservice"
+                      >
+
+    <CheckBoxPreference android:key="@string/key_enable_kaservice"
+                        android:title="@string/enable_kaservice_title"
+                        android:summary="@string/enable_kaservice_summary"
+                        android:defaultValue="true"
+                        />
+
+    <org.eehouse.android.xw4.KAHoursPreference
+        android:key="@string/key_ka_hours"
+        android:title="@string/expl_ka_hours"
+        android:defaultValue="@string/dflt_ka_hours"
+        />
+
+  </PreferenceCategory>
+</PreferenceScreen>

@@ -115,6 +115,16 @@ class KAService: Service() {
                 }
 
             GlobalScope.launch(Dispatchers.IO) {
+                val context = this@KAService
+                val minsLeft = DBUtils.getKAMinutesLeft(context)
+                Log.d(TAG, "will run $minsLeft minutes")
+                delay(minsLeft * 60 * 1000)
+                Log.d(TAG, "ran $minsLeft minutes; stopping now")
+                stopService()
+                startIf(context)
+            }
+
+            GlobalScope.launch(Dispatchers.IO) {
                 Log.d(TAG, "%H.service loop starting", this@KAService)
                 val startTime = System.currentTimeMillis()
                 var counter = 0
@@ -128,7 +138,7 @@ class KAService: Service() {
                 Log.d(TAG, "%H.service loop exiting", this@KAService)
             }
         }
-        launchOnce()
+        launchConfigOnce()
     }
 
     private fun stopService() {
@@ -145,10 +155,10 @@ class KAService: Service() {
         }
         mServiceStarted = false
         mSelfKilled = true
-        launchOnce()
+        launchConfigOnce()
     }
 
-    private fun launchOnce()
+    private fun launchConfigOnce()
     {
         if ( mNeedsConfig ) {
             mNeedsConfig = false
@@ -186,11 +196,13 @@ class KAService: Service() {
         private val START_CMD = "start"
         private val STOP_CMD = "stop"
         private val CONFIG_AFTER = "CONFIG_AFTER"
+
         fun startIf(context: Context, configAfter: Boolean = false) {
-            if (DBUtils.haveGamesNeedingKA(context)
+            if (!sIsRunning
                     && XWPrefs.getPrefsBoolean(context,
                                                R.string.key_enable_kaservice,
-                                               true)) {
+                                               true)
+                    && 0L < DBUtils.getKAMinutesLeft(context)) {
                 startWith(context, START_CMD, configAfter)
             }
         }

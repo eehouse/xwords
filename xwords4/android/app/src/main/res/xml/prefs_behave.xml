@@ -52,10 +52,5 @@
                         android:summary="@string/peek_other_summary"
                         android:defaultValue="false"
                         />
-    <CheckBoxPreference android:key="@string/key_enable_kaservice"
-                        android:title="@string/enable_kaservice_title"
-                        android:summary="@string/enable_kaservice_summary"
-                        android:defaultValue="true"
-                        />
   </PreferenceCategory>
 </PreferenceScreen>

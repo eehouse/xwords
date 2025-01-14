@@ -88,4 +88,11 @@
   <string name="ksconfig_killed_title">CrossWords move checker died</string>
   <string name="ksconfig_killed_body_fmt">Died at %1$s. Use this notification to relaunch.</string>
   <string name="ksconfig_disable">Disable Checker</string>
+
+  <string name="prefs_net_kaservice">Network Move Checker</string>
+  <string name="prefs_net_kaservice_summary">Always check for moves</string>
+
+  <string name="expl_ka_hours">How many hours to stay awake (1..72)</string>
+  <string name="dflt_ka_hours">12</string>
+
 </resources>

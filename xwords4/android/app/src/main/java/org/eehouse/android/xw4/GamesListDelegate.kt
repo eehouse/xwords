@@ -1072,15 +1072,18 @@ class GamesListDelegate(delegator: Delegator) :
                     invalidateOptionsMenuIf()
                 }
 
-                GameChangeType.GAME_CHANGED -> if (DBUtils.ROWIDS_ALL.toLong() == rowid) { // all changed
-                    mkListAdapter()
-                } else {
-                    reloadGame(rowid)
-                    if (m_adapter!!.inExpandedGroup(rowid)) {
-                        val groupID = DBUtils.getGroupForGame(mActivity, rowid)
-                        m_adapter!!.setExpanded(groupID, false)
-                        m_adapter!!.setExpanded(groupID, true)
+                GameChangeType.GAME_CHANGED -> {
+                    if (DBUtils.ROWIDS_ALL.toLong() == rowid) { // all changed
+                        mkListAdapter()
+                    } else {
+                        reloadGame(rowid)
+                        if (m_adapter!!.inExpandedGroup(rowid)) {
+                            val groupID = DBUtils.getGroupForGame(mActivity, rowid)
+                            m_adapter!!.setExpanded(groupID, false)
+                            m_adapter!!.setExpanded(groupID, true)
+                        }
                     }
+                    KAService.startIf(mActivity)
                 }
 
                 GameChangeType.GAME_CREATED -> {
@@ -1619,7 +1622,7 @@ class GamesListDelegate(delegator: Delegator) :
                 Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
 
                 enable = BuildConfig.NON_RELEASE
-                    && DBUtils.haveGamesNeedingKA(mActivity)
+                    && 0L < DBUtils.getKAMinutesLeft(mActivity)
                 Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
 
                 Assert.assertTrue(m_menuPrepared)
