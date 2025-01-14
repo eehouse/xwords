@@ -171,12 +171,14 @@ class PrefsDelegate(private val mActivity: XWActivity,
 
     // interface SharedPreferences.OnSharedPreferenceChangeListener
     override fun onSharedPreferenceChanged(sp: SharedPreferences, key: String?) {
-        if (s_keysHash!!.containsKey(key)) {
-            when (s_keysHash!![key]) {
+        s_keysHash!!.get(key)?.let {
+            when (it) {
                 R.string.key_logging_on -> Log.enable(sp.getBoolean(key, false))
                 R.string.key_show_sms -> NBSProto.smsToastEnable(sp.getBoolean(key, false))
-                R.string.key_enable_nbs -> if (!sp.getBoolean(key, true)) {
-                    NBSProto.stopThreads()
+                R.string.key_enable_nbs -> {
+                    if (!sp.getBoolean(key, true)) {
+                        NBSProto.stopThreads()
+                    }
                 }
 
                 R.string.key_download_path -> {
@@ -213,6 +215,8 @@ class PrefsDelegate(private val mActivity: XWActivity,
                 R.string.key_force_tablet -> makeOkOnlyBuilder(R.string.after_restart).show()
                 R.string.key_mqtt_host, R.string.key_mqtt_port, R.string.key_mqtt_qos ->
                     MQTTUtils.onConfigChanged(mActivity)
+
+                R.string.key_enable_kaservice -> KAService.syncUp(mActivity)
 
                 else -> Assert.failDbg()
             }
@@ -279,6 +283,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
             R.string.key_mqtt_host,
             R.string.key_mqtt_port,
             R.string.key_mqtt_qos,
+            R.string.key_enable_kaservice,
         )
         private var s_keysHash: MutableMap<String, Int>? = null
 

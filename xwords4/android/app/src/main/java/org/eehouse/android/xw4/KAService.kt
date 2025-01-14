@@ -210,6 +210,14 @@ class KAService: Service() {
         fun stop(context: Context, configAfter: Boolean = false)
             = startWith(context, STOP_CMD, configAfter)
 
+        fun syncUp(context:Context) {
+            XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice,
+                                    true).also { enabled ->
+                if (enabled) startIf(context)
+                else stop(context)
+            }
+        }
+
         private fun startWith(context: Context, cmd: String, configAfter: Boolean)
         {
             Intent(context, KAService::class.java).also {

@@ -55,7 +55,8 @@ class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
         val builder = LocUtils.makeAlertBuilder(context)
             .setMessage(msg)
             .setNeutralButton(disableTxt) { dlg, item ->
-                Utils.notImpl(context)
+                XWPrefs.setPrefsBoolean(context, R.string.key_enable_kaservice, false)
+                KAService.stop(context)
             }
             .setNegativeButton(buttonTxt, this)
             .setPositiveButton(android.R.string.ok, null)
