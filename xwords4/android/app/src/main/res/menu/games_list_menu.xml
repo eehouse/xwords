@@ -185,11 +185,6 @@
       </menu>
     </item>
 
-    <!-- Do not leave this here!!! -->
-    <item android:id="@+id/games_menu_ksconfig"
-          android:title="@string/games_menu_ksconfig"
-          />
-
     <item android:id="@+id/games_menu_restart"
           android:title="@string/gamel_menu_restart"
           />

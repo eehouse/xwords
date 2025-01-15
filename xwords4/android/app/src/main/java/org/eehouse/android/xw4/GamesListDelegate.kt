@@ -1621,10 +1621,6 @@ class GamesListDelegate(delegator: Delegator) :
                 Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
                 Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
 
-                enable = BuildConfig.NON_RELEASE
-                    && 0L < DBUtils.getKAMinutesLeft(mActivity)
-                Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
-
                 Assert.assertTrue(m_menuPrepared)
             }
         }
@@ -1756,7 +1752,6 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_restart -> ProcessPhoenix.triggerRebirth(mActivity)
-            R.id.games_menu_ksconfig -> KAConfigAlert.launch(mActivity)
             R.id.games_menu_enableLogStorage -> Log.storeLogs = true
             R.id.games_menu_disableLogStorage -> Log.storeLogs = false
             R.id.games_menu_pruneLogStorage -> Log.pruneStored(this)
