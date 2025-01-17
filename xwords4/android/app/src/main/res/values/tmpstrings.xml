@@ -71,19 +71,20 @@
   <string name="ksconfig_button_start">Start Checker</string>
   <string name="ksconfig_button_stop">Stop Checker</string>
 
+  <string name="ksconfig_title">CrossWords Move Checker</string>
   <string name="ksconfig_body_fmt">For the best experience with
   multi-player games, CrossWords tries to remain active in the
   background checking for incoming moves. This can impact battery
   life, which is why Android discourages it, and why you will always
   see a notification when it is happening.
 
-  \n\nCrossWords only does this when a move has been made in at least
-  one networked game in the last %1$d hours. And you can choose to
-  disable it altogether using the “%2$s” button below.
+  \n\nThe move checker only runs when a move has been made in at least
+  one networked game in the last %1$d hours. You can configure it, or
+  disable it altogether, using the “%2$s” button below.
   </string>
 
   <string name="ksconfig_running_fmt">The Move Checker is currently
-  running. It will stop after %1$d:%2$d unless a move is made or
+  running. It will stop in %1$dh%2$02dm unless a move is made or
   received.</string>
   <string name="ksconfig_notrunning">The Move Checker is not currently running.</string>
 

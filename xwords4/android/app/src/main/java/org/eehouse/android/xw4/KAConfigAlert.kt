@@ -28,8 +28,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import org.eehouse.android.xw4.gen.PrefsWrappers
 
+import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.loc.LocUtils
 
 class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
@@ -49,18 +49,22 @@ class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
 
         msg += "\n\n" +
             if (mIsRunning) {
-                val mins = DBUtils.getKAMinutesLeft(context)
-                val hours = mins / 60
-                LocUtils.getString(context, R.string.ksconfig_running_fmt,
-                                   hours, mins%60)
+                DBUtils.getKAMinutesLeft(context).let {
+                    val minutes = it % 60
+                    val hours = it / 60
+                    LocUtils.getString(context, R.string.ksconfig_running_fmt,
+                                       hours, minutes)
+                }
             } else {
                 LocUtils.getString(context, R.string.ksconfig_notrunning)
             }
 
         val builder = LocUtils.makeAlertBuilder(context)
+            .setTitle(R.string.ksconfig_title)
             .setMessage(msg)
             .setNeutralButton(settingsTxt) { dlg, item ->
-                PrefsDelegate.launch(context, PrefsWrappers.prefs_net_kaservice::class.java)
+                PrefsDelegate.launch(context, PrefsWrappers.prefs_net_kaservice
+                                                  ::class.java)
             }
             .setNegativeButton(buttonTxt, this)
             .setPositiveButton(android.R.string.ok, null)
