@@ -37,7 +37,7 @@ class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
 
     override fun onCreateDialog(sis: Bundle?): Dialog {
         val context = requireContext()
-        mIsRunning = KAService.isRunning(context)
+        mIsRunning = KAService.isRunning()
 
         val hours = XWPrefs.getKAServiceHours(context)
         val settingsTxt = LocUtils.getString(context, R.string.button_settings)

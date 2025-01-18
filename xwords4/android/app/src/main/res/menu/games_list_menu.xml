@@ -23,7 +23,9 @@
           android:icon="@drawable/prefs__gen"
           android:showAsAction="ifRoom"
           />
-
+    <item android:id="@+id/games_menu_ksconfig"
+          android:title="@string/keepalive_expl"
+          />
     <item android:id="@+id/games_menu_rateme"
           android:title="@string/menu_rateme"
           />

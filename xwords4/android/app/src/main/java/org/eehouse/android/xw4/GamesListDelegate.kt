@@ -1544,6 +1544,10 @@ class GamesListDelegate(delegator: Delegator) :
                 var enable = showDbg && nothingSelected
                 Utils.setItemVisible(menu, R.id.games_menu_checkupdates, enable)
 
+                enable = KAService.isRunning()
+                    || 0 < DBUtils.getKAMinutesLeft(mActivity)
+                Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
+
                 val selGroupPos =
                     if (1 == nGroupsSelected) {
                         val id = m_mySIS!!.selGroupIDs.iterator().next()
@@ -1683,6 +1687,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_checkupdates -> UpdateCheckReceiver
                                                 .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
+            R.id.games_menu_ksconfig -> KAConfigAlert.launch(mActivity)
             R.id.games_menu_rateme -> {
                 val str = String.format(
                     "market://details?id=%s",

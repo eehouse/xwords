@@ -232,7 +232,7 @@ class KAService: Service() {
         }
 
         private var sIsRunning = false
-        fun isRunning(context: Context): Boolean
+        fun isRunning(): Boolean
         {
             return sIsRunning
         }
