@@ -26,6 +26,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
@@ -39,7 +40,7 @@ import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.loc.LocUtils
 
 class KAConfigView(private val mContext: Context, aset: AttributeSet?):
-    LinearLayout(mContext, aset), View.OnClickListener {
+    ScrollView(mContext, aset), View.OnClickListener {
     private var mIsRunning: Boolean = false
     private var mScope: LifecycleCoroutineScope? = null
 
