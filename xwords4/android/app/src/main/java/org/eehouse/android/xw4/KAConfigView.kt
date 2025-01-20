@@ -27,8 +27,11 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -38,10 +41,18 @@ import org.eehouse.android.xw4.loc.LocUtils
 class KAConfigView(private val mContext: Context, aset: AttributeSet?):
     LinearLayout(mContext, aset), View.OnClickListener {
     private var mIsRunning: Boolean = false
+    private var mScope: LifecycleCoroutineScope? = null
 
-    override fun onFinishInflate(): Unit {
-        super.onFinishInflate()
-        update()
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        mScope = ViewTreeLifecycleOwner.get(this)?.lifecycleScope
+
+        mScope?.launch(Dispatchers.Main) {
+            while (true) {
+                update()
+                delay(60 * 1000)    // every minute so minutes left can change
+            }
+        }
     }
 
     private fun update()
@@ -113,7 +124,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
 
     private fun updateAfter()
     {
-        GlobalScope.launch(Dispatchers.Main) {
+        mScope!!.launch(Dispatchers.Main) {
             delay(250)
             update()
         }
