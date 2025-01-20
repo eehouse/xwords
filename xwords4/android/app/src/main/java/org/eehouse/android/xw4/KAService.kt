@@ -162,7 +162,7 @@ class KAService: Service() {
     {
         if ( mNeedsConfig ) {
             mNeedsConfig = false
-            KAConfigAlert.launch(this)
+            KAConfigView.launch(this)
         }
     }
 
@@ -187,7 +187,7 @@ class KAService: Service() {
         return builder
             .setContentTitle(context.getString(R.string.kaservice_title))
             .setContentText(context.getString(R.string.kaservice_content))
-            .setContentIntent(KAConfigAlert.makePendingIntent(this))
+            .setContentIntent(KAConfigView.makePendingIntent(this))
             .setSmallIcon(R.drawable.notify)
             .build()
     }

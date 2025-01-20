@@ -18,36 +18,62 @@
  */
 package org.eehouse.android.xw4
 
-import android.app.Activity
-import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.net.Uri
-import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
+import android.util.AttributeSet
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.loc.LocUtils
 
-class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
+class KAConfigView(private val mContext: Context, aset: AttributeSet?):
+    LinearLayout(mContext, aset), View.OnClickListener {
     private var mIsRunning: Boolean = false
 
-    override fun onCreateDialog(sis: Bundle?): Dialog {
-        val context = requireContext()
+    override fun onFinishInflate(): Unit {
+        super.onFinishInflate()
+        update()
+    }
+
+    private fun update()
+    {
         mIsRunning = KAService.isRunning()
 
         val hours = XWPrefs.getKAServiceHours(context)
         val settingsTxt = LocUtils.getString(context, R.string.button_settings)
-        var msg = LocUtils.getString(context, R.string.ksconfig_body_fmt,
-                                     hours, settingsTxt)
-        val buttonTxt =
-            if ( mIsRunning ) R.string.ksconfig_button_stop
-            else R.string.ksconfig_button_start
+        LocUtils.getString(context, R.string.ka_config_fmt, hours, settingsTxt )
+            .also {
+                (findViewById(R.id.config_expl) as TextView)
+                    .setText(it)
+            }
 
-        msg += "\n\n" +
+        (findViewById(R.id.settings) as Button)
+            .setOnClickListener {
+                PrefsDelegate
+                    .launch(
+                        mContext,
+                        PrefsWrappers.prefs_net_kaservice::class.java
+                    )
+            }
+
+        (findViewById(R.id.start_stop_button) as Button).also {
+            it.setText(
+                if (mIsRunning) R.string.ksconfig_button_stop
+                else R.string.ksconfig_button_start
+            )
+            it.setOnClickListener(this)
+        }
+
+        val msg =
             if (mIsRunning) {
                 DBUtils.getKAMinutesLeft(context).let {
                     val minutes = it % 60
@@ -58,40 +84,44 @@ class KAConfigAlert: XWDialogFragment(), DialogInterface.OnClickListener{
             } else {
                 LocUtils.getString(context, R.string.ksconfig_notrunning)
             }
+        (findViewById(R.id.start_stop_expl) as TextView).setText(msg)
 
-        val builder = LocUtils.makeAlertBuilder(context)
-            .setTitle(R.string.ksconfig_title)
-            .setMessage(msg)
-            .setNeutralButton(settingsTxt) { dlg, item ->
-                PrefsDelegate.launch(context, PrefsWrappers.prefs_net_kaservice
-                                                  ::class.java)
-            }
-            .setNegativeButton(buttonTxt, this)
-            .setPositiveButton(android.R.string.ok, null)
-        return builder.create()
+        (findViewById(R.id.hide_notify_button) as Button).also {
+            it.setOnClickListener { gotoSettings() }
+        }
     }
 
-    override fun onClick(dialog: DialogInterface?, which: Int) {
-        val context = requireContext()
+    // from: https://www.spiria.com/en/blog/mobile-development/hiding-foreground-services-notifications-in-android/
+    private fun gotoSettings()
+    {
+        val channel = Channels.ID.KEEP_ALIVE.toString()
+        val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, mContext.getPackageName())
+            .putExtra(Settings.EXTRA_CHANNEL_ID, channel)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        mContext.startActivity(intent)
+    }
+
+    override fun onClick(v: View?) {
         if ( mIsRunning ) {
             KAService.stop(context, true)
         } else {
             KAService.startIf(context, true)
         }
+        updateAfter()
     }
 
-    override fun getFragTag(): String {
-        return TAG
+    private fun updateAfter()
+    {
+        GlobalScope.launch(Dispatchers.Main) {
+            delay(250)
+            update()
+        }
     }
 
     companion object {
-        private val TAG = KAConfigAlert::class.java.getSimpleName()
+        private val TAG = KAConfigView::class.java.getSimpleName()
         private val FOR_KACONFIG = BuildConfig.APPLICATION_ID + ".FOR_KACONFIG"
-
-        fun newInstance(intent: Intent? = null): KAConfigAlert {
-            val result = KAConfigAlert()
-            return result
-        }
 
         fun makePendingIntent(context: Context): PendingIntent
         {

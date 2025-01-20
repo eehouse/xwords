@@ -615,6 +615,15 @@ class GamesListDelegate(delegator: Delegator) :
                     .create()
             }
 
+            DlgID.KACONFIG -> {
+                val view = inflate(R.layout.kaconfig_view)
+                dialog = makeAlertBuilder()
+                    .setTitle(R.string.ksconfig_title)
+                    .setView(view)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .create()
+            }
+
             DlgID.RENAME_GROUP -> {
                 val groupID = params[0] as Long
                 val namer = buildRenamer(
@@ -1687,7 +1696,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_checkupdates -> UpdateCheckReceiver
                                                 .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
-            R.id.games_menu_ksconfig -> KAConfigAlert.launch(mActivity)
+            R.id.games_menu_ksconfig -> showDialogFragment(DlgID.KACONFIG)
             R.id.games_menu_rateme -> {
                 val str = String.format(
                     "market://details?id=%s",
@@ -2488,9 +2497,9 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     private fun tryKAConfigIntent(intent: Intent): Boolean {
-        val used = KAConfigAlert.isMyIntent(intent)
+        val used = KAConfigView.isMyIntent(intent)
         if (used) {
-            show(KAConfigAlert.newInstance(intent))
+            showDialogFragment(DlgID.KACONFIG)
         }
         return used
     }

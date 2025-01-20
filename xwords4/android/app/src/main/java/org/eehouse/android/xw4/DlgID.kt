@@ -71,6 +71,7 @@ enum class DlgID {
     GET_DEVID,
     SET_MQTTID,
     MQTT_PEERS,
+    KACONFIG,
     ;
 
     private var m_addToStack: Boolean

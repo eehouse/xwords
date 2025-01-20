@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.eehouse.android.xw4.KAConfigView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    >
+
+  <!-- For the best experience... -->
+  <TextView android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/ksconfig_expl"
+            />
+
+  <!-- The move checker only runs... -->
+  <TextView android:id="@+id/config_expl"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+  <Button android:id="@+id/settings"
+          android:layout_height="wrap_content"
+          android:layout_width="match_parent"
+          android:text="@string/button_settings"
+          />
+
+
+  <!-- The move checker is currently running -->
+  <TextView android:id="@+id/start_stop_expl"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+  <Button android:id="@+id/start_stop_button"
+          android:layout_height="wrap_content"
+          android:layout_width="match_parent"
+          />
+
+  <TextView android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/hide_notify_expl"
+            />
+
+  <Button android:id="@+id/hide_notify_button"
+          android:layout_height="wrap_content"
+          android:layout_width="match_parent"
+          android:text="@string/hide_notify_button"
+          />
+
+</org.eehouse.android.xw4.KAConfigView>
