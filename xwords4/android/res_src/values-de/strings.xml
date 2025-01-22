@@ -463,7 +463,7 @@
 \n(%1$d Partien werden auch gelöscht.)"</item>
     </plurals>
     <string name="rename_group_label">Den Namen dieser Gruppe ändern in:</string>
-    <string name="cannot_delete_default_group_fmt">Die Gruppe für neue Partien, %1$s, kann nicht gelöscht werden.</string>
+    <string name="cannot_delete_default_group_fmt">Die Gruppe “%1$s” kann jetzt nicht gelöscht werden, weil es die Gruppe ist, in der neue Spiele platziert werden.</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d Partie)</item>
         <item quantity="other">%1$s (%2$d Partien)</item>
@@ -1184,4 +1184,5 @@
     <string name="url_scheme_default">Verwenden des Gerätes-OS-Standards</string>
     <string name="url_scheme_http">Http erzwingen</string>
     <string name="url_scheme_https">Https erzwingen</string>
+    <string name="lang_name_basque">Baskisch</string>
 </resources>
