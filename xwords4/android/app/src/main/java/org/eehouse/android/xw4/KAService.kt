@@ -45,7 +45,6 @@ class KAService: Service() {
     private var mWakeLock: PowerManager.WakeLock? = null
     private var mServiceStarted = false
     private var mSelfKilled = false
-    private var mNeedsConfig = false
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -54,7 +53,6 @@ class KAService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             val action = intent.action
-            mNeedsConfig = intent.getBooleanExtra(CONFIG_AFTER, false)
             Log.d(TAG, "%H.onStartCommand(): action: $action", this)
             when (action) {
                 START_CMD -> startService()
@@ -138,7 +136,6 @@ class KAService: Service() {
                 Log.d(TAG, "%H.service loop exiting", this@KAService)
             }
         }
-        launchConfigOnce()
     }
 
     private fun stopService() {
@@ -155,15 +152,6 @@ class KAService: Service() {
         }
         mServiceStarted = false
         mSelfKilled = true
-        launchConfigOnce()
-    }
-
-    private fun launchConfigOnce()
-    {
-        if ( mNeedsConfig ) {
-            mNeedsConfig = false
-            KAConfigView.launch(this)
-        }
     }
 
     private fun createNotification(context: Context): Notification {
@@ -195,20 +183,19 @@ class KAService: Service() {
     companion object {
         private val START_CMD = "start"
         private val STOP_CMD = "stop"
-        private val CONFIG_AFTER = "CONFIG_AFTER"
 
-        fun startIf(context: Context, configAfter: Boolean = false) {
+        fun startIf(context: Context) {
             if (!sIsRunning
                     && XWPrefs.getPrefsBoolean(context,
                                                R.string.key_enable_kaservice,
                                                true)
                     && 0L < DBUtils.getKAMinutesLeft(context)) {
-                startWith(context, START_CMD, configAfter)
+                startWith(context, START_CMD)
             }
         }
 
-        fun stop(context: Context, configAfter: Boolean = false)
-            = startWith(context, STOP_CMD, configAfter)
+        fun stop(context: Context)
+            = startWith(context, STOP_CMD)
 
         fun syncUp(context:Context) {
             XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice,
@@ -218,11 +205,10 @@ class KAService: Service() {
             }
         }
 
-        private fun startWith(context: Context, cmd: String, configAfter: Boolean)
+        private fun startWith(context: Context, cmd: String)
         {
             Intent(context, KAService::class.java).also {
                 it.action = cmd
-                it.putExtra(CONFIG_AFTER, configAfter)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(it)
                 } else {

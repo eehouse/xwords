@@ -116,9 +116,9 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
 
     override fun onClick(v: View?) {
         if ( mIsRunning ) {
-            KAService.stop(context, true)
+            KAService.stop(context)
         } else {
-            KAService.startIf(context, true)
+            KAService.startIf(context)
         }
         updateAfter()
     }
