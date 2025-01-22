@@ -147,6 +147,9 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     private var mStopped = false
     private var mSaveOnStop = false
     private var mJNIGamePtr: GamePtr? = null
+    // You aren't meant to call wait() or notify() on Threads. So I'm creating
+    // an object solely to be used for synchronization
+    private var mSyncObj = Object()
     private var mLastSavedState = 0
     private var mContext: Context? = null
     private var mGi: CurGameInfo? = null
@@ -221,7 +224,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                 it.release()
             }
 
-            synchronized(this) {
+            synchronized(mSyncObj) {
                 mJNIGamePtr = XwJNI.initFromStream(
                     m_rowid, stream, mGi!!,
                     utils, null, cp, mXport
@@ -231,7 +234,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
                     Quarantine.markBad(m_rowid)
                     success = false
                 } else {
-                    (this as Object).notifyAll()
+                    mSyncObj.notifyAll()
 
                     mLastSavedState = stream.contentHashCode()
                     DupeModeTimer.gameOpened(context, m_rowid)
@@ -248,7 +251,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     fun getLock(): GameLock { return m_lock!! }
 
     private fun waitToStop(save: Boolean) {
-        synchronized(this) {
+        synchronized(mSyncObj) {
             mStopped = true
             mSaveOnStop = save
         }
@@ -259,8 +262,10 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // (like blocking on a socket) so might as well let it
             // take however log it takes.  If that's too long, fix it.
             interrupt()
-            Log.d(TAG, "%H: NOT calling join()", this)
-            // join()              // getting ANRs when this doesn't return
+            Log.d(TAG, "trying to join; currently handling $mCurElem")
+            join()              // getting ANRs here when this doesn't return
+            Log.d(TAG, "join() done")
+            // Assert.assertFalse( isAlive() );
         } catch (ie: InterruptedException) {
             Log.ex(TAG, ie)
         }
@@ -268,11 +273,12 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         unlockOnce()
     }
 
-    @Synchronized
     private fun unlockOnce() {
-        m_lock?.let {
-            it.release()
-            m_lock = null
+        synchronized(mSyncObj) {
+            m_lock?.let {
+                it.release()
+                m_lock = null
+            }
         }
     }
 
@@ -394,27 +400,25 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         if (hashesEqual) {
             // Log.d( TAG, "save_jni(): no change in game; can skip saving" );
         } else {
-            m_lock?.let { lock ->
-                mContext?.let { context ->
-                    val summary = GameSummary(mGi!!)
-                    XwJNI.game_summarize(mJNIGamePtr, summary)
-                    DBUtils.saveGame(context, lock, state, false)
-                    DBUtils.saveSummary(context, lock, summary)
+            val context = mContext!!
+            val lock = m_lock!!
+            val summary = GameSummary(mGi!!)
+            XwJNI.game_summarize(mJNIGamePtr, summary)
+            DBUtils.saveGame(context, lock, state, false)
+            DBUtils.saveSummary(context, lock, summary)
 
-                    // There'd better be no way for saveGame above to fail!
-                    XwJNI.game_saveSucceeded(mJNIGamePtr)
-                    mLastSavedState = newHash
+            // There'd better be no way for saveGame above to fail!
+            XwJNI.game_saveSucceeded(mJNIGamePtr)
+            mLastSavedState = newHash
 
-                    val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
-                    DBUtils.saveThumbnail(context, lock, thumb)
-                } ?: run { Log.d(TAG, "save_jni(): null context") }
-            } ?: run { Log.d(TAG, "save_jni(): null lock") }
+            val thumb = GameUtils.takeSnapshot(context, mJNIGamePtr!!, mGi)
+            DBUtils.saveThumbnail(context, lock, thumb)
         }
     }
 
     var m_running: Boolean = false
     fun startOnce() {
-        synchronized(this) {
+        synchronized(mSyncObj) {
             if (!m_running) {
                 m_running = true
                 start()
@@ -429,6 +433,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     }
 
     private var mCurElem: QueueElem? = null
+    private enum class CMD {CONTINUE, BREAK, PROCEED,}
     override fun run() {
         Log.d(TAG, "run() starting")
         val barr = BooleanArray(2) // scratch boolean
@@ -436,24 +441,24 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             // Ok, so Kotlin has a bug/limitation preventing continue or break
             // from inside a synchronized block. So I save a string inside and
             // use it after to break or continue.
-            val action = synchronized(this) {
-                if (mStopped) "BREAK"
-                else if (null == mJNIGamePtr) {
-                    try {
-                        Log.d(TAG, "run(): waiting on non-null mJNIGamePtr")
-                        (this as Object).wait()
-                        "CONTINUE"
-                    } catch (iex: InterruptedException) {
-                        Log.d(TAG, "exiting run() on interrupt: %s",
-                              iex.message)
-                        "BREAK"
-                    }
-                } else "PROCEED"
-            }
-            when (action) {
-                "CONTINUE" -> continue
-                "BREAK" -> break
-                "PROCEED" -> {}
+            when (synchronized(mSyncObj) {
+                      if (mStopped) CMD.BREAK
+                      else if (null == mJNIGamePtr) {
+                          try {
+                              Log.d(TAG, "run(): waiting on non-null mJNIGamePtr")
+                              mSyncObj.wait()
+                              CMD.CONTINUE
+                          } catch (iex: InterruptedException) {
+                              Log.d(TAG, "exiting run() on interrupt: %s",
+                                    iex.message)
+                              CMD.BREAK
+                          }
+                      } else CMD.PROCEED
+                  } )
+            {
+                CMD.CONTINUE -> continue
+                CMD.BREAK -> break
+                CMD.PROCEED -> {}
                 else -> Assert.failDbg()
             }
 
