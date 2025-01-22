@@ -56,6 +56,14 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
         }
     }
 
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean)
+    {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if ( hasWindowFocus ) {
+            update()   // in case we came back from changing them
+        }
+    }
+
     private fun update()
     {
         mIsRunning = KAService.isRunning()
