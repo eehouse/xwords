@@ -15,6 +15,7 @@
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
   <string name="key_enable_kaservice">key_enable_kaservice</string>
+  <string name="key_ka_menuwhen">key_ka_menuwhen</string>
   <string name="key_skip_mqtt_add">key_skip_mqtt_add</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
   <string name="key_tile_valuetype">key_tile_valuetype</string>
@@ -382,6 +383,13 @@
     <item>@string/url_scheme_default</item>
     <item>@string/url_scheme_http</item>
     <item>@string/url_scheme_https</item>
+  </string-array>
+
+  <string-array name="ka_menuwhen">
+    <item>@string/ka_menuwhen_never</item>
+    <item>@string/ka_menuwhen_available</item>
+    <item>@string/ka_menuwhen_running</item>
+    <item>@string/ka_menuwhen_always</item>
   </string-array>
 
   <!-- Keep in sync with the color_ids_{light,dark} below -->

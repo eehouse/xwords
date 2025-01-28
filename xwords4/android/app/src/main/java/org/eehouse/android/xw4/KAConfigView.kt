@@ -40,7 +40,7 @@ import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.loc.LocUtils
 
 class KAConfigView(private val mContext: Context, aset: AttributeSet?):
-    ScrollView(mContext, aset), View.OnClickListener {
+    ScrollView(mContext, aset) {
     private var mIsRunning: Boolean = false
     private var mScope: LifecycleCoroutineScope? = null
 
@@ -85,14 +85,6 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                     )
             }
 
-        (findViewById(R.id.start_stop_button) as Button).also {
-            it.setText(
-                if (mIsRunning) R.string.ksconfig_button_stop
-                else R.string.ksconfig_button_start
-            )
-            it.setOnClickListener(this)
-        }
-
         val msg =
             if (mIsRunning) {
                 DBUtils.getKAMinutesLeft(context).let {
@@ -120,15 +112,6 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
             .putExtra(Settings.EXTRA_CHANNEL_ID, channel)
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         mContext.startActivity(intent)
-    }
-
-    override fun onClick(v: View?) {
-        if ( mIsRunning ) {
-            KAService.stop(context)
-        } else {
-            KAService.startIf(context)
-        }
-        updateAfter()
     }
 
     private fun updateAfter()

@@ -20,6 +20,10 @@
               android:text="@string/ksconfig_expl"
               />
 
+    <Space android:layout_width="0dp"
+           android:layout_height="5dp"
+           />
+
     <!-- The move checker only runs... -->
     <TextView android:id="@+id/config_expl"
               android:layout_height="wrap_content"
@@ -41,10 +45,9 @@
               android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
-    <Button android:id="@+id/start_stop_button"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            />
+    <Space android:layout_width="0dp"
+           android:layout_height="5dp"
+           />
 
     <TextView android:layout_height="wrap_content"
               android:layout_width="match_parent"

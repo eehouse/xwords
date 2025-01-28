@@ -618,7 +618,7 @@ class GamesListDelegate(delegator: Delegator) :
             DlgID.KACONFIG -> {
                 val view = inflate(R.layout.kaconfig_view)
                 dialog = makeAlertBuilder()
-                    .setTitle(R.string.ksconfig_title)
+                    .setTitle(R.string.kaservice_title)
                     .setView(view)
                     .setPositiveButton(android.R.string.ok, null)
                     .create()
@@ -1553,8 +1553,30 @@ class GamesListDelegate(delegator: Delegator) :
                 var enable = showDbg && nothingSelected
                 Utils.setItemVisible(menu, R.id.games_menu_checkupdates, enable)
 
-                enable = KAService.isRunning()
-                    || 0 < DBUtils.getKAMinutesLeft(mActivity)
+                // FIX ME. Every time the os thinks about putting up a menu
+                // four or more strings get loaded from resources, just so we
+                // don't get confused when somebody changes locales. That's
+                // wrong.
+                enable = nothingSelected
+                    && LocUtils.getCheckPref(mActivity, R.array.ka_menuwhen,
+                                             key = R.string.key_ka_menuwhen,
+                                             default = R.string.ka_menuwhen_available
+                    ).let {
+                        when (it) {
+                            LocUtils.getString(mActivity, R.string.ka_menuwhen_never)
+                                -> false
+                            LocUtils.getString(mActivity, R.string.ka_menuwhen_available)
+                                -> 0 < DBUtils.getKAMinutesLeft(mActivity)
+                            LocUtils.getString(mActivity, R.string.ka_menuwhen_running)
+                                -> KAService.isRunning()
+                            LocUtils.getString(mActivity, R.string.ka_menuwhen_always)
+                                -> true
+                            else -> {
+                                Assert.failDbg()
+                                false
+                            }
+                        }
+                    }
                 Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
 
                 val selGroupPos =

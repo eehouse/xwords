@@ -57,21 +57,19 @@
   <string name="pref_item_allowMulti_title">Allow duplicate gameIDs</string>
   <string name="pref_item_allowMulti_summary">Usually this means accepting invitations from the same device</string>
 
-  <string name="keepalive_expl">Move Checker</string>
-  <string name="kaservice_title">CrossWords Move Checker</string>
+  <string name="keepalive_expl">Net Move Checker</string>
+  <string name="kaservice_title">CrossWords Net Move Checker</string>
   <string name="kaservice_content">CrossWords is staying awake to
   check for remote moves. Tap for more information.</string>
 
   <string name="enable_kaservice_title">Always check for moves</string>
-  <string name="enable_kaservice_summary">Check for moves in the
-  background, even when CrossWords is not active or the device is
-  asleep.</string>
+
+  <string name="enable_kaservice_summary">Keep CrossWords awake to
+  receive moves, even when it is not visible or the device is
+  asleep. Note: reduces battery life.</string>
 
   <string name="games_menu_ksconfig">KSConfig</string>
-  <string name="ksconfig_button_start">Start Checker</string>
-  <string name="ksconfig_button_stop">Stop Checker</string>
 
-  <string name="ksconfig_title">CrossWords Move Checker</string>
   <string name="ksconfig_expl">For the best experience with
   multi-player games, CrossWords tries to remain active in the
   background checking for incoming moves. This can impact battery
@@ -103,5 +101,11 @@
 
   <string name="expl_ka_hours">How many hours to stay awake (1..72)</string>
   <string name="dflt_ka_hours">12</string>
+
+  <string name="title_ka_menuwhen">Enable Net Move Checker menuitem</string>
+  <string name="ka_menuwhen_never">Never</string>
+  <string name="ka_menuwhen_available">When available</string>
+  <string name="ka_menuwhen_running">When running</string>
+  <string name="ka_menuwhen_always">Always</string>>
 
 </resources>
