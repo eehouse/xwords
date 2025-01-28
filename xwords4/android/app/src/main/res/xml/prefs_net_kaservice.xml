@@ -7,7 +7,7 @@
                       >
 
     <CheckBoxPreference android:key="@string/key_enable_kaservice"
-                        android:title="@string/enable_kaservice_title"
+                        android:title="@string/prefs_net_kaservice_summary"
                         android:summary="@string/enable_kaservice_summary"
                         android:defaultValue="true"
                         />

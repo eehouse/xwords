@@ -98,9 +98,7 @@ class KAService: Service() {
     }
 
     private fun startService() {
-        if (!mServiceStarted
-                && XWPrefs.getPrefsBoolean(this, R.string.key_enable_kaservice,
-                                           true)) {
+        if (!mServiceStarted && getEnabled(this)) {
             mServiceStarted = true
             sIsRunning = true
 
@@ -186,9 +184,7 @@ class KAService: Service() {
 
         fun startIf(context: Context) {
             if (!sIsRunning
-                    && XWPrefs.getPrefsBoolean(context,
-                                               R.string.key_enable_kaservice,
-                                               true)
+                    && getEnabled(context)
                     && 0L < DBUtils.getKAMinutesLeft(context)) {
                 startWith(context, START_CMD)
             }
@@ -198,8 +194,7 @@ class KAService: Service() {
             = startWith(context, STOP_CMD)
 
         fun syncUp(context:Context) {
-            XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice,
-                                    true).also { enabled ->
+            getEnabled(context).also { enabled ->
                 if (enabled) startIf(context)
                 else stop(context)
             }
@@ -221,6 +216,16 @@ class KAService: Service() {
         fun isRunning(): Boolean
         {
             return sIsRunning
+        }
+
+        fun getEnabled(context: Context): Boolean
+        {
+            return XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice, false)
+        }
+
+        fun setEnabled(context: Context, enabled: Boolean)
+        {
+            XWPrefs.setPrefsBoolean(context, R.string.key_enable_kaservice, enabled)
         }
     }
 }

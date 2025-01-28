@@ -1098,11 +1098,29 @@ class GamesListDelegate(delegator: Delegator) :
                 GameChangeType.GAME_CREATED -> {
                     mkListAdapter()
                     setSelGame(rowid)
+                    showKAHintIf(rowid)
                 }
 
                 GameChangeType.GAME_MOVED -> {
                     unselIfHidden(rowid)
                     mkListAdapter()
+                }
+            }
+        }
+    }
+
+    private fun showKAHintIf(rowid: Long)
+    {
+        if ( !KAService.getEnabled(mActivity) ) {
+            GameUtils.getSummary(mActivity, rowid)?.conTypes?.let {
+                if ( it.contains(CommsConnType.COMMS_CONN_MQTT) ) {
+                    makeNotAgainBuilder(
+                        R.string.key_notagain_keepalive,
+                        R.string.expl_notagain_keepalive
+                    )
+                        .setTitle(R.string.new_feature_title)
+                        .setActionPair(Action.SHOW_KA, R.string.button_show_ka)
+                        .show()
                 }
             }
         }
@@ -1343,6 +1361,8 @@ class GamesListDelegate(delegator: Delegator) :
                 longArrayOf((params[1] as Long)),
                 false )
             Action.CLEAR_STATS -> XwJNI.sts_clearAll()
+
+            Action.SHOW_KA -> showDialogFragment(DlgID.KACONFIG)
 
             else -> handled = super.onPosButton(action, *params)
         }

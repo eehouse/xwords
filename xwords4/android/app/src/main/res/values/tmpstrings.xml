@@ -62,11 +62,9 @@
   <string name="kaservice_content">CrossWords is staying awake to
   check for remote moves. Tap for more information.</string>
 
-  <string name="enable_kaservice_title">Always check for moves</string>
-
   <string name="enable_kaservice_summary">Keep CrossWords awake to
   receive moves, even when it is not visible or the device is
-  asleep. Note: reduces battery life.</string>
+  asleep. Note: may impact battery life.</string>
 
   <string name="games_menu_ksconfig">KSConfig</string>
 
@@ -97,7 +95,7 @@
   notification to relaunch.</string>
 
   <string name="prefs_net_kaservice">Network Move Checker</string>
-  <string name="prefs_net_kaservice_summary">Always check for moves</string>
+  <string name="prefs_net_kaservice_summary">Enable Net Move Checker</string>
 
   <string name="expl_ka_hours">How many hours to stay awake (1..72)</string>
   <string name="dflt_ka_hours">12</string>
@@ -106,6 +104,12 @@
   <string name="ka_menuwhen_never">Never</string>
   <string name="ka_menuwhen_available">When available</string>
   <string name="ka_menuwhen_running">When running</string>
-  <string name="ka_menuwhen_always">Always</string>>
+  <string name="ka_menuwhen_always">Always</string>
+
+  <string name="expl_notagain_keepalive">CrossWords will receive moves
+  from other players more quickly if you enable the new Net Move
+  Checker feature. The More info button will tell you how.</string>
+
+  <string name="button_show_ka">More info</string>
 
 </resources>

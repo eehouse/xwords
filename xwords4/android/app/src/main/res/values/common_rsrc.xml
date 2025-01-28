@@ -133,6 +133,7 @@
   <string name="key_url_scheme">key_url_scheme</string>
 
   <string name="key_notagain_newselect">key_notagain_newselect</string>
+  <string name="key_notagain_keepalive">key_notagain_keepalive</string>
   <string name="key_notagain_emptybtscan">key_notagain_emptybtscan</string>
   <string name="key_notagain_backclears">key_notagain_backclears</string>
   <string name="key_notagain_chat">key_notagain_chat</string>

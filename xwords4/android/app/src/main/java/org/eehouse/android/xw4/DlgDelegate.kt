@@ -63,6 +63,7 @@ class DlgDelegate(
         RESTART,
         NOTIFY_PERMS,
         CLEAR_STATS,
+        SHOW_KA,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
