@@ -544,38 +544,40 @@ object DBUtils {
 
     fun getKAMinutesLeft(context: Context): Long
     {
-        val minHours = XWPrefs.getKAServiceHours(context)
-        val nowSecs = Utils.getCurSeconds()
-        val secsLast = nowSecs - (60*60*minHours)
-        val columns = arrayOf(DBHelper.CONTYPE, DBHelper.LASTMOVE)
-        var earliestMoveSecs = Long.MAX_VALUE
-        val selection =
-            "${DBHelper.SERVERROLE} != ${DeviceRole.SERVER_STANDALONE.ordinal}" +
-            " AND ${DBHelper.GROUPID} != ${getArchiveGroup(context)}" +
-            " AND ${DBHelper.LASTMOVE} > $secsLast"
-        // Log.d(TAG, "getKAMinutesLeft: selection: $selection")
-        synchronized(s_dbHelper!!) {
-            val cursor = query(TABLE_NAMES.SUM, columns, selection)
-            val indxConType = cursor.getColumnIndex(DBHelper.CONTYPE)
-            val indxLastMove = cursor.getColumnIndex(DBHelper.LASTMOVE)
-            while (cursor.moveToNext()) {
-                val types = CommsConnTypeSet(cursor.getInt(indxConType))
-                if ( !types.contains(CommsConnType.COMMS_CONN_MQTT)) continue
-
-                val lastmove = cursor.getLong(indxLastMove)
-                // Log.d( TAG, "getKAMinutesLeft() lastMove: $lastmove")
-                if (lastmove <= secsLast) {
-                    Assert.failDbg()
-                    continue
-                }
-                if (lastmove < earliestMoveSecs) {
-                    earliestMoveSecs = lastmove
-                }
-            }
-        }
         val result =
-            if (earliestMoveSecs == Long.MAX_VALUE) 0
-            else (minHours * 60) - ((nowSecs - earliestMoveSecs) / 60)
+            if ( KAService.getEnabled(context) ) {
+                val minHours = XWPrefs.getKAServiceHours(context)
+                val nowSecs = Utils.getCurSeconds()
+                val secsLast = nowSecs - (60*60*minHours)
+                val columns = arrayOf(DBHelper.CONTYPE, DBHelper.LASTMOVE)
+                var earliestMoveSecs = Long.MAX_VALUE
+                val selection =
+                    "${DBHelper.SERVERROLE} != ${DeviceRole.SERVER_STANDALONE.ordinal}" +
+                    " AND ${DBHelper.GROUPID} != ${getArchiveGroup(context)}" +
+                    " AND ${DBHelper.LASTMOVE} > $secsLast"
+                // Log.d(TAG, "getKAMinutesLeft: selection: $selection")
+                synchronized(s_dbHelper!!) {
+                    val cursor = query(TABLE_NAMES.SUM, columns, selection)
+                    val indxConType = cursor.getColumnIndex(DBHelper.CONTYPE)
+                    val indxLastMove = cursor.getColumnIndex(DBHelper.LASTMOVE)
+                    while (cursor.moveToNext()) {
+                        val types = CommsConnTypeSet(cursor.getInt(indxConType))
+                        if ( !types.contains(CommsConnType.COMMS_CONN_MQTT)) continue
+
+                        val lastmove = cursor.getLong(indxLastMove)
+                        // Log.d( TAG, "getKAMinutesLeft() lastMove: $lastmove")
+                        if (lastmove <= secsLast) {
+                            Assert.failDbg()
+                            continue
+                        }
+                        if (lastmove < earliestMoveSecs) {
+                            earliestMoveSecs = lastmove
+                        }
+                    }
+                }
+                if (earliestMoveSecs == Long.MAX_VALUE) 0
+                else (minHours * 60) - ((nowSecs - earliestMoveSecs) / 60)
+            } else 0
         Log.d(TAG, "getKAMinutesLeft() => $result")
         return result
     }
