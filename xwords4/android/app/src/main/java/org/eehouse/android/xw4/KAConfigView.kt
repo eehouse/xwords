@@ -80,28 +80,36 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
             .setOnClickListener {
                 PrefsDelegate
                     .launch(
-                        mContext,
+                        context,
                         PrefsWrappers.prefs_net_kaservice::class.java
                     )
             }
 
-        val msg =
-            if ( !KAService.getEnabled(context) ) {
-                LocUtils.getString(context, R.string.ksconfig_disabled)
-            } else if (mIsRunning) {
-                DBUtils.getKAMinutesLeft(context).let {
-                    val minutes = it % 60
-                    val hours = it / 60
-                    LocUtils.getString(context, R.string.ksconfig_running_fmt,
-                                       hours, minutes)
+        KAService.getEnabled(context).let { enabled ->
+            val msg =
+                if ( !enabled ) {
+                    LocUtils.getString(context, R.string.ksconfig_disabled)
+                } else if (mIsRunning) {
+                    DBUtils.getKAMinutesLeft(context).let {
+                        val minutes = it % 60
+                        val hours = it / 60
+                        LocUtils.getString(context, R.string.ksconfig_running_fmt,
+                                           hours, minutes)
+                    }
+                } else {
+                    LocUtils.getString(context, R.string.ksconfig_notrunning)
                 }
-            } else {
-                LocUtils.getString(context, R.string.ksconfig_notrunning)
-            }
-        (findViewById(R.id.start_stop_expl) as TextView).setText(msg)
+            findViewById<TextView>(R.id.start_stop_expl).setText(msg)
 
-        (findViewById(R.id.hide_notify_button) as Button).also {
-            it.setOnClickListener { gotoSettings() }
+            findViewById<View>(R.id.notify_group).setVisibility(
+                if ( enabled ) View.VISIBLE
+                else View.GONE
+            )
+            if ( enabled ) {
+                findViewById<Button>(R.id.hide_notify_button).also {
+                    it.setOnClickListener { gotoSettings() }
+                }
+            }
         }
     }
 

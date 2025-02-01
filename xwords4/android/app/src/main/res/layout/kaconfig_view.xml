@@ -49,16 +49,23 @@
            android:layout_height="5dp"
            />
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="match_parent"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              android:text="@string/hide_notify_expl"
-              />
+    <LinearLayout android:layout_height="wrap_content"
+                  android:layout_width="match_parent"
+                  android:orientation="vertical"
+                  android:id="@+id/notify_group"
+                  >
+      <TextView android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/hide_notify_expl"
+                />
 
-    <Button android:id="@+id/hide_notify_button"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:text="@string/hide_notify_button"
-            />
+      <Button android:id="@+id/hide_notify_button"
+              android:layout_height="wrap_content"
+              android:layout_width="match_parent"
+              android:text="@string/hide_notify_button"
+              />
+    </LinearLayout>
+
   </LinearLayout>
 </org.eehouse.android.xw4.KAConfigView>
