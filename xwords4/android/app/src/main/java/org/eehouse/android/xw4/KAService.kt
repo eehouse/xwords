@@ -174,7 +174,7 @@ class KAService: Service() {
             .setContentTitle(context.getString(R.string.kaservice_title))
             .setContentText(context.getString(R.string.kaservice_content))
             .setContentIntent(KAConfigView.makePendingIntent(this))
-            .setSmallIcon(R.drawable.notify)
+            .setSmallIcon(R.drawable.kanotify)
             .build()
     }
 

@@ -620,6 +620,7 @@ class GamesListDelegate(delegator: Delegator) :
                 dialog = makeAlertBuilder()
                     .setTitle(R.string.kaservice_title)
                     .setView(view)
+                    .setIcon(R.drawable.kanotify)
                     .setPositiveButton(android.R.string.ok, null)
                     .create()
             }
