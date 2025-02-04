@@ -44,6 +44,7 @@ private val TAG = KAService::class.java.simpleName
 class KAService: Service() {
     private var mWakeLock: PowerManager.WakeLock? = null
     private var mServiceStarted = false
+    private var mStartStamp: Date? = null
     private var mSelfKilled = false
 
     override fun onBind(intent: Intent): IBinder? {
@@ -65,6 +66,7 @@ class KAService: Service() {
 
     override fun onCreate() {
         super.onCreate()
+        mStartStamp = Date()
         val versionCode = Build.VERSION.SDK_INT
         Log.d(TAG, "%H.onCreate(code=$versionCode)", this)
         val notify = createNotification(this)
@@ -89,9 +91,10 @@ class KAService: Service() {
 
     private fun postKilled()
     {
-        val date = Date()
-        val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt, date)
         GamesListDelegate.makeSelfIntent(this).let {
+            val date = Date()
+            val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt,
+                                          date, mStartStamp)
             Utils.postNotification(this, it, R.string.ksconfig_killed_title,
                                    body, 1000)
         }

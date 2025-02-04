@@ -1363,7 +1363,7 @@ class GamesListDelegate(delegator: Delegator) :
                 false )
             Action.CLEAR_STATS -> XwJNI.sts_clearAll()
 
-            Action.SHOW_KA -> showDialogFragment(DlgID.KACONFIG)
+            Action.SHOW_KA -> launchKAConfigOnce()
 
             else -> handled = super.onPosButton(action, *params)
         }
@@ -1739,7 +1739,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_checkupdates -> UpdateCheckReceiver
                                                 .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
-            R.id.games_menu_ksconfig -> showDialogFragment(DlgID.KACONFIG)
+            R.id.games_menu_ksconfig -> launchKAConfigOnce()
             R.id.games_menu_rateme -> {
                 val str = String.format(
                     "market://details?id=%s",
@@ -2542,9 +2542,15 @@ class GamesListDelegate(delegator: Delegator) :
     private fun tryKAConfigIntent(intent: Intent): Boolean {
         val used = KAConfigView.isMyIntent(intent)
         if (used) {
-            showDialogFragment(DlgID.KACONFIG)
+            launchKAConfigOnce()
         }
         return used
+    }
+
+    private fun launchKAConfigOnce() {
+        if (!KAConfigView.alreadyRunning()) {
+            showDialogFragment(DlgID.KACONFIG)
+        }
     }
 
     private fun askDefaultName() {

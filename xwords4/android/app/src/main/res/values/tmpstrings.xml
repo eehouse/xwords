@@ -68,11 +68,11 @@
 
   <string name="games_menu_ksconfig">KSConfig</string>
 
-  <string name="ksconfig_expl">For the best experience with
-  multi-player games, CrossWords tries to remain active in the
-  background checking for incoming moves. This can impact battery
-  life, which is why Android discourages it, and why you will always
-  see a notification when it is happening.
+  <string name="ksconfig_expl">For the best experience with networked
+  games, CrossWords tries to remain active in the background checking
+  for incoming moves. This can impact battery life, which is why
+  Android discourages it, and why you will always see a notification
+  when it is happening.
   </string>
 
   <string name="ka_config_fmt">The move checker only runs when a move
@@ -82,18 +82,20 @@
 
   <string name="ksconfig_running_fmt">The Move Checker is currently
   running. It will stop in %1$dh%2$02dm unless a move is made or
-  received.</string>
+  received before then.</string>
   <string name="ksconfig_notrunning">The Move Checker is not currently running.</string>
   <string name="ksconfig_disabled">The Move Checker is currently disabled.</string>
 
   <string name="hide_notify_expl">If you get tired of seeing the
-  notification you can hide it in your device\'s Settings app. Get
+  notification you can use your device’s Settings app to hide it. Get
   there with the button below.</string>
-  <string name="hide_notify_button">Configure notifications</string>
+  <!-- "Show notifications" is the Android Settings app's button that
+       controls whether an app's notifications are displayed in the
+       notification bar. -->
+  <string name="hide_notify_button">Go to “Show notifications”</string>
 
-  <string name="ksconfig_killed_title">CrossWords move checker stopped</string>
-  <string name="ksconfig_killed_body_fmt">Stopped at %1$s. Use this
-  notification to relaunch.</string>
+  <string name="ksconfig_killed_title">Net Move Checker stopped</string>
+  <string name="ksconfig_killed_body_fmt">Stopped at %1$s (started at %2$s.)</string>
 
   <string name="prefs_net_kaservice">Network Move Checker</string>
   <string name="prefs_net_kaservice_summary">Enable Net Move Checker</string>

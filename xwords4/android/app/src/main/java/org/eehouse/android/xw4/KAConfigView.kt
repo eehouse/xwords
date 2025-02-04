@@ -46,6 +46,8 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        Assert.assertTrueNR(null == sSelf)
+        sSelf = this
         mScope = ViewTreeLifecycleOwner.get(this)?.lifecycleScope
 
         mScope?.launch(Dispatchers.Main) {
@@ -54,6 +56,12 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                 delay(60 * 1000)    // every minute so minutes left can change
             }
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        Assert.assertTrueNR(this == sSelf)
+        sSelf = null
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean)
@@ -135,6 +143,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
     companion object {
         private val TAG = KAConfigView::class.java.getSimpleName()
         private val FOR_KACONFIG = BuildConfig.APPLICATION_ID + ".FOR_KACONFIG"
+        private var sSelf: KAConfigView? = null
 
         fun makePendingIntent(context: Context): PendingIntent
         {
@@ -167,5 +176,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                 context.startActivity(it)
             }
         }
+
+        fun alreadyRunning(): Boolean { return null != sSelf }
     }
 }
