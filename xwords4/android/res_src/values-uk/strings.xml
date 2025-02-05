@@ -671,7 +671,7 @@
     <string name="show_arrow">Показати стрілку дошки</string>
     <string name="prefs_behavior">Поведінка</string>
     <string name="str_two_tiles_first_move">Першим ходом потрібно зіграти дві або більше фігур.</string>
-    <string name="invite_htm_fmt">Торкніться повного посилання нижче, щоб приєднатися до цієї гри. &lt;br&gt; (Повне посилання: %1$s )</string>
+    <string name="invite_htm_fmt">Торкніться повного посилання нижче, щоб приєднатися до цієї гри. &lt;br \\&gt; &lt;br \\&gt; (Повне посилання: %1$s )</string>
     <string name="str_reg_unexpected_user">Відмовлено в спробі зареєструвати неочікуваного користувача.</string>
     <string name="hide_crosshairs">Вимкнути перехрестя</string>
     <string name="finalscores_title">Остаточні бали</string>
