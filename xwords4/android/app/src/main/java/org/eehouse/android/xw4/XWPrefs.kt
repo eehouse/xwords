@@ -476,7 +476,8 @@ open class XWPrefs {
         }
 
         fun getKAServiceHours(context: Context): Int {
-            val result = getPrefsInt(context, R.string.key_ka_hours, 1)
+            val str = getPrefsString(context, R.string.key_ka_hours)
+            val result = KAHoursPreference.hoursFromEntry(context, str)
             return result
         }
 

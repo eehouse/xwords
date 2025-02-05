@@ -20,8 +20,8 @@
     <org.eehouse.android.xw4.QOSListPreference
         android:key="@string/key_mqtt_qos"
         android:title="@string/mqtt_qos"
-        android:entries="@array/empty_list"
-        android:entryValues="@array/empty_list"
+        android:entries="@array/empty_array"
+        android:entryValues="@array/empty_array"
         android:defaultValue="@string/qos_prefs_default_expl_fmt"
         />
     <org.eehouse.android.xw4.XWEditTextPreference

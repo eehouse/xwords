@@ -6,19 +6,10 @@
   <PreferenceCategory android:title="@string/network_behavior"
                       android:summary="@string/network_behavior_summary"
                       >
-    <CheckBoxPreference android:key="@string/key_notify_vibrate"
-                        android:title="@string/notify_vibrate"
-                        android:summary="@string/notify_other_summary"
-                        android:defaultValue="false"
-                        />
 
-
-    <org.eehouse.android.xw4.SMSCheckBoxPreference
-        android:key="@string/key_enable_nbs"
-        android:title="@string/enable_sms"
-        android:summary="@string/enable_sms_summary"
-        android:defaultValue="false"
-        />
+    <Preference app:title="@string/prefs_net_kaservice"
+                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net_kaservice"
+                />
 
     <org.eehouse.android.xw4.MQTTCheckBoxPreference
         android:key="@string/key_disable_mqtt"
@@ -34,6 +25,13 @@
         android:defaultValue="false"
         />
 
+    <org.eehouse.android.xw4.SMSCheckBoxPreference
+        android:key="@string/key_enable_nbs"
+        android:title="@string/enable_sms"
+        android:summary="@string/enable_sms_summary"
+        android:defaultValue="false"
+        />
+
     <CheckBoxPreference android:key="@string/key_enable_p2p"
                         android:title="@string/title_enable_p2p"
                         android:summary="@string/summary_enable_p2p"
@@ -45,10 +43,6 @@
                         android:summary="@string/invite_multi_summary"
                         android:defaultValue="false"
                         />
-
-    <Preference app:title="@string/prefs_net_kaservice"
-                app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net_kaservice"
-                />
 
   </PreferenceCategory>
 </PreferenceScreen>

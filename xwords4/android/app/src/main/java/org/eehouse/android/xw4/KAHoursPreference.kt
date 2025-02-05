@@ -25,22 +25,39 @@ import org.eehouse.android.xw4.loc.LocUtils
 private val TAG = KAHoursPreference::class.java.getSimpleName()
 
 class KAHoursPreference(context: Context, attrs: AttributeSet?) :
-    XWEditTextPreference(context, attrs)
+    XWListPreference(context, attrs)
 {
-    override fun persistString(value: String): Boolean {
-        // Make sure assumptions like default make sense. If there are other
-        // instances of this class I'll need a map or something.
-        val keyID = R.string.key_ka_hours
-        Assert.assertTrueNR(LocUtils.getString(context, keyID).equals(getKey()))
+    override fun getEntries(): Array<CharSequence> {
+        return getEntriesImpl(context)
+    }
+    override fun getEntryValues(): Array<CharSequence> {
+        return getEntriesImpl(context)
+    }
 
-        val dfltVal = LocUtils.getString(context, R.string.dflt_ka_hours).toInt()
-        val value = (value.toIntOrNull()?.let {
-                         if (it >= 1 && it <= 72) it
-                         else dfltVal
-                     } ?: dfltVal).toString()
+    companion object {
+        private var sEntries: Array<CharSequence>? = null
+        private val DEFAULT_HOURS = 2
+        private val sHours = arrayOf(1, DEFAULT_HOURS, 4, 8, 12, 24, 72)
 
-        setSummary(value)
+        fun hoursFromEntry(context: Context, entry: String): Int {
+            val result = sHours
+                .firstNotNullOf{if (format(context, it).equals(entry)) it else null}
+                ?: DEFAULT_HOURS
+            // Log.d(TAG, "hoursFromEntry($entry) => $result")
+            return result
+        }
 
-        return super.persistString(value)
+        private fun getEntriesImpl(context: Context):Array<CharSequence> {
+            if (null == sEntries) {
+                sEntries = sHours.map{format(context, it)}.toTypedArray()
+            }
+            return sEntries!!
+        }
+
+        private fun format(context: Context, hour: Int): String {
+            val result = LocUtils
+                .getQuantityString(context, R.plurals.hours_fmt, hour, hour)
+            return result
+        }
     }
 }

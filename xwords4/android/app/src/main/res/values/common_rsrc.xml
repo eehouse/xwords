@@ -354,7 +354,7 @@
     <item>@string/radio_name_cdma</item>
   </string-array>
 
-  <string-array name="empty_list"/>
+  <string-array name="empty_array"/>
 
   <string-array name="force_tablet_names">
     <item>@string/force_tablet_default</item>
