@@ -2221,7 +2221,7 @@
     <string name="dict_host">Wordlist download URL</string>
     <string name="logging_on">Enable logging</string>
     <string name="debug_features">Enable debug features</string>
-    <string name="debug_features_summary">Menuitems etc.</string>
+    <string name="debug_features_summary">Menu items etc.</string>
     <string name="board_menu_game_netstats">Network stats</string>
     <string name="netstats_title">Game network stats</string>
     <string name="mqtt_port">MQTT port</string>
