@@ -870,7 +870,7 @@
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htm_fmt">Toque na ligação completa abaixo para se juntar a este jogo. &lt;br &gt; &lt;br &gt; &lt;(Ligação completa: %1$s )</string>
+    <string name="invite_htm_fmt">Toque na ligação completa abaixo para se juntar a este jogo. &lt;br \\&gt; &lt;br \\&gt; &lt;(Ligação completa: %1$s )</string>
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
@@ -1746,7 +1746,7 @@
     <string name="mqtt_port">Porta MQTT</string>
     <string name="netstats_title">Status da rede do jogo</string>
     <string name="board_menu_game_netstats">Status da rede</string>
-    <string name="debug_features_summary">Menu, itens etc.</string>
+    <string name="debug_features_summary">Itens de menu etc.</string>
     <string name="debug_features">Ativar ferramentas de debug</string>
     <string name="logging_on">Ativar logs</string>
     <string name="dict_host">URL de descarrega da lista de palavras</string>
