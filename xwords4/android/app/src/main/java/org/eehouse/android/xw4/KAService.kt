@@ -91,11 +91,13 @@ class KAService: Service() {
 
     private fun postKilled()
     {
-        GamesListDelegate.makeSelfIntent(this).let {
-            val date = Date()
+        GamesListDelegate.makeSelfIntent(this).let { intent ->
+            val curTime = System.currentTimeMillis()
+            val intervalMins = (curTime / (1000 * 60))- (mStartStamp!!.seconds / 1000)
+            val hoursMins = Utils.minsToHoursMins( intervalMins )
             val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt,
-                                          date, mStartStamp)
-            Utils.postNotification(this, it, R.string.ksconfig_killed_title,
+                                          Date(), hoursMins[0], hoursMins[1])
+            Utils.postNotification(this, intent, R.string.ksconfig_killed_title,
                                    body, 1000)
         }
     }

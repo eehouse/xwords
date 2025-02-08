@@ -164,6 +164,12 @@ object Utils {
         showToast(context, msg)
     }
 
+    fun minsToHoursMins(mins: Long): Array<Long> {
+        val minutes = mins % 60
+        val hours = mins / 60
+        return arrayOf(hours, minutes)
+    }
+
     @JvmOverloads
     fun emailAuthor(context: Context, msg: String? = null) {
         emailAuthorImpl(

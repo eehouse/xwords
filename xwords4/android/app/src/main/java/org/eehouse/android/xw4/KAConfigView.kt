@@ -99,10 +99,9 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                     LocUtils.getString(context, R.string.ksconfig_disabled)
                 } else if (mIsRunning) {
                     DBUtils.getKAMinutesLeft(context).let {
-                        val minutes = it % 60
-                        val hours = it / 60
+                        val hoursMins = Utils.minsToHoursMins(it)
                         LocUtils.getString(context, R.string.ksconfig_running_fmt,
-                                           hours, minutes)
+                                           hoursMins[0], hoursMins[1])
                     }
                 } else {
                     LocUtils.getString(context, R.string.ksconfig_notrunning)

@@ -71,7 +71,7 @@
   <string name="hide_notify_button">Go to “Show notifications”</string>
 
   <string name="ksconfig_killed_title">Move Checker stopped</string>
-  <string name="ksconfig_killed_body_fmt">Stopped at %1$s (started at %2$s.)</string>
+  <string name="ksconfig_killed_body_fmt">Stopped at %1$s (ran for %2$dh%3$02dm)</string>
 
   <string name="prefs_net_kaservice">Network Move Checker</string>
   <string name="prefs_net_kaservice_summary">Enable Move Checker</string>
