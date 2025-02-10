@@ -267,7 +267,6 @@ class BoardDelegate(delegator: Delegator) :
                     )
                 }
                 ab.setMessage(msg)
-                    .setTitle(R.string.query_title)
                     .setPositiveButton(R.string.button_yes, lstnr)
                     .setNegativeButton(android.R.string.cancel, null)
                     .create()
