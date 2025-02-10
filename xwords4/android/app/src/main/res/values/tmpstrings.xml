@@ -9,20 +9,6 @@
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
-  <string name="gamel_menu_legalPhonies">Legal phonies</string>
-  <string name="gamel_menu_clearLPs">Clear all</string>
-  <string name="gamel_menu_listLPs">Show all</string>
-
-
-  <string name="confirm_clear_lps">Are you sure you want to clear
-  saved “legal phonies”?\n\nThis action cannot be undone.</string>
-
-  <string name="legalphonies_title_fmt">Legal phonies for %1$s</string>
-
-  <string name="notify_perms_rationale">CrossWords needs your
-  permission to post notifications, e.g. telling you an opponent has
-  moved or that a updated wordlist is available.</string>
-
   <string name="gamel_menu_mqtt">MQTT</string>
   <string name="games_menu_pingMqtt">Ping</string>
   <string name="ping_result_fmt">Ping via %1$s took %2$d ms.</string>
@@ -40,16 +26,6 @@
   someone. </string>
 
   <string name="have_mtqq_games_fmt">I have %1$d games using mqtt.</string>
-
-  <string name="gamel_menu_stats">Stats</string>
-  <string name="gamel_menu_statsShow">Show</string>
-  <string name="gamel_menu_statsClear">Clear</string>
-  <string name="statsCopiedToast">Stats copied to clipboard</string>
-
-  <string name="statsClearConfirm">Are you sure you want to permanently delete stats?</string>
-
-  <string name="gamel_menu_logstore_prune">Prune stored logs</string>
-  <string name="expl_log_prune_hours">Keep this many hours of logs</string>
 
   <string name="qos_prefs_default_expl_fmt">Use what MQTT broker
   recommends (currently %1$s)</string>

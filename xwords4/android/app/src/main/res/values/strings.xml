@@ -2854,4 +2854,34 @@
   <string name="url_scheme_default">Use device OS default</string>
   <string name="url_scheme_http">Force http</string>
   <string name="url_scheme_https">Force https</string>
+
+  <!-- Legal phonies -->
+  <string name="gamel_menu_legalPhonies">Legal phonies</string>
+  <string name="gamel_menu_clearLPs">Clear all</string>
+  <string name="gamel_menu_listLPs">Show all</string>
+
+  <string name="confirm_clear_lps">Are you sure you want to clear
+  saved “legal phonies”?\n\nThis action cannot be undone.</string>
+
+  <string name="legalphonies_title_fmt">Legal phonies for %1$s</string>
+
+  <string name="notify_perms_rationale">CrossWords needs your
+  permission to post notifications, e.g. telling you an opponent has
+  moved or that a updated wordlist is available.</string>
+
+  <!-- Log storage (Debug only) -->
+  <string name="gamel_menu_logstore_prune">Prune stored logs</string>
+  <string name="expl_log_prune_hours">Keep this many hours of logs</string>
+
+  <!-- Feature usage statitistics gathering. Currently for debug only -->
+  <string name="gamel_menu_stats">Stats</string>
+  <!-- Menu to show currently gathered stats -->
+  <string name="gamel_menu_statsShow">Show</string>
+  <!-- Menu to clear/erase currently gathered stats -->
+  <string name="gamel_menu_statsClear">Clear</string>
+
+  <string name="statsCopiedToast">Stats copied to clipboard</string>
+  <!-- Used to confirm gamel_menu_statsClear menu -->
+  <string name="statsClearConfirm">Are you sure you want to permanently delete stats?</string>
+
 </resources>
