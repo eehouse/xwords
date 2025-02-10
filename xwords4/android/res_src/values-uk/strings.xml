@@ -1096,4 +1096,17 @@
     <string name="knowns_bta_fmt">Адреса Bluetooth: %1$s</string>
     <string name="knowns_smsphone_fmt">Телефон для SMS: %1$s</string>
     <string name="prefs_board_buttons_summary">Вимкніть кнопки, які ви не використовуєте</string>
+    <string name="gamel_menu_listLPs">Показати все</string>
+    <string name="legalphonies_title_fmt">Легальні телефони для %1$s</string>
+    <string name="gamel_menu_logstore_prune">Обрізати збережені колоди</string>
+    <string name="expl_log_prune_hours">Зберігайте стільки годин журналів</string>
+    <string name="gamel_menu_stats">Статистика</string>
+    <string name="gamel_menu_statsShow">Показати</string>
+    <string name="gamel_menu_statsClear">Очистити</string>
+    <string name="statsCopiedToast">Статистику скопійовано в буфер обміну</string>
+    <string name="statsClearConfirm">Ви впевнені, що бажаєте остаточно видалити статистику?</string>
+    <string name="notify_perms_rationale">CrossWords потребує вашого дозволу, щоб публікувати сповіщення, напр. повідомляючи вам, що опонент переїхав або що доступний оновлений список слів.</string>
+    <string name="confirm_clear_lps">Ви впевнені, що бажаєте очистити збережені «юридичні фальшивки»?\n\nЦю дію не можна скасувати.</string>
+    <string name="gamel_menu_legalPhonies">Легальні фальсифікації</string>
+    <string name="gamel_menu_clearLPs">Очистити все</string>
 </resources>
