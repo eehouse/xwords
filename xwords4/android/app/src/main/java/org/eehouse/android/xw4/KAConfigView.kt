@@ -21,6 +21,7 @@ package org.eehouse.android.xw4
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
 import android.view.View
@@ -108,8 +109,9 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                 }
             findViewById<TextView>(R.id.start_stop_expl).setText(msg)
 
+            val haveChannels = Build.VERSION_CODES.O <= Build.VERSION.SDK_INT
             findViewById<View>(R.id.notify_group).setVisibility(
-                if ( enabled ) View.VISIBLE
+                if ( haveChannels && enabled ) View.VISIBLE
                 else View.GONE
             )
             if ( enabled ) {
