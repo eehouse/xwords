@@ -101,7 +101,9 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                 } else if (mIsRunning) {
                     DBUtils.getKAMinutesLeft(context).let {
                         val hoursMins = Utils.minsToHoursMins(it)
+                        val runningHoursMins = Utils.minsToHoursMins(KAService.runtimeMins())
                         LocUtils.getString(context, R.string.ksconfig_running_fmt,
+                                           runningHoursMins[0], runningHoursMins[1],
                                            hoursMins[0], hoursMins[1])
                     }
                 } else {

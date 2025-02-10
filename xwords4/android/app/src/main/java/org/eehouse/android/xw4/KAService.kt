@@ -33,9 +33,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-import java.util.Date
-
 import org.eehouse.android.xw4.loc.LocUtils
+import java.lang.ref.WeakReference
 
 // From: https://robertohuertas.com/2019/06/29/android_foreground_services/
 
@@ -44,8 +43,12 @@ private val TAG = KAService::class.java.simpleName
 class KAService: Service() {
     private var mWakeLock: PowerManager.WakeLock? = null
     private var mServiceStarted = false
-    private var mStartStamp: Date? = null
+    private var mStartStampMS: Long = System.currentTimeMillis() // in case not inited elsewhere
     private var mSelfKilled = false
+
+    init {
+        sSelf = WeakReference<KAService>(this)
+    }
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -86,6 +89,7 @@ class KAService: Service() {
         if ( !mSelfKilled ) {
             postKilled()
         }
+        sSelf = null
     }
 
     private fun postKilled()
@@ -93,11 +97,10 @@ class KAService: Service() {
         if ( XWPrefs
                  .getPrefsBoolean(this, R.string.key_show_kaservicedied, true)) {
             KAConfigView.makeSelfIntent(this).let { intent ->
-                val curTime = System.currentTimeMillis()
-                val intervalMins = (curTime / (1000 * 60))- (mStartStamp!!.seconds / 1000)
-                val hoursMins = Utils.minsToHoursMins( intervalMins )
+                val elapsedMS = System.currentTimeMillis() - mStartStampMS
+                val hoursMins = Utils.minsToHoursMins(elapsedMS / (1000 * 60))
                 val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt,
-                                              Date(), hoursMins[0], hoursMins[1])
+                                              hoursMins[0], hoursMins[1])
                 Utils.postNotification(this, intent, R.string.ksconfig_killed_title,
                                        body, 1000)
             }
@@ -106,7 +109,7 @@ class KAService: Service() {
 
     private fun startService() {
         if (!mServiceStarted && getEnabled(this)) {
-            mStartStamp = Date()
+            mStartStampMS = System.currentTimeMillis()
             mServiceStarted = true
             sIsRunning = true
 
@@ -187,6 +190,7 @@ class KAService: Service() {
     }
 
     companion object {
+        private var sSelf: WeakReference<KAService>? = null
         private val START_CMD = "start"
         private val STOP_CMD = "stop"
 
@@ -234,6 +238,15 @@ class KAService: Service() {
         fun setEnabled(context: Context, enabled: Boolean)
         {
             XWPrefs.setPrefsBoolean(context, R.string.key_enable_kaservice, enabled)
+        }
+
+        fun runtimeMins(): Long {
+            return sSelf
+                ?.get()
+                ?.let {
+                      (System.currentTimeMillis() - it.mStartStampMS) / (1000 * 60)
+                  }
+                ?: 0L
         }
     }
 }
