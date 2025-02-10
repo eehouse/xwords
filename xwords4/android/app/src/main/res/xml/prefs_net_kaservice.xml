@@ -24,8 +24,14 @@
         android:title="@string/title_ka_menuwhen"
         android:entries="@array/ka_menuwhen"
         android:entryValues="@array/ka_menuwhen"
-        android:defaultValue="@string/ka_menuwhen_available"
+        android:defaultValue="true"
         />
+
+    <CheckBoxPreference android:key="@string/key_show_kaservicedied"
+                        android:title="@string/show_kaservicedied_title"
+                        android:summary="@string/show_kaservicedied_body"
+                        android:defaultValue="true"
+                        />
 
   </PreferenceCategory>
 </PreferenceScreen>

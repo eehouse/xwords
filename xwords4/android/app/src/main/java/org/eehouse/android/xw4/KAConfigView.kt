@@ -146,7 +146,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
 
         fun makePendingIntent(context: Context): PendingIntent
         {
-            val intent = makeIntent(context)
+            val intent = makeSelfIntent(context)
 
             val flags = PendingIntent.FLAG_IMMUTABLE
             val pi = PendingIntent.getActivity(context, Utils.nextRandomInt(),
@@ -154,7 +154,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
             return pi
         }
 
-        private fun makeIntent(context: Context): Intent {
+        fun makeSelfIntent(context: Context): Intent {
             val intent = GamesListDelegate.makeSelfIntent(context).also {
                 it.putExtra(FOR_KACONFIG, true)
                 Assert.assertTrue(isMyIntent(it))
@@ -170,9 +170,9 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
 
         fun launch(context: Context)
         {
-            makeIntent(context).also {
-                it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(it)
+            makeSelfIntent(context).let { intent ->
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
             }
         }
 

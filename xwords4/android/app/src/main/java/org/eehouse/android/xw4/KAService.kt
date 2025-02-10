@@ -66,7 +66,6 @@ class KAService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        mStartStamp = Date()
         val versionCode = Build.VERSION.SDK_INT
         Log.d(TAG, "%H.onCreate(code=$versionCode)", this)
         val notify = createNotification(this)
@@ -91,19 +90,23 @@ class KAService: Service() {
 
     private fun postKilled()
     {
-        GamesListDelegate.makeSelfIntent(this).let { intent ->
-            val curTime = System.currentTimeMillis()
-            val intervalMins = (curTime / (1000 * 60))- (mStartStamp!!.seconds / 1000)
-            val hoursMins = Utils.minsToHoursMins( intervalMins )
-            val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt,
-                                          Date(), hoursMins[0], hoursMins[1])
-            Utils.postNotification(this, intent, R.string.ksconfig_killed_title,
-                                   body, 1000)
+        if ( XWPrefs
+                 .getPrefsBoolean(this, R.string.key_show_kaservicedied, true)) {
+            KAConfigView.makeSelfIntent(this).let { intent ->
+                val curTime = System.currentTimeMillis()
+                val intervalMins = (curTime / (1000 * 60))- (mStartStamp!!.seconds / 1000)
+                val hoursMins = Utils.minsToHoursMins( intervalMins )
+                val body = LocUtils.getString(this, R.string.ksconfig_killed_body_fmt,
+                                              Date(), hoursMins[0], hoursMins[1])
+                Utils.postNotification(this, intent, R.string.ksconfig_killed_title,
+                                       body, 1000)
+            }
         }
     }
 
     private fun startService() {
         if (!mServiceStarted && getEnabled(this)) {
+            mStartStamp = Date()
             mServiceStarted = true
             sIsRunning = true
 
