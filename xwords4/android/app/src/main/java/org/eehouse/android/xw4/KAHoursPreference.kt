@@ -41,7 +41,9 @@ class KAHoursPreference(context: Context, attrs: AttributeSet?) :
 
         fun hoursFromEntry(context: Context, entry: String): Int {
             val result = sHours
-                .firstNotNullOf{if (format(context, it).equals(entry)) it else null}
+                .firstNotNullOfOrNull{if (format(context, it).equals(entry)) it
+                                      else null
+                }
                 ?: DEFAULT_HOURS
             // Log.d(TAG, "hoursFromEntry($entry) => $result")
             return result
