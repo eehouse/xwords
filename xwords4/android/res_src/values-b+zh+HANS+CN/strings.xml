@@ -1100,4 +1100,17 @@
     <string name="url_scheme_default">使用系统默认</string>
     <string name="title_url_scheme">网络 API 协议</string>
     <string name="lang_name_basque">巴斯克语</string>
+    <string name="gamel_menu_clearLPs">全部清除</string>
+    <string name="gamel_menu_listLPs">显示全部</string>
+    <string name="confirm_clear_lps">你确定要清楚所保存的 “legal phonies” 吗？\n\n此操作无法撤销。</string>
+    <string name="legalphonies_title_fmt">%1$s 的 legal phonies</string>
+    <string name="notify_perms_rationale">CrossWords 需要发出通知权限来通知对手已经采取动作或有更新的单词表可用等等事项。</string>
+    <string name="gamel_menu_legalPhonies">Legal phonies</string>
+    <string name="gamel_menu_stats">统计数字</string>
+    <string name="gamel_menu_statsClear">清除</string>
+    <string name="statsCopiedToast">统计数字已复制到剪贴板</string>
+    <string name="statsClearConfirm">确定要永久删除统计数字吗？</string>
+    <string name="gamel_menu_logstore_prune">删除保存的日志</string>
+    <string name="expl_log_prune_hours">日志保留时长（小时）</string>
+    <string name="gamel_menu_statsShow">显示</string>
 </resources>
