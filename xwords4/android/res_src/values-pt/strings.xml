@@ -2322,4 +2322,6 @@
     <string name="url_scheme_https">Forçar https</string>
     <string name="disable_shuffle_button_summary">Esconder o botão que reorganiza pedras da tabela</string>
     <string name="lang_name_basque">Basco</string>
+    <string name="gamel_menu_clearLPs">Limpar tudo</string>
+    <string name="gamel_menu_listLPs">Mostrar tudo</string>
 </resources>
