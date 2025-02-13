@@ -152,4 +152,5 @@
     <string name="lang_name_hungarian">Венгерский</string>
     <string name="lang_name_dutch">Голландский</string>
     <string name="dict_lang_avail">(Доступно: %1$d)</string>
+    <string name="board_size">Размер поля</string>
 </resources>
