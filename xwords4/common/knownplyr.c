@@ -23,18 +23,17 @@
 #include "strutils.h"
 #include "comms.h"
 #include "dbgutil.h"
-#include "dllist.h"
+#include "xwarray.h"
 #include "xwmutex.h"
 
 typedef struct _KnownPlayer {
-    DLHead links;
     XP_U32 newestMod;
     XP_UCHAR* name;
     CommsAddrRec addr;
 } KnownPlayer;
 
 typedef struct _KPState {
-    KnownPlayer* players;
+    XWArray* players;
     XP_Bool dirty;
     XP_Bool inUse;
 } KPState;
@@ -67,6 +66,7 @@ loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     KPState* state = (KPState*)dutil->kpCtxt;
     if ( NULL == state ) {
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
+        state->players = arr_make( MPPARM_NOCOMMA(dutil->mpool) );
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                     dutil_getVTManager(dutil) );
         dutil_loadStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
@@ -84,7 +84,7 @@ loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 static ForEachAct
-saveProc( const DLHead* dl, void* closure )
+saveProc( void* dl, void* closure )
 {
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
     KnownPlayer* kp = (KnownPlayer*)dl;
@@ -103,7 +103,7 @@ saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
         stream_setVersion( stream, CUR_STREAM_VERS );
         stream_putU8( stream, CUR_STREAM_VERS );
 
-        dll_map( &state->players->links, saveProc, NULL, stream );
+        arr_map( state->players, saveProc, stream );
 
         dutil_storeStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
         stream_destroy( stream );
@@ -123,7 +123,7 @@ static void
 makeUniqueName( const KPState* state, const XP_UCHAR* name,
                 XP_UCHAR newName[], XP_U16 len )
 {
-    XP_U16 nPlayers = dll_length( &state->players->links );
+    XP_U16 nPlayers = arr_length( state->players );
     const XP_UCHAR* names[nPlayers];
     getPlayersImpl( state, names, &nPlayers );
     for ( int ii = 2; ; ++ii ) {
@@ -140,7 +140,7 @@ makeUniqueName( const KPState* state, const XP_UCHAR* name,
 }
 
 static int
-compByName(const DLHead* dl1, const DLHead* dl2)
+compByName(const void* dl1, const void* dl2)
 {
     const KnownPlayer* kp1 = (const KnownPlayer*)dl1;
     const KnownPlayer* kp2 = (const KnownPlayer*)dl2;
@@ -148,7 +148,7 @@ compByName(const DLHead* dl1, const DLHead* dl2)
 }
 
 static int
-compByDate(const DLHead* dl1, const DLHead* dl2)
+compByDate(const void* dl1, const void* dl2)
 {
     const KnownPlayer* kp1 = (const KnownPlayer*)dl1;
     const KnownPlayer* kp2 = (const KnownPlayer*)dl2;
@@ -157,6 +157,8 @@ compByDate(const DLHead* dl1, const DLHead* dl2)
         result = 1;
     } else if ( kp1->newestMod > kp2->newestMod ) {
         result = -1;
+    } else {
+        result = compByName( dl1, dl2 );
     }
     return result;
 }
@@ -181,7 +183,7 @@ typedef struct _AddData {
 } AddData;
 
 static ForEachAct
-addProc( const DLHead* dl, void* closure )
+addProc( void* dl, void* closure )
 {
     AddData* adp = (AddData*)closure;
     KnownPlayer* kp = (KnownPlayer*)dl;
@@ -202,7 +204,7 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
 {
     XP_LOGFFV( "(name=%s, newestMod: %d)", name, newestMod );
     AddData ad = {.name = name, .addr = addr, };
-    dll_map( &state->players->links, addProc, NULL, &ad );
+    arr_map( state->players, addProc, &ad );
 
     XP_UCHAR tmpName[64];
     if ( !!ad.withSameDevID ) {    /* only one allowed */
@@ -227,12 +229,10 @@ addPlayer( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), KPState* state,
         newPlayer->name = copyString( dutil->mpool, name );
         newPlayer->addr = *addr;
         newPlayer->newestMod = newestMod;
-        state->players
-            = (KnownPlayer*)dll_insert( &state->players->links,
-                                        &newPlayer->links, compByName );
+        arr_insert( state->players, newPlayer );
         state->dirty = XP_TRUE;
     }
-    XP_LOGFFV( "nPlayers now: %d", dll_length( &state->players->links ) );
+    XP_LOGFFV( "nPlayers now: %d", arr_length( &state->players->links ) );
 }
 
 XP_Bool
@@ -260,7 +260,7 @@ kplr_havePlayers( XW_DUtilCtxt* dutil, XWEnv xwe )
     XP_Bool result;
     WITH_MUTEX( &dutil->kpMutex );
     KPState* state = loadStateLocked( dutil, xwe );
-    result = 0 < dll_length( &state->players->links );
+    result = 0 < arr_length( state->players );
     releaseStateLocked( dutil, xwe, state );
     END_WITH_MUTEX();
     LOG_RETURNF( "%s", boolToStr(result) );
@@ -274,7 +274,7 @@ typedef struct _GetState {
 
 
 static ForEachAct
-getProc( const DLHead* dl, void* closure )
+getProc( void* dl, void* closure )
 {
     GetState* gsp = (GetState*)closure;
     const KnownPlayer* kp = (KnownPlayer*)dl;
@@ -286,14 +286,10 @@ static void
 getPlayersImpl( const KPState* state, const XP_UCHAR** players,
                 XP_U16* nFound )
 {
-    XP_U16 nPlayers = dll_length( &state->players->links );
+    XP_U16 nPlayers = arr_length( state->players );
     if ( nPlayers <= *nFound && !!players ) {
         GetState gs = { .players = players, .indx = 0, };
-#ifdef DEBUG
-        DLHead* head =
-#endif
-            dll_map( &state->players->links, getProc, NULL, &gs );
-        XP_ASSERT( head == &state->players->links );
+        arr_map( state->players, getProc, &gs );
     }
     *nFound = nPlayers;
 }
@@ -305,13 +301,11 @@ kplr_getNames( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool byDate,
     WITH_MUTEX( &dutil->kpMutex );
     KPState* state = loadStateLocked( dutil, xwe );
     if ( byDate ) {
-        state->players = (KnownPlayer*)dll_sort( &state->players->links,
-                                                 compByDate );
+        arr_setSort( state->players, compByDate );
     }
     getPlayersImpl( state, players, nFound );
     if ( byDate ) {
-        state->players = (KnownPlayer*)dll_sort( &state->players->links,
-                                                 compByName );
+        arr_setSort( state->players, compByName );
     }
     releaseStateLocked( dutil, xwe, state );
     END_WITH_MUTEX();
@@ -323,7 +317,7 @@ typedef struct _FindState {
 } FindState;
 
 static ForEachAct
-findProc( const DLHead* dl, void* closure )
+findProc( void* dl, void* closure )
 {
     ForEachAct result = FEA_OK;
     FindState* fsp = (FindState*)closure;
@@ -339,11 +333,7 @@ static KnownPlayer*
 findByName( KPState* state, const XP_UCHAR* name )
 {
     FindState fs = { .name = name, };
-#ifdef DEBUG
-    DLHead* head =
-#endif
-        dll_map( &state->players->links, findProc, NULL, &fs );
-    XP_ASSERT( head == &state->players->links );
+    arr_map( state->players, findProc, &fs );
     return (KnownPlayer*)fs.result;
 }
 
@@ -388,7 +378,7 @@ typedef struct _MDevState {
 } MDevState;
 
 static ForEachAct
-addrProc( const DLHead* dl, void* closure )
+addrProc( void* dl, void* closure )
 {
     ForEachAct result = FEA_OK;
     const KnownPlayer* kp = (KnownPlayer*)dl;
@@ -409,11 +399,7 @@ kplr_nameForAddress( XW_DUtilCtxt* dutil, XWEnv xwe,
 
     WITH_MUTEX( &dutil->kpMutex );
     KPState* state = loadStateLocked( dutil, xwe );
-#ifdef DEBUG
-    DLHead* head =
-#endif
-        dll_map( &state->players->links, addrProc, NULL, &ms );
-    XP_ASSERT( head == &state->players->links );
+    arr_map( state->players, addrProc, &ms );
     releaseStateLocked( dutil, xwe, state );
     END_WITH_MUTEX();
 
@@ -459,25 +445,26 @@ typedef struct _DelState {
     KPState* state;
 } DelState;
 
+static void
+delFreeProc( void* elem, void* closure )
+{
+    DelState* dsp = (DelState*)closure;
+    freeKP( dsp->dutil, (KnownPlayer*)elem );
+}
+
 static ForEachAct
-delMapProc( const DLHead* dl, void* closure )
+delMapProc( void* dl, void* closure )
 {
     ForEachAct result = FEA_OK;
 
-    const KnownPlayer* kp = (KnownPlayer*)dl;
+    KnownPlayer* kp = (KnownPlayer*)dl;
     DelState* dsp = (DelState*)closure;
     if ( 0 == XP_STRCMP( kp->name, dsp->name ) ) {
         result = FEA_REMOVE | FEA_EXIT;
         dsp->state->dirty = XP_TRUE;
+        delFreeProc( dl, closure );
     }
     return result;
-}
-
-static void
-delFreeProc( DLHead* elem, void* closure )
-{
-    DelState* dsp = (DelState*)closure;
-    freeKP( dsp->dutil, (KnownPlayer*)elem );
 }
 
 KP_Rslt
@@ -488,8 +475,7 @@ kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name )
     KPState* state = loadStateLocked( dutil, xwe );
 
     DelState ds = { .name = name, .state = state, .dutil = dutil,};
-    state->players = (KnownPlayer*)
-        dll_map( &state->players->links, delMapProc, delFreeProc, &ds );
+    arr_map( state->players, delMapProc, &ds );
     releaseStateLocked( dutil, xwe, state );
     END_WITH_MUTEX();
 
@@ -503,9 +489,10 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
     KPState* state = *statep;
     if ( !!state ) {
         XP_ASSERT( !state->inUse );
-        XP_LOGFF( "removing %d elems", dll_length(&state->players->links) );
+        XP_LOGFF( "removing %d elems", arr_length(state->players) );
         DelState ds = { .dutil = dutil,};
-        dll_removeAll( &state->players->links, delFreeProc, &ds );
+        arr_removeAll( state->players, delFreeProc, &ds );
+        arr_destroy( state->players );
         XP_FREEP( dutil->mpool, statep );
     }
 }

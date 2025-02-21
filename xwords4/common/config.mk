@@ -62,6 +62,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/device.o \
 	$(COMMONOBJDIR)/knownplyr.o \
 	$(COMMONOBJDIR)/dllist.o \
+	$(COMMONOBJDIR)/xwarray.o \
 	$(COMMONOBJDIR)/stats.o \
 	$(COMMONOBJDIR)/timers.o \
 	$(COMMONOBJDIR)/md5.o \

@@ -25,13 +25,12 @@ extern "C" {
 #endif
 
 #include "xptypes.h"
+#include "comtypes.h"
 
 typedef struct DLHead {
     struct DLHead* _next;
     struct DLHead* _prev;
 } DLHead;
-
-typedef enum {FEA_OK = 0x00, FEA_REMOVE = 0x01, FEA_EXIT = 0x02} ForEachAct;
 
 typedef int (*DLCompProc)(const DLHead* dl1, const DLHead* dl2);
 

@@ -179,6 +179,8 @@ typedef struct SendMsgsPacket {
     XP_U16 len;
 } SendMsgsPacket;
 
+typedef enum {FEA_OK = 0x00, FEA_REMOVE = 0x01, FEA_EXIT = 0x02} ForEachAct;
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;
