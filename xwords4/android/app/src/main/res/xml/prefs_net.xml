@@ -7,7 +7,7 @@
                       android:summary="@string/network_behavior_summary"
                       >
 
-    <Preference app:title="@string/prefs_net_kaservice"
+    <Preference app:title="@string/movechecker_name"
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net_kaservice"
                 />
 

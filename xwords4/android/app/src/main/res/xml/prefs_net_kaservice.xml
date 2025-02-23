@@ -3,7 +3,7 @@
                   xmlns:app="http://schemas.android.com/apk/res-auto"
                   >
 
-  <PreferenceCategory android:title="@string/prefs_net_kaservice"
+  <PreferenceCategory android:title="@string/movechecker_name"
                       >
 
     <CheckBoxPreference android:key="@string/key_enable_kaservice"

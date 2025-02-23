@@ -95,7 +95,7 @@ object Channels {
                    NotificationManager.IMPORTANCE_HIGH),
         DUP_TIMER_RUNNING(R.string.dup_timer_expl),
         DUP_PAUSED(R.string.dup_paused_expl),
-        KEEP_ALIVE(R.string.keepalive_expl, NotificationManager.IMPORTANCE_HIGH);
+        KEEP_ALIVE(R.string.movechecker_name, NotificationManager.IMPORTANCE_HIGH);
 
         fun idFor(rowid: Long): Int {
             return notificationId(rowid, this)

@@ -34,7 +34,7 @@
   <string name="pref_item_allowMulti_summary">Usually this means accepting invitations from the same device</string>
 
   <!-- Move checker, a.k.a. KeepAlive service -->
-  <string name="keepalive_expl">Move Checker</string>
+  <string name="movechecker_name">Move Checker</string>
   <string name="kaservice_title">CrossWords Move Checker</string>
   <string name="kaservice_content">CrossWords is staying awake to
   check for remote moves. Tap for more information.</string>
@@ -43,13 +43,11 @@
   receive moves, even when it is not visible or the device is
   asleep. Note: may impact battery life.</string>
 
-  <string name="games_menu_ksconfig">KSConfig</string>
-
   <string name="ksconfig_expl">For the best experience with networked
-  games, CrossWords tries to remain active in the background checking
-  for incoming moves. This can impact battery life, which is why
-  Android discourages it, and why you will always see a notification
-  when it is happening.
+  games, CrossWords can try to remain active in the background
+  checking for incoming moves. This may reduce battery life, which is
+  why Android discourages it, and why you will always see a
+  notification when it is happening.
   </string>
 
   <string name="ka_config_fmt">The Move Checker only runs when a move
@@ -74,7 +72,6 @@
   <string name="ksconfig_killed_title">Move Checker stopped</string>
   <string name="ksconfig_killed_body_fmt">It ran for %1$dh%2$02dm</string>
 
-  <string name="prefs_net_kaservice">Network Move Checker</string>
   <string name="prefs_net_kaservice_summary">Enable Move Checker</string>
 
   <string name="expl_ka_hours">How many hours to stay awake</string>
