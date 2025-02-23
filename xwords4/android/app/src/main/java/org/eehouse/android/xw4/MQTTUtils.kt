@@ -151,12 +151,9 @@ object MQTTUtils {
     fun handleCtrlReceived(context: Context, msg: ByteArray) {
         try {
             val obj = JSONObject(String(msg))
-            val msg = obj.optString("msg", null)
-            if (null != msg) {
+            obj.optString("msg", null)?.let { msg->
                 var title = obj.optString("title", null)
-                if (null == title) {
-                    title = LocUtils.getString(context, R.string.remote_msg_title)
-                }
+                    ?: LocUtils.getString(context, R.string.remote_msg_title)
                 val alertIntent = GamesListDelegate.makeAlertIntent(context, msg)
                 val code = msg.hashCode() xor title.hashCode()
                 Utils.postNotification(context, alertIntent, title, msg, code)
