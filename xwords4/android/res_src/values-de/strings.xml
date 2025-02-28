@@ -1186,4 +1186,12 @@
     <string name="url_scheme_https">Https erzwingen</string>
     <string name="lang_name_basque">Baskisch</string>
     <string name="notify_perms_rationale">CrossWords benötigt Ihre Erlaubnis Benachrichtigungen zu versenden, z.B. dass ein Gegner umgezogen ist oder dass eine aktualisierte Wortliste verfügbar ist.</string>
+    <string name="gamel_menu_statsClear">Leeren</string>
+    <string name="expl_log_prune_hours">Halten Sie diese Anzahl an Stunden von Protokollen</string>
+    <string name="gamel_menu_stats">Statistiken</string>
+    <string name="gamel_menu_statsShow">Anzeigen</string>
+    <string name="statsClearConfirm">Sind Sie sicher, dass Sie die Statistiken dauerhaft löschen möchten?</string>
+    <string name="gamel_menu_clearLPs">Alles leeren</string>
+    <string name="gamel_menu_listLPs">Alle anzeigen</string>
+    <string name="statsCopiedToast">Statistiken in die Zwischenablage kopiert</string>
 </resources>
