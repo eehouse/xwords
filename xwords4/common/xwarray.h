@@ -30,13 +30,12 @@ extern "C" {
 
 typedef struct XWArray XWArray;
 
-typedef int (*ArCompProc)(const void* dl1, const void* dl2);
-
 XWArray* arr_make(MPFORMAL_NOCOMMA);
 void arr_destroy( XWArray* array );
 
 /* Set the sort order. Will result in a resort if there's data. Null is
    allowed, but then an insert is just an append. */
+typedef int (*ArCompProc)(const void* dl1, const void* dl2);
 void arr_setSort( XWArray* array, ArCompProc proc );
 
 void arr_insert( XWArray* array, void* node );
