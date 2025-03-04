@@ -33,7 +33,7 @@ struct XWArray {
 };
 
 static void ensureRoom( XWArray* array, XP_U32 forNew );
-static int findFit( XWArray* array, void* node );
+static int findFit( XWArray* array, const void* node );
 static void moveUpOne( XWArray* array, int from );
 static void moveDownOne( XWArray* array, int from );
 #ifdef DEBUG
@@ -74,6 +74,14 @@ arr_append( XWArray* array, void* node )
 {
     ensureRoom( array, 1 );
     array->elems[array->nElems++] = node;
+}
+
+XP_Bool
+arr_find( XWArray* array, const void* target )
+{
+    int indx = findFit( array, target );
+    return indx < array->nElems
+        && 0 == (*array->proc)(array->elems[indx], target);
 }
 
 void
@@ -185,7 +193,7 @@ assertSorted( XWArray* array )
 
 /* Via an AI summary, so how to attribute? */
 static int
-findFit( XWArray* array, void* node )
+findFit( XWArray* array, const void* node )
 {
     int low = 0;
     int high = array->nElems - 1;
@@ -193,10 +201,11 @@ findFit( XWArray* array, void* node )
 
     while ( low <= high ) {
         int mid = (low + high) / 2;
-        if ( array->elems[mid] == node ) {
+        int comp = (*array->proc)( array->elems[mid], node );
+        if ( 0 == comp ) {
             result = mid;
             break;
-        } else if ( 0 > (*array->proc)(array->elems[mid], node ) ) {
+        } else if ( 0 > comp ) {
             low = mid + 1;
             result = low;
         } else {

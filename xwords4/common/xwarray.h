@@ -40,6 +40,7 @@ void arr_setSort( XWArray* array, ArCompProc proc );
 
 void arr_insert( XWArray* array, void* node );
 void* arr_getNth( XWArray* array, XP_U32 nn );
+XP_Bool arr_find( XWArray* array, const void* target );
 void arr_remove( XWArray* array, void* node );
 
 XP_U32 arr_length( const XWArray* array );

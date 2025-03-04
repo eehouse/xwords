@@ -889,6 +889,12 @@ findIsoProc( const DLHead* elem, void* closure )
     return result;
 }
 
+static int
+strCmpProc( const void* dl1, const void* dl2 )
+{
+    return XP_STRCMP( (XP_UCHAR*)dl1, (XP_UCHAR*)dl2 );
+}
+
 static PhoniesDataCodes*
 findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* isoCode )
 {
@@ -902,6 +908,7 @@ findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* iso
         pdc = XP_CALLOC( dutil->mpool, sizeof(*pdc) );
         pdc->isoCode = copyString( dutil->mpool, isoCode );
         pdc->phonies = arr_make( dutil->mpool );
+        arr_setSort( pdc->phonies, strCmpProc );
         dc->pd = (PhoniesDataCodes*)dll_insert( &dc->pd->links, &pdc->links, NULL );
         XP_ASSERT( pdc == dc->pd );
     }
@@ -1153,27 +1160,20 @@ dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
 }
 #endif
 
-static ForEachAct
-findPhonyProc2( void* elem, void* closure )
-{
-    ForEachAct result = FEA_OK;
-    PhoniesMapState* ms = (PhoniesMapState*)closure;
-    XP_UCHAR* phony = (XP_UCHAR*)elem;
-    if ( 0 == XP_STRCMP( ms->phony, phony ) ) {
-        ms->found = elem;
-        result |= FEA_EXIT;
-    }
-    return result;
-}
+typedef struct _FindState {
+    const XP_UCHAR* isoCode;
+    const XP_UCHAR* phony;
+    XP_Bool foundIt;
+} FindState;
 
 static ForEachAct
-findPhonyProc1( const DLHead* elem, void* closure )
+findPhonyProc( const DLHead* elem, void* closure )
 {
     ForEachAct result = FEA_OK;
-    PhoniesMapState* ms = (PhoniesMapState*)closure;
+    FindState* fs = (FindState*)closure;
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
-    if ( 0 == XP_STRCMP( ms->isoCode, pdc->isoCode ) ) {
-        arr_map( pdc->phonies, findPhonyProc2, closure );
+    if ( 0 == XP_STRCMP( fs->isoCode, pdc->isoCode ) ) {
+        fs->foundIt = arr_find( pdc->phonies, fs->phony );
         result |= FEA_EXIT;
     }
     return result;
@@ -1185,13 +1185,13 @@ dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
 {
     DevCtxt* dc = load( dutil, xwe );
 
-    PhoniesMapState ms = {
+    FindState fs = {
         .isoCode = isoCode,
         .phony = phony,
     };
-    dll_map( &dc->pd->links, findPhonyProc1, NULL, &ms );
+    dll_map( &dc->pd->links, findPhonyProc, NULL, &fs );
     
-    return NULL != ms.found;
+    return fs.foundIt;
 }
 
 static void
