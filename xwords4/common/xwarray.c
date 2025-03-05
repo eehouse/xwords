@@ -32,6 +32,7 @@ struct XWArray {
     MPSLOT
 };
 
+static int dfltCmpProc(const void* dl1, const void* dl2);
 static void ensureRoom( XWArray* array, XP_U32 forNew );
 static int findFit( XWArray* array, const void* node );
 static void moveUpOne( XWArray* array, int from );
@@ -50,6 +51,7 @@ arr_make(MPFORMAL_NOCOMMA)
 #ifdef MEM_DEBUG
     array->mpool = mpool;
 #endif
+    array->proc = dfltCmpProc;
     return array;
 }
 
@@ -117,11 +119,15 @@ arr_getNth( XWArray* array, XP_U32 nn )
 }
 
 void
-arr_setSort( XWArray* array, ArCompProc proc )
+arr_setSort( XWArray* array, ArCompProc newProc )
 {
-    if ( proc != array->proc ) {
-        array->proc = proc;
-        if ( !!proc && 0 < array->nElems ) {
+    if ( !newProc ) {
+        newProc = dfltCmpProc;
+    }
+
+    if ( newProc != array->proc ) {
+        array->proc = newProc;
+        if ( 0 < array->nElems ) {
             void** oldElems = array->elems;
             XP_U32 oldNElems = array->nElems;
             array->elems = NULL;
@@ -164,6 +170,12 @@ arr_removeAll( XWArray* array, ArDisposeProc dispProc, void* closure )
     }
     XP_FREEP( array->mpool, &array->elems );
     array->nElems = array->capacity = 0;
+}
+
+static int
+dfltCmpProc(const void* dl1, const void* dl2)
+{
+    return dl1 - dl2;
 }
 
 static void

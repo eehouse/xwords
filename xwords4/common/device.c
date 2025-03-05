@@ -69,7 +69,6 @@ typedef struct WSData {
 } WSData;
 
 typedef struct _PhoniesDataCodes {
-    DLHead links;
     XP_UCHAR* isoCode;
     XWArray* phonies;
 } PhoniesDataCodes;
@@ -93,7 +92,7 @@ typedef struct _DevCtxt {
         TimerKey key;
     } ackTimer;
 
-    PhoniesDataCodes* pd;
+    XWArray* pd;
 
 #ifdef DEBUG
     XP_U32 magic;
@@ -876,7 +875,7 @@ typedef struct _PhoniesMapState {
 } PhoniesMapState;
 
 static ForEachAct
-findIsoProc( const DLHead* elem, void* closure )
+findIsoProc( void* elem, void* closure )
 {
     ForEachAct result = FEA_OK;
     PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
@@ -901,7 +900,7 @@ findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* iso
     PhoniesMapState ms = {
         .isoCode = isoCode,
     };
-    dll_map( &dc->pd->links, findIsoProc, NULL, &ms );
+    arr_map( dc->pd, findIsoProc, &ms );
     PhoniesDataCodes* pdc = (PhoniesDataCodes*)ms.found;
 
     if ( !pdc ) {
@@ -909,8 +908,7 @@ findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* iso
         pdc->isoCode = copyString( dutil->mpool, isoCode );
         pdc->phonies = arr_make( dutil->mpool );
         arr_setSort( pdc->phonies, strCmpProc );
-        dc->pd = (PhoniesDataCodes*)dll_insert( &dc->pd->links, &pdc->links, NULL );
-        XP_ASSERT( pdc == dc->pd );
+        arr_insert( dc->pd, pdc );
     }
 
     return pdc;
@@ -937,7 +935,7 @@ storeStrs( void* elem, void* closure )
 }
 
 static ForEachAct
-storeIso( const DLHead* elem, void* closure )
+storeIso( void* elem, void* closure )
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
@@ -969,16 +967,12 @@ storePhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
     if ( !!dc->pd ) {
         stream_putU8( stream, PD_VERSION_1 );
 
-        PhoniesDataCodes* pdc = dc->pd;
-        XP_U16 numIsos = dll_length( &pdc->links );
+        XWArray* pdc = dc->pd;
+        XP_U16 numIsos = arr_length( pdc );
         XP_ASSERT( 0 < numIsos );
         stream_putU8( stream, numIsos );
 
-#ifdef DEBUG
-        PhoniesDataCodes* pdc1 = (PhoniesDataCodes*)
-#endif
-            dll_map( &pdc->links, storeIso, NULL, stream );
-        XP_ASSERT( pdc1 == pdc );
+        arr_map( pdc, storeIso, stream );
     }
 
     dutil_storeStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
@@ -990,6 +984,7 @@ loadPhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
     LOG_FUNC();
     XP_ASSERT ( !dc->pd );
+    dc->pd = arr_make( dutil->mpool );
 
     XWStreamCtxt* stream = mkStream( dutil );
     dutil_loadStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
@@ -1032,7 +1027,7 @@ XP_Bool
 dvc_haveLegalPhonies( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* dc = load( dutil, xwe );
-    XP_Bool result = 0 < dll_length( &dc->pd->links );
+    XP_Bool result = 0 < arr_length( dc->pd );
     LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
@@ -1047,7 +1042,7 @@ freeOnePhony( void* elem, void* XP_UNUSED_DBG(closure) )
 }
 
 static void
-freeOneCode( DLHead* elem, void* closure)
+freeOneCode( void* elem, void* closure)
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
 
@@ -1066,8 +1061,9 @@ freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     PhoniesMapState ms = { .dutil = dutil, };
     DevCtxt* dc = load( dutil, xwe );
-    dll_removeAll( &dc->pd->links, freeOneCode, &ms );
-    dc->pd = NULL;
+    arr_removeAll( dc->pd, freeOneCode, &ms );
+    XP_ASSERT( !dvc_haveLegalPhonies( dutil, xwe ) );
+    arr_destroy( dc->pd );
     return dc;
 }
 
@@ -1095,8 +1091,8 @@ dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
     PhoniesMapState ms = { .dutil = dutil, .phony = phony, };
     arr_map( pdc->phonies, clearPhonyProc, &ms );
     if ( 0 == arr_length(pdc->phonies) ) {
-        dc->pd = (PhoniesDataCodes*)dll_remove( &dc->pd->links, &pdc->links );
-        freeOneCode( &pdc->links, &ms );
+        arr_remove( dc->pd, pdc );
+        freeOneCode( pdc, &ms );
     }
     storePhoniesData( dutil, xwe, dc );
 }
@@ -1107,7 +1103,7 @@ typedef struct _GetWordsState {
 } GetWordsState;
 
 static ForEachAct
-getIsosProc( const DLHead* elem, void* closure )
+getIsosProc( void* elem, void* closure )
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
     GetWordsState* gws = (GetWordsState*)closure;
@@ -1134,7 +1130,7 @@ dvc_getIsoCodes( XW_DUtilCtxt* dutil, XWEnv xwe,
     };
 
     DevCtxt* dc = load( dutil, xwe );
-    dll_map( &dc->pd->links, getIsosProc, NULL, &gws );
+    arr_map( dc->pd, getIsosProc, &gws );
 }
 
 void
@@ -1167,7 +1163,7 @@ typedef struct _FindState {
 } FindState;
 
 static ForEachAct
-findPhonyProc( const DLHead* elem, void* closure )
+findPhonyProc( void* elem, void* closure )
 {
     ForEachAct result = FEA_OK;
     FindState* fs = (FindState*)closure;
@@ -1189,8 +1185,8 @@ dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
         .isoCode = isoCode,
         .phony = phony,
     };
-    dll_map( &dc->pd->links, findPhonyProc, NULL, &fs );
-    
+    arr_map( dc->pd, findPhonyProc, &fs );
+    XP_LOGFF( "(%s, %s) => %s", isoCode, phony, boolToStr(fs.foundIt) );
     return fs.foundIt;
 }
 
