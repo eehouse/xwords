@@ -31,72 +31,8 @@
   recommends (currently %1$s)</string>
 
   <string name="pref_item_allowMulti_title">Allow duplicate gameIDs</string>
-  <string name="pref_item_allowMulti_summary">Usually this means accepting invitations from the same device</string>
 
-  <!-- Move checker, a.k.a. KeepAlive service -->
-  <string name="movechecker_name">Move Checker</string>
-  <string name="kaservice_title">CrossWords Move Checker</string>
-  <string name="kaservice_content">CrossWords is staying awake to
-  check for remote moves. Tap for more information.</string>
-
-  <string name="enable_kaservice_summary">Keep CrossWords awake to
-  receive moves, even when it is not visible or the device is
-  asleep. Note: may impact battery life.</string>
-
-  <string name="ksconfig_expl">For the best experience with networked
-  games, CrossWords can try to remain active in the background
-  checking for incoming moves. This may reduce battery life, which is
-  why Android discourages it, and why you will always see a
-  notification when it is happening.
-  </string>
-
-  <string name="ka_config_fmt">The Move Checker only runs when a move
-  has been made in at least one networked game in the last %1$d
-  hours. You can configure it, or disable it altogether, using the
-  “%2$s” button below.</string>
-
-  <string name="ksconfig_running_fmt">The Move Checker has been
-  running for %1$dh%2$02dm. It will stop in %3$dh%4$02dm unless a move
-  is made or received before then.</string>
-  <string name="ksconfig_notrunning">The Move Checker is not currently running.</string>
-  <string name="ksconfig_disabled">The Move Checker is currently disabled.</string>
-
-  <string name="hide_notify_expl">If you get tired of seeing the
-  notification you can use your device’s Settings app to hide it. Get
-  there with the button below.</string>
-  <!-- "Show notifications" is the Android Settings app's button that
-       controls whether an app's notifications are displayed in the
-       notification bar. -->
-  <string name="hide_notify_button">Go to “Show notifications”</string>
-
-  <string name="ksconfig_killed_title">Move Checker stopped</string>
-  <string name="ksconfig_killed_body_fmt">It ran for %1$dh%2$02dm</string>
-
-  <string name="prefs_net_kaservice_summary">Enable Move Checker</string>
-
-  <string name="expl_ka_hours">How many hours to stay awake</string>
-  <string name="dflt_ka_hours">12</string>
-
-  <string name="title_ka_menuwhen">Enable Move Checker menu item</string>
-  <string name="ka_menuwhen_never">Never</string>
-  <string name="ka_menuwhen_available">When available</string>
-  <string name="ka_menuwhen_running">When running</string>
-  <string name="ka_menuwhen_always">Always</string>
-
-  <plurals name="hours_fmt">
-    <item quantity="one">One hour</item>
-    <item quantity="other">%1$d hours</item>
-  </plurals>
-
-  <string name="expl_notagain_keepalive">CrossWords will receive moves
-  from other players more quickly if you enable the new Move Checker
-  feature. The More info button will tell you how.</string>
-
-  <string name="button_show_ka">More info</string>
-
-  <string name="show_kaservicedied_title">Notify when Move Checker stops</string>
-  <string name="show_kaservicedied_body">Post a notification when the
-  Move Checker is stopped (usually because it’s been too long since a
-  move was sent or received.)</string>
+  <string name="pref_item_allowMulti_summary">Usually this means
+  accepting invitations from the same device</string>
 
 </resources>

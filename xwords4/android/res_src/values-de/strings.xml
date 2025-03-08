@@ -1194,4 +1194,67 @@
     <string name="gamel_menu_clearLPs">Alles leeren</string>
     <string name="gamel_menu_listLPs">Alle anzeigen</string>
     <string name="statsCopiedToast">Statistiken in die Zwischenablage kopiert</string>
+
+    <string name="movechecker_name">Aktualisierungsdienst</string>
+    <string name="kaservice_title">CrossWords Aktualisierungsdienst</string>
+    <string name="kaservice_content">CrossWords bleibt im Hintergrund aktiv, um in Netzwerkspielen die Züge anderer abzufragen. Tippen für mehr Information.</string>
+
+    <string name="enable_kaservice_summary">CrossWords aktiv halten um Züge abzufragen, auch wenn es nicht im Vordergrund oder das Gerät im Ruhemodus ist. Hinweis: kann den Akkuverbrauch erhöhen.</string>
+
+    <string name="ksconfig_expl">Bei Netzwerkspielen ist es nützlich,
+    dass CrossWords versucht, im Hintergrund aktiv zu bleibnen, um
+    ankommende Spielzüge abzufragen. Das kann die Akkulaufzeit verringern,
+    weshalb Android versucht es zu verhindern und weshalb man eine
+    Benachrichtigung sieht, wenn es passiert.
+    </string>
+
+    <string name="ka_config_fmt">Der Aktualisierungsdienst läuft nur
+    wenn mindestens in einem Netzwerkspiel, mindestens innerhalb der
+    letzten %1$d Stunde(n) ein Zug gespielt wurde. Man kann den Dienst
+    konfigurieren oder ihn auch deaktivieren, mit Hilfe des “%2$s”
+    Buttons unten.</string>
+
+    <string name="ksconfig_running_fmt">Der Aktualisierungsdienst läuft
+    seit %1$dh%2$02dm. Er wird beendet in %3$dh%4$02dm falls bis dahin
+    kein Zug gespielt oder empfangen wurde.</string>
+    <string name="ksconfig_notrunning">Der Aktualisierungsdienst ist aktuell nicht aktiv.</string>
+    <string name="ksconfig_disabled">Der Aktualisierungsdienst ist aktuell deaktiviert.</string>
+
+    <string name="hide_notify_expl">Falls die dauerhafte Benachrichtigung
+    unerwünscht ist, kann man sie mit Hilfe der Android-Einstellungen verstecken.
+    Man kommt direkt zu dieser Einstellung mit dem Button unten.</string>
+    <!-- "Benachrichtigungen anzeigen" ist der Button der Android Einstellungen der kontrolliert
+         ob eine Benachrichtigung einer App in der Benachrichtigungsleiste angezeigt wird. -->
+    <string name="hide_notify_button">Gehe zu “Benachrichtigungen anzeigen”</string>
+
+    <string name="ksconfig_killed_title">Aktualisierungsdienst beendet</string>
+    <string name="ksconfig_killed_body_fmt">War aktiv für %1$dh%2$02dm</string>
+
+    <string name="prefs_net_kaservice_summary">Aktualisierungsdienst aktivieren</string>
+
+    <string name="expl_ka_hours">Wie lange aktiv bleiben</string>
+    <string name="dflt_ka_hours">12</string>
+
+    <string name="title_ka_menuwhen">Menüeintrag des Aktualisierungsdienstes aktivieren.</string>
+    <string name="ka_menuwhen_never">Nie</string>
+    <string name="ka_menuwhen_available">Falls erhältlich</string>
+    <string name="ka_menuwhen_running">Falls aktiv</string>
+    <string name="ka_menuwhen_always">Immer</string>
+
+    <plurals name="hours_fmt">
+      <item quantity="one">Eine Stunde</item>
+      <item quantity="other">%1$d Stunden</item>
+    </plurals>
+
+    <string name="expl_notagain_keepalive">CrossWords wird Züge von anderen Spieler*inne*n
+    schneller erhalten, wenn der neue Aktualisierungsdienst aktiviert ist.
+    Der Button “Mehr Infos” erklärt wie das funktioniert.</string>
+
+    <string name="button_show_ka">Mehr Infos</string>
+
+    <string name="show_kaservicedied_title">Benachrichtigen wenn der Aktualisierungsdienst beendet wird</string>
+    <string name="show_kaservicedied_body">Zeige eine Benachrichtigung, wenn der Aktualisierungsdienst beendet wurde.
+    (Normalerweise, passiert das, weil es zu lange gedauert hatte, seit ein Zug gespielt oder empfangen wurde.)
+    </string>
+
 </resources>
