@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2020 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -30,9 +30,12 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
+import kotlinx.coroutines.launch
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
@@ -61,6 +64,15 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private val mHowMeans: MutableMap<Int, InviteMeans> = HashMap()
     private var mExpanded = false
     private var mNli: NetLaunchInfo? = null
+
+    init {
+        addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+                                           override fun onViewAttachedToWindow(v: View) {
+                                               startQRCodeThread()
+                                           }
+                                           override fun onViewDetachedFromWindow(v: View) {}
+                                       })
+    }
 
     fun setChoices(meansList: List<InviteMeans>, sel: Int,
                    nMissing: Int, nInvited: Int): InviteView
@@ -113,12 +125,12 @@ class InviteView(context: Context, aset: AttributeSet?) :
         showWhoOrHow()
 
         mExpanded = DBUtils.getBoolFor(context, KEY_EXPANDED, false)
-        (findViewById<View>(R.id.expander) as ExpandImageButton)
+        findViewById<ExpandImageButton>(R.id.expander)
             .setOnExpandChangedListener(object : ExpandChangeListener {
                 override fun expandedChanged(nowExpanded: Boolean) {
                     mExpanded = nowExpanded
                     DBUtils.setBoolFor(context, KEY_EXPANDED, nowExpanded)
-                    startQRCodeThread(null)
+                    startQRCodeThread()
                 }
             })
             .setExpanded(mExpanded)
@@ -127,7 +139,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
     }
 
     fun setNli(nli: NetLaunchInfo?): InviteView {
-        startQRCodeThread(nli)
+        mNli = nli
         return this
     }
 
@@ -199,49 +211,51 @@ class InviteView(context: Context, aset: AttributeSet?) :
         mGroupHow!!.visibility = if (mIsWho) INVISIBLE else VISIBLE
     }
 
-    private fun startQRCodeThread(nli: NetLaunchInfo?) {
-        if (null != nli) {
-            mNli = nli
-        }
-        if (null != mNli) {
-            val url = mNli!!.makeLaunchUri(context).toString()
-            Thread {
-                try {
+    private fun startQRCodeThread(nli: NetLaunchInfo? = null) {
+        nli?.let{mNli = it}
+        mNli?.let { nli ->
+            // findViewTreeLifecycleOwner will return null before view
+            // attached
+            findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                nli.makeLaunchUri(context).toString().let { url ->
                     val qrSize =
                         if (mExpanded) QRCODE_SIZE_LARGE
                         else QRCODE_SIZE_SMALL
-                    val multiFormatWriter = MultiFormatWriter()
-                    val bitMatrix = multiFormatWriter.encode(
-                        url, BarcodeFormat.QR_CODE,
-                        qrSize, qrSize
-                    )
                     val bitmap = Bitmap.createBitmap(
                         qrSize, qrSize,
                         Bitmap.Config.ARGB_8888
                     )
-                    for (ii in 0 until qrSize) {
-                        for (jj in 0 until qrSize) {
-                            bitmap.setPixel(
-                                ii, jj, if (bitMatrix[ii, jj]
-                                ) Color.BLACK else Color.WHITE
-                            )
+                    try {
+                        val multiFormatWriter = MultiFormatWriter()
+                        val bitMatrix = multiFormatWriter.encode(
+                            url, BarcodeFormat.QR_CODE,
+                            qrSize, qrSize
+                        )
+
+                        for (ii in 0 until qrSize) {
+                            for (jj in 0 until qrSize) {
+                                val color =
+                                    if (bitMatrix[ii, jj]) {Color.BLACK}
+                                    else {Color.WHITE}
+                                bitmap.setPixel(ii, jj, color)
+                            }
                         }
+                    } catch (we: WriterException) {
+                        Log.ex(TAG, we)
                     }
 
-                    post {
-                        val iv = findViewById<ImageView>(R.id.qr_view)
+                    findViewById<ImageView>(R.id.qr_view).let { iv ->
                         iv.setImageBitmap(bitmap)
                         if (BuildConfig.NON_RELEASE) {
-                            val tv = findViewById<TextView>(R.id.qr_url)
-                            tv.visibility = VISIBLE
-                            tv.text = url
+                            findViewById<TextView>(R.id.qr_url).let { tv ->
+                                tv.visibility = VISIBLE
+                                tv.text = url
+                            }
                         }
-                        post { scrollTo(0, iv.top) }
+                        scrollTo(0, iv.top)
                     }
-                } catch (we: WriterException) {
-                    Log.ex(TAG, we)
                 }
-            }.start()
+            }
         }
     }
 

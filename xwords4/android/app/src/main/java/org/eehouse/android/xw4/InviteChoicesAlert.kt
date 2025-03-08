@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2017 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -82,9 +82,9 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         }
         means.add(InviteMeans.CLIPBOARD)
         var lastSelMeans = -1
-        if (null != lastMeans) {
+        lastMeans?.let {
             for (ii in means.indices) {
-                if (lastMeans == means[ii]) {
+                if (it == means[ii]) {
                     lastSelMeans = ii
                     break
                 }
@@ -94,8 +94,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             .inflate(context, R.layout.invite_view) as InviteView
         val okClicked = DialogInterface.OnClickListener { dlg, pos ->
             Assert.assertTrue(Action.SKIP_CALLBACK != state.m_action)
-            val choice = mInviteView!!.getChoice()
-            if (null != choice) {
+            mInviteView!!.getChoice()?.let { choice ->
                 val activity = context as XWActivity
                 if (choice is InviteMeans) {
                     activity.inviteChoiceMade(
@@ -207,10 +206,10 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         fun dismissAny(): Boolean {
             var dismissed = false
             val ref = sSelf
-            if (null != ref) {
-                val self = ref.get()
-                if (null != self) {
-                    self.dismiss()
+            ref?.let {
+                val self = it.get()
+                self?.let {
+                    it.dismiss()
                     dismissed = true
                 }
             }
