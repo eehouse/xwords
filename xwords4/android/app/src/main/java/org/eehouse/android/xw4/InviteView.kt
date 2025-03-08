@@ -36,6 +36,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
@@ -239,6 +240,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
                                     else {Color.WHITE}
                                 bitmap.setPixel(ii, jj, color)
                             }
+                            yield()
                         }
                     } catch (we: WriterException) {
                         Log.ex(TAG, we)
