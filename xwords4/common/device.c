@@ -906,7 +906,7 @@ findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* iso
     if ( !pdc ) {
         pdc = XP_CALLOC( dutil->mpool, sizeof(*pdc) );
         pdc->isoCode = copyString( dutil->mpool, isoCode );
-        pdc->phonies = arr_make( dutil->mpool );
+        pdc->phonies = arr_make( MPPARM_NOCOMMA(dutil->mpool) );
         arr_setSort( pdc->phonies, strCmpProc );
         arr_insert( dc->pd, pdc );
     }
@@ -984,7 +984,7 @@ loadPhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
     LOG_FUNC();
     XP_ASSERT ( !dc->pd );
-    dc->pd = arr_make( dutil->mpool );
+    dc->pd = arr_make( MPPARM_NOCOMMA(dutil->mpool) );
 
     XWStreamCtxt* stream = mkStream( dutil );
     dutil_loadStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );

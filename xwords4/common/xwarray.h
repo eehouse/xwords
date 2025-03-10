@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 #include "mempool.h"
-    // #include "comtypes.h"
+#include "comtypes.h"
 #include "xptypes.h"
 
 typedef struct XWArray XWArray;
