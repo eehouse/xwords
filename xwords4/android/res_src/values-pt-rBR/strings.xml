@@ -597,7 +597,7 @@
     <string name="button_faq">Mostrar FAQ</string>
     <string name="logstore_clear_confirm">Tem certeza que quer apagar seus logs de debug\? Esta ação não pode ser desfeita.</string>
     <string name="logstore_notdumped">Incapaz de escrever logs</string>
-    <string name="logstore_dumped_fmt">Logs escritos no arquivo %1$s</string>
+    <string name="logstore_dumped_fmt">Registros escritos no arquivo %1$s</string>
     <string name="gamel_menu_logstore_clear">Limpar logs armazenados</string>
     <string name="gamel_menu_logstore_off">Desativar armazenamento de logs</string>
     <string name="gamel_menu_logstore_on">Ativar armazenamento de logs</string>
@@ -653,7 +653,7 @@
         <item quantity="other">%1$d jogos selecionados</item>
     </plurals>
     <string name="not_again_backclears">O botão Voltar limpa qualquer seleção ao invés de sair. Toque novamente para sair do app.</string>
-    <string name="gamel_menu_logs">Logs de debug</string>
+    <string name="gamel_menu_logs">Registros de debug</string>
     <string name="enable_pending_count_title">Mostrar mensagens pendentes</string>
     <string name="enable_pending_count_summary">Mostrar número ainda não contado</string>
     <string name="nag_intervals">Intervalos de lembrete (minutos1,minutos2,…)</string>
@@ -1068,7 +1068,7 @@
     <string name="gamel_menu_logstore_email">Registros de e-mail</string>
     <string name="button_send_logs">Envia ao autor</string>
     <string name="logstore_dumping_fmt">Compactando %1$d entradas de registro</string>
-    <string name="email_logs_msg">Registros logs anexados</string>
+    <string name="email_logs_msg">Registros anexados</string>
     <string name="email_logs_subject">Registos CrossWords</string>
     <string name="dict_lang_inst">(Instalado: %1$d)</string>
     <string name="lang_name_romanian">Romeno</string>
@@ -1215,4 +1215,17 @@
     <string name="url_scheme_http">Forçar Http</string>
     <string name="url_scheme_https">Forçar Https</string>
     <string name="lang_name_basque">Basco</string>
+    <string name="confirm_clear_lps">Tem certeza que deseja limpar todas as “palavras falsas permitidas” salvas?\n\nEsta ação não pode ser desfeita.</string>
+    <string name="gamel_menu_statsClear">Limpar</string>
+    <string name="gamel_menu_legalPhonies">Palavras falsas permitidas</string>
+    <string name="gamel_menu_clearLPs">Limpar tudo</string>
+    <string name="gamel_menu_listLPs">Mostrar tudo</string>
+    <string name="legalphonies_title_fmt">Palavras falsas permitidas para %1$s</string>
+    <string name="notify_perms_rationale">Crosswords precisa de sua permissão para postar notificações, p. ex. dizendo que seu oponente fez uma jogada ou que uma lista de palavras atualizada está disponível.</string>
+    <string name="gamel_menu_stats">Estatísticas</string>
+    <string name="gamel_menu_statsShow">Mostrar</string>
+    <string name="statsCopiedToast">Estatísticas copiadas para a área de transferência</string>
+    <string name="statsClearConfirm">Tem certeza que deseja apagar permanentemente as estatísticas?</string>
+    <string name="gamel_menu_logstore_prune">Reduzir registros salvos</string>
+    <string name="expl_log_prune_hours">Manter tantas horas de registros</string>
 </resources>
