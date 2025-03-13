@@ -2927,7 +2927,6 @@
   <string name="prefs_net_kaservice_summary">Enable Move Checker</string>
 
   <string name="expl_ka_hours">How many hours to stay awake</string>
-  <string name="dflt_ka_hours">12</string>
 
   <string name="title_ka_menuwhen">Enable Move Checker menu item</string>
   <string name="ka_menuwhen_never">Never</string>

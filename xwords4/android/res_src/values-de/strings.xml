@@ -1233,7 +1233,6 @@
     <string name="prefs_net_kaservice_summary">Aktualisierungsdienst aktivieren</string>
 
     <string name="expl_ka_hours">Wie lange aktiv bleiben</string>
-    <string name="dflt_ka_hours">12</string>
 
     <string name="title_ka_menuwhen">Menüeintrag des Aktualisierungsdienstes aktivieren.</string>
     <string name="ka_menuwhen_never">Nie</string>
