@@ -1109,4 +1109,34 @@
     <string name="confirm_clear_lps">Ви впевнені, що бажаєте очистити збережені «юридичні фальшивки»?\n\nЦю дію не можна скасувати.</string>
     <string name="gamel_menu_legalPhonies">Легальні фальсифікації</string>
     <string name="gamel_menu_clearLPs">Очистити все</string>
+    <string name="expl_notagain_keepalive">CrossWords швидше отримуватиме ходи від інших гравців, якщо ви ввімкнете нову функцію Move Checker. Кнопка Докладніше підкаже, як це зробити.</string>
+    <string name="ksconfig_killed_title">Move Checker зупинено</string>
+    <string name="movechecker_name">Шашка переміщення</string>
+    <string name="hide_notify_button">Перейти до «Показати сповіщення»</string>
+    <string name="kaservice_content">CrossWords не спить, щоб перевірити наявність віддалених ходів. Торкніться, щоб дізнатися більше.</string>
+    <string name="ka_config_fmt">Перевірка ходів запускається, лише якщо хід зроблено принаймні в одній мережевій грі за останні %1$d години. Ви можете налаштувати його або взагалі вимкнути за допомогою кнопки «%2$s» нижче.</string>
+    <string name="expl_ka_hours">Скільки годин не спати</string>
+    <string name="ka_menuwhen_available">При наявності</string>
+    <string name="ka_menuwhen_running">При бігу</string>
+    <string name="ka_menuwhen_always">Завжди</string>
+    <plurals name="hours_fmt">
+        <item quantity="one">%1$d година</item>
+        <item quantity="few">%1$d години</item>
+        <item quantity="many">%1$d годин</item>
+        <item quantity="other">%1$d годин</item>
+    </plurals>
+    <string name="button_show_ka">Більше інформації</string>
+    <string name="show_kaservicedied_title">Повідомити, коли Move Checker зупиниться</string>
+    <string name="prefs_net_kaservice_summary">Увімкнути Move Checker</string>
+    <string name="ksconfig_notrunning">Перевірка переміщення наразі не запущена.</string>
+    <string name="kaservice_title">Перевірка переміщення кросвордів</string>
+    <string name="ksconfig_disabled">Засіб перевірки переміщення наразі вимкнено.</string>
+    <string name="enable_kaservice_summary">Тримайте CrossWords активним, щоб отримувати рухи, навіть якщо його не видно або пристрій спить. Примітка: може вплинути на час роботи акумулятора.</string>
+    <string name="ksconfig_expl">Для кращої роботи в мережевих іграх CrossWords може намагатися залишатися активним у фоновому режимі, перевіряючи вхідні ходи. Це може зменшити час роботи акумулятора, тому Android не рекомендує це робити, і ви завжди бачитимете сповіщення, коли це відбувається.</string>
+    <string name="ksconfig_running_fmt">Перевірка переміщення працює %1$dh%2$02dm. Він зупиниться через %3$dh%4$02dm, якщо до цього часу не буде зроблено чи отримано хід.</string>
+    <string name="hide_notify_expl">Якщо вам набридне сповіщення, ви можете сховати його в програмі «Налаштування» свого пристрою. Перейдіть туди за допомогою кнопки нижче.</string>
+    <string name="ksconfig_killed_body_fmt">Він тривав %1$dh%2$02dm</string>
+    <string name="title_ka_menuwhen">Увімкнути пункт меню Move Checker</string>
+    <string name="ka_menuwhen_never">Ніколи</string>
+    <string name="show_kaservicedied_body">Опублікуйте сповіщення, коли засіб перевірки ходу зупинено (зазвичай через те, що минуло занадто багато часу з моменту відправлення або отримання ходу)</string>
 </resources>
