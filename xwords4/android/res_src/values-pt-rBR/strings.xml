@@ -1228,4 +1228,33 @@
     <string name="statsClearConfirm">Tem certeza que deseja apagar permanentemente as estatísticas?</string>
     <string name="gamel_menu_logstore_prune">Reduzir registros salvos</string>
     <string name="expl_log_prune_hours">Manter tantas horas de registros</string>
+    <string name="ka_config_fmt">O Verificador de Jogadas apenas fica ativo quando uma jogada foi feita em pelo menos um jogo em rede nas últimas %1$d horas. Você pode configurar ou desativar isso usando o botão “%2$s” abaixo.</string>
+    <string name="ka_menuwhen_available">Quando disponível</string>
+    <string name="expl_ka_hours">Quantas horas para ficar ativo</string>
+    <string name="hide_notify_button">Ir a “Mostrar notificações”</string>
+    <string name="movechecker_name">Verificador de Jogadas</string>
+    <string name="hide_notify_expl">Caso se canse de ver a notificação, você pode usar o app Configurações do seu dispositivo para escondê-la. Vá até lá com o botão abaixo.</string>
+    <string name="kaservice_title">Verificador de Jogadas CrossWords</string>
+    <string name="button_show_ka">Mais informações</string>
+    <string name="kaservice_content">Crosswords está ativo para verificar jogadas remotas. Toque para mais informações.</string>
+    <string name="enable_kaservice_summary">Mantenha o CrossWords ativo para receber jogadas, mesmo quando não está visível ou o dispositivo está em repouso. Nota: pode afetar a duração da bateria.</string>
+    <string name="ksconfig_disabled">O Verificador de Jogadas está atualmente desativado.</string>
+    <string name="ksconfig_expl">Para a melhor experiência com jogos em rede, o CrossWords pode tentar permanecer ativo em plano de fundo esperando jogadas. Isto pode reduzir a duração da bateria, motivo pelo qual o Android o desencoraja, e é por isso que você sempre verá uma notificação quando isso estiver acontecendo.</string>
+    <string name="show_kaservicedied_title">Notificar quando o Verificador de Jogadas parar</string>
+    <string name="ksconfig_running_fmt">O Verificador de Jogadas está em atividade por %1$dh%2$02dmin. Irá parar em %3$dh%4$02dmin. a não ser que uma jogada seja feita ou recebida até então.</string>
+    <string name="ksconfig_notrunning">O Verificador de Jogadas não está atualmente ativo.</string>
+    <string name="ksconfig_killed_title">Verificador de Jogadas parou</string>
+    <string name="ksconfig_killed_body_fmt">Esteve ativo por %1$dh%2$02dmin.</string>
+    <string name="prefs_net_kaservice_summary">Permitir Verificador de Jogadas</string>
+    <string name="ka_menuwhen_never">Nunca</string>
+    <string name="title_ka_menuwhen">Permitir item de menu do Verificador de Jogadas</string>
+    <string name="ka_menuwhen_running">Ao estar ativo</string>
+    <string name="ka_menuwhen_always">Sempre</string>
+    <plurals name="hours_fmt">
+        <item quantity="one">Uma hora</item>
+        <item quantity="many">%1$d horas</item>
+        <item quantity="other">%1$d horas</item>
+    </plurals>
+    <string name="expl_notagain_keepalive">Crosswords vai receber jogadas de outros jogadores mais rapidamente se ativar a nova função Verificador de Jogadas. O botão Mais informações vai dizer como.</string>
+    <string name="show_kaservicedied_body">Postar uma notificação quando o Verificador de Jogadas parar (geralmente porque faz muito tempo desde que uma jogada foi feita ou recebida.)</string>
 </resources>
