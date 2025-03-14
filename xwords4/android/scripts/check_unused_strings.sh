@@ -66,8 +66,6 @@ if [ -n "$PAIRS_ONLY" ]; then
     exit 0
 fi
 
-rm -f app/src/main/java/org/eehouse/android/xw4/loc/LocIDsData.java
-
 # echo "checking $ENG for ids not in any .java file"
 for LOC in $LOCS; do
     for ID in $(list_ids $LOC); do
@@ -79,7 +77,7 @@ echo "searching for ${#ENG_IDS[*]} unique string ids"
 if [ -n "$SEARCH_SOURCE" ]; then
     IDS="${!ENG_IDS[*]}"
     for ID in $IDS; do
-        if grep -qw R.string.$ID $(find app/src/ -name '*.java'); then
+        if grep -qw R.string.$ID $(find app/src/ -name '*.kt'); then
             :
         elif grep -qw "@string/$ID" $(find app/src/ -name '*.xml'); then
             :
