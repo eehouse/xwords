@@ -1113,4 +1113,31 @@
     <string name="gamel_menu_logstore_prune">删除保存的日志</string>
     <string name="expl_log_prune_hours">日志保留时长（小时）</string>
     <string name="gamel_menu_statsShow">显示</string>
+    <string name="kaservice_title">CrossWords 移动检查程序</string>
+    <string name="hide_notify_expl">如果厌倦了看到这则通知，你可以使用设备的”设置”应用来隐藏它。用下方的按钮可以转到相应的地方。</string>
+    <string name="ksconfig_notrunning">移动检查程序当前未在运行。</string>
+    <string name="ksconfig_disabled">移动检查程序当前被停用了。</string>
+    <string name="ksconfig_killed_title">移动检查程序已停止</string>
+    <string name="ksconfig_killed_body_fmt">它运行了 %1$d 小时 %2$02d 分钟</string>
+    <string name="expl_ka_hours">保持清醒时长（小时）</string>
+    <string name="ka_menuwhen_always">始终</string>
+    <plurals name="hours_fmt">
+        <item quantity="other">%1$d 个小时</item>
+    </plurals>
+    <string name="button_show_ka">更多信息</string>
+    <string name="show_kaservicedied_body">当移动检查程序被停止时发出一则通知（通常由于距发出或收到一则移动指令已经过去太久。）</string>
+    <string name="show_kaservicedied_title">当移动检查程序停止时进行通知</string>
+    <string name="ka_menuwhen_never">从不</string>
+    <string name="ka_menuwhen_available">可用时</string>
+    <string name="ka_config_fmt">只有过去 %1$d 小时至少一个联网游戏中有一次移动时，移动检查程序才会运行。使用下方的 \"%2$s\"按钮，你可以配置它，或完全停用它。</string>
+    <string name="kaservice_content">CrossWords 正保持清醒状态来检查远程移动指令。轻按了解更多信息。</string>
+    <string name="prefs_net_kaservice_summary">启用移动检查程序</string>
+    <string name="enable_kaservice_summary">保持 CrossWords 清醒来接收移动指令，即便当它不可见或设备休眠时也如此。注：这可能影响电池寿命。</string>
+    <string name="expl_notagain_keepalive">如果启用新的“移动检查程序”特性，CrossWords 会更快地从其他玩家处收到移动指令。具体情况请轻按“更多信息”按钮。</string>
+    <string name="ksconfig_expl">为了获得联网游戏的最佳体验，CrossWords 可以尝试在后台保持活跃来确认是否有移动指令。但这会降低电池寿命，这是为何 Android 系统不鼓励应用后台运行以及你为何总会在应用后台运行时看到一则通知的原因。</string>
+    <string name="hide_notify_button">转到“显示通知”</string>
+    <string name="title_ka_menuwhen">启用移动检查程序菜单项</string>
+    <string name="ksconfig_running_fmt">移动检查程序已经连续运行 %1$d 小时 %2$02d 分钟了。它将在 %3$d 小时 %4$02d 分钟内停止，除非在此之前走了一步或接收到移动指令。</string>
+    <string name="movechecker_name">移动检查程序</string>
+    <string name="ka_menuwhen_running">运行时</string>
 </resources>
