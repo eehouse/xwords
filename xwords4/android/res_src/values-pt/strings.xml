@@ -2324,4 +2324,5 @@
     <string name="lang_name_basque">Basco</string>
     <string name="gamel_menu_clearLPs">Limpar tudo</string>
     <string name="gamel_menu_listLPs">Mostrar tudo</string>
+    <string name="gamel_menu_logstore_prune">Limpar registos gravados</string>
 </resources>
