@@ -21,8 +21,8 @@
 import java.io.ByteArrayOutputStream
 
 // These two change with every release.
-val VERSION_CODE_BASE = 200     // When up this, remove REMOVEME from DictsDelegate.kt
-val VERSION_NAME = "4.4.204"
+val VERSION_CODE_BASE = 201
+val VERSION_NAME = "4.4.206"
 
 val INITIAL_CLIENT_VERS = 10
 val BUILD_INFO_NAME = "build-info.txt"

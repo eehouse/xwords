@@ -1366,10 +1366,10 @@ class DictsDelegate(delegator: Delegator) :
         }
 
         private fun listDictsProc(lc: ISOCode?): String {
-            val vc = BuildConfig.VERSION_CODE + 1 // REMOVEME remove +1
+            val vc = BuildConfig.VERSION_CODE
             var proc = "listDicts?vc=$vc"
-            if (null != lc) {
-                proc += String.format("&lc=%s", lc)
+            lc?.let {
+                proc += String.format("&lc=%s", it)
             }
             return proc
         }
