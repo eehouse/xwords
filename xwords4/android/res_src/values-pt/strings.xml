@@ -2325,4 +2325,17 @@
     <string name="gamel_menu_clearLPs">Limpar tudo</string>
     <string name="gamel_menu_listLPs">Mostrar tudo</string>
     <string name="gamel_menu_logstore_prune">Limpar registos gravados</string>
+    <string name="kaservice_title">Verificador de movimentos do CrossWords</string>
+    <string name="kaservice_content">Crosswords está ativo para verificar movimentos remotos. Toque para mais informações.</string>
+    <string name="notify_perms_rationale">Crosswords precisa da sua permissão para postar notificações, p. ex. a dizer que o seu oponente fez uma jogada ou que uma lista de palavras atualizada está disponível.</string>
+    <string name="expl_log_prune_hours">Manter tantas horas de registos</string>
+    <string name="gamel_menu_stats">Estatísticas</string>
+    <string name="gamel_menu_statsShow">Mostrar</string>
+    <string name="gamel_menu_statsClear">Limpar</string>
+    <string name="statsCopiedToast">Estatísticas copiadas para a área de transferência</string>
+    <string name="statsClearConfirm">Tem certeza que deseja apagar as estatísticas permanentemente?</string>
+    <string name="movechecker_name">Verificador de movimentos</string>
+    <string name="enable_kaservice_summary">Mantenha o CrossWords ativo para receber movimentos, mesmo quando não está visível ou o dispositivo está em repouso. Nota: pode afetar a duração da bateria.</string>
+    <string name="ksconfig_expl">Para a melhor experiência com jogos em rede, o CrossWords pode tentar permanecer ativo em plano de fundo à espera de movimentos. Isto pode reduzir a duração da bateria, motivo pelo qual o Android o desencoraja, e é por isso que sempre verá uma notificação quando isso acontecer.</string>
+    <string name="ka_config_fmt">O verificador de movimentos apenas fica ativo quando um movimento foi feito em pelo menos um jogo em rede nas últimas %1$d horas. Pode configurar ou desativar isso usando o botão “%2$s” abaixo.</string>
 </resources>
