@@ -1739,7 +1739,7 @@ makeRobotMove( ServerCtxt* server, XWEnv xwe )
         XP_ASSERT( !!server_getEngineFor( server, turn ) );
         searchComplete = engine_findMove( server_getEngineFor( server, turn ),
                                           xwe, model, turn, XP_FALSE, XP_FALSE,
-                                          tileSet->tiles, tileSet->nTiles, XP_FALSE,
+                                          tileSet, XP_FALSE,
 #ifdef XWFEATURE_BONUSALL
                                           allTilesBonus, 
 #endif
@@ -2722,16 +2722,16 @@ server_askPickTiles( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
  */
 static XP_Bool
 trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
-                      const Tile* tiles, XP_U16 nTiles )
+                 const Tile* tiles, XP_U16 nTiles )
 {
     ModelCtxt* model = server->vol.model;
     XP_U16 nInTray = model_getNumTilesInTray( model, turn );
     SRVR_LOGFF( "(nTiles=%d): nInTray: %d", nTiles, nInTray );
     XP_ASSERT( nInTray + nTiles <= MAX_TRAY_TILES ); /* fired again! */
-    Tile tmpTiles[MAX_TRAY_TILES];
-    const TrayTileSet* tray = model_getPlayerTiles( model, turn );
-    XP_MEMCPY( tmpTiles, &tray->tiles[0], nInTray * sizeof(tmpTiles[0]) );
-    XP_MEMCPY( &tmpTiles[nInTray], &tiles[0], nTiles * sizeof(tmpTiles[0]) );
+    TrayTileSet tts = *model_getPlayerTiles( model, turn );
+    XP_ASSERT( nInTray == tts.nTiles );
+    XP_MEMCPY( &tts.tiles[nInTray], &tiles[0], nTiles * sizeof(tts.tiles[0]) );
+    tts.nTiles += nTiles;
 
     /* XP_LOGFF( "%s(nTiles=%d)", __func__, nTiles ); */
     EngineCtxt* tmpEngine = NULL;
@@ -2744,7 +2744,7 @@ trayAllowsMoves( ServerCtxt* server, XWEnv xwe, XP_U16 turn,
     XP_U16 score = 0;
     XP_Bool result = engine_findMove( engine, xwe, server->vol.model, turn,
                                       XP_TRUE, XP_TRUE,
-                                      tmpTiles, nTiles + nInTray, XP_FALSE, 0,
+                                      &tts, XP_FALSE, 0,
 #ifdef XWFEATURE_SEARCHLIMIT
                                       NULL, XP_FALSE,
 #endif

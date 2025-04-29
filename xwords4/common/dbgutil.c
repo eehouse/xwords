@@ -89,6 +89,28 @@ StackMoveType_2str( StackMoveType typ )
 
 #ifdef DEBUG
 void
+assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
+                    Tile blankTile )
+{
+    LOG_FUNC();
+    XP_ASSERT( move->nTiles <= tts->nTiles );
+    for ( int ii = 0; ii < move->nTiles; ++ii ) {
+        Tile moveTile = move->tiles[ii].tile;
+        if  ( moveTile & TILE_BLANK_BIT ) {
+            moveTile = blankTile;
+        }
+        XP_Bool found = XP_FALSE;
+        for ( int jj = 0; !found && jj < tts->nTiles; ++jj ) {
+            found = moveTile == tts->tiles[jj];
+        }
+        if ( !found ) {
+            XP_LOGFF( "move tile with val %d not in tray", moveTile );
+            XP_ASSERT(0);
+        }
+    }
+}
+
+void
 dbg_logstream( const XWStreamCtxt* stream, const char* func, int line )
 {
     if ( !!stream ) {

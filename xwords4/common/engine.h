@@ -53,7 +53,7 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, XWEnv xwe, const ModelCtxt* model, XP
                          XP_Bool includePending,
                          /* skipCallback: skip the callback that lets client cancel */
                          XP_Bool skipCallback,
-                         const Tile* tiles, XP_U16 nTiles, XP_Bool usePrev,
+                         const TrayTileSet* tiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                          XP_U16 allTilesBonus, 
 #endif

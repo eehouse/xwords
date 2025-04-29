@@ -72,6 +72,9 @@ typedef struct MoveIterationData {
                             0 <= nInMoveCache < NUM_SAVED_ENGINE_MOVES */
     XP_U16 bottom;   /* lowest non-0 entry */
     XP_S16 curCacheIndex;       /* what we last returned */
+#ifdef DEBUG
+    XP_U32 modelHash;
+#endif
 } MoveIterationData;
 
 /* one bit per tile that's possible here *\/ */
@@ -119,6 +122,7 @@ struct EngineCtxt {
 
 #ifdef DEBUG
     XP_U16 curLimit;
+    TrayTileSet tts;
 #endif
     MPSLOT
 }; /* EngineCtxt */
@@ -157,6 +161,12 @@ static void init_move_cache( EngineCtxt* engine );
 static PossibleMove* next_from_cache( EngineCtxt* engine );
 static void set_search_limits( EngineCtxt* engine );
 
+#ifdef DEBUG
+static void assertPMTilesInTiles( const EngineCtxt* engine,
+                                  const PossibleMove* pm );
+#else
+# define assertPMTilesInTiles( engine, pm )
+#endif
 
 static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
 
@@ -236,14 +246,17 @@ engine_destroy( EngineCtxt* engine )
 } /* engine_destroy */
 
 static XP_Bool
-initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles ) 
+initTray( EngineCtxt* engine, const TrayTileSet* tts )
 {
-    XP_Bool result = numTiles > 0;
+#ifdef DEBUG
+    engine->tts = *tts;
+#endif
+    XP_Bool result = tts->nTiles > 0;
 
     if ( result ) {
         XP_MEMSET( engine->rack, 0, sizeof(engine->rack) );
-        while ( 0 < numTiles-- ) {
-            Tile tile = *tiles++;
+        for ( int ii = 0; ii < tts->nTiles; ++ii ) {
+            Tile tile = tts->tiles[ii];
             XP_ASSERT( tile < MAX_UNIQUE_TILES );
             ++engine->rack[tile];
         }
@@ -376,7 +389,7 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
 XP_Bool
 engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
                  XP_S16 turn, XP_Bool includePending, XP_Bool skipCallback,
-                 const Tile* tiles, const XP_U16 nTiles, XP_Bool usePrev,
+                 const TrayTileSet* tts, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                  XP_U16 allTilesBonus,
 #endif
@@ -392,8 +405,14 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
     XP_Bool canMove = XP_FALSE;
     XP_Bool isRetry = XP_FALSE;
 
+#ifdef DEBUG
+    XP_U32 hash = model_getHash( model );
+    XP_ASSERT( engine->miData.modelHash == 0 || engine->miData.modelHash == hash );
+    engine->miData.modelHash = hash;
+#endif
+
  retry:
-    engine->nTilesMax = XP_MIN( MAX_TRAY_TILES, nTiles );
+    engine->nTilesMax = XP_MIN( MAX_TRAY_TILES, tts->nTiles );
 #ifdef XWFEATURE_BONUSALL
     engine->allTilesBonus = allTilesBonus;
 #endif
@@ -448,9 +467,8 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
        get scheduled again.  Fixes infinite loop with empty dict and a
        robot. */
     canMove = NULL != dict_getTopEdge(engine->dict)
-        && initTray( engine, tiles, nTiles );
+        && initTray( engine, tts );
     if ( canMove  ) {
-
         util_engineStarting( engine->util, xwe,
                              engine->rack[engine->blankTile] );
 
@@ -1032,6 +1050,7 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
     XP_ASSERT( tile != blankIndex );
     XP_ASSERT( engine->nTilesMax > 0 );
 
+    XP_Bool found = XP_TRUE;
     if ( engine->rack[(short)tile] > 0 ) { /* we have the tile itself */
         --engine->rack[(short)tile];
         *isBlank = XP_FALSE;
@@ -1041,11 +1060,13 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
         engine->blankValues[engine->blankCount++] = tile;
         *isBlank = XP_TRUE;
     } else { /* we can't satisfy the request */
-        return XP_FALSE;
+        found = XP_FALSE;        /* FIXME */
     }
 
-    --engine->nTilesMax;
-    return XP_TRUE;
+    if ( found ) {
+        --engine->nTilesMax;
+    }
+    return found;
 } /* rack_remove */
 
 static void
@@ -1064,10 +1085,6 @@ static void
 considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_S16 tileLength,
               XP_S16 firstCol, XP_S16 lastRow )
 {
-    PossibleMove posmove;
-    short col;
-    BlankTuple blankTuples[MAX_NUM_BLANKS];
-
     if ( !engine->skipProgressCallback
          && !util_engineProgressCallback( engine->util, xwe ) ) {
         engine->returnNOW = XP_TRUE;
@@ -1079,22 +1096,21 @@ considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_S16 tileLength,
            larger values but that it's expensive to look only to fail. */
         XP_ASSERT( engine->curLimit < MAX_TRAY_TILES );
 
-        XP_MEMSET( &posmove, 0, sizeof(posmove) );
-
-        for ( col = firstCol; posmove.moveInfo.nTiles < tileLength; ++col ) {
+        PossibleMove posmove = {};
+        MoveInfo* mip = &posmove.moveInfo;
+        mip->isHorizontal = engine->searchHorizontal;
+        mip->commonCoord = (XP_U8)lastRow;
+        for ( XP_U16 col = firstCol; mip->nTiles < tileLength; ++col ) {
             /* is it one of the new ones? */
             if ( localGetBoardTile( engine, col, lastRow, XP_FALSE )
                  == EMPTY_TILE ) { 
-                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].tile = 
-                    tiles[posmove.moveInfo.nTiles];
-                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].varCoord 
-                    = (XP_U8)col;
-                ++posmove.moveInfo.nTiles;
+                mip->tiles[mip->nTiles].tile = tiles[mip->nTiles];
+                mip->tiles[mip->nTiles].varCoord = (XP_U8)col;
+                ++mip->nTiles;
             }
         }
-        posmove.moveInfo.isHorizontal = engine->searchHorizontal;
-        posmove.moveInfo.commonCoord = (XP_U8)lastRow;
 
+        BlankTuple blankTuples[MAX_NUM_BLANKS];
         considerScoreWordHasBlanks( engine, xwe, engine->blankCount, &posmove,
                                     lastRow, blankTuples, 0 );
     }
@@ -1196,6 +1212,8 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
     XP_Bool usePrev = engine->usePrev;
     XP_Bool foundEmpty = XP_FALSE;
     MoveIterationData* miData = &engine->miData;
+
+    assertPMTilesInTiles( engine, posmove );
 
     if ( 1 == engine->nMovesToSave ) { /* only saving one */
         mostest = 0;
@@ -1319,11 +1337,9 @@ init_move_cache( EngineCtxt* engine )
 static PossibleMove*
 next_from_cache( EngineCtxt* engine )
 {
-    MoveIterationData* miData = &engine->miData;
-    PossibleMove* move;
-    if ( move_cache_empty( engine ) ) {
-        move = NULL;
-    } else {
+    PossibleMove* move = NULL;
+    if ( !move_cache_empty( engine ) ) {
+        MoveIterationData* miData = &engine->miData;
         if ( engine->usePrev ) {
             ++miData->curCacheIndex;
         } else {
@@ -1359,6 +1375,36 @@ edge_from_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile )
     }
     return edge;
 } /* edge_from_tile */
+
+#ifdef DEBUG
+static void
+assertPMTilesInTiles( const EngineCtxt* engine, const PossibleMove* pm )
+{
+    TrayTileSet tts = engine->tts;
+    XP_U16 nBlanks = 0;
+    for ( int ii = 0; ii < pm->moveInfo.nTiles; ++ii ) {
+        Tile moveTile = pm->moveInfo.tiles[ii].tile;
+        if ( moveTile & TILE_BLANK_BIT ) {
+            moveTile = engine->blankTile;
+            ++nBlanks;
+        }
+
+        XP_Bool found = XP_FALSE;
+        for ( int jj = 0; !found && jj < tts.nTiles; ++jj ) {
+            found = moveTile == tts.tiles[jj];
+            if ( found ) {
+                // remove it from consideration for next tile
+                tts.tiles[jj] = tts.tiles[--tts.nTiles];
+            }
+        }
+        if ( !found ) {
+            XP_LOGFF( "move tile with val %d not in tray", moveTile );
+            XP_ASSERT(0);
+        }
+    }
+    XP_ASSERT( nBlanks == pm->nBlanks );
+}
+#endif
 
 #ifdef CPLUS
 }

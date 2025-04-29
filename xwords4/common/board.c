@@ -2113,6 +2113,19 @@ preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
+static void
+adjustForDL( TrayTileSet* tileSet, XP_U16 dividerLoc )
+{
+    XP_LOGFF( "dividerLoc: %d", dividerLoc );
+    // LOG_TTS( tileSet, "before" );
+    if ( dividerLoc ) {
+        TrayTile* src = &tileSet->tiles[dividerLoc];
+        XP_MEMMOVE( &tileSet->tiles[0], src, dividerLoc*sizeof(src[0]) );
+        tileSet->nTiles -= dividerLoc;
+    }
+    // LOG_TTS( tileSet, "after" );
+}
+
 /* Refuse with error message if any tiles are currently on board in this turn.
  * Then call the engine, and display the first move.  Return true if there's
  * any redrawing to be done.
@@ -2132,18 +2145,15 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
     if ( board->gi->hintsNotAllowed ) {
         util_userError( board->util, xwe, ERR_CANT_HINT_WHILE_DISABLED );
     } else {
-        MoveInfo newMove;
-        XP_S16 nTiles;
-        const Tile* tiles;
+        MoveInfo newMove = {};
         XP_Bool searchComplete = XP_TRUE;
         const XP_U16 selPlayer = board->selPlayer;
 #ifdef XWFEATURE_SEARCHLIMIT
         PerTurnInfo* pti = board->selInfo;
 #endif
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
-        const TrayTileSet* tileSet;
+        TrayTileSet tileSet = {};
         ModelCtxt* model = board->model;
-        XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
 
         if ( !!engine && preflight( board, xwe, XP_TRUE ) ) {
 
@@ -2164,9 +2174,10 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 #endif
             }
 
-            tileSet = model_getPlayerTiles( model, selPlayer );
-            nTiles = tileSet->nTiles - dividerLoc;
-            result = nTiles > 0;
+            tileSet = *model_getPlayerTiles( model, selPlayer );
+            XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
+            adjustForDL( &tileSet, dividerLoc );
+            result = tileSet.nTiles > 0;
         }
 
         XP_Bool canMove = XP_FALSE;
@@ -2180,8 +2191,6 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
             wasVisible = setArrowVisible( board, XP_FALSE );
 
             (void)board_replaceTiles( board, xwe );
-
-            tiles = tileSet->tiles + dividerLoc;
 
             board_pushTimerSave( board, xwe );
 
@@ -2206,7 +2215,7 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 #endif
             searchComplete = 
                 engine_findMove( engine, xwe, model, selPlayer,
-                                 XP_FALSE, XP_FALSE, tiles, nTiles, usePrev,
+                                 XP_FALSE, XP_FALSE, &tileSet, usePrev,
 #ifdef XWFEATURE_BONUSALL
                                  allTilesBonus, 
 #endif
@@ -2218,7 +2227,9 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
             board_popTimerSave( board, xwe );
 
             if ( searchComplete && canMove ) {
-                // assertTilesInTiles( board, &newMove, tiles, nTiles );
+                const DictionaryCtxt* dict = model_getDictionary( model );
+                Tile blankTile = dict_getBlankTile( dict );
+                assertTilesInTiles( &newMove, &tileSet, blankTile );
                 juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, xwe, selPlayer, &newMove );
             } else {
