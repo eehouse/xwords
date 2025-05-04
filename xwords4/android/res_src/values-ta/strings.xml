@@ -1037,4 +1037,32 @@
     <string name="gamel_menu_statsClear">அழி</string>
     <string name="statsClearConfirm">புள்ளிவிவரங்களை நிரந்தரமாக நீக்க விரும்புகிறீர்களா?</string>
     <string name="statsCopiedToast">பிடிப்புப்பலகைக்கு நகலெடுக்கப்பட்ட புள்ளிவிவரங்கள்</string>
+    <string name="movechecker_name">செக்கரை நகர்த்தவும்</string>
+    <string name="ka_config_fmt">கடைசி %1$d மணிநேரத்தில் குறைந்தது ஒரு பிணையம் விளையாட்டில் ஒரு நடவடிக்கை எடுக்கப்படும்போது மட்டுமே நகர்வு சரிபார்ப்பு இயங்கும். கீழே உள்ள “%2$s” பொத்தானைப் பயன்படுத்தி நீங்கள் அதை உள்ளமைக்கலாம் அல்லது முற்றிலும் முடக்கலாம்.</string>
+    <string name="ksconfig_notrunning">மூவ் செக்கர் தற்போது இயங்கவில்லை.</string>
+    <string name="hide_notify_button">“அறிவிப்புகளைக் காட்டு” என்பதற்குச் செல்லுங்கள்</string>
+    <string name="expl_ka_hours">விழித்திருக்க எத்தனை மணி நேரம்</string>
+    <string name="title_ka_menuwhen">நகர்த்து செக்கர் பட்டியல் உருப்படியை இயக்கவும்</string>
+    <string name="ka_menuwhen_running">இயங்கும் போது</string>
+    <string name="ka_menuwhen_always">எப்போதும்</string>
+    <string name="button_show_ka">மேலும் செய்தி</string>
+    <string name="kaservice_title">குறுக்கெழுத்துக்கள் செக்கரை நகர்த்தவும்</string>
+    <string name="kaservice_content">தொலைநிலை நகர்வுகளைச் சரிபார்க்க குறுக்கெழுத்துக்கள் விழித்திருக்கின்றன. மேலும் தகவலுக்கு தட்டவும்.</string>
+    <string name="enable_kaservice_summary">நகர்வுகளைப் பெற குறுக்கெழுத்துக்களை விழித்திருங்கள், அது காணப்படாவிட்டாலும் அல்லது சாதனம் தூங்கிக்கொண்டிருந்தாலும் கூட. குறிப்பு: பேட்டரி ஆயுளை பாதிக்கலாம்.</string>
+    <string name="ksconfig_expl">பிணையம் செய்யப்பட்ட கேம்களுடனான சிறந்த அனுபவத்திற்காக, உள்வரும் நகர்வுகளுக்கான பின்னணி சரிபார்ப்பில் குறுக்கெழுத்துக்கள் செயலில் இருக்க முயற்சி செய்யலாம். இது பேட்டரி ஆயுளைக் குறைக்கலாம், அதனால்தான் அண்ட்ராய்டு அதை ஊக்கப்படுத்துகிறது, அது நிகழும்போது ஒரு அறிவிப்பை நீங்கள் ஏன் எப்போதும் பார்ப்பீர்கள்.</string>
+    <string name="ksconfig_disabled">மூவ் செக்கர் தற்போது முடக்கப்பட்டுள்ளது.</string>
+    <string name="hide_notify_expl">அறிவிப்பைக் கண்டு நீங்கள் சோர்வடைந்தால், அதை மறைக்க உங்கள் சாதனத்தின் அமைப்புகள் பயன்பாட்டைப் பயன்படுத்தலாம். கீழே உள்ள பொத்தானைக் கொண்டு அங்கு செல்லுங்கள்.</string>
+    <string name="ksconfig_killed_title">நகர்த்து செக்கர் நிறுத்தப்பட்டது</string>
+    <string name="prefs_net_kaservice_summary">நகர்வு செக்கரை இயக்கவும்</string>
+    <string name="ka_menuwhen_never">ஒருபோதும்</string>
+    <string name="ka_menuwhen_available">கிடைக்கும்போது</string>
+    <plurals name="hours_fmt">
+        <item quantity="one">ஒரு மணி நேரம்</item>
+        <item quantity="other">%1$d மணிநேரம்</item>
+    </plurals>
+    <string name="expl_notagain_keepalive">புதிய நகர்வு செக்கர் அம்சத்தை நீங்கள் இயக்கினால், குறுக்கெழுத்துக்கள் மற்ற வீரர்களிடமிருந்து விரைவாக நகர்வுகளைப் பெறும். மேலும் செய்தி பொத்தான் உங்களுக்கு எப்படி என்று சொல்லும்.</string>
+    <string name="show_kaservicedied_title">நகரும் செக்கர் நிறுத்தும்போது அறிவிக்கவும்</string>
+    <string name="show_kaservicedied_body">நகர்வு சரிபார்ப்பு நிறுத்தப்படும் போது ஒரு அறிவிப்பை இடுங்கள் (வழக்கமாக ஒரு நடவடிக்கை அனுப்பப்பட்டதிலிருந்தோ அல்லது பெறப்பட்டதிலிருந்தோ இது நீண்ட காலமாக இருப்பதால்.)</string>
+    <string name="ksconfig_running_fmt">மூவ் செக்கர் %1$dh %2$02dm க்கு இயங்குகிறது. இது %3$dh %4$02dm இல் நிறுத்தப்படும்.</string>
+    <string name="ksconfig_killed_body_fmt">இது %1$dh %2$02dm க்கு ஓடியது</string>
 </resources>
