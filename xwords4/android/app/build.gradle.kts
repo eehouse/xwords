@@ -196,7 +196,7 @@ android {
 
             buildConfigField( "String", "DB_NAME", "\"xwddb\"" )
             applicationId = "org.eehouse.android.xw4dbg"
-            resValue( "string", "app_name", "CrossDbg" )
+            resValue( "string", "app_name", "CrossDeb" )
             resValue( "string", "nbs_port", "3345" )
             resValue( "string", "invite_prefix", "/andd/" )
 			resValue( "string", "conf_prefix", "/cnfd/" )
@@ -215,7 +215,7 @@ android {
             dimension = "variant"
             applicationId = "org.eehouse.android.xw4dbg"
             buildConfigField( "String", "DB_NAME", "\"xwddb\"" )
-            resValue( "string", "app_name", "CrossDbg" )
+            resValue( "string", "app_name", "CrossDeb" )
             resValue( "string", "invite_prefix", "/andd/" )
             resValue( "string", "conf_prefix", "/cnfd/" )
 			resValue( "string", "newgame_scheme", "newxwgamed" )
@@ -463,14 +463,14 @@ tasks.named("preBuild") {
 
 tasks.create<Exec>("copyStringsXw4D") {
     workingDir( "./" )
-    environment.put("APPNAME", "CrossDbg")
+    environment.put("APPNAME", "CrossDeb")
     commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4d/res/values/strings.xml", "src/xw4d/res/values/tmpstrings.xml" )
 }
 
 tasks.create<Exec>("copyStringsXw4DGPlay" ) {
     workingDir( "./" )
-    environment.put("APPNAME", "CrossDbg")
-    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4dGPlay/res/values/strings.xml", "src/xw4d/res/values/tmpstrings.xml" )
+    environment.put("APPNAME", "CrossDeb")
+    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4dGPlay/res/values/strings.xml", "src/xw4dGPlay/res/values/tmpstrings.xml" )
 }
 
 tasks.create( "makeBuildAssets" ) {
