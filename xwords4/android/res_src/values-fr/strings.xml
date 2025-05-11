@@ -3212,4 +3212,7 @@ pour la langue</string>
     <string name="disable_chat_button_title">Désactiver le bouton de discussion</string>
     <string name="disable_chat_button_summary">Cacher le bouton qui ouvre la discussion</string>
     <string name="not_again_newsawnew_fmt">Le coup le plus récent est maintenant dessiné en utilisant une nouvelle couleur de fond.\n\nVous pouvez personnaliser cette couleur dans \"%1$s\", où le paramètre de couleur est appelé \"%2$s\".</string>
+    <string name="lang_name_basque">Basque</string>
+    <string name="gamel_menu_clearLPs">Tout effacer</string>
+    <string name="gamel_menu_listLPs">Tout afficher</string>
 </resources>
