@@ -19,7 +19,7 @@
     <string name="list_item_delete">Видалити гру</string>
     <string name="disable_bt_summary">Вимкніть усі зв’язки Bluetooth</string>
     <string name="p2p_invite_title">Запрошення WiFi Direct</string>
-    <string name="button_decline">відхилити</string>
+    <string name="button_decline">Відхилити</string>
     <string name="slmenu_select_all">Вибрати все</string>
     <string name="button_go_settings">Запустіть Налаштування</string>
     <plurals name="strd_remains_expl_fmt">
@@ -138,8 +138,8 @@
     <string name="confirm_sms_willpay">Так: я сплачу всі витрати оператора</string>
     <string name="download_done">Завантаження завершено</string>
     <string name="list_group_movedown">Рухатися вниз</string>
-    <string name="lang_name_czech">чеська</string>
-    <string name="lang_name_greek">грецька</string>
+    <string name="lang_name_czech">Чеська</string>
+    <string name="lang_name_greek">Грецька</string>
     <string name="force_tablet_phone">Примусове розташування телефону</string>
     <string name="lmi_tiles_fmt">Плитки, призначені %1$s</string>
     <string name="advanced_summary">Ці вам ніколи не знадобляться…</string>
@@ -160,7 +160,7 @@
     <string name="prefs_behavior_summary">Налаштування, що контролюють поведінку програми</string>
     <string name="explain_robot">Поясніть інші ходи</string>
     <string name="ids_endnow">Ви впевнені, що хочете звільнитися?</string>
-    <string name="button_save">зберегти</string>
+    <string name="button_save">Зберегти</string>
     <string name="not_again_trading_buttons">Використовуйте кнопки, щоб прийняти свій хід або вийти з режиму обміну.</string>
     <string name="about_devid_fmt">Ідентифікатор пристрою: %1$s</string>
     <string name="button_lookup_study_fmt">Знайдіть/вивчіть %1$s</string>
@@ -177,9 +177,9 @@
     <string name="background">Рада фону</string>
     <string name="disable_bt">Вимкнути відтворення через Bluetooth</string>
     <string name="newgame_drop_mqtt">Киньте Інтернет</string>
-    <string name="chat_other_id">"не я: "</string>
+    <string name="chat_other_id">"Не я: "</string>
     <string name="loc_filters_menu">Останнє меню</string>
-    <string name="lang_name_italian">італійська</string>
+    <string name="lang_name_italian">Італійська</string>
     <string name="str_no_hint_found">Не можу знайти жодного ходу</string>
     <string name="unhide_dupmode_summary">(Зараз занадто експериментально)</string>
     <string name="dup_traded_fmt">Жодних рухів; обміняно %1$d плиток</string>
@@ -200,8 +200,8 @@
     <string name="default_loc">Зберігайте списки слів усередині</string>
     <string name="study_langpick">Ваші слова для:</string>
     <string name="loc_filters_modified">Змінено мною</string>
-    <string name="lang_name_dutch">голландська</string>
-    <string name="lang_name_swedish">шведська</string>
+    <string name="lang_name_dutch">Голландська</string>
+    <string name="lang_name_swedish">Шведська</string>
     <string name="note_none">(Жодного)</string>
     <string name="loc_item_check">Перевірте</string>
     <string name="config_no_connvia">Ця гра не може підключитися і не може бути збережена. Бажаєте скасувати зміни чи відредагувати, щоб надати можливість підключення?</string>
@@ -217,7 +217,7 @@
     <string name="apply_config">Бажаєте імпортувати налаштування теми з відкритої URL-адреси? Вони замінять усі внесені вами локальні зміни. \n\nЦю дію неможливо скасувати, але ви завжди можете відновити стандартні кольори для цієї теми.</string>
     <string name="button_pick_again">Виберіть знову</string>
     <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
-    <string name="chat_local_id">"я: "</string>
+    <string name="chat_local_id">"Я: "</string>
     <string name="chat_send">Надіслати</string>
     <string name="subst_dict_title">Замінити список слів (wordcount)</string>
     <string name="game_fmt">Гра %1$d</string>
@@ -233,7 +233,7 @@
     <string name="invite_chooser_email">електронною поштою</string>
     <string name="summary_sort_tiles">Сортуйте стелажі щоразу, коли додаються нові плитки</string>
     <string name="prefs_colors_summary">Відредагуйте кольори, які використовуються на дошці</string>
-    <string name="loc_internal">внутрішній</string>
+    <string name="loc_internal">Внутрішній</string>
     <string name="phonies_found_title">Знайдені фальшивки</string>
     <string name="prefs_dicts_summary">Списки слів за замовчуванням</string>
     <string name="vs_join">" проти. "</string>
@@ -297,9 +297,9 @@
     <string name="slmenu_copy_sel">Копіювати в буфер обміну</string>
     <string name="slmenu_clear_sel">Видалити вибране</string>
     <string name="loc_filters_prompt">Фільтрувати за:</string>
-    <string name="lang_name_french">французька</string>
-    <string name="lang_name_polish">польський</string>
-    <string name="lang_name_romanian">румунська</string>
+    <string name="lang_name_french">Французька</string>
+    <string name="lang_name_polish">Польський</string>
+    <string name="lang_name_romanian">Румунська</string>
     <string name="dict_info_fmt">Кількість слів: %1$d\nРозмір завантаження: %2$dK</string>
     <string name="bt_scan_age_fmt">Востаннє чув від: %1$s</string>
     <string name="err_dup_invite_fmt">Дубльоване запрошення відхилено: пристрій «%1$s» уже прийняв запрошення до цієї гри.</string>
@@ -309,9 +309,9 @@
     <string name="button_settings">Налаштування</string>
     <string name="choose_expl_default_solo">Почніть сольну гру, використовуючи поточні параметри за замовчуванням</string>
     <string name="download_more">Завантажте більше</string>
-    <string name="button_default_robot">робот</string>
+    <string name="button_default_robot">Робот</string>
     <string name="button_default_both">Обидва</string>
-    <string name="loc_external">зовнішній</string>
+    <string name="loc_external">Зовнішній</string>
     <string name="robot_label">Робот гравець</string>
     <string name="button_trade_commit">Здійснити торгівлю</string>
     <string name="board_menu_done">Поверніть готове</string>
@@ -324,7 +324,7 @@
     <string name="str_tiles_must_contact">Нові фігури повинні контактувати з іншими, які вже є на місці (або середнім квадратом під час першого ходу)</string>
     <string name="str_cant_undo_tileassign">Призначення плитки не можна скасувати.</string>
     <string name="button_close_game">Закрити гру</string>
-    <string name="button_yes">так</string>
+    <string name="button_yes">Так</string>
     <string name="show_tiles_menu">‌Показати плитки</string>
     <string name="game_name_label">Назва гри:</string>
     <string name="menu_hint_next">Наступна підказка</string>
@@ -364,7 +364,7 @@
     <string name="dict_browse_title_fmt">%1$s (усього %2$d слова)</string>
     <string name="summary_wait_host">Чекаю на гостя(ів)</string>
     <string name="empty_sms_inviter">Цей список телефонів порожній. Використовуйте кнопку «Імпортувати контакт», щоб додати людей, яких ви хочете запросити, і кнопку +, щоб ввести номери безпосередньо.</string>
-    <string name="loc_filters_all">все</string>
+    <string name="loc_filters_all">Все</string>
     <string name="enable_pending_count_title">Показати повідомлення, що очікують на розгляд</string>
     <string name="game_summary_field_gameid">gameid</string>
     <string name="db_store_done">Експорт завершено</string>
@@ -404,8 +404,8 @@
     <string name="menu_about_peers">Статус рівного</string>
     <string name="connstat_unsucc">невдалий</string>
     <string name="connstat_relay">Інтернет/реле</string>
-    <string name="lang_name_russian">російська</string>
-    <string name="lang_name_slovak">словацький</string>
+    <string name="lang_name_russian">Російська</string>
+    <string name="lang_name_slovak">Словацький</string>
     <string name="dict_lang_inst_and_avail">(Встановлено: %1$d; Доступно: %2$d)</string>
     <string name="show_remote">Показати для завантаження</string>
     <string name="nag_title">Нагадування: ваша черга</string>
@@ -429,7 +429,7 @@
     <string name="button_add_player">Додати гравця</string>
     <string name="button_juggle_players">Перемішайте гравців</string>
     <string name="settings_label">Інші налаштування</string>
-    <string name="lang_name_portuguese">португальська</string>
+    <string name="lang_name_portuguese">Португальська</string>
     <string name="reboot_after_setFmt">MQTT devID змінено на \"%1$s\".\n\nПерезапуск, щоб забезпечити використання.</string>
     <string name="title_pasteDevid">MQTT devID запрошеного</string>
     <plurals name="moves_fmt">
@@ -541,13 +541,13 @@
     </plurals>
     <plurals name="nag_days_fmt">
         <item quantity="one">%1$d день</item>
-        <item quantity="few">%1$d днів</item>
+        <item quantity="few">%1$d дни</item>
         <item quantity="many">%1$d днів</item>
         <item quantity="other">%1$d днів</item>
     </plurals>
     <plurals name="nag_hours_fmt">
         <item quantity="one">%1$d година</item>
-        <item quantity="few">%1$d годин</item>
+        <item quantity="few">%1$d години</item>
         <item quantity="many">%1$d годин</item>
         <item quantity="other">%1$d годин</item>
     </plurals>
@@ -565,7 +565,7 @@
     </plurals>
     <plurals name="nplayers_fmt">
         <item quantity="one">%1$d гравець</item>
-        <item quantity="few">%1$d гравців</item>
+        <item quantity="few">%1$d гравця</item>
         <item quantity="many">%1$d гравців</item>
         <item quantity="other">%1$d гравців</item>
     </plurals>
@@ -577,8 +577,8 @@
     <string name="archive_button_load">Імпорт</string>
     <string name="archive_expl_store">Виберіть типи даних або налаштувань CrossWords, які потрібно зберегти.</string>
     <string name="archive_expl_colors">Кольори на ігровому полі, напр. імен гравців і бонусних квадратів</string>
-    <string name="button_invite_history">історія</string>
-    <string name="wordlist_custom_note">(Кастом)</string>
+    <string name="button_invite_history">Історія</string>
+    <string name="wordlist_custom_note">(Спеціальні)</string>
     <string name="games_menu_setDevid">Встановіть MQTT devID</string>
     <string name="set_devid_title">Новий ідентифікатор пристрою MQTT</string>
     <string name="badMQTTDevIDFmt">Підроблений ідентифікатор пристрою MQTT \"%1$s\". Спробуйте ще раз.</string>
@@ -630,7 +630,7 @@
     <string name="dupe_title_fmt">%1$s (дуп.)</string>
     <string name="logstore_notdumped">Неможливо записати журнали</string>
     <string name="archive_title_settings">Налаштування</string>
-    <string name="button_open_dict">ВІДЧИНЕНО</string>
+    <string name="button_open_dict">Відчинено</string>
     <plurals name="confirm_reset_fmt">
         <item quantity="one">Ви впевнені, що бажаєте скинути %1$d вибрану гру?\n\n(Скидання стирає всі рухи та будь-яку інформацію про підключення.)</item>
         <item quantity="few">Ви впевнені, що бажаєте скинути %1$d вибраних ігор?\n\n(Скидання стирає всі рухи та будь-яку інформацію про підключення.)</item>
@@ -679,7 +679,7 @@
     <string name="invite_dict_missing_title">Відсутній список слів</string>
     <string name="connstat_succ">успішний</string>
     <string name="button_addBlank">+Пустий</string>
-    <string name="bt_pick_clear_button">видалити</string>
+    <string name="bt_pick_clear_button">Вилучити</string>
     <string name="invite_notice_title">Нова гра через запрошення</string>
     <string name="dup_minutes_label">Хвилин за хід</string>
     <string name="entering_trade">Торгівля плиткою. Торкніться плиток, щоб вибрати…</string>
@@ -693,7 +693,7 @@
     <string name="str_robot_moved_fmt">"Робот %1$s зробив цей крок: "</string>
     <string name="no_dict_for_move_title">Вхідний хід втрачено</string>
     <string name="warn_mqtt_disabled">Відтворення в Інтернеті зараз вимкнено на цьому пристрої. Жодні рухи не надсилатимуться та не отримуватимуться через Інтернет.</string>
-    <string name="lang_name_danish">датська</string>
+    <string name="lang_name_danish">Датська</string>
     <string name="new_game_networked">Нова мережева гра</string>
     <string name="button_reconnect">Повторне підключення</string>
     <string name="cur_menu_marker_fmt">%1$s (використовується)</string>
@@ -806,7 +806,7 @@
     <string name="add_to_study_fmt">Додати %1$s до списку досліджень</string>
     <string name="rematch_name_fmt">%1$s</string>
     <string name="force_tablet_default">Використовувати за умовчанням для мого пристрою</string>
-    <string name="loc_item_clear">ясно</string>
+    <string name="loc_item_clear">Очистити</string>
     <string name="confirm_clear_chat">Ви впевнені, що хочете видалити всю історію чату для цієї гри?\n\n(Цю дію неможливо скасувати.)</string>
     <string name="confirm_drop_relay_sms">Не всі оператори підтримують відтворення через Data SMS.</string>
     <string name="remote_empty">Отримання інформації зі списку слів із сервера…</string>
@@ -835,7 +835,7 @@
     <string name="phone_state_rationale">Деякі телефони можуть обмінюватися SMS-повідомленнями «даними». CrossWords хоче запропонувати вам цю опцію, але спочатку потрібно запитати ваш пристрій про нього (щоб дізнатися, чи це телефон і якщо так, якого типу). \n\nЯкщо ваш пристрій не може надсилати SMS з даними (наприклад, тому що це не телефон) або ви ніколи не хочете грати через SMS (наприклад, тому що ви платите за кожне повідомлення), ви можете назавжди відмовити в дозволі.</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">Очікування %1$d гравця</item>
-        <item quantity="few">Очікування %1$d гравців</item>
+        <item quantity="few">Очікування %1$d гравця</item>
         <item quantity="many">Очікування %1$d гравців</item>
         <item quantity="other">Очікування %1$d гравців</item>
     </plurals>
@@ -881,7 +881,7 @@
     <string name="bonus_l3x">Потрійний лист</string>
     <string name="newgame_reinvite">Запросіть знову</string>
     <string name="invite_choice_user_sms">SMS (повідомлення)</string>
-    <string name="radio_how">як?</string>
+    <string name="radio_how">Як?</string>
     <string name="chat_title_fmt">Чат для %1$s</string>
     <string name="chat_menu_clear">Очистити історію</string>
     <string name="query_title">Питання</string>
@@ -988,10 +988,10 @@
     <string name="default_name_title">Ім\'я гравця за замовчуванням</string>
     <string name="changes_title">Останні зміни</string>
     <string name="board_menu_pass">Пас</string>
-    <string name="button_move">рухатися</string>
+    <string name="button_move">Рухатися</string>
     <string name="filter_sum_pat_fmt">Показано: %1$s, довжина %2$d-%3$d (%4$d слова)</string>
     <string name="pat_contains">Містить</string>
-    <string name="tiles_header_face">лист</string>
+    <string name="tiles_header_face">Лист</string>
     <string name="tiles_header_count">Номер</string>
     <string name="tiles_header_value">Значення</string>
     <string name="pick_faceup">Вибирайте плитки лицьовою стороною вгору</string>
@@ -1056,13 +1056,13 @@
     <string name="studylist_title_fmt">Список досліджень для %1$s</string>
     <string name="loc_search_prompt">Пошук:</string>
     <string name="loc_filters_screen">Останній екран</string>
-    <string name="lang_name_english">англійська</string>
+    <string name="lang_name_english">Англійська</string>
     <string name="lang_name_german">Німецький</string>
-    <string name="lang_name_turkish">турецька</string>
-    <string name="lang_name_arabic">арабська</string>
-    <string name="lang_name_catalan">каталонська</string>
-    <string name="lang_name_hungarian">угорська</string>
-    <string name="lang_name_finnish">фінська</string>
+    <string name="lang_name_turkish">Турецька</string>
+    <string name="lang_name_arabic">Арабська</string>
+    <string name="lang_name_catalan">Каталонська</string>
+    <string name="lang_name_hungarian">Угорська</string>
+    <string name="lang_name_finnish">Фінська</string>
     <string name="dict_on_server">Торкніться, щоб дізнатися більше</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d слова)</string>
     <string name="not_again_dicts">На цьому екрані можна встановлювати нові списки слів і переглядати вже наявні. \n\nЯкі списки слів, які ви встановили, визначають: \n• Якими мовами можна грати \n• Наскільки розумний робот-гравець \n• Які слова правові \n\nПоставте прапорець «Показати завантажувані» вгорі, щоб побачити, що доступно.</string>
@@ -1122,8 +1122,8 @@
     <plurals name="hours_fmt">
         <item quantity="one">%1$d година</item>
         <item quantity="few">%1$d години</item>
-        <item quantity="many">%1$d годин</item>
-        <item quantity="other">%1$d годин</item>
+        <item quantity="many">%1$d годині</item>
+        <item quantity="other">%1$d годині</item>
     </plurals>
     <string name="button_show_ka">Більше інформації</string>
     <string name="show_kaservicedied_title">Повідомити, коли Move Checker зупиниться</string>
