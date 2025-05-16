@@ -1965,7 +1965,7 @@ informNeedPickTiles( ServerCtxt* server, XWEnv xwe, XP_Bool initial,
         /* We need to make sure we only call util_informNeedPickTiles once
            without it returning. Even if server_do() is called a lot. */
         if ( server->vol.pickTilesCalled[turn] ) {
-            SRVR_LOGFF( "already asking for %d", turn );
+            SRVR_LOGFF( "already asking for player[%d]", turn );
         } else {
             server->vol.pickTilesCalled[turn] = XP_TRUE;
             for ( Tile tile = 0; tile < nFaces; ++tile ) {
@@ -3987,13 +3987,18 @@ server_commitTrade( ServerCtxt* server, XWEnv xwe, const TrayTileSet* oldTiles,
 
     fetchTiles( server, xwe, turn, oldTiles->nTiles, &newTiles, XP_FALSE );
 
-    if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
+    switch ( server->vol.gi->serverRole ) {
+    case SERVER_ISCLIENT:
         /* just send to server */
         sendMoveTo(server, xwe, HOST_DEVICE, turn, XP_TRUE, &newTiles, oldTiles);
-    } else if ( server->vol.gi->serverRole == SERVER_ISHOST ) {
+        break;
+    case SERVER_ISHOST:
         sendMoveToClientsExcept( server, xwe, turn, XP_TRUE, &newTiles, oldTiles,
                                  HOST_DEVICE );
+        break;
     }
+
+    server->vol.pickTilesCalled[turn] = XP_FALSE; /* in case in pick-tiles-mode */
 
     pool_replaceTiles( server->pool, oldTiles );
     XP_ASSERT( turn == server->nv.currentTurn );
