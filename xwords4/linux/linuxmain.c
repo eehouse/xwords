@@ -684,7 +684,7 @@ do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
 typedef enum {
     CMD_HELP
     ,CMD_SKIP_GAMEOVER
-    ,CMD_SHOW_OTHERSCORES
+    ,CMD_NO_SHOW_OTHERSCORES
     ,CMD_SKIP_MQTT
     ,CMD_HOSTIP
     ,CMD_HOSTPORT
@@ -837,7 +837,7 @@ typedef struct _CmdInfoRec {
 static CmdInfoRec CmdInfoRecs[] = {
     { CMD_HELP, false, "help", "print this message" }
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
-    ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
+    ,{ CMD_NO_SHOW_OTHERSCORES, false, "no-show-other", "Don't show robot/remote scores" }
     ,{ CMD_SKIP_MQTT, false, "skip-mqtt-add", "Do not add MQTT to games as they connect" }
     ,{ CMD_HOSTIP, true, "host-ip", "remote host ip address (for direct connect)" }
     ,{ CMD_HOSTPORT, true, "host-port", "remote host ip address (for direct connect)" }
@@ -2860,7 +2860,7 @@ main( int argc, char** argv )
     mainParams.skipCommitConfirm = XP_FALSE;
     mainParams.showColors = XP_TRUE;
     mainParams.allowPeek = XP_TRUE;
-    mainParams.showRobotScores = XP_FALSE;
+    mainParams.showRobotScores = XP_TRUE;
     mainParams.useMmap = XP_TRUE;
     mainParams.useUdp = true;
     mainParams.dbName = "xwgames.sqldb";
@@ -2908,8 +2908,8 @@ main( int argc, char** argv )
         case CMD_SKIP_GAMEOVER:
             mainParams.skipGameOver = XP_TRUE;
             break;
-        case CMD_SHOW_OTHERSCORES:
-            mainParams.showRobotScores = XP_TRUE;
+        case CMD_NO_SHOW_OTHERSCORES:
+            mainParams.showRobotScores = XP_FALSE;
             break;
         case CMD_SKIP_MQTT:
             mainParams.skipMQTTAdd = XP_TRUE;
