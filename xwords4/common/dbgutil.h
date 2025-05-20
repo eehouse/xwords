@@ -34,6 +34,12 @@ void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
 const char* devIDTypeToStr(DevIDType typ);
 void assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
                          Tile blankTile );
+void fmtTileSet(const TrayTileSet* tts, XP_UCHAR buf[], XP_U16 bufLen);
+#define LOG_TTS(tts, msg) {                             \
+        XP_UCHAR buf[128];                              \
+        fmtTileSet( tts, buf, VSIZE(buf) );             \
+        XP_LOGFF( "Tile set: %s (msg: %s)", buf, msg ); \
+    }
 
 #  define XP_LOGSTREAM( s )                      \
     dbg_logstream( s, __func__, __LINE__ )

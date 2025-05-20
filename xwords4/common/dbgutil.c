@@ -89,6 +89,18 @@ StackMoveType_2str( StackMoveType typ )
 
 #ifdef DEBUG
 void
+fmtTileSet(const TrayTileSet* tts, XP_UCHAR buf[], XP_U16 bufLen)
+{
+    int offset = 0;
+    offset += XP_SNPRINTF( &buf[offset], bufLen-offset, "[" );
+    for ( int ii = 0; ii < tts->nTiles; ++ii ) {
+        offset += XP_SNPRINTF( &buf[offset], bufLen-offset, "%d, ",
+                               tts->tiles[ii] );
+    }
+    offset += XP_SNPRINTF( &buf[offset], bufLen-offset, "]" );
+}
+
+void
 assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
                     Tile blankTile )
 {
