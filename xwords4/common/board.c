@@ -2229,9 +2229,8 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
             board_popTimerSave( board, xwe );
 
             if ( searchComplete && canMove ) {
-                const DictionaryCtxt* dict = model_getDictionary( model );
-                Tile blankTile = dict_getBlankTile( dict );
-                assertTilesInTiles( &newMove, &tileSet, blankTile );
+                assertTilesInTiles( &newMove, &tileSet,
+                                    dict_getBlankTile(model_getDictionary(model)));
                 juggleMoveIfDebug( &newMove );
                 model_makeTurnFromMoveInfo( model, xwe, selPlayer, &newMove );
             } else {

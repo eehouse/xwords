@@ -46,7 +46,7 @@ void fmtTileSet(const TrayTileSet* tts, XP_UCHAR buf[], XP_U16 bufLen);
 # else
 #  define XP_LOGSTREAM( s )
 # define devIDTypeToStr(s) ""
-# define assertTilesInTiles( move, tts )
+# define assertTilesInTiles( move, tts, blank )
 # endif
 
 #define boolToStr(b) ((b)?"true" : "false")
