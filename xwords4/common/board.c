@@ -2116,12 +2116,14 @@ preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal )
 static void
 adjustForDL( TrayTileSet* tileSet, XP_U16 dividerLoc )
 {
-    XP_LOGFF( "dividerLoc: %d", dividerLoc );
     // LOG_TTS( tileSet, "before" );
     if ( dividerLoc ) {
-        TrayTile* src = &tileSet->tiles[dividerLoc];
-        XP_MEMMOVE( &tileSet->tiles[0], src, dividerLoc*sizeof(src[0]) );
         tileSet->nTiles -= dividerLoc;
+        if ( tileSet->nTiles ) {
+            TrayTile* src = &tileSet->tiles[dividerLoc];
+            XP_MEMMOVE( &tileSet->tiles[0], src,
+                        tileSet->nTiles * sizeof(src[0]) );
+        }
     }
     // LOG_TTS( tileSet, "after" );
 }
