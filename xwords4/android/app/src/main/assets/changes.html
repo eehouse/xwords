@@ -1,19 +1,33 @@
 <html>
-  <head>
-	<script>
-      showSurvey = function() {
-	  var div = document.getElementById('survey');
-	  div.style.display = 'inline';
-      };
-	</script>
-	<style type="text/css">
-	  body {font-size: smaller;}
-      #survey { display: none; }
-	  h2,h3 { text-align: center; }
-	</style>
-  </head>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+	    <script>
+            showSurvey = function() {
+	            var div = document.getElementById('survey');
+	            div.style.display = 'inline';
+            };
+	    </script>
+	    <style type="text/css">
+	        body {font-size: smaller;}
+            #survey { display: none; }
+	        h2,h3 { text-align: center; }
+            .fixpixel img {max-width:100%;
+                           height:auto;
+                          }
+
+	    </style>
+    </head>
 <body>
   <h2>CrossWords 4.4.206 release</h2>
+
+  <div class="fixpixel" style="margin-bottom:2.5em;">
+      <h3>Remembering Deb</h3>
+      <p>This release is dedicated to Debra Montgomery, CrossWords'
+          biggest fan and best bug-finder. Also one of the world's
+          most amazing human beings. We love you forever, Deb!
+      </p>
+      <img src="./deb.jpg">
+  </div>
 
   <p>This release fixes a bug with saving games and improves
   connectivity for networked games.</p>
@@ -29,6 +43,8 @@
       <li>Fix problem saving games</li>
       <li>Add "Move checker" that, if enabled, keeps the app awake
           to speed move delivery</li>
+     <li>Fix a problem trading tiles when face-up tile-picking is
+          enabled</li>
       <li>Translations via Weblate in: Catalan, Chinese, Dutch,
           French, German, Italian, Japanese, Norwegian, Bokmål,
           Polish, Portuguese, Portuguese (Brazil), Russian, Spanish,
