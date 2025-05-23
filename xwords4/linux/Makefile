@@ -289,6 +289,10 @@ endif
 # provides an all: target
 include ../common/rules.mk
 
+# I'm keeping here what I need to set up a new machine for my
+# use. Strictly speaking the alpa stuff isn't needed to build the
+# linux version of CrossWords.
+
 REQUIRED_DEBS = gcc libgtk-3-dev \
 		libbluetooth-dev \
 		libncurses5-dev \
@@ -299,6 +303,8 @@ REQUIRED_DEBS = gcc libgtk-3-dev \
 		libgtk-3-dev \
 		python3-requests \
 		libmosquitto-dev \
+		elpa-magit \
+		elpa-projectile \
 
 .PHONY: debcheck debs_install
 
