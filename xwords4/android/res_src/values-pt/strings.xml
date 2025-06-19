@@ -1662,12 +1662,7 @@
     <string name="not_again_longtap_lookup">Pode pesquisar palavras ANTES de serem jogadas – a tocar e a segurar, do mesmo jeito que palavras jogadas.
 \n
 \nUse esta ferramenta para verificar a validade de palavras que está a pensar em jogar, ou pesquisar uma palavra não familiar dada como dica.</string>
-    <string name="not_again_emptybtscan">Se um escaneamento não achar o aparelho que espera:
-\n • Primeiramente apenas reescaneie
-\n • Certifique-se que o Bluetooth esteja ativo no outro aparelho
-\n • Abra CrossWords no outro aparelho
-\n • Se tudo falhar, reeinicie este aparelho
-\n</string>
+    <string name="not_again_emptybtscan">Se uma varredura não achar o aparelho que espera: \n • Primeiramente apenas faça mais uma varredura \n • Certifique-se que o Bluetooth esteja ativo no outro aparelho \n • Abra CrossWords no outro aparelho \n • Se tudo falhar, reeinicie este aparelho</string>
     <string name="gameevent_channel_expl">Eventos do jogo</string>
     <string name="toast_no_permission">Permissão não concedida</string>
     <string name="perms_rationale_title">Permissão do Android explicada</string>
@@ -2338,4 +2333,27 @@
     <string name="enable_kaservice_summary">Mantenha o CrossWords ativo para receber movimentos, mesmo quando não está visível ou o dispositivo está em repouso. Nota: pode afetar a duração da bateria.</string>
     <string name="ksconfig_expl">Para a melhor experiência com jogos em rede, o CrossWords pode tentar permanecer ativo em plano de fundo à espera de movimentos. Isto pode reduzir a duração da bateria, motivo pelo qual o Android o desencoraja, e é por isso que sempre verá uma notificação quando isso acontecer.</string>
     <string name="ka_config_fmt">O verificador de movimentos apenas fica ativo quando um movimento foi feito em pelo menos um jogo em rede nas últimas %1$d horas. Pode configurar ou desativar isso usando o botão “%2$s” abaixo.</string>
+    <string name="ksconfig_running_fmt">O Verificador de Movimentos esteve a executar por %1$dh%2$02dm. Vai parar em %3$dh%4$02dm a menos que um movimento seja feito ou recebido antes disso.</string>
+    <string name="ksconfig_notrunning">O Verificador de Movimentos não está atualmente ativo.</string>
+    <string name="ksconfig_disabled">O Verificador de Movimentos está atualmente desativado.</string>
+    <string name="hide_notify_expl">Se ficar cansado de ver a notificação, pode usar a app de Configurações do dispositivo para escondê-lo. Chega lá através do botão abaixo.</string>
+    <string name="hide_notify_button">Ir a “Mostrar notificações”</string>
+    <string name="ksconfig_killed_title">Verificador de Movimentos parou</string>
+    <string name="ksconfig_killed_body_fmt">Esteve ativo por %1$dh%2$02dmin</string>
+    <string name="prefs_net_kaservice_summary">Ativar Verificador de Movimentos</string>
+    <string name="expl_ka_hours">Quantas horas a ficar acordado</string>
+    <string name="ka_menuwhen_never">Nunca</string>
+    <string name="ka_menuwhen_available">Quando disponível</string>
+    <string name="ka_menuwhen_running">Ao estar ativo</string>
+    <string name="ka_menuwhen_always">Sempre</string>
+    <plurals name="hours_fmt">
+        <item quantity="one">Uma hora</item>
+        <item quantity="many">%1$d horas</item>
+        <item quantity="other">%1$d horas</item>
+    </plurals>
+    <string name="expl_notagain_keepalive">CrossWords receberá movimentos de outros jogadores mais rapidamente se ativar o novo recurso Verificador de Movimentos. O botão Mais informações dirá-lhe como.</string>
+    <string name="button_show_ka">Mais informações</string>
+    <string name="show_kaservicedied_title">Informar quando o Verificador de Movimentos parar</string>
+    <string name="show_kaservicedied_body">Publicar uma notificação quando o Verificador de Movimentos parar (geralmente porque tem sido muito tempo desde que um movimento foi enviado ou recebido)</string>
+    <string name="title_ka_menuwhen">Ativar elemento de menu Verificador de Movimentos</string>
 </resources>
