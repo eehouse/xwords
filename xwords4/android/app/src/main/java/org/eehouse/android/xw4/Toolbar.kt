@@ -71,7 +71,7 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
     // Sometimes this fails, especially when in dual-pane mode. Maybe it's
     // getting called in the wrong activity/view hierarchy context?
     fun getButtonFor(index: Buttons): ImageButton? {
-        val result = mActivity.findViewById<View>(index.resId) as ImageButton?
+        val result = mLayout?.findViewById<View>(index.resId) as ImageButton?
         return result
     }
 
@@ -150,12 +150,12 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
     }
 
     private fun setListener(index: Buttons, listener: Any?) {
-        getButtonFor(index)?.let {
+        getButtonFor(index)?.let { button ->
             when (listener) {
                 is View.OnClickListener ->
-                    it.setOnClickListener(listener)
+                    button.setOnClickListener(listener)
                 is OnLongClickListener ->
-                    it.setOnLongClickListener(listener)
+                    button.setOnLongClickListener(listener)
                 else -> Assert.failDbg()
             }
         }
