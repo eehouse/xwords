@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream
 
 // These two change with every release.
 val VERSION_CODE_BASE = 201
-val VERSION_NAME = "4.4.206"
+val VERSION_NAME = "4.4.205"
 
 val INITIAL_CLIENT_VERS = 10
 val BUILD_INFO_NAME = "build-info.txt"
