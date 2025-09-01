@@ -56,6 +56,11 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               />
+      <Button android:id="@+id/player_copyDevid"
+              android:text="@string/button_copyAddr"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              />
     </LinearLayout>
   </LinearLayout>
 </LinearLayout>

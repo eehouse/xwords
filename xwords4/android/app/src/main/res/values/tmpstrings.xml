@@ -35,4 +35,6 @@
   <string name="pref_item_allowMulti_summary">Usually this means
   accepting invitations from the same device</string>
 
+  <string name="button_copyAddr">Copy address</string>
+
 </resources>

@@ -198,16 +198,22 @@ class KnownPlayersDelegate(delegator: Delegator) :
             if (conTypes.contains(CommsConnType.COMMS_CONN_SMS)) {
                 addListing(list, R.string.knowns_smsphone_fmt, addr.sms_phone)
             }
-            if (BuildConfig.NON_RELEASE) {
-                if (conTypes.contains(CommsConnType.COMMS_CONN_MQTT)) {
-                    addListing(list, R.string.knowns_mqtt_fmt, addr.mqtt_devID)
-                }
+            val hasMQTT = conTypes.contains(CommsConnType.COMMS_CONN_MQTT)
+            if (BuildConfig.NON_RELEASE && hasMQTT) {
+                addListing(list, R.string.knowns_mqtt_fmt, addr.mqtt_devID)
             }
 
             item.findViewById<View>(R.id.player_edit_name)
                 .setOnClickListener { showDialogFragment(DlgID.RENAME_PLAYER, getName(item)) }
             item.findViewById<View>(R.id.player_delete)
                 .setOnClickListener { confirmAndDelete(getName(item)) }
+            item.findViewById<View>(R.id.player_copyDevid).apply {
+                if ( BuildConfig.NON_RELEASE && hasMQTT ) {
+                    setOnClickListener { Utils.stringToClip(mActivity, addr.mqtt_devID) }
+                } else {
+                    visibility = View.GONE
+                }
+            }
 
             val eib = item.findViewById<View>(R.id.expander) as ExpandImageButton
             val ecl: ExpandChangeListener = object: ExpandChangeListener {
