@@ -151,9 +151,6 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
                 R.plurals.group_name_fmt,
                 m_nGames, mName, m_nGames
             )
-        val grp =
-            if ( BuildConfig.DEBUG ) " $mGrp"
-            else ""
-        setText(name + grp)
+        setText(name)
     }
 }
