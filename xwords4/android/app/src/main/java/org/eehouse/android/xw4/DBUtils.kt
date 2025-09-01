@@ -577,34 +577,33 @@ object DBUtils {
 
     fun getGamesWithSendsPending(context: Context): HashMap<Long, CommsConnTypeSet> {
         val result = HashMap<Long, CommsConnTypeSet>()
-        val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)
-        val selection = String.format(
-            "%s != %d AND %s > 0 AND %s != %d",
-            DBHelper.SERVERROLE,
-            DeviceRole.SERVER_STANDALONE.ordinal,
-            DBHelper.NPACKETSPENDING,
-            DBHelper.GROUPID, getArchiveGroup(context)
-        )
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            val cursor = query(TABLE_NAMES.SUM, columns, selection)
-            val indx1 = cursor.getColumnIndex(ROW_ID)
-            val indx2 = cursor.getColumnIndex(DBHelper.CONTYPE)
-            var ii = 0
-            while (cursor.moveToNext()) {
-                val rowid = cursor.getLong(indx1)
-                val typs = CommsConnTypeSet(cursor.getInt(indx2))
-                // Better have an address if has pending sends
-                if (0 < typs.size) {
-                    result[rowid] = typs
-                }
-                ++ii
-            }
-            cursor.close()
-        }
+        // val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)
+        // val selection = String.format(
+        //     "%s != %d AND %s > 0 AND %s != %d",
+        //     DBHelper.SERVERROLE,
+        //     DeviceRole.SERVER_STANDALONE.ordinal,
+        //     DBHelper.NPACKETSPENDING,
+        //     DBHelper.GROUPID, getArchiveGroup(context)
+        // )
+        // initDB(context)
+        // synchronized(s_dbHelper!!) {
+        //     val cursor = query(TABLE_NAMES.SUM, columns, selection)
+        //     val indx1 = cursor.getColumnIndex(ROW_ID)
+        //     val indx2 = cursor.getColumnIndex(DBHelper.CONTYPE)
+        //     var ii = 0
+        //     while (cursor.moveToNext()) {
+        //         val rowid = cursor.getLong(indx1)
+        //         val typs = CommsConnTypeSet(cursor.getInt(indx2))
+        //         // Better have an address if has pending sends
+        //         if (0 < typs.size) {
+        //             result[rowid] = typs
+        //         }
+        //         ++ii
+        //     }
+        //     cursor.close()
+        // }
         return result
     }
-
     fun getGameCountUsing(context: Context, typ: CommsConnType): Int {
         var result = 0
         val columns = arrayOf(DBHelper.CONTYPE)
