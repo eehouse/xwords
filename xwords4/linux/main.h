@@ -31,8 +31,9 @@
 #include "util.h"
 #include "game.h"
 #include "vtabmgr.h"
-#include "dictmgr.h"
 #include "dutil.h"
+#include "gameref.h"
+#include "lindmgr.h"
 
 typedef struct ServerInfo {
     XP_U16 nRemotePlayers;
@@ -50,11 +51,16 @@ typedef void (*SockReceiver)( void* closure, int socket );
 typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock, 
                                SockReceiver proc, void* procClosure );
 
+typedef struct CommonAppGlobals CommonAppGlobals;
+typedef struct MQTTConStorage MQTTConStorage;
+#ifdef XWFEATURE_SMS
+typedef struct LinSMSData LinSMSData;
+#endif
+
 typedef struct _LaunchParams {
 /*     CommPipeCtxt* pipe; */
     CurGameInfo pgi;
-
-    GSList* dictDirs;
+    LinDictMgr* ldm;
     char* fileName;
     char* dbName;
     char* localName;
@@ -67,9 +73,9 @@ typedef struct _LaunchParams {
     XP_U32 dbFileID;
 #endif
     void* relayConStorage;      /* opaque outside of relaycon.c */
-    void* mqttConStorage;
+    MQTTConStorage* mqttConStorage;
 #ifdef XWFEATURE_SMS
-    void* smsStorage;
+    LinSMSData* smsStorage;
 #endif
     char* pipe;
     char* nbs;
@@ -82,7 +88,6 @@ typedef struct _LaunchParams {
     const char* cmdsSocket;
 
     VTableMgr* vtMgr;
-    DictMgrCtxt* dictMgr;
     XW_DUtilCtxt* dutil;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
@@ -114,7 +119,7 @@ typedef struct _LaunchParams {
     XP_Bool skipUserErrs;
 
     XP_Bool useCurses;
-    void* appGlobals;           /* cursesmain or gtkmain sets this */
+    CommonAppGlobals* cag;           /* cursesmain or gtkmain sets this */
 
     XP_Bool useUdp;
     XP_Bool useHTTP;
@@ -123,6 +128,8 @@ typedef struct _LaunchParams {
     XP_Bool noHTTPAuto;
     bool forceNewGame;
     bool forceInvite;
+    bool showGames;
+    bool skipGroups;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;
@@ -232,26 +239,29 @@ typedef struct _TimerInfo {
 #endif
 } TimerInfo;
 
-typedef void (*OnSaveFunc)( void* closure, sqlite3_int64 rowid,
-                            XP_Bool firstTime );
+typedef void (*OnSaveFunc)( void* closure, GameRef gr, XP_Bool firstTime );
+
+typedef void (*cg_destructor)(CommonGlobals* self);
 
 struct CommonGlobals {
-    CurGameInfo _gi;
-    LaunchParams* params;
-    TransportProcs procs;
-    CommonPrefs cp;
-    XW_UtilCtxt* util;
+    int refCount;               /* this can go away? */
+    cg_destructor destructor;
 
-    XWGame game;
+    LaunchParams* params;
+    CommonPrefs cp;
+
+    GameRef gr;
+
     DrawCtx* draw;
-    CurGameInfo* gi;
+    XW_UtilCtxt* util;
+    const CurGameInfo* gi;
     CommsAddrRec selfAddr;      /* set e.g. by new game dialog */
     CommsAddrRec hostAddr;      /* used by client only: addr of invite sender */
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
     XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
-    sqlite3_int64 rowid;
+    // sqlite3_int64 rowid;
 
     void* socketAddedClosure;
     OnSaveFunc onSave;
@@ -304,13 +314,17 @@ struct CommonGlobals {
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];
     guint secondsTimerID;
 
+#ifdef DEBUG
+    pthread_t creator;
+#endif
+
     XP_U16 curSaveToken;
 };
 
-typedef struct _CommonAppGlobals {
+struct CommonAppGlobals {
     LaunchParams* params;
-    GSList* globalsList;        /* used by gtk only */
-} CommonAppGlobals;
+    GSList* globalsList;
+};
 
 typedef struct _SourceData {
     GIOChannel* channel;
@@ -325,10 +339,13 @@ typedef struct _GtkAppGlobals {
     GArray* selRows;
     GList* sources;
     GtkWidget* window;
-    GtkWidget* listWidget;
     GtkWidget* openButton;
+    GtkWidget* renameButton;
     GtkWidget* rematchButton;
     GtkWidget* deleteButton;
+    GtkWidget* moveToGroupButton;
+    GtkWidget* archiveButton;
+    GtkWidget* treesBox;
     /* save window position */
     GdkEventConfigure lastConfigure;
 } GtkAppGlobals;

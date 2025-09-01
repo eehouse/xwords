@@ -34,14 +34,15 @@ import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
 class KnownPlayersDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.knownplayrs) {
     private val mActivity: Activity = delegator.getActivity()!!
     private var mList: ViewGroup? = null
-    private val mChildren: MutableList<ViewGroup> = ArrayList()
+    private var mChildren: List<ViewGroup>? = null
     private val mExpSet = loadExpanded()
 
     private var mByDate = false
@@ -62,87 +63,83 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     override fun onPosButton(action: Action, vararg params: Any?): Boolean {
-        var handled = true
-        when (action) {
-            Action.KNOWN_PLAYER_DELETE -> {
-                val name = params[0] as String
-                XwJNI.kplr_deletePlayer(name)
-                populateList()
-            }
+        val handled =
+            when (action) {
+                Action.KNOWN_PLAYER_DELETE -> {
+                    val name = params[0] as String
+                    Knowns.deletePlayer(name)
+                    populateList()
+                    true
+                }
 
-            else -> handled = super.onPosButton(action, *params)
-        }
+                else -> super.onPosButton(action, *params)
+            }
         return handled
     }
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
-        var dialog: Dialog? = null
-
         val dlgID = alert.dlgID
-        when (dlgID) {
-            DlgID.RENAME_PLAYER -> {
-                val oldName = params[0] as String
-                val namer = (inflate(R.layout.renamer) as Renamer)
-                    .setName(oldName)
+        val dialog =
+            when (dlgID) {
+                DlgID.RENAME_PLAYER -> {
+                    val oldName = params[0] as String
+                    val namer = (inflate(R.layout.renamer) as Renamer)
+                        .setName(oldName)
 
 
-                val lstnr =
-                    DialogInterface.OnClickListener { dlg, item -> tryRename(oldName, namer.name) }
-                dialog = buildNamerDlg(namer, lstnr, null, dlgID)
+                    val lstnr =
+                        DialogInterface.OnClickListener { dlg, item -> tryRename(oldName, namer.name) }
+                    buildNamerDlg(namer, lstnr, null, dlgID)
+                }
+                else -> {
+                    Log.d(TAG, "makeDialog(): unexpected dlgid $dlgID")
+                    super.makeDialog(alert, *params)
+                }
             }
-            else -> Log.d(TAG, "makeDialog(): unexpected dlgid $dlgID")
-        }
-        if (null == dialog) {
-            dialog = super.makeDialog(alert, *params)
-        }
         return dialog
     }
 
     private fun tryRename(oldName: String, newName: String) {
         if (newName != oldName && 0 < newName.length) {
-            if (XwJNI.kplr_renamePlayer(oldName, newName)) {
-                populateList()
-            } else {
-                makeOkOnlyBuilder(
-                    R.string.knowns_dup_name_fmt,
-                    oldName, newName
-                )
-                    .show()
+            mList?.launch {
+                val renamed = Knowns.renamePlayer(oldName, newName)
+                if ( renamed ) {
+                    populateList()
+                } else {
+                    makeOkOnlyBuilder(
+                        R.string.knowns_dup_name_fmt,
+                        oldName, newName
+                    )
+                        .show()
+                }
             }
         }
     }
 
     private fun populateList() {
-        val players = XwJNI.kplr_getPlayers(mByDate)
-        if (null == players) {
-            finish()
-        } else {
-            mChildren.clear()
-            players.map{
-                val child = makePlayerElem(it)
-                if (null != child) {
-                    mChildren.add(child)
-                }
+        mList?.launch {
+            val players = Knowns.getPlayers(mByDate)
+            if (null == players) {
+                finish()
+            } else {
+                mChildren = players.mapNotNull { makePlayerElem(it) }
+                addInOrder()
+                pruneExpanded()
             }
-            addInOrder()
-            pruneExpanded()
         }
     }
 
     private fun addInOrder() {
         mList!!.removeAllViews()
-        for (child in mChildren!!) {
-            mList!!.addView(child)
+        mChildren!!.map {
+            mList!!.addView(it)
         }
     }
 
     private fun pruneExpanded() {
         var doSave = false
 
-        val children: MutableSet<String> = HashSet()
-        for (child in mChildren!!) {
-            children.add(getName(child))
-        }
+        val children = mChildren!!.map {getName(it)}
 
         val iter = mExpSet.iterator()
         while (iter.hasNext()) {
@@ -158,29 +155,29 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     private fun setName(item: ViewGroup, name: String) {
-        val tv = item.findViewById<View>(R.id.player_name) as TextView
+        val tv = item.findViewById<TextView>(R.id.player_name)
         tv.text = name
     }
 
     private fun getName(item: ViewGroup): String {
-        val tv = item.findViewById<View>(R.id.player_name) as TextView
+        val tv = item.findViewById<TextView>(R.id.player_name)
         return tv.text.toString()
     }
 
-    private fun makePlayerElem(player: String): ViewGroup? {
+    private suspend fun makePlayerElem(player: String): ViewGroup? {
         var view: ViewGroup? = null
         val lastMod = intArrayOf(0)
-        val addr = XwJNI.kplr_getAddr(player, lastMod)
+        val addr = Knowns.getAddr(player, lastMod)
 
-        if (null != addr) {
+        addr?.let { addr ->
             val item = LocUtils
                 .inflate(mActivity, R.layout.knownplayrs_item) as ViewGroup
             setName(item, player)
             view = item
 
             // Iterate over address types
-            val conTypes = addr.conTypes
-            val list = item.findViewById<View>(R.id.items) as ViewGroup
+            val conTypes = addr.conTypes!!
+            val list = item.findViewById<ViewGroup>(R.id.items)
 
             val timeStmp = 1000L * lastMod[0]
             if (BuildConfig.NON_RELEASE && 0 < timeStmp) {
@@ -189,7 +186,7 @@ class KnownPlayersDelegate(delegator: Delegator) :
                 addListing(list, R.string.knowns_ts_fmt, str)
             }
 
-            if (conTypes!!.contains(CommsConnType.COMMS_CONN_BT)) {
+            if (conTypes.contains(CommsConnType.COMMS_CONN_BT)) {
                 addListing(list, R.string.knowns_bt_fmt, addr.bt_hostName)
                 if (BuildConfig.NON_RELEASE) {
                     addListing(list, R.string.knowns_bta_fmt, addr.bt_btAddr)
@@ -258,17 +255,14 @@ class KnownPlayersDelegate(delegator: Delegator) :
     }
 
     private fun loadExpanded(): HashSet<String> {
-        var expSet: HashSet<String>? = try {
-            DBUtils.getSerializableFor(mActivity, KEY_EXPSET)
-                as HashSet<String>
-        } catch (ex: Exception) {
-            Log.ex(TAG, ex)
-            null
-        }
-        if (null == expSet) {
-            expSet = HashSet()
-        }
-
+        val expSet =
+            try {
+                DBUtils.getSerializableFor(mActivity, KEY_EXPSET)
+                    as HashSet<String>
+            } catch (ex: Exception) {
+                Log.ex(TAG, ex)
+                HashSet()
+            }
         return expSet
     }
 
@@ -285,15 +279,15 @@ class KnownPlayersDelegate(delegator: Delegator) :
             delegator: Delegator,
             dlg: HasDlgDelegate?
         ) {
-            val activity = delegator.getActivity()
-
-            if (XwJNI.hasKnownPlayers()) {
-                delegator.addFragment(
-                    KnownPlayersFrag.newInstance(delegator),
-                    null
-                )
-            } else {
-                Assert.failDbg()
+            Utils.launch {
+                if (Knowns.hasKnownPlayers()) {
+                    delegator.addFragment(
+                        KnownPlayersFrag.newInstance(delegator),
+                        null
+                    )
+                } else {
+                    Assert.failDbg()
+                }
             }
         }
     }

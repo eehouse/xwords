@@ -20,10 +20,10 @@
 #ifndef _GTKRMTCH_H_
 #define _GTKRMTCH_H_
 
-#include "server.h"
 #include "main.h"
 
-XP_Bool gtkask_rematch( const CommonGlobals* cGlobals, NewOrder* nop,
-                        gchar* gameName, int* nameLen );
+XP_Bool gtkask_rematch( XW_DUtilCtxt* dutil, GtkWidget* parentWin,
+                        GameRef parent, RematchOrder* rop, gchar* gameName,
+                        int* nameLen );
 
 #endif

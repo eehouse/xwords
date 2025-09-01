@@ -57,10 +57,9 @@
 #include "gamesdb.h"
 #include "linuxdict.h"
 #include "lindutil.h"
-#include "relaycon.h"
 #include "mqttcon.h"
-#include "smsproto.h"
 #include "device.h"
+#include "gamemgr.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
 #endif
@@ -75,7 +74,9 @@
 #include "dictiter.h"
 #include "gsrcwrap.h"
 #include "dllist.h"
+#include "xwarray.h"
 #include "xwmutex.h"
+#include "lindmgr.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -84,13 +85,7 @@
 #define DEFAULT_PORT 10997
 #define DEFAULT_LISTEN_PORT 4998
 
-#ifdef MEM_DEBUG
-# define MEMPOOL cGlobals->util->mpool,
-#else
-# define MEMPOOL
-#endif
-
-static int blocking_read( int fd, unsigned char* buf, const int len );
+// static int blocking_read( int fd, unsigned char* buf, const int len );
 
 XP_Bool
 file_exists( const char* fileName )
@@ -122,7 +117,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
     }
     fclose( f );
 
-    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+    stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
                                   cGlobals->params->vtMgr );
     stream_putBytes( stream, buf, statBuf.st_size );
     free( buf );
@@ -133,28 +128,27 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
 XP_Bool
 linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
 {
-    ServerCtxt* server = cGlobals->game.server;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    GameRef gr = cGlobals->gr;
     XP_Bool isLocal;
-    XP_S16 turn = server_getCurrentTurn( server, &isLocal );
+    XP_S16 turn = gr_getCurrentTurn( dutil, gr, NULL_XWE, &isLocal );
     XP_Bool success = 0 <= turn && isLocal;
 
     if ( success ) {
-        BoardCtxt* board = cGlobals->game.board;
-        board_selectPlayer( board, NULL_XWE, turn, XP_TRUE );
-        if ( tryTrade && board_canTrade( board, NULL_XWE ) ) {
-            ModelCtxt* model = cGlobals->game.model;
+        gr_selectPlayer( dutil, gr, NULL_XWE, turn, XP_TRUE );
+        if ( tryTrade && gr_canTrade( dutil, gr, NULL_XWE ) ) {
 
-            TrayTileSet oldTiles = *model_getPlayerTiles( model, turn );
-            XP_S16 nTiles = server_countTilesInPool( server );
+            TrayTileSet oldTiles = *gr_getPlayerTiles( dutil, gr, NULL_XWE, turn );
+            XP_S16 nTiles = gr_countTilesInPool( dutil, gr, NULL_XWE );
             XP_ASSERT( 0 <= nTiles );
             if ( nTiles < oldTiles.nTiles ) {
                 oldTiles.nTiles = nTiles;
             }
-            success = server_commitTrade( server, NULL_XWE, &oldTiles, NULL );
+            success = gr_commitTrade( dutil, gr, NULL_XWE, &oldTiles, NULL );
         } else {
             XP_Bool ignored;
-            if ( board_canHint( board )
-                 && board_requestHint( board, NULL_XWE,
+            if ( gr_canHint( dutil, gr, NULL_XWE )
+                 && gr_requestHint( dutil, gr, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
                                        XP_FALSE,
 #endif
@@ -164,9 +158,10 @@ linux_makeMoveIf( CommonGlobals* cGlobals, XP_Bool tryTrade )
                 XP_LOGFF( "unable to find hint; so PASSing" );
             }
             PhoniesConf pc = { .confirmed = XP_TRUE };
-            success = board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL );
+            gr_commitTurn( dutil, gr, NULL_XWE, &pc, XP_TRUE, NULL );
         }
     }
+    LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
@@ -174,22 +169,17 @@ void
 linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
                   const CommsAddrRec destAddrs[] )
 {
-    CommsCtxt* comms = cGlobals->game.comms;
+    GameRef gr = cGlobals->gr;
 
     CommsAddrRec selfAddr;
-    comms_getSelfAddr( comms, &selfAddr );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_getSelfAddr( dutil, gr, NULL_XWE, &selfAddr );
     NetLaunchInfo nli;
     nli_init( &nli, cGlobals->gi, &selfAddr, 1, 0 );
 
     for ( int ii = 0; ii < nRemotes; ++ii ) {
-        comms_invite( comms, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
+        gr_invite( dutil, gr, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
     }
-}
-
-void
-tryConnectToServer( CommonGlobals* cGlobals )
-{
-    (void)server_initClientConnection( cGlobals->game.server, NULL_XWE );
 }
 
 void
@@ -205,15 +195,99 @@ ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
     }
 }
 
-static gint
-send_msgs_idle( gpointer data )
+XP_Bool
+getAndClear( GameChangeEvent evt, GameChangeEvents* gces )
 {
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-    CommsCtxt* comms = cGlobals->game.comms;
-    if ( !!comms ) {
-        comms_resendAll( comms, NULL_XWE, COMMS_CONN_NONE, XP_FALSE );
+    XP_Bool isSet = 0 != (evt & *gces);
+    if ( isSet ) {
+        *gces &= ~evt;
     }
-    return FALSE;
+    return isSet;
+}
+
+CommonGlobals*
+globalsForUtil( const XW_UtilCtxt* uc, XP_Bool allocMissing )
+{
+    CommonAppGlobals* cag = getCag( uc );
+    CommonGlobals* cGlobals = globalsForGameRef( cag, uc->gr, allocMissing );
+
+    XP_LOGFF( "(" GR_FMT ") => %p", uc->gr, cGlobals );
+    return cGlobals;
+}
+
+void
+forgetGameGlobals( CommonAppGlobals* cag, CommonGlobals* cGlobals )
+{
+    XP_ASSERT( g_slist_find (cag->globalsList, cGlobals ) );
+    cag->globalsList = g_slist_remove( cag->globalsList, cGlobals );
+    XP_LOGFF( "(" GR_FMT ", cGlobals=%p); list now %p", cGlobals->gr,
+              cGlobals, cag->globalsList );
+}
+
+CommonGlobals*
+globalsForGameRef( CommonAppGlobals* cag, GameRef gr, XP_Bool allocMissing )
+{
+    CommonGlobals* found = NULL;
+    for ( GSList* iter = cag->globalsList; !!iter && !found; iter = iter->next ) {
+        CommonGlobals* one = (CommonGlobals*)iter->data;
+        if ( one->gr == gr ) {
+            found = one;
+        }
+    }
+
+    if ( !found && allocMissing ) {
+        LaunchParams* params = cag->params;
+        CommonGlobals* cGlobals = params->useCurses
+            ? allocCursesBoardGlobals()
+            : allocGTKBoardGlobals();
+        cGlobals->params = params;
+        cGlobals->gr = gr;
+        XP_ASSERT( cag == params->cag );
+        cag->globalsList = g_slist_prepend( cag->globalsList, cGlobals );
+        XP_LOGFF( "made new globals: %p", cGlobals );
+        found = cGlobals;
+    }
+
+    XP_LOGFF( "(" GR_FMT ") => %p", gr, found );
+    return found;
+}
+
+void
+cg_init(CommonGlobals* cGlobals, cg_destructor proc)
+{
+    XP_ASSERT( 0 == cGlobals->refCount );
+    cGlobals-> creator = pthread_self();
+    cGlobals->refCount = 1;
+    cGlobals->destructor = proc;
+}
+
+/* This is unused right now. Do I need to ref-count this thing? */
+/* CommonGlobals* */
+/* _cg_ref(CommonGlobals* cGlobals, const char* proc, int line ) */
+/* { */
+/*     assertMainThread( cGlobals ); */
+/*     ++cGlobals->refCount; */
+/*     XP_LOGFF( "cg: %p: refCount now %d (from %s(), line %d)", */
+/*               cGlobals, cGlobals->refCount, proc, line ); */
+/*     return cGlobals; */
+/* } */
+
+void
+_cg_unref( CommonGlobals* cGlobals, const char* proc, int line )
+{
+    LOG_FUNC();
+    XP_LOGFF( "cg: %p: refCount %d", cGlobals, cGlobals->refCount );
+    if ( cGlobals->refCount <= 0 ) {
+        XP_LOGFF( "cg: %p: refCount too low!! (from %s(), line %d)",
+                  cGlobals, proc, line );
+        XP_ASSERT( 0 );
+    }
+    --cGlobals->refCount;
+    XP_LOGFF( "cg: %p: refCount now %d (from %s(), line %d)",
+              cGlobals, cGlobals->refCount, proc, line );
+    if ( 0 == cGlobals->refCount ) {
+        (*cGlobals->destructor)(cGlobals);
+    }
 }
 
 bool
@@ -227,12 +301,16 @@ linuxOpenGame( CommonGlobals* cGlobals )
         stream = streamFromFile( cGlobals, params->fileName );
 #ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
-        XP_UCHAR buf[32];
-        XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
-        mpool_setTag( MEMPOOL buf );
+        /* XP_UCHAR buf[32]; */
+        /* XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID ); */
+        /* mpool_setTag( mpool buf ); */
         stream = streamFromDB( cGlobals );
         XP_ASSERT(0);
 #endif
+#ifdef XWFEATURE_DEVICE_STORES
+    } else if ( !!cGlobals->gr ) {
+        opened = XP_TRUE;
+#else
     } else if ( !!params->pDb && 0 <= cGlobals->rowid ) {
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
@@ -240,26 +318,23 @@ linuxOpenGame( CommonGlobals* cGlobals )
             stream_destroy( stream );
             stream = NULL;
         }
+#endif
     }
 
     if ( !!stream ) {
-        opened = game_makeFromStream( MEMPOOL NULL_XWE, stream, &cGlobals->game,
-                                      cGlobals->gi,
-                                      cGlobals->util, cGlobals->draw,
-                                      &cGlobals->cp, &cGlobals->procs );
-        LOGGI( cGlobals->gi, __func__ );
+        cGlobals->gr = dvc_makeFromStream( params->dutil, NULL_XWE, stream,
+                                                cGlobals->gi, NULL,
+                                                cGlobals->draw, &cGlobals->cp );
+        LOG_GI( cGlobals->gi, __func__ );
         stream_destroy( stream );
     }
 
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
         opened = XP_TRUE;
-        CommsAddrRec* hostAddr = NULL;
-        if ( cGlobals->gi->serverRole == SERVER_ISCLIENT ) {
-            hostAddr = &cGlobals->hostAddr;
-        }
-        game_makeNewGame( MEMPOOL NULL_XWE, &cGlobals->game, cGlobals->gi,
-                          &cGlobals->selfAddr, hostAddr, cGlobals->util,
-                          cGlobals->draw, &cGlobals->cp, &cGlobals->procs );
+        XP_ASSERT(0);
+        /* cGlobals->gr = gmgr_makeNewGame( params->dutil, NULL_XWE, cGlobals->gi, */
+        /*                                       NULL, cGlobals->util, cGlobals->draw, */
+        /*                                       &cGlobals->cp ); */
 #ifdef XWFEATURE_RELAY
         bool savedGame = false;
 #endif
@@ -271,7 +346,8 @@ linuxOpenGame( CommonGlobals* cGlobals )
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        cGlobals->gi->allowHintRect = params->allowHintRect;
+        XP_ASSERT( !params->allowHintRect ); /* otherwise handle this!! */
+        // cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
         if ( params->needsNewGame && !opened ) {
             XP_ASSERT(0);
@@ -282,17 +358,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
     if ( opened ) {
         DeviceRole serverRole = cGlobals->gi->serverRole;
         XP_LOGF( "%s(): server role: %d", __func__, serverRole );
-        if ( /*!!returnAddrP && */serverRole == SERVER_ISCLIENT ) {
-            tryConnectToServer( cGlobals );
-        }
-
-        if ( !!cGlobals->game.comms ) {
-            comms_start( cGlobals->game.comms, NULL_XWE );
-        }
-        server_do( cGlobals->game.server, NULL_XWE );
-        linuxSaveGame( cGlobals );   /* again, to include address etc. */
-
-        (void)g_idle_add( send_msgs_idle, cGlobals );
+        // linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
     LOG_RETURNF( "%s", boolToStr(opened) );
     return opened;
@@ -318,7 +384,7 @@ streamFromDB( CommonGlobals* cGlobals )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+                stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
                                               params->vtMgr  );
                 stream_putBytes( stream, buf, size );
             }
@@ -336,38 +402,6 @@ streamFromDB( CommonGlobals* cGlobals )
     return stream;
 }
 #endif
-
-void
-gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
-            XP_U16 len, const CommsAddrRec* from )
-{
-    XP_LOGFF( "(hasDraw=%d)", hasDraw );
-    XP_Bool redraw = XP_FALSE;
-    XWGame* game = &cGlobals->game;
-    XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
-    if ( !!stream ) {
-        redraw = game_receiveMessage( game, NULL_XWE, stream, from );
-        if ( redraw ) {
-            linuxSaveGame( cGlobals );
-        }
-        stream_destroy( stream );
-
-        /* if there's something to draw resulting from the message, we
-           need to give the main loop time to reflect that on the screen
-           before giving the server another shot.  So just call the idle
-           proc. */
-        if ( hasDraw && redraw ) {
-            util_requestTime( cGlobals->util, NULL_XWE );
-        } else {
-            for ( int ii = 0; ii < 4; ++ii ) {
-                redraw = server_do( game->server, NULL_XWE ) || redraw;
-            }
-        }
-        if ( hasDraw && redraw ) {
-            board_draw( game->board, NULL_XWE );
-        }
-    }
-}
 
 #ifdef XWFEATURE_RELAY
 gint
@@ -419,8 +453,7 @@ writeToFile( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
 } /* writeToFile */
 
 void
-catOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe),
-            void* XP_UNUSED(closure) )
+catAndClose( XWStreamCtxt* stream )
 {
     XP_U16 nBytes;
     char* buffer;
@@ -433,50 +466,40 @@ catOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe),
     fprintf( stderr, "%s", buffer );
 
     free( buffer );
+    stream_destroy( stream );
 } /* catOnClose */
 
 void
-sendOnClose( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
+catGameHistory( LaunchParams* params, GameRef gr )
 {
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    XP_LOGFF( "msg len: %d", stream_getSize(stream) );
-    (void)comms_send( cGlobals->game.comms, NULL_XWE, stream );
-}
-
-void
-catGameHistory( CommonGlobals* cGlobals )
-{
-    if ( !!cGlobals->game.model ) {
-        XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
-        XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(cGlobals->util->mpool)
-                             cGlobals->params->vtMgr,
-                             NULL, CHANNEL_NONE, catOnClose, NULL_XWE );
-        model_writeGameHistory( cGlobals->game.model, NULL_XWE, stream,
-                                cGlobals->game.server, gameOver );
-        stream_putU8( stream, '\n' );
-        stream_destroy( stream );
-    }
+    XW_DUtilCtxt* dutil = params->dutil;
+    XP_Bool gameOver = gr_getGameIsOver( dutil, gr, NULL_XWE );
+    XWStreamCtxt* stream = 
+        mem_stream_make( MPPARM(dutil->mpool) params->vtMgr, CHANNEL_NONE );
+    gr_writeGameHistory( dutil, gr, NULL_XWE, stream, gameOver );
+    stream_putU8( stream, '\n' );
+    catAndClose( stream );
 } /* catGameHistory */
 
 void
-catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter )
+catFinalScores( LaunchParams* params, GameRef gr, XP_S16 quitter )
 {
-    XWStreamCtxt* stream;
-    XP_ASSERT( quitter < cGlobals->gi->nPlayers );
+    XW_DUtilCtxt* dutil = params->dutil;
+    const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
+    XP_ASSERT( quitter < gi->nPlayers );
 
-    stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                              cGlobals->params->vtMgr,
-                              NULL, CHANNEL_NONE, catOnClose, NULL_XWE );
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
+                                            params->vtMgr,
+                                            CHANNEL_NONE );
     if ( -1 != quitter ) {
         XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
-                     cGlobals->gi->players[quitter].name );
+                     gi->players[quitter].name );
         stream_catString( stream, buf );
     }
-    server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
+    gr_writeFinalScores( dutil, gr, NULL_XWE, stream );
     stream_putU8( stream, '\n' );
-    stream_destroy( stream );
+    catAndClose( stream );
 } /* printFinalScores */
 
 XP_UCHAR*
@@ -490,12 +513,12 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
+#ifndef XWFEATURE_DEVICE_STORES
 void
 linuxSaveGame( CommonGlobals* cGlobals )
 {
-    LOG_FUNC();
     sqlite3* pDb = cGlobals->params->pDb;
-    if ( !!cGlobals->game.model &&
+    if ( !!cGlobals->gr &&
          (!!cGlobals->params->fileName || !!pDb) ) {
         XP_Bool doSave = XP_TRUE;
         XP_Bool newGame = !file_exists( cGlobals->params->fileName )
@@ -512,41 +535,46 @@ linuxSaveGame( CommonGlobals* cGlobals )
                 mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
                                        cGlobals->params->vtMgr, 
                                        cGlobals->lastStreamSize,
-                                       cGlobals, 0, onClose, NULL_XWE );
+                                       0, onClose );
 
-            game_saveToStream( &cGlobals->game, cGlobals->gi, outStream,
+            game_saveToStream( cGlobals->gr, cGlobals->gi, outStream,
                                ++cGlobals->curSaveToken );
             cGlobals->lastStreamSize = stream_getSize( outStream );
             stream_destroy( outStream );
 
-            game_saveSucceeded( &cGlobals->game, NULL_XWE, cGlobals->curSaveToken );
+            gr_saveSucceeded( dutil, cGlobals->gr, NULL_XWE, cGlobals->curSaveToken );
 
-            if ( !!pDb ) {
-                gdb_summarize( cGlobals );
-            }
+            /* if ( !!pDb ) { */
+            /*     gdb_summarize( cGlobals ); */
+            /* } */
             XP_LOGFF( "saved" );
         } else {
             XP_LOGFF( "simulating save failure" );
         }
     }
 } /* linuxSaveGame */
+#endif
 
+#if 0
 static void
 handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                       int fdin )
 {
+    XP_USE( cGlobals );
+    XP_USE( procs );
+    XP_USE( fdin );
+#if 0
     LOG_FUNC();
     LaunchParams* params = cGlobals->params;
     XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
 
-#ifdef DEBUG
-    XP_Bool opened = 
-#endif
-        game_makeFromStream( MPPARM(cGlobals->util->mpool) 
-                             NULL_XWE, stream, &cGlobals->game, cGlobals->gi,
-                             cGlobals->util, NULL /*draw*/,
-                             &cGlobals->cp, procs );
-    XP_ASSERT( opened );
+    XP_ASSERT( !cGlobals->gr );
+    XP_Bool success = game_makeFromStream( MPPARM(cGlobals->util->mpool) 
+                                             NULL_XWE, stream, cGlobals->gi,
+                                             &cGlobals->gr,
+                                             cGlobals->util, NULL /*draw*/,
+                                             &cGlobals->cp, procs );
+    XP_ASSERT( success );
     stream_destroy( stream );
 
     unsigned short len;
@@ -570,116 +598,14 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
                                       params->vtMgr );
         stream_putBytes( stream, buf, len );
-        (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
+        (void)game_receiveMessage( cGlobals->gr, NULL_XWE, stream, NULL );
         stream_destroy( stream );
     }
 
     LOG_RETURN_VOID();
+#endif
 } /* handle_messages_from */
-
-void
-read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
-{
-    LOG_FUNC();
-    LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* stream = streamFromFile( cGlobals, params->fileName );
-
-#ifdef DEBUG
-    XP_Bool opened = 
 #endif
-        game_makeFromStream( MPPARM(cGlobals->util->mpool) 
-                             NULL_XWE, stream, &cGlobals->game,
-                             cGlobals->gi,
-                             cGlobals->util, NULL /*draw*/,
-                             &cGlobals->cp, procs );
-    XP_ASSERT( opened );
-    stream_destroy( stream );
-
-    int fd = open( params->pipe, O_RDWR );
-    XP_ASSERT( fd >= 0 );
-    if ( fd >= 0 ) {
-        unsigned short len;
-        for ( ; ; ) {
-            ssize_t nRead = blocking_read( fd, (unsigned char*)&len, 
-                                           sizeof(len) );
-            if ( nRead != sizeof(len) ) {
-                XP_LOGF( "%s: 1: unexpected nRead: %zd", __func__, nRead );
-                break;
-            }
-            len = ntohs( len );
-            if ( 0 == len ) {
-                break;
-            }
-            unsigned char buf[len];
-            nRead = blocking_read( fd, buf, len );
-            if ( nRead != len ) {
-                XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
-                break;
-            }
-            stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                          params->vtMgr );
-            stream_putBytes( stream, buf, len );
-            (void)game_receiveMessage( &cGlobals->game, NULL_XWE, stream, NULL );
-            stream_destroy( stream );
-        }
-
-        /* 0-length packet closes it off */
-        XP_LOGF( "%s: writing 0-length packet", __func__ );
-        len = 0;
-#ifdef DEBUG
-        ssize_t nwritten = write( fd, &len, sizeof(len) );
-        XP_ASSERT( nwritten == sizeof(len) );
-#endif
-        close( fd );
-    }
-
-    LOG_RETURN_VOID();
-} /* read_pipe_then_close */
-
-void
-do_nbs_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
-{
-    LOG_FUNC();
-    int sockfd = socket( AF_UNIX, SOCK_STREAM, 0 );
-
-    struct sockaddr_un addr;
-    addr.sun_family = AF_UNIX;
-    strcpy( addr.sun_path, cGlobals->params->nbs );
-
-    unlink( cGlobals->params->nbs );
-    int err = bind( sockfd, (struct sockaddr*)&addr, sizeof(addr) );
-    if ( 0 != err ) {
-        XP_LOGF( "%s: bind=>%s", __func__, strerror( errno ) );
-        XP_ASSERT( 0 );
-    }
-    XP_LOGF( "calling listen" );
-    err = listen( sockfd, 1 );
-    assert( 0 == err );
-
-    struct sockaddr remote;
-    socklen_t addrlen = sizeof(remote);
-    XP_LOGF( "calling accept" );
-    int fd = accept( sockfd, &remote, &addrlen );
-    XP_LOGF( "%s: accept=>%d", __func__, fd );
-    assert( 0 <= fd );
-
-    /* do stuff here */
-    initNoConnStorage( cGlobals );
-    handle_messages_from( cGlobals, procs, fd );
-    writeNoConnMsgs( cGlobals, fd );
-
-    /* Do I need this?  Will reader get err if I close? */
-    unsigned short len = 0;
-#ifdef DEBUG
-    ssize_t nwritten = 
-#endif
-        write( fd, &len, sizeof(len) );
-    XP_ASSERT( nwritten == sizeof(len) );
-
-    close( fd );
-    close( sockfd );
-    LOG_RETURN_VOID();
-} /* do_nbs_then_close */
 
 typedef enum {
     CMD_HELP
@@ -722,6 +648,7 @@ typedef enum {
     ,CMD_GAMEDB_ID
 #endif
     ,CMD_NOMMAP
+    ,CMD_SHOWGAMES
     ,CMD_PRINTHISORY
     ,CMD_SKIPWARNINGS
     ,CMD_LOCALPWD
@@ -880,6 +807,7 @@ static CmdInfoRec CmdInfoRecs[] = {
        "id of row of game we want (defaults to first)" }
 #endif
     ,{ CMD_NOMMAP, false, "no-mmap", "copy dicts to memory rather than mmap them" }
+    ,{ CMD_SHOWGAMES, false, "show-games", "open games created in response to invitations"}
     ,{ CMD_PRINTHISORY, false, "print-history", "print history on game over" }
     ,{ CMD_SKIPWARNINGS, false, "skip-warnings", "no modals on phonies" }
     ,{ CMD_LOCALPWD, true, "password", "password for user (in sequence)" }
@@ -1049,19 +977,18 @@ XP_Bool
 linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order,
                BoardObjectType* nxtP )
 {
-    BoardCtxt* board = cGlobals->game.board;
-    XP_Bool handled = XP_FALSE;
+    GameRef gr = cGlobals->gr;
     BoardObjectType nxt = OBJ_NONE;
-    BoardObjectType cur;
-    XP_U16 i, curIndex = 0;
+    XP_U16 curIndex = 0;
 
-    cur = board_getFocusOwner( board );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    BoardObjectType cur = gr_getFocusOwner( dutil, gr, NULL_XWE );
     if ( cur == OBJ_NONE ) {
         cur = order[0];
     }
-    for ( i = 0; i < 3; ++i ) {
-        if ( cur == order[i] ) {
-            curIndex = i;
+    for ( int ii = 0; ii < 3; ++ii ) {
+        if ( cur == order[ii] ) {
+            curIndex = ii;
             break;
         }
     }
@@ -1078,13 +1005,14 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
     curIndex %= 3;
 
     nxt = order[curIndex];
-    handled = board_focusChanged( board, NULL_XWE, nxt, XP_TRUE );
+    XP_Bool result = gr_focusChanged( dutil, gr, NULL_XWE, nxt,
+                                      XP_TRUE );
 
     if ( !!nxtP ) {
         *nxtP = nxt;
     }
 
-    return handled;
+    return result;
 } /* linShiftFocus */
 #endif
 
@@ -1166,6 +1094,31 @@ linux_setupDevidParams( LaunchParams* params )
         gdb_store( params->pDb, KEY_LDEVID, lDevID );
     }
     return idIsNew;
+}
+
+void
+cpFromLP( CommonPrefs* cp, const LaunchParams* params )
+{
+    cp->showBoardArrow = XP_TRUE;
+    cp->hideTileValues = params->hideValues;
+    cp->skipMQTTAdd = params->skipMQTTAdd;
+    cp->skipCommitConfirm = params->skipCommitConfirm;
+    cp->sortNewTiles = params->sortNewTiles;
+    cp->showColors = params->showColors;
+    cp->allowPeek = params->allowPeek;
+    cp->showRobotScores = params->showRobotScores;
+    XP_LOGFF( "showRobotScores: %s", boolToStr(cp->showRobotScores) );
+#ifdef XWFEATURE_SLOW_ROBOT
+    cp->robotThinkMin = params->robotThinkMin;
+    cp->robotThinkMax = params->robotThinkMax;
+    cp->robotTradePct = params->robotTradePct;
+#endif
+#ifdef XWFEATURE_ROBOTPHONIES
+    cp->makePhonyPct = params->makePhonyPct;
+#endif
+#ifdef XWFEATURE_CROSSHAIRS
+    cp->hideCrosshairs = params->hideCrosshairs;
+#endif
 }
 
 XP_Bool
@@ -1459,102 +1412,7 @@ linux_reset( XWEnv xwe, void* closure )
 }
 #endif
 
-XP_S16
-linux_send( XWEnv XP_UNUSED(xwe), const SendMsgsPacket* const msgs,
-            XP_U16 streamVersion, const CommsAddrRec* addrRec,
-            CommsConnType conType, XP_U32 gameID, void* closure )
-{
-    XP_LOGFF( "(streamVersion: %X)", streamVersion );
-    XP_S16 nSent = -1;
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;   
-
-    switch ( conType ) {
-#ifdef XWFEATURE_RELAY
-    case COMMS_CONN_RELAY:
-        nSent = linux_relay_send( cGlobals, buf, buflen, addrRec );
-        if ( nSent == buflen && cGlobals->params->duplicatePackets ) {
-#ifdef DEBUG
-            XP_S16 sentAgain = 
-#endif
-                linux_relay_send( cGlobals, buf, buflen, addrRec );
-            XP_ASSERT( sentAgain == nSent );
-        }
-        break;
-#endif
-#if defined XWFEATURE_BLUETOOTH
-    case COMMS_CONN_BT: {
-        XP_Bool isServer = game_getIsHost( &cGlobals->game );
-        linux_bt_open( cGlobals, isServer );
-        nSent = linux_bt_send( msgs, addrRec, cGlobals );
-    }
-        break;
-#endif
-#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
-    case COMMS_CONN_IP_DIRECT: {
-        CommsAddrRec addr;
-        comms_getSelfAddr( cGlobals->game.comms, &addr );
-        XP_LOGF( "%s: given %d bytes to send via IP_DIRECT -- which isn't implemented", 
-                 __func__, buflen );
-        // linux_udp_open( cGlobals, &addr );
-        // nSent = linux_udp_send( buf, buflen, addrRec, cGlobals );
-    }
-        break;
-#endif
-#if defined XWFEATURE_SMS
-    case COMMS_CONN_SMS: {
-        CommsAddrRec addr;
-        if ( !addrRec ) {
-            comms_getSelfAddr( cGlobals->game.comms, &addr );
-            addrRec = &addr;
-        }
-
-        // use serverphone if I'm a client, else hope one's provided (this is
-        // a reply)
-        nSent = linux_sms_send( cGlobals->params, msgs, addrRec->u.sms.phone,
-                                addrRec->u.sms.port, gameID );
-    }
-        break;
-#endif
-
-    case COMMS_CONN_MQTT:
-        nSent = mqttc_send( cGlobals->params, gameID, msgs,
-                            streamVersion, &addrRec->u.mqtt.devID );
-        break;
-
-    case COMMS_CONN_NFC:
-        XP_LOGFF( "I don't do nfc! Should be filtering it on invitation receipt" );
-        break;
-
-    default:
-        XP_ASSERT(0);
-    }
-    return nSent;
-} /* linux_send */
-
-#ifdef XWFEATURE_COMMS_INVITE
-XP_S16
-linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
-                 XP_U32 XP_UNUSED(createdStamp),
-                 const CommsAddrRec* destAddr, CommsConnType conType, void* closure )
-{
-    XP_S16 nSent = -1;
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;
-
-    switch ( conType ) {
-    case COMMS_CONN_MQTT:
-        mqttc_invite( cGlobals->params, nli, &destAddr->u.mqtt.devID );
-        break;
-    case COMMS_CONN_SMS:
-        linux_sms_invite( cGlobals->params, nli,
-                          destAddr->u.sms.phone, destAddr->u.sms.port );
-        break;
-    default:
-        XP_ASSERT(0);
-    }
-    return nSent;
-}
-#endif
-
+#if 0
 static int
 blocking_read( int fd, unsigned char* buf, const int len )
 {
@@ -1587,6 +1445,7 @@ blocking_read( int fd, unsigned char* buf, const int len )
     XP_LOGF( "%s(fd=%d, sought=%d) => %d", __func__, fd, len, nRead );
     return nRead;
 }
+#endif
 
 #ifdef XWFEATURE_RELAY
 void
@@ -1674,12 +1533,12 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
    information specific to our platform's comms layer (return address, say)
  */
 XWStreamCtxt*
-stream_from_msgbuf( CommonGlobals* globals, const unsigned char* bufPtr, 
+stream_from_msgbuf( CommonGlobals* cGlobals, const unsigned char* bufPtr, 
                     XP_U16 nBytes )
 {
     XWStreamCtxt* result;
-    result = mem_stream_make_raw( MPPARM(globals->util->mpool)
-                                  globals->params->vtMgr );
+    result = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
+                                  cGlobals->params->vtMgr );
     stream_putBytes( result, bufPtr, nBytes );
 
     return result;
@@ -1702,20 +1561,20 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
     return draw;
 } /* linuxFireTimer */
 
-static void
-linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
-                          XP_Bool XP_UNUSED_DBG(isServer),
-                          const CommsAddrRec* XP_UNUSED(hostAddr),
-                          const CommsAddrRec* XP_UNUSED_DBG(selfAddr),
-                          XP_U16 XP_UNUSED_DBG(nDevs),
-                          XP_U16 XP_UNUSED_DBG(nMissing),
-                          XP_U16 XP_UNUSED_DBG(nInvited),
-                          XP_Bool XP_UNUSED_DBG(fromRematch) )
-{
-    XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, "
-              "nInvited=%d, fromRematch=%s)", isServer, selfAddr,
-              nDevs, nMissing, nInvited, boolToStr(fromRematch) );
-}
+/* static void */
+/* linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe), */
+/*                           XP_Bool XP_UNUSED_DBG(isServer), */
+/*                           const CommsAddrRec* XP_UNUSED(hostAddr), */
+/*                           const CommsAddrRec* XP_UNUSED_DBG(selfAddr), */
+/*                           XP_U16 XP_UNUSED_DBG(nDevs), */
+/*                           XP_U16 XP_UNUSED_DBG(nMissing), */
+/*                           XP_U16 XP_UNUSED_DBG(nInvited), */
+/*                           XP_Bool XP_UNUSED_DBG(fromRematch) ) */
+/* { */
+/*     XP_LOGFF( "(isServer=%d, addr=%p, nDevs=%d, nMissing=%d, " */
+/*               "nInvited=%d, fromRematch=%s)", isServer, selfAddr, */
+/*               nDevs, nMissing, nInvited, boolToStr(fromRematch) ); */
+/* } */
 
 unsigned int
 makeRandomInt()
@@ -1824,7 +1683,7 @@ patsParamsToIter( const LaunchParams* params, const DictionaryCtxt* dict )
         dimmp = &dimm;
     }
 
-    DictIter* iter = di_makeIter( dict, NULL_XWE, dimmp, strPats, nStrPats,
+    DictIter* iter = di_makeIter( dict, dimmp, strPats, nStrPats,
                                   0 == nPatDescs ? NULL : descs, nPatDescs );
     if ( !iter ) {
         XP_LOGFF( "Unable to build iter" );
@@ -2056,7 +1915,7 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
     for ( ii = 0; ii < count; ++ii ) {
         gchar* name = (gchar*)g_slist_nth_data( testDicts, ii );
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(mpool) NULL_XWE, params, name,
+            linux_dictionary_make( MPPARM(mpool) params, name,
                                    params->useMmap );
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
@@ -2120,63 +1979,6 @@ trimDictPath( const char* input, char* buf, int bufsiz, char** path, char** dict
     XP_LOGF( "%s => dict: %s; path: %s", __func__, *dict, *path );
 }
 
-XP_Bool
-getDictPath( const LaunchParams *params, const char* name, 
-             char* result, int resultLen )
-{
-    XP_Bool success = XP_FALSE;
-    GSList* iter;
-    result[0] = '\0';
-    for ( iter = params->dictDirs; !!iter && !success; iter = iter->next ) {
-        const char* path = iter->data;
-
-        for ( bool firstPass = true; ; firstPass = false ) {
-            char buf[256];
-            int len = snprintf( buf, VSIZE(buf), "%s/%s%s", path, name,
-                                firstPass ? "" : ".xwd" );
-            XP_ASSERT( len < VSIZE(buf) );
-            if ( len < VSIZE(buf) && file_exists( buf ) ) {
-                snprintf( result, resultLen, "%s", buf );
-                success = XP_TRUE;
-                break;
-            } else {
-                XP_LOGFF( "nothing found at %s", buf );
-                if ( !firstPass ) {
-                    break;
-                }
-            }
-        }
-    }
-    XP_LOGFF( "(%s)=>%d", name, success );
-    return success;
-}
-
-GSList* 
-listDicts( const LaunchParams *params )
-{
-    GSList* result = NULL;
-    GSList* iter = params->dictDirs;
-    while ( !!iter ) {
-        const gchar *path = iter->data;
-        GDir* dir = g_dir_open( path, 0, NULL );
-        if ( !!dir ) {
-            for ( ; ; ) {
-                const gchar* name = g_dir_read_name( dir );
-                if ( !name ) {
-                    break;
-                }
-                if ( g_str_has_suffix( name, ".xwd" ) ) {
-                    gint len = strlen(name) - 4;
-                    result = g_slist_prepend( result, g_strndup( name, len ) );
-                }
-            }
-            g_dir_close( dir );
-        }
-        iter = iter->next;
-    }
-    return result;
-}
-
 static void
 linux_util_formatPauseHistory( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                                XWStreamCtxt* stream,
@@ -2217,227 +2019,45 @@ cancelTimers( CommonGlobals* cGlobals )
     }
 }
 
-static gint
-dup_timer_func( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    if ( linuxFireTimer( cGlobals, TIMER_DUP_TIMERCHECK ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
-
-    return XP_FALSE;
-} /* dup_timer_func */
-
-static gint
-score_timer_func( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    if ( linuxFireTimer( cGlobals, TIMER_TIMERTICK ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
-
-    return XP_FALSE;
-} /* score_timer_func */
-
-static gint
-comms_timer_func( gpointer data )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    if ( linuxFireTimer( &globals->cGlobals, TIMER_COMMS ) ) {
-        board_draw( globals->cGlobals.game.board, NULL_XWE );
-    }
-
-    return (gint)0;
-}
-
-static gint
-pen_timer_func( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    if ( linuxFireTimer( cGlobals, TIMER_PENDOWN ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
-
-    return XP_FALSE;
-} /* pen_timer_func */
-
-#ifdef XWFEATURE_SLOW_ROBOT
-static gint
-slowrob_timer_func( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    if ( linuxFireTimer( cGlobals, TIMER_SLOWROBOT ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
-
-    return (gint)0;
-}
-#endif
-
-static void
-linux_util_setTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why,
-                     XP_U16 when, UtilTimerProc proc, void* closure )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    guint newSrc;
-
-    cancelTimer( cGlobals, why );
-
-    switch( why ) {
-    case TIMER_PENDOWN:
-        if ( 0 != cGlobals->timerSources[why-1] ) {
-            g_source_remove( cGlobals->timerSources[why-1] );
-        }
-        newSrc = g_timeout_add( 1000, pen_timer_func, cGlobals );
-        break;
-    case TIMER_TIMERTICK:
-        /* one second */
-        cGlobals->scoreTimerInterval = 100 * 10000;
-
-        (void)gettimeofday( &cGlobals->scoreTv, NULL );
-
-        newSrc = g_timeout_add( 1000, score_timer_func, cGlobals );
-        break;
-
-    case TIMER_DUP_TIMERCHECK:
-        newSrc = g_timeout_add( 1000 * when, dup_timer_func, cGlobals );
-        break;
-
-    case TIMER_COMMS:
-        newSrc = g_timeout_add( 1000 * when, comms_timer_func, cGlobals );
-        break;
-#ifdef XWFEATURE_SLOW_ROBOT
-    case TIMER_SLOWROBOT:
-        newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, cGlobals );
-        break;
-#endif
-    default:
-        XP_ASSERT( 0 );
-    }
-
-    cGlobals->timerInfo[why].proc = proc;
-    cGlobals->timerInfo[why].closure = closure;
-    XP_ASSERT( newSrc != 0 );
-    cGlobals->timerSources[why-1] = newSrc;
-} /* linux_util_setTimer */
-
-static void
-linux_util_clearTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    cGlobals->timerInfo[why].proc = NULL;
-
-    guint src = cGlobals->timerSources[why-1];
-    if ( 0 != src ) {
-        g_source_remove( src );
-    }
-}
-
-static gint
-idle_func( gpointer data )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)data;
-
-    /* remove before calling server_do.  If server_do puts up a dialog that
-       calls gtk_main, then this idle proc will also apply to that event loop
-       and bad things can happen.  So kill the idle proc asap. */
-    g_source_remove( cGlobals->idleID );
-    cGlobals->idleID = 0;        /* 0 is illegal event source ID */
-
-    ServerCtxt* server = cGlobals->game.server;
-    if ( !!server && server_do( server, NULL_XWE ) ) {
-        if ( !!cGlobals->game.board ) {
-            board_draw( cGlobals->game.board, NULL_XWE );
-        }
-    }
-    return 0; /* 0 will stop it from being called again */
-} /* idle_func */
-
-static void
-linux_util_requestTime( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    cGlobals->idleID = g_idle_add( idle_func, cGlobals );
-} /* linux_util_requestTime */
-
-static XWStreamCtxt*
-linux_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelNo )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    LaunchParams* params = cGlobals->params;
-
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr,
-                                            cGlobals, channelNo,
-                                            sendOnClose, xwe );
-    return stream;
-}
-
 void
-setupLinuxUtilCallbacks( XW_UtilCtxt* util )
+setupLinuxUtilCallbacks( XW_UtilCtxt* util, XP_Bool useCurses )
 {
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = linux_util_##NAM
-    SET_PROC(informMissing);
     SET_PROC(formatPauseHistory);
-    SET_PROC(setTimer);
-    SET_PROC(clearTimer);
-    SET_PROC(requestTime);
-    SET_PROC(makeStreamFromAddr);
 #undef SET_PROC
-}
-
-void
-assertDrawCallbacksSet( const DrawCtxVTable* vtable )
-{
-    bool allSet = true;
-    void(**proc)() = (void(**)())vtable;
-    for ( int ii = 0; ii < sizeof(*vtable)/sizeof(*proc); ++ii ) {
-        if ( !*proc ) {
-            XP_LOGF( "%s(): null ptr at index %d", __func__, ii );
-            allSet = false;
-        }
-        ++proc;
+    if ( useCurses ) {
+        cb_setupUtilCallbacks( util );
+    } else {
+        setupGtkUtilCallbacks( util );
     }
-    XP_USE(allSet);
-    XP_ASSERT( allSet );
 }
 
-void
-setupUtil( CommonGlobals* cGlobals )
-{
-    XW_UtilCtxt* util = calloc( 1, sizeof(*util) );
-    cGlobals->util = util;
-    linux_util_vt_init( MPPARM(cGlobals->params->mpool) util );
-    util->gameInfo = cGlobals->gi;
-    setupLinuxUtilCallbacks( util );
-}
-
-void
-disposeUtil( CommonGlobals* cGlobals )
-{
-    linux_util_vt_destroy( cGlobals->util );
-}
+/* void */
+/* assertDrawCallbacksSet( const DrawCtxVTable* vtable ) */
+/* { */
+/*     bool allSet = true; */
+/*     void(**proc)() = (void(**)())vtable; */
+/*     for ( int ii = 0; ii < sizeof(*vtable)/sizeof(*proc); ++ii ) { */
+/*         if ( !*proc ) { */
+/*             XP_LOGF( "%s(): null ptr at index %d", __func__, ii ); */
+/*             allSet = false; */
+/*         } */
+/*         ++proc; */
+/*     } */
+/*     XP_USE(allSet); */
+/*     XP_ASSERT( allSet ); */
+/* } */
 
 static void
 initParams( LaunchParams* params )
 {
     memset( params, 0, sizeof(*params) );
 
-    // params->util = calloc( 1, sizeof(*params->util) );
-    /* XP_MEMSET( params->util, 0, sizeof(params->util) ); */
-
 #ifdef MEM_DEBUG
-    params->mpool = mpool_make(NULL);
+    params->mpool = mpool_make(__func__);
 #endif
 
     params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
-    params->dictMgr = dmgr_make( MPPARM_NOCOMMA(params->mpool) );
-
-    // linux_util_vt_init( MPPARM(params->mpool) params->util );
 
     params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr,
                                        params );
@@ -2496,7 +2116,6 @@ freeParams( LaunchParams* params )
 {
     linux_dutils_free( &params->dutil );
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
-    dmgr_destroy( params->dictMgr, NULL_XWE );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
 
@@ -2512,7 +2131,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
     guint count = g_slist_length( testDicts );
     for ( int ii = 0; ii < count; ++ii ) {
         DictionaryCtxt* dict = 
-            linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params,
+            linux_dictionary_make( MPPARM(params->mpool) params,
                                    g_slist_nth_data( testDicts, ii ),
                                    params->useMmap );
         if ( NULL != dict ) {
@@ -2531,7 +2150,7 @@ testOneString( const LaunchParams* params, GSList* testDicts )
     guint count = g_slist_length( testDicts );
     for ( int ii = 0; 0 == result && ii < count; ++ii ) {
         DictionaryCtxt* dict =
-            linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params,
+            linux_dictionary_make( MPPARM(params->mpool) params,
                                    g_slist_nth_data( testDicts, ii ),
                                    params->useMmap );
         if ( NULL != dict ) {
@@ -2542,6 +2161,7 @@ testOneString( const LaunchParams* params, GSList* testDicts )
                 }
                 di_freeIter( iter, NULL_XWE );
             }
+            dict_unref( dict, NULL_XWE );
         }
     }
     return result;
@@ -2598,6 +2218,15 @@ roFromStr(const char* rematchOrder )
     }
     XP_LOGFF( "(%s) => %d", rematchOrder, result );
     return result;
+}
+
+void
+assertMainThread(const CommonGlobals* cGlobals )
+{
+    if ( !!cGlobals && cGlobals->creator != pthread_self() ) {
+        XP_LOGFF( "cGlobals: %p", cGlobals );
+        XP_ASSERT( 0 );
+    }
 }
 
 static void
@@ -2692,56 +2321,92 @@ typedef struct _SortTestElem {
     XP_UCHAR buf[32];           /* the word */
 } SortTestElem;
 
+#if 0
 static int
-compLenAlpha(const DLHead* dl1, const DLHead* dl2)
+compAlpha(const void* dl1, const void* dl2)
 {
-    SortTestElem* elem1 = (SortTestElem*)dl1;
-    int len1 = strlen(elem1->buf);
-    SortTestElem* elem2 = (SortTestElem*)dl2;
-    int len2 = strlen(elem2->buf);
+    gchar* elem1 = (gchar*)dl1;
+    gchar* elem2 = (gchar*)dl2;
+    int result = strcmp(elem1, elem2);
+    // XP_LOGFF( "(%s, %s) => %d", elem1, elem2, result );
+    return result;
+}
+#endif
+
+static int
+compLenAlpha(const void* dl1, const void* dl2,
+             XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure))
+{
+    gchar* elem1 = (gchar*)dl1;
+    int len1 = strlen(elem1);
+    gchar* elem2 = (gchar*)dl2;
+    int len2 = strlen(elem2);
     int result = len1 - len2;
     if ( 0 == result ) {
-        result = strcmp(elem1->buf, elem2->buf);
+        result = strcmp(elem1, elem2);
     }
+    // XP_LOGFF( "(%s, %s) => %d", elem1, elem2, result );
     return result;
 }
 
 static ForEachAct
-printProc(const DLHead* XP_UNUSED_DBG(elem), void* closure)
+printProc( void* XP_UNUSED_DBG(elem), void* closure, XWEnv XP_UNUSED(xwe) )
 {
 #ifdef DEBUG
-    SortTestElem* ste = (SortTestElem*)elem;
+    gchar* ste = (gchar*)elem;
 #endif
     int* counter = (int*)closure;
     ++*counter;
-    XP_LOGFF( "word %d: %s", *counter, ste->buf );
+    XP_LOGFF( "word %d: %s", *counter, ste );
     return FEA_OK;
 }
 
 static void
-printList( DLHead* list )
+printList( XWArray* array )
 {
     int counter = 0;
-    dll_map( list, printProc, NULL, &counter );
+    arr_map( array, NULL_XWE, printProc, &counter );
 }
 
 static void
-disposeProc( DLHead* elem, void* XP_UNUSED(closure) )
+disposeProc( void* elem, void* XP_UNUSED(closure) )
 {
-    free( elem );
+    g_free( elem );
 }
+
+#if 1
+static gchar*
+addWord( XWArray* array, const gchar* word )
+{
+    XP_LOGFF( "adding %s", word );
+    gchar* str = g_strdup(word);
+    arr_insert( array, NULL_XWE, str );
+    printList( array );
+    return str;
+}
+#endif
 
 static XP_Bool
 testSort( LaunchParams* params )
 {
     XP_Bool success = !!params->sortDict;
     if ( success ) {
-        DLHead* list = NULL;
+        XWArray* array = arr_make( MPPARM(params->mpool) compLenAlpha, NULL );
+#if 1
+        addWord( array, "dd" );
+        gchar* saveMe = addWord( array, "bb" );
+        addWord( array, "aa" );
+        addWord( array, "ee" );
+        addWord( array, "cc" );
 
+        arr_remove( array, NULL_XWE, saveMe );
+        XP_LOGFF( "removed %s", saveMe );
+        printList( array );
+#else
         XP_LOGFF( "(sortdict: %s)", params->sortDict );
         DictionaryCtxt* dict =
-            linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params, params->sortDict,
-                                   params->useMmap );
+            linux_dictionary_make( MPPARM(params->mpool) params,
+                                   params->sortDict, params->useMmap );
         XP_ASSERT( !!dict );
 
         DictIter* iter = di_makeIter( dict, NULL_XWE, NULL, NULL, 0, NULL, 0 );
@@ -2750,22 +2415,79 @@ testSort( LaunchParams* params )
         XP_Bool success;
         XP_U32 ii = 0;
         for ( success = di_firstWord( iter ); success; success = di_getNextWord( iter ) ) {
-            SortTestElem* elem = calloc( 1, sizeof(*elem) );
-            di_wordToString( iter, elem->buf, VSIZE(elem->buf), NULL );
+            XP_UCHAR buf[32];
+            di_wordToString( iter, buf, VSIZE(buf), NULL );
+            gchar* word = g_strdup(buf);
             ++ii;
-            // list = dll_insert(list, &elem->link, NULL );
-            list = dll_insert(list, &elem->link, compLenAlpha );
+            arr_insert( array, word );
         }
+        // printList(array);
 
-        // list = dll_sort( list, compLenAlpha );
-        printList(list);
+        arr_setSort( array, compAlpha );
+        arr_setSort( array, compLenAlpha );
 
         di_freeIter( iter, NULL_XWE );
-        dll_removeAll( list, disposeProc, NULL );
+        dict_unref( dict, NULL_XWE );
+#endif
+        printList(array);
+        arr_removeAll( array, disposeProc, NULL );
+
+        arr_destroy( array );
     }
     return success;
+/* ======= */
+/* static void */
+/* testSort( LaunchParams* params ) */
+/* { */
+/*     DLHead* list = NULL; */
+
+/*     XP_LOGFF( "(sortdict: %s)", params->sortDict ); */
+/*     DictionaryCtxt* dict = */
+/*         linux_dictionary_make( MPPARM(params->mpool) NULL_XWE, params, params->sortDict, */
+/*                                params->useMmap ); */
+/*     XP_ASSERT( !!dict ); */
+
+/*     DictIter* iter = di_makeIter( dict, NULL_XWE, NULL, NULL, 0, NULL, 0 ); */
+/*     XP_ASSERT( !!iter ); */
+
+/*     XP_Bool success; */
+/*     XP_U32 ii = 0; */
+/*     for ( success = di_firstWord( iter ); success; success = di_getNextWord( iter ) ) { */
+/*         SortTestElem* elem = calloc( 1, sizeof(*elem) ); */
+/*         di_wordToString( iter, elem->buf, VSIZE(elem->buf), NULL ); */
+/*         ++ii; */
+/*         // list = dll_insert(list, &elem->link, NULL ); */
+/*         list = dll_insert(list, &elem->link, compLenAlpha ); */
+/*     } */
+
+/*     // list = dll_sort( list, compLenAlpha ); */
+/*     printList(list); */
+
+/*     di_freeIter( iter, NULL_XWE ); */
+/*     dll_removeAll( list, disposeProc, NULL ); */
+/* >>>>>>> a9173b96e (add test of sorting in my list.) */
 }
 #endif
+
+static void
+onDictAdded( void* closure, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "%s", dictName );
+    LaunchParams* params = (LaunchParams*)closure;
+    XP_UCHAR shortName[64];
+    stripExtn( dictName, shortName, VSIZE(shortName) );
+    dvc_onDictAdded( params->dutil, NULL_XWE, shortName );
+}
+
+static void
+onDictGone( void* closure, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(%s)", dictName );
+    LaunchParams* params = (LaunchParams*)closure;
+    XP_UCHAR shortName[64];
+    stripExtn( dictName, shortName, VSIZE(shortName) );
+    dvc_onDictRemoved( params->dutil, NULL_XWE, shortName );
+}
 
 int
 main( int argc, char** argv )
@@ -2864,8 +2586,11 @@ main( int argc, char** argv )
     mainParams.useMmap = XP_TRUE;
     mainParams.useUdp = true;
     mainParams.dbName = "xwgames.sqldb";
-    mainParams.cursesListWinHt = 5;
+    mainParams.cursesListWinHt = 10;
     types_addType( &mainParams.conTypes, COMMS_CONN_MQTT );
+
+    mainParams.ldm = ldm_init( onDictAdded, onDictGone, &mainParams );
+    ldm_addDir( mainParams.ldm, "./" );
 
     if ( file_exists( "./dict.xwd" ) )  {
         trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
@@ -2881,7 +2606,7 @@ main( int argc, char** argv )
             if ( !path ) {
                 break;
             }
-            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
+            ldm_addDir( mainParams.ldm, path );
             envDictPath = NULL;
         }
     }
@@ -2943,7 +2668,7 @@ main( int argc, char** argv )
                 path = ".";
             }
             XP_LOGFF( "appending dict path: %s", path );
-            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
+            ldm_addDir( mainParams.ldm, path );
             break;
 #ifdef XWFEATURE_WALKDICT
         case CMD_TESTDICT:
@@ -2984,7 +2709,7 @@ main( int argc, char** argv )
             break;
 
         case CMD_DICTDIR:
-            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, optarg );
+            ldm_addDir( mainParams.ldm, optarg );
             break;
         case CMD_PLAYERDICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
@@ -2992,7 +2717,7 @@ main( int argc, char** argv )
             if ( !path ) {
                 path = ".";
             }
-            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, path );
+            ldm_addDir( mainParams.ldm, path );
             break;
         case CMD_SEED:
             seed = atoi(optarg);
@@ -3036,6 +2761,9 @@ main( int argc, char** argv )
 #endif
         case CMD_NOMMAP:
             mainParams.useMmap = false;
+            break;
+        case CMD_SHOWGAMES:
+            mainParams.showGames = XP_TRUE;
             break;
         case CMD_PRINTHISORY:
             mainParams.printHistory = 1;
@@ -3387,10 +3115,6 @@ main( int argc, char** argv )
         exit(0);
     }
 #endif
-    /* add cur dir if dict search dir path is empty */
-    if ( !mainParams.dictDirs ) {
-        mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
-    }
 
     int result = 0;
     if ( g_str_has_suffix( argv[0], "dawg2dict" ) ) {
@@ -3431,7 +3155,7 @@ main( int argc, char** argv )
             /* char path[256]; */
             /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
             DictionaryCtxt* dict =
-                linux_dictionary_make( MPPARM(mainParams.mpool) NULL_XWE, &mainParams,
+                linux_dictionary_make( MPPARM(mainParams.mpool) &mainParams,
                                        mainParams.pgi.dictName,
                                        mainParams.useMmap );
             XP_ASSERT( !!dict );
@@ -3534,7 +3258,7 @@ main( int argc, char** argv )
     }
 
     free( longopts );
-    g_slist_free( mainParams.dictDirs );
+    ldm_destroy( mainParams.ldm );
 
     gsw_logIdles();
 
@@ -3542,6 +3266,8 @@ main( int argc, char** argv )
         writeStatus( statusSocket, mainParams.dbName );
     }
 
+    mempool_dbg_checkall();
+    
     XP_LOGFF( "%s exiting, returning %d", argv[0], result );
     return result;
 } /* main */

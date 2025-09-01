@@ -67,7 +67,9 @@ class CommsTransport(
 
     override fun transportSendMQTT(tap: TopicsAndPackets): Int {
         Log.d(TAG, "transportSendMQTT()")
-        return MQTTUtils.send(m_context, tap)
+        // return MQTTUtils.send(m_context, tap)
+        Assert.failDbg()
+        return -1
     }
 
     override fun countChanged(newCount: Int, quashed: Boolean) {
@@ -83,10 +85,11 @@ class CommsTransport(
         var nSent = -1
         when (conType) {
             CommsConnType.COMMS_CONN_RELAY -> Log.e(TAG, "sendForAddr(); still sending via RELAY")
-            CommsConnType.COMMS_CONN_SMS -> nSent = NBSProto.sendPacket(
-                context, addr.sms_phone!!,
-                gameID, buf, msgID
-            )
+            CommsConnType.COMMS_CONN_SMS -> Assert.failDbg()
+            //     nSent = NBSProto.sendPacket(
+            //     context, addr.sms_phone!!,
+            //     gameID, buf, msgID
+            // )
 
             CommsConnType.COMMS_CONN_BT -> nSent =
                 BTUtils.sendPacket(context, buf, msgID, addr, gameID)

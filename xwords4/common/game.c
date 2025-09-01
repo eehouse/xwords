@@ -23,6 +23,9 @@
 #include "nli.h"
 #include "dbgutil.h"
 #include "stats.h"
+#include "device.h"
+#include "gamemgr.h"
+#include "gamerefp.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -30,76 +33,55 @@ extern "C" {
 
 #define FLAG_HASCOMMS 0x01
 
-#ifdef DEBUG
-static void
-assertUtilOK( XW_UtilCtxt* util )
-{
-    UtilVtable* vtable;
-    XP_U16 nSlots;
-    XP_ASSERT( !!util );
-    vtable = util->vtable;
-    nSlots = sizeof(vtable) / 4;
-    while ( nSlots-- ) {
-        void* fptr = ((void**)vtable)[nSlots];
-        XP_ASSERT( !!fptr );
-    }
-} /* assertUtilOK */
-#else
-# define assertUtilOK(u)
-#endif
+/* #ifdef DEBUG */
+/* static void */
+/* assertUtilOK( XW_UtilCtxt* util ) */
+/* { */
+/*     UtilVtable* vtable; */
+/*     XP_U16 nSlots; */
+/*     XP_ASSERT( !!util ); */
+/*     vtable = util->vtable; */
+/*     nSlots = sizeof(vtable) / 4; */
+/*     while ( nSlots-- ) { */
+/*         void* fptr = ((void**)vtable)[nSlots]; */
+/*         XP_ASSERT( !!fptr ); */
+/*     } */
+/* } /\* assertUtilOK *\/ */
+/* #else */
+/* # define assertUtilOK(u) */
+/* #endif */
 
 #ifdef XWFEATURE_CHANGEDICT
-static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
+    // static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
 #endif
 
-static void
-checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, 
-                 XP_U16* nPlayersTotal )
-{
-    if ( !!gi ) {
-        XP_U16 ii, remoteCount = 0;
+/* static void */
+/* checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere,  */
+/*                  XP_U16* nPlayersTotal ) */
+/* { */
+/*     if ( !!gi ) { */
+/*         XP_U16 ii, remoteCount = 0; */
 
-        if ( SERVER_STANDALONE != gi->serverRole ) {
-            for ( ii = 0; ii < gi->nPlayers; ++ii ) {
-                if ( !gi->players[ii].isLocal ) {
-                    ++remoteCount;
-                }
-            }
+/*         if ( SERVER_STANDALONE != gi->serverRole ) { */
+/*             for ( ii = 0; ii < gi->nPlayers; ++ii ) { */
+/*                 if ( !gi->players[ii].isLocal ) { */
+/*                     ++remoteCount; */
+/*                 } */
+/*             } */
 
-            /* I think this error is caught in nwgamest.c now */
-            XP_ASSERT( remoteCount > 0 );
-            if ( remoteCount == 0 ) {
-                gi->serverRole = SERVER_STANDALONE;
-            }
-        }
+/*             /\* I think this error is caught in nwgamest.c now *\/ */
+/*             XP_ASSERT( remoteCount > 0 ); */
+/*             if ( remoteCount == 0 ) { */
+/*                 gi->serverRole = SERVER_STANDALONE; */
+/*             } */
+/*         } */
 
-        *nPlayersHere = gi->nPlayers - remoteCount;
-        *nPlayersTotal = gi->nPlayers;
-    }
-} /* checkServerRole */
+/*         *nPlayersHere = gi->nPlayers - remoteCount; */
+/*         *nPlayersTotal = gi->nPlayers; */
+/*     } */
+/* } /\* checkServerRole *\/ */
 
-XP_U32
-game_makeGameID( XP_U32 gameID )
-{
-    while ( 0 == gameID ) {
-        /* High bit never set by XP_RANDOM() alone */
-        gameID = (XP_RANDOM() << 16) ^ XP_RANDOM();
-        /* But let's clear it -- set high-bit causes problems for existing
-           postgres DB where INTEGER is apparently a signed 32-bit. Recently
-           confirmed that working around that in the code that moves between
-           incoming web api calls and postgres would be much harder than using
-           8-char hex strings instead. But I'll leave the test change in
-           place. */
-#ifdef HIGH_GAMEID_BITS
-        gameID |= 0x80000000;
-#else
-        gameID &= ~0x80000000;
-#endif
-    }
-    LOG_RETURNF( "%08X", gameID );
-    return gameID;
-}
-
+#if 0
 static void
 timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
                      XP_S32 oldVal, XP_S32 newVal )
@@ -107,9 +89,10 @@ timerChangeListener( XWEnv xwe, void* data, const XP_U32 gameID,
     XWGame* game = (XWGame*)data;
     XP_ASSERT( game->util->gameInfo->gameID == gameID );
     XP_LOGFF( "(oldVal=%d, newVal=%d, id=%d)", oldVal, newVal, gameID );
-    dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util, xwe ), xwe,
+    dutil_onDupTimerChanged( util_getDevUtilCtxt( game->util ), xwe,
                              gameID, oldVal, newVal );
 }
+#endif
 
 #ifdef XWFEATURE_RELAY
 static void
@@ -121,6 +104,7 @@ onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
 }
 #endif
 
+#if 0
 static void
 setListeners( XWGame* game, const CommonPrefs* cp )
 {
@@ -129,182 +113,153 @@ setListeners( XWGame* game, const CommonPrefs* cp )
     server_setTimerChangeListener( game->server, timerChangeListener, game );
 }
 
-static const DictionaryCtxt*
-getDicts( const CurGameInfo* gi, XW_UtilCtxt* util, XWEnv xwe,
-          PlayerDicts* playerDicts )
-{
-    const XP_UCHAR* isoCode = gi->isoCodeStr;
-    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
-    const DictionaryCtxt* result = dutil_getDict( dutil, xwe, isoCode, gi->dictName );
-    XP_MEMSET( playerDicts, 0, sizeof(*playerDicts) );
-    if ( !!result ) {
-        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-            const LocalPlayer* lp = &gi->players[ii];
-            if ( lp->isLocal && !!lp->dictName && lp->dictName[0] ) {
-                playerDicts->dicts[ii] = dutil_getDict( dutil, xwe, isoCode,
-                                                        lp->dictName );
-            }
-        }
-    }
-    return result;
-}
-
-static void
-unrefDicts( XWEnv xwe, const DictionaryCtxt* dict, PlayerDicts* playerDicts )
-{
-    if ( !!dict ) {
-        dict_unref( dict, xwe );
-    }
-    for ( int ii = 0; ii < VSIZE(playerDicts->dicts); ++ii ) {
-        const DictionaryCtxt* dict = playerDicts->dicts[ii];
-        if ( !!dict ) {
-            dict_unref( dict, xwe );
-        }
-    }
-}
-
-XP_Bool
-game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
-                  const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
-                  XW_UtilCtxt* util,
-                  DrawCtx* draw, const CommonPrefs* cp,
-                  const TransportProcs* procs )
-{
-    XP_ASSERT( gi == util->gameInfo ); /* if holds, remove gi param */
-    XP_U16 nPlayersHere = 0;
-    XP_U16 nPlayersTotal = 0;
-    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
-    assertUtilOK( util );
-
-    gi->gameID = game_makeGameID( gi->gameID );
-    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe );
-    game->created = dutil_getCurSeconds( dutil, xwe );
-    game->util = util;
-
-    PlayerDicts playerDicts;
-    const DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts );
-    XP_Bool success = !!dict;
-
-    if ( success ) {
-        XP_STRNCPY( gi->isoCodeStr, dict_getISOCode( dict ), VSIZE(gi->isoCodeStr) );
-        XP_ASSERT( !!gi->isoCodeStr[0] );
-        game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL,
-                                  NULL, util, gi->boardSize );
-
-        model_setDictionary( game->model, xwe, dict );
-        model_setPlayerDicts( game->model, xwe, &playerDicts );
-
-        if ( gi->serverRole != SERVER_STANDALONE ) {
-            game->comms = comms_make( xwe, util,
-                                      gi->serverRole != SERVER_ISCLIENT,
-                                      selfAddr, hostAddr, procs,
-#ifdef XWFEATURE_RELAY
-                                      nPlayersHere, nPlayersTotal,
-                                      onRoleChanged, game,
 #endif
-                                      gi->forceChannel
-                                      );
-        } else {
-            game->comms = (CommsCtxt*)NULL;
-        }
+
+/* GameRef */
+/* game_makeNewGame( XWEnv xwe, CurGameInfo* gi, */
+/*                   const CommsAddrRec* hostAddr, */
+/*                   XW_UtilCtxt* util, */
+/*                   DrawCtx* draw, const CommonPrefs* cp ) */
+/* { */
+/*     XP_ASSERT( gi == util->gameInfo ); /\* if holds, remove gi param *\/ */
+/*     XP_U16 nPlayersHere = 0; */
+/*     XP_U16 nPlayersTotal = 0; */
+/*     checkServerRole( gi, &nPlayersHere, &nPlayersTotal ); */
+/*     assertUtilOK( util ); */
+/*     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe ); */
+/*     return gmgr_makeNewGame( dutil, xwe, gi, hostAddr, util, draw, cp ); */
+
+/* #if 0 */
+/*     gi->gameID = game_makeGameID( gi->gameID ); */
+/*     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util, xwe ); */
+/*     // game->created = dutil_getCurSeconds( dutil, xwe ); */
+/*     // game->util = util; */
+
+/*     PlayerDicts playerDicts; */
+/*     const DictionaryCtxt* dict = getDicts( gi, util, xwe, &playerDicts ); */
+/*     XP_Bool success = !!dict; */
+
+/*     if ( success ) { */
+/*         XP_STRNCPY( gi->isoCodeStr, dict_getISOCode( dict ), VSIZE(gi->isoCodeStr) ); */
+/*         XP_ASSERT( !!gi->isoCodeStr[0] ); */
+/*         game->model = model_make( MPPARM(mpool) xwe, (DictionaryCtxt*)NULL, */
+/*                                   NULL, util, gi->boardSize ); */
+
+/*         model_setDictionary( game->model, xwe, dict ); */
+/*         model_setPlayerDicts( game->model, xwe, &playerDicts ); */
+
+/*         if ( gi->serverRole != SERVER_STANDALONE ) { */
+/*             game->comms = comms_make( xwe, util, */
+/*                                       gi->serverRole != SERVER_ISCLIENT, */
+/*                                       selfAddr, hostAddr, */
+/* #ifdef XWFEATURE_RELAY */
+/*                                       nPlayersHere, nPlayersTotal, */
+/*                                       onRoleChanged, game, */
+/* #endif */
+/*                                       gi->forceChannel */
+/*                                       ); */
+/*         } else { */
+/*             game->comms = (CommsCtxt*)NULL; */
+/*         } */
 
 
-        game->server = server_make( xwe, game->model, game->comms, util );
-        game->board = board_make( xwe, game->model, game->server,
-                                  NULL, util );
-        board_setCallbacks( game->board, xwe );
+/*         game->server = server_make( xwe, game->model, game->comms, util ); */
+/*         game->board = board_make( xwe, game->model, game->server, */
+/*                                   NULL, util ); */
+/*         board_setCallbacks( game->board, xwe ); */
 
-        board_setDraw( game->board, xwe, draw );
-        setListeners( game, cp );
+/*         board_setDraw( game->board, xwe, draw ); */
+/*         setListeners( game, cp ); */
 
-        STAT stat = STAT_NONE;
-        if ( !game->comms ) {
-            stat = STAT_NEW_SOLO;
-        } else switch ( gi->nPlayers ) {
-            case 2: stat = STAT_NEW_TWO; break;
-            case 3: stat = STAT_NEW_THREE; break;
-            case 4: stat = STAT_NEW_FOUR; break;
-        }
-        sts_increment( dutil, xwe, stat );
-    }
+/*         STAT stat = STAT_NONE; */
+/*         if ( !game->comms ) { */
+/*             stat = STAT_NEW_SOLO; */
+/*         } else switch ( gi->nPlayers ) { */
+/*             case 2: stat = STAT_NEW_TWO; break; */
+/*             case 3: stat = STAT_NEW_THREE; break; */
+/*             case 4: stat = STAT_NEW_FOUR; break; */
+/*         } */
+/*         sts_increment( dutil, xwe, stat ); */
+/*     } */
 
-    unrefDicts( xwe, dict, &playerDicts );
+/*     unrefDicts( xwe, dict, &playerDicts ); */
 
-    return success;
-} /* game_makeNewGame */
+/* #endif */
+/* } /\* game_makeNewGame *\/ */
 
-XP_Bool
-game_makeRematch( const XWGame* oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
-                  const CommonPrefs* newCp, const TransportProcs* procs,
-                  XWGame* newGame, const XP_UCHAR* newName, NewOrder* nop )
+GameRef
+game_makeRematch( GameRef oldGame, XWEnv xwe, XW_UtilCtxt* newUtil,
+                  const CommonPrefs* XP_UNUSED(newCp),
+                  const XP_UCHAR* newName, NewOrder* nop )
 {
-    XP_Bool success = XP_FALSE;
+    XP_ASSERT(0);
+    XP_USE(oldGame);
+    XP_USE(xwe);
+    XP_USE(newUtil);
+    XP_USE(newName);
+    XP_USE(nop);
+    GameRef gr = 0;
 
-    RematchInfo* rip;
-    if ( server_getRematchInfo( oldGame->server, xwe, newUtil,
-                                game_makeGameID( 0 ), nop, &rip ) ) {
-        CommsAddrRec* selfAddrP = NULL;
-        CommsAddrRec selfAddr;
-        if ( !!oldGame->comms ) {
-            comms_getSelfAddr( oldGame->comms, &selfAddr );
-            selfAddrP = &selfAddr;
-        }
+    /* RematchInfo* rip; */
+    /* XW_DUtilCtxt* duc = util_getDevUtilCtxt( newUtil ); */
+    /* if ( gr_getRematchInfo( duc, oldGame, xwe, newUtil, */
+    /*                         0 /\*game_makeGameID( 0 )*\/, nop, &rip ) ) { */
+    /*     XP_ASSERT(0); */
+    /*     /\* gr = game_makeNewGame( xwe, *\/ */
+    /*     /\*                        newUtil->gameInfo, (CommsAddrRec*)NULL, *\/ */
+    /*     /\*                        newUtil, (DrawCtx*)NULL, newCp ); *\/ */
+    /*     if ( !!gr && gr_haveComms(duc, gr, xwe) ) { */
+    /*         gr_setRematchOrder( duc, gr, xwe, rip ); */
 
-        if ( game_makeNewGame( MPPARM(newUtil->mpool) xwe, newGame,
-                               newUtil->gameInfo, selfAddrP, (CommsAddrRec*)NULL,
-                               newUtil, (DrawCtx*)NULL, newCp, procs ) ) {
-            if ( !!newGame->comms ) {
-                server_setRematchOrder( newGame->server, rip );
+    /*         CommsAddrRec selfAddr = {0}; */
+    /*         dutil_getSelfAddr( util_getDevUtilCtxt(newUtil), xwe, */
+    /*                            &selfAddr ); */
 
-                const CurGameInfo* newGI = newUtil->gameInfo;
-                for ( int ii = 0; ; ++ii ) {
-                    CommsAddrRec guestAddr;
-                    XP_U16 nPlayersH;
-                    if ( !server_ri_getAddr( rip, ii, &guestAddr, &nPlayersH ) ) {
-                        break;
-                    }
+    /*         const CurGameInfo* newGI = util_getGI(newUtil); */
+    /*         for ( int ii = 0; ; ++ii ) { */
+    /*             CommsAddrRec guestAddr; */
+    /*             XP_U16 nPlayersH; */
+    /*             if ( !server_ri_getAddr( rip, ii, &guestAddr, &nPlayersH ) ) { */
+    /*                 break; */
+    /*             } */
 
-                    NetLaunchInfo nli;
-                    nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
-                    if ( !!newName ) {
-                        nli_setGameName( &nli, newName );
-                    }
-                    LOGNLI( &nli );
-                    comms_invite( newGame->comms, xwe, &nli, &guestAddr, XP_TRUE );
-                }
-            }
-            success = XP_TRUE;
-        }
-        server_disposeRematchInfo( oldGame->server, &rip );
-    }
-    if ( success ) {
-        sts_increment( util_getDevUtilCtxt( newUtil, xwe ),
-                       xwe, STAT_NEW_REMATCH );
-    }
+    /*             NetLaunchInfo nli; */
+    /*             nli_init( &nli, newGI, &selfAddr, nPlayersH, ii + 1 ); */
+    /*             if ( !!newName ) { */
+    /*                 nli_setGameName( &nli, newName ); */
+    /*             } */
+    /*             LOGNLI( &nli ); */
+    /*             gr_invite( duc, gr, xwe, &nli, &guestAddr, XP_TRUE ); */
+    /*         } */
+    /*     } */
+    /*     gr_disposeRematchInfo( duc, oldGame, xwe, &rip ); */
+    /* } */
+    /* if ( !!gr ) { */
+    /*     sts_increment( util_getDevUtilCtxt(newUtil), */
+    /*                    xwe, STAT_NEW_REMATCH ); */
+    /* } */
 
-    XP_LOGFF( "=> %s; game with gid %08X rematched to create game "
-              "with gid %08X",
-              boolToStr(success), oldGame->util->gameInfo->gameID,
-              newUtil->gameInfo->gameID );
-    return success;
+    /* XP_LOGFF( "=> " GR_FMT "; game with gid %08X rematched to create game " */
+    /*           "with gid %08X", */
+    /*           gr, gr_getGameID(oldGame), gr_getGameID(gr) ); */
+    return gr;
 }
-
-#ifdef XWFEATURE_CHANGEDICT
-void
-game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi, DictionaryCtxt* dict )
-{
-    model_setDictionary( game->model, xwe, dict );
-    gi_setDict( MPPARM(mpool) gi, dict );
-    server_resetEngines( game->server );
-}
-#endif
 
 XP_Bool
 game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                     XWGame* game, CurGameInfo* gi,
-                     XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp,
-                     const TransportProcs* procs )
+                     CurGameInfo* gi, GameRef* grOut,
+                     XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp )
 {
+#ifdef DEBUG
+    XP_USE(mpool);
+#endif
+    XP_USE(xwe);
+    XP_USE(stream);
+    XP_USE(gi);
+    XP_USE(util);
+    XP_USE(draw);
+    XP_USE(cp);
+#if 0
     XP_ASSERT( NULL == util || gi == util->gameInfo );
     XP_Bool success = XP_FALSE;
     XP_Bool hasComms;
@@ -319,7 +274,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             stream_setVersion( stream, strVersion );
 
             gi_readFromStream( MPPARM(mpool) stream, gi );
-            if ( !game ) {
+            if ( !grOut ) {
                 success = XP_TRUE;
                 break;
             } else if ( stream_getSize(stream) == 0 ) {
@@ -335,7 +290,6 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             if ( !dict ) {
                 break;
             }
-
             /* Previous stream versions didn't save anything if built
              * standalone.  Now we always save something.  But we need to know
              * if the previous version didn't save. PREV_WAS_STANDALONE_ONLY
@@ -359,7 +313,6 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( xwe, stream, util,
                                                     gi->serverRole != SERVER_ISCLIENT,
-                                                    procs,
 #ifdef XWFEATURE_RELAY
                                                     onRoleChanged, game,
 #endif
@@ -398,113 +351,117 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 #endif
     }
 
-    return success;
+#endif
+    *grOut = 0;
+    return XP_FALSE;
 } /* game_makeFromStream */
 
-/* This is a gross hack. Fix it someday. */
-static void
-runServer( ServerCtxt* server, XWEnv xwe )
-{
-    for ( int ii = 0; ii < 5; ++ii ) {
-        (void)server_do( server, xwe );
-    }
-}
-
-XP_Bool
-game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
-                     const CommsAddrRec* selfAddr, XW_UtilCtxt* util,
-                     DrawCtx* draw, CommonPrefs* cp, const TransportProcs* procs )
+GameRef
+game_makeFromInvite( XWEnv xwe, const NetLaunchInfo* nli,
+                     const CommsAddrRec* XP_UNUSED(selfAddr),
+                     XW_UtilCtxt* util, DrawCtx* XP_UNUSED(draw),
+                     CommonPrefs* XP_UNUSED(cp) )
 {
     LOG_FUNC();
-    XP_U32 gameID = nli->gameID;
-    XP_U8 forceChannel = nli->forceChannel;
-    XW_DUtilCtxt* duc = util_getDevUtilCtxt( util, xwe );
-    XP_Bool success = !dutil_haveGame( duc, xwe, gameID, forceChannel );
-    if ( success ) {
-        CurGameInfo* gi = util->gameInfo;
-        XP_ASSERT( !!gi );
-        nliToGI( nli, xwe, util, gi );
+    XP_ASSERT(0);
+    GameRef newGame = 0;
+    XP_USE(nli);
+    XP_USE(xwe);
+    XP_USE(util);
+    /* XP_U32 gameID = nli->gameID; */
+    /* XW_DUtilCtxt* duc = util_getDevUtilCtxt( util ); */
+    /* XP_Bool success = XP_FALSE; // !gmgr_haveGame( duc, xwe, gameID ); */
+    /* if ( success ) { */
 
-        CommsAddrRec hostAddr;
-        nli_makeAddrRec( nli, &hostAddr );
+    /*     CurGameInfo gi = {}; */
+    /*     nliToGI( MPPARM(NULL/\*util->mpool*\/) duc, xwe, nli, &gi ); */
 
-        success = game_makeNewGame( MPPARM(util->mpool) xwe, newGame,
-                                    gi, selfAddr, &hostAddr, util,
-                                    draw, cp, procs );
-        if ( success && server_initClientConnection( newGame->server, xwe ) ) {
-            runServer( newGame->server, xwe );
-        }
-    }
-    LOG_RETURNF( "%s", boolToStr(success) );
-    return success;
+    /*     CommsAddrRec hostAddr; */
+    /*     nli_makeAddrRec( nli, &hostAddr ); */
+
+    /*     /\* newGame = game_makeNewGame( xwe, gi, selfAddr, util, *\/ */
+    /*     /\*                             draw, cp ); *\/ */
+    /*     XP_ASSERT(0); */
+    /* } */
+    /* LOG_RETURNF( GR_FMT, newGame ); */
+    return newGame;
 }
 
 void
-game_saveToStream( const XWGame* game, const CurGameInfo* gi,
-                   XWStreamCtxt* stream, XP_U16 saveToken )
+game_saveToStream( GameRef gr, const CurGameInfo* gi,
+                   XWStreamCtxt* stream, XP_U16 XP_UNUSED(saveToken) )
 {
-    XP_ASSERT( gi_equal( gi, game->util->gameInfo ) );
+    // XP_ASSERT( gi_equal( gi, game->util->gameInfo ) );
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
     gi_writeToStream( stream, gi );
 
-    if ( !!game ) {
-        const XP_U32 created = game->created;
+    if ( !!gr ) {
+        // gr_writeToStream( gr, stream, saveToken );
+        /*
+        const XP_U32 created = gr_getCreated(gr);
         stream_putU32( stream, created );
         XP_ASSERT( 0 != saveToken );
 
         XP_U8 flags = NULL == game->comms ? 0 : FLAG_HASCOMMS;
         stream_putU8( stream, flags );
-        if ( NULL != game->comms ) {
-            comms_writeToStream( game->comms, stream, saveToken );
+        if ( gr_haveComms(gr) ) {
+            gr_writeToStream( game->comms, stream, saveToken );
         }
 
         model_writeToStream( game->model, stream );
         server_writeToStream( game->server, stream );
         board_writeToStream( game->board, stream );
+        */
     }
 } /* game_saveToStream */
 
-void
-game_saveSucceeded( const XWGame* game, XWEnv xwe, XP_U16 saveToken )
-{
-    if ( !!game->comms ) {
-        comms_saveSucceeded( game->comms, xwe, saveToken );
-    }
-}
+/* void */
+/* game_saveSucceeded( GameRef gr, XWEnv xwe, XP_U16 saveToken ) */
+/* { */
+/*     if ( gr_haveComms(gr) ) { */
+/*         gr_saveSucceeded( gr, xwe, saveToken ); */
+/*     } */
+/* } */
 
 XP_Bool
-game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
-                     const CommsAddrRec* retAddr )
+game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
+                     XWStreamCtxt* stream, const CommsAddrRec* retAddr )
 {
-    ServerCtxt* server = game->server;
-    CommsMsgState commsState;
-    XP_Bool result = NULL != game->comms;
-    if ( result ) {
-        result = comms_checkIncomingStream( game->comms, xwe, stream, retAddr,
-                                            &commsState );
-    } else {
-        XP_LOGFF( "ERROR: comms NULL!" );
-    }
-    if ( result ) {
-        (void)server_do( server, xwe );
+    LOG_FUNC();
+    XP_ASSERT(0);
+    XP_USE(duc);
+    XP_USE(gr);
+    XP_USE(xwe);
+    XP_USE(stream);
+    XP_USE(retAddr);
+    /* CommsMsgState commsState; */
+    /* XP_Bool result = gr_haveComms( duc, gr, xwe ); */
+    /* if ( result ) { */
+    /*     result = gr_checkIncomingStream( duc, gr, xwe, stream, retAddr, */
+    /*                                      &commsState ); */
+    /* } else { */
+    /*     XP_LOGFF( "ERROR: comms NULL!" ); */
+    /* } */
+    /* if ( result ) { */
+    /*     // used to call server_do() here??? */
+    /*     result = gr_receiveMessage( duc, gr, xwe, stream ); */
+    /* } */
+    /* gr_msgProcessed( duc, gr, xwe, &commsState, !result ); */
 
-        result = server_receiveMessage( server, xwe, stream );
-    }
-    comms_msgProcessed( game->comms, xwe, &commsState, !result );
+    /* if ( result ) { */
+    /*     // used to call server_do() here??? */
+    /*     /\* in case MORE work's pending.  Multiple calls are required in at */
+    /*        least one case, where I'm a host handling client registration *AND* */
+    /*        I'm a robot.  Only one server_do and I'll never make that first */
+    /*        robot move.  That's because comms can't detect a duplicate initial */
+    /*        packet (in validateInitialMessage()). *\/ */
+    /* } */
 
-    if ( result ) {
-        /* in case MORE work's pending.  Multiple calls are required in at
-           least one case, where I'm a host handling client registration *AND*
-           I'm a robot.  Only one server_do and I'll never make that first
-           robot move.  That's because comms can't detect a duplicate initial
-           packet (in validateInitialMessage()). */
-        runServer( server, xwe );
-    }
-
-    LOG_RETURNF( "%s", boolToStr(result) );
-    return result;
+    /* LOG_RETURNF( "%s", boolToStr(result) ); */
+    /* return result; */
+    return XP_FALSE;
 }
 
 void
@@ -538,7 +495,6 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
     ServerCtxt* server = game->server;
     summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
     summary->lastMoveTime = server_getLastMoveTime(server);
-    XP_STRNCPY( summary->isoCodeStr, gi->isoCodeStr, VSIZE(summary->isoCodeStr)-1 );
     summary->gameOver = server_getGameIsOver( server );
     summary->nMoves = model_getNMoves( game->model );
     summary->dupTimerExpires = server_getDupTimerExpires( server );
@@ -557,7 +513,6 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
         summary->missingPlayers = server_getMissingPlayers( server );
         summary->nPacketsPending =
             comms_countPendingPackets( game->comms, &summary->quashed );
-        summary->channelNo = gi->forceChannel;
     }
 }
 
@@ -571,37 +526,40 @@ game_getIsHost( const XWGame* game )
 void
 game_dispose( XWGame* game, XWEnv xwe )
 {
-#ifdef XWFEATURE_KNOWNPLAYERS
-    const XP_U32 created = game->created;
-    if ( !!game->comms && 0 != created
-         && server_getGameIsConnected( game->server ) ) {
-        server_gatherPlayers( game->server, xwe, created );
-    }
-#endif
+    XP_ASSERT(0);               /* no longer called */
+    XP_USE(game);
+    XP_USE(xwe);
+/* #ifdef XWFEATURE_KNOWNPLAYERS */
+/*     const XP_U32 created = game->created; */
+/*     if ( !!game->comms && 0 != created */
+/*          && server_getGameIsConnected( game->server ) ) { */
+/*         server_gatherPlayers( game->server, xwe, created ); */
+/*     } */
+/* #endif */
 
-    /* The board should be reused!!! PENDING(ehouse) */
-    if ( !!game->board ) {
-        board_destroy( game->board, xwe, XP_TRUE );
-        game->board = NULL;
-    }
+/*     /\* The board should be reused!!! PENDING(ehouse) *\/ */
+/*     if ( !!game->board ) { */
+/*         board_destroy( game->board, xwe, XP_TRUE ); */
+/*         game->board = NULL; */
+/*     } */
 
-    if ( !!game->comms ) {
-        comms_stop( game->comms
-#ifdef XWFEATURE_RELAY
-                    , xwe
-#endif
-                    );
-        comms_destroy( game->comms, xwe );
-        game->comms = NULL;
-    }
-    if ( !!game->model ) { 
-        model_destroy( game->model, xwe );
-        game->model = NULL;
-    }
-    if ( !!game->server ) {
-        server_destroy( game->server );
-        game->server = NULL;
-    }
+/*     if ( !!game->comms ) { */
+/*         comms_stop( game->comms */
+/* #ifdef XWFEATURE_RELAY */
+/*                     , xwe */
+/* #endif */
+/*                     ); */
+/*         comms_destroy( game->comms, xwe ); */
+/*         game->comms = NULL; */
+/*     } */
+/*     if ( !!game->model ) {  */
+/*         model_destroy( game->model, xwe ); */
+/*         game->model = NULL; */
+/*     } */
+/*     if ( !!game->server ) { */
+/*         server_destroy( game->server, xwe ); */
+/*         game->server = NULL; */
+/*     } */
 } /* game_dispose */
 
 static void
@@ -618,19 +576,26 @@ disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 void
 gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 {
+    LOG_FUNC();
     disposePlayerInfoInt( MPPARM(mpool) gi );
 
     XP_FREEP( mpool, &gi->dictName );
+    XP_FREEP( mpool, &gi->gameName );
+#ifdef DEBUG
+    gi->freed = XP_TRUE;
+#endif
 } /* gi_disposePlayerInfo */
 
 void
 gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
-    replaceStringIfDifferent( mpool, &destGI->dictName, 
-                              srcGI->dictName );
+    replaceStringIfDifferent( mpool, &destGI->gameName, srcGI->gameName );
+    replaceStringIfDifferent( mpool, &destGI->dictName, srcGI->dictName );
     XP_STRNCPY( destGI->isoCodeStr, srcGI->isoCodeStr, VSIZE(destGI->isoCodeStr)-1 );
     destGI->gameID = srcGI->gameID;
     destGI->gameSeconds = srcGI->gameSeconds;
+    destGI->created = srcGI->created;
+    destGI->conTypes = srcGI->conTypes;
     destGI->nPlayers = (XP_U8)srcGI->nPlayers;
     XP_U16 nPlayers = srcGI->nPlayers;
     destGI->boardSize = (XP_U8)srcGI->boardSize;
@@ -659,7 +624,6 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
                                   srcPl->password );
         replaceStringIfDifferent( mpool, &destPl->dictName,
                                   srcPl->dictName );
-        destPl->secondsUsed = srcPl->secondsUsed;
         destPl->robotIQ = srcPl->robotIQ;
         destPl->isLocal = srcPl->isLocal;
     }
@@ -746,11 +710,22 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
                 equal = strEq( lp1->name, lp2->name )
                     && strEq( lp1->password, lp2->password )
                     && strEq( lp1->dictName, lp2->dictName )
-                    && lp1->secondsUsed == lp2->secondsUsed
                     && lp1->isLocal == lp2->isLocal
                     && lp1->robotIQ == lp2->robotIQ
                     ;
             }
+            break;
+        case 19:
+            equal = gi1->created == gi2->created;
+            break;
+        case 20:
+            equal = gi1->conTypes == gi2->conTypes;
+            break;
+        case 21:
+            equal = strEq( gi1->gameName, gi2->gameName );
+            break;
+        case 22:
+            equal = gi1->fromRematch == gi2->fromRematch;
             break;
         default:
             goto done;
@@ -763,8 +738,8 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
  done:
     if ( !equal ) {
         XP_LOGFF( "exited when ii = %d", ii );
-        LOGGI( gi1, "gi1" );
-        LOGGI( gi2, "gi2" );
+        LOG_GI( gi1, "gi1" );
+        LOG_GI( gi2, "gi2" );
     }
 
     return equal;
@@ -772,10 +747,10 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
 #endif
 
 void
-gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
+gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi, 
                 XP_U16 nTotal, XP_U16 nHere )
 {
-    LOGGI( gi, "before" );
+    LOG_GI( gi, "before" );
     XP_ASSERT( nTotal <= MAX_NUM_PLAYERS );
     XP_ASSERT( nHere < nTotal );
 
@@ -810,14 +785,13 @@ gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
         if ( !lp->name || !lp->name[0] ) {
             XP_UCHAR name[32];
             XP_U16 len = VSIZE(name);
-            dutil_getUsername( util_getDevUtilCtxt( util, xwe ),
-                               xwe, ii, LP_IS_LOCAL(lp),
+            dutil_getUsername( dutil, xwe, ii, LP_IS_LOCAL(lp),
                                LP_IS_ROBOT(lp), name, &len );
-            replaceStringIfDifferent( util->mpool, &lp->name, name );
+            replaceStringIfDifferent( mpool, &lp->name, name );
         }
     }
 
-    LOGGI( gi, "after" );
+    LOG_GI( gi, "after" );
 }
 
 XP_U16
@@ -871,9 +845,19 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    XP_UCHAR* str = stringFromStream( mpool, stream );
+    if ( STREAM_VERS_BIGGERGI <= strVersion ) {
+        XP_UCHAR* str = stringFromStream( mpool, stream );
+        if ( !str ) {
+            /* Let's have no-name be empty string, not null */
+            str = XP_CALLOC( mpool, 1 );
+        }
+        replaceStringIfDifferent( mpool, &gi->gameName, str );
+        XP_FREEP( mpool, &str );
+    }
+
+    XP_UCHAR str[64];
+    stringFromStreamHere( stream, str, VSIZE(str) );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
-    XP_FREEP( mpool, &str );
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
@@ -906,6 +890,10 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->allowHintRect = XP_FALSE;
     }
 
+    if ( STREAM_VERS_BIGGERGI <= strVersion ) {
+        gi->fromRematch = stream_getBits( stream, 1 );
+    }
+
     if ( strVersion >= STREAM_VERS_BLUETOOTH ) {
         gi->confirmBTConnect = stream_getBits( stream, 1 );
     } else {
@@ -918,6 +906,11 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
         stream_getU16( stream ) : stream_getU32( stream );
     // XP_LOGFF( "read forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
+
+    if ( STREAM_VERS_BIGGERGI <= strVersion
+         && gi->serverRole != SERVER_STANDALONE ) {
+        gi->conTypes = stream_getU16( stream );
+    }
 
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
         stringFromStreamHere( stream, gi->isoCodeStr, VSIZE(gi->isoCodeStr) );
@@ -933,28 +926,36 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->gameSeconds = stream_getU16( stream );
     }
 
+    if ( STREAM_VERS_BIGGI <= strVersion ) {
+        gi->created = stream_getU32( stream );
+        XP_ASSERT( gi->created );
+    } else {
+        XP_ASSERT( 0 == gi->created );
+    }
+
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* pl = &gi->players[ii];
-        str = stringFromStream( mpool, stream );
+        stringFromStreamHere( stream, str, VSIZE(str) );
         replaceStringIfDifferent( mpool, &pl->name, str );
-        XP_FREEP( mpool, &str );
 
-        str = stringFromStream( mpool, stream );
+        stringFromStreamHere( stream, str, VSIZE(str) );
         replaceStringIfDifferent( mpool, &pl->password, str );
-        XP_FREEP( mpool, &str );
 
         if ( strVersion >= STREAM_VERS_PLAYERDICTS ) {
-            str = stringFromStream( mpool, stream );
+            stringFromStreamHere( stream, str, VSIZE(str) );
             replaceStringIfDifferent( mpool, &pl->dictName, str );
-            XP_FREEP( mpool, &str );
         }
 
-        pl->secondsUsed = stream_getU16( stream );
+        if ( STREAM_VERS_BIGGERGI > strVersion ) {
+            stream_getU16( stream ); /* consume it */
+        }
         pl->robotIQ = ( strVersion < STREAM_VERS_ROBOTIQ )
             ? (XP_U8)stream_getBits( stream, 1 )
             : stream_getU8( stream );
         pl->isLocal = stream_getBits( stream, 1 );
     }
+
+    XP_ASSERT( !!gi->isoCodeStr[0] );
 } /* gi_readFromStream */
 
 void
@@ -970,6 +971,10 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 #else
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
+
+    if ( STREAM_VERS_BIGGERGI <= strVersion ) {
+        stringToStream( stream, gi->gameName );
+    }
 
     stringToStream( stream, gi->dictName );
 
@@ -995,6 +1000,11 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
     stream_putBits( stream, 2, gi->forceChannel );
+
+    if ( STREAM_VERS_BIGGERGI <= strVersion ) {
+        stream_putBits( stream, 1, gi->fromRematch );
+    }
+
     // XP_LOGFF( "wrote forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
 
     if ( 0 ) {
@@ -1006,6 +1016,12 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
         stream_putU16( stream, gi->gameID );
     }
 
+    if ( STREAM_VERS_BIGGERGI <= strVersion
+         && gi->serverRole != SERVER_STANDALONE ) {
+        stream_putU16( stream, gi->conTypes );
+    }
+
+    XP_ASSERT( !!gi->isoCodeStr[0] );
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
         stringToStream( stream, gi->isoCodeStr );
     } else {
@@ -1018,31 +1034,24 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     }
     stream_putU16( stream, gi->gameSeconds );
 
+    if ( STREAM_VERS_BIGGI <= strVersion ) {
+        XP_ASSERT( gi->created );
+        stream_putU32( stream, gi->created );
+    }
+
     int ii;
     const LocalPlayer* pl;
     for ( pl = gi->players, ii = 0; ii < gi->nPlayers; ++pl, ++ii ) {
         stringToStream( stream, pl->name );
         stringToStream( stream, pl->password );
         stringToStream( stream, pl->dictName );
-        stream_putU16( stream, pl->secondsUsed );
+        if ( STREAM_VERS_BIGGERGI > strVersion ) {
+            stream_putU16( stream, 0 );
+        }
         stream_putU8( stream, pl->robotIQ );
         stream_putBits( stream, 1, pl->isLocal );
     }
 } /* gi_writeToStream */
-
-#ifdef XWFEATURE_CHANGEDICT
-static void
-gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
-{
-    XP_U16 ii;
-    const XP_UCHAR* name = dict_getName( dict );
-    replaceStringIfDifferent( mpool, &gi->dictName, name );
-    for ( ii = 0; ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* pl = &gi->players[ii];
-        XP_FREEP( mpool, &pl->dictName );
-    }    
-}
-#endif
 
 XP_Bool
 player_hasPasswd( const LocalPlayer* player )
@@ -1060,41 +1069,58 @@ player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* buf )
     return 0 == XP_STRCMP( player->password, (XP_UCHAR*)buf );
 } /* player_passwordMatches */
 
-XP_U16
-player_timePenalty( CurGameInfo* gi, XP_U16 playerNum )
+GameRef
+gi_formatGR( const CurGameInfo* gi )
 {
-    XP_S16 seconds = (gi->gameSeconds / gi->nPlayers);
-    LocalPlayer* player = gi->players + playerNum;
-    XP_U16 result = 0;
-
-    seconds -= player->secondsUsed;
-    if ( seconds < 0 ) {
-        seconds = -seconds;
-        seconds += 59;
-        result = (seconds/60) * 10;
-    }
-    return result;
-} /* player_timePenalty */
+    GameRef gr = formatGR( gi->gameID, gi->serverRole );
+    return gr;
+}
 
 #ifdef DEBUG
 void
-game_logGI( const CurGameInfo* gi, const char* msg, const char* func, int line )
+game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
+            const char* func, int line )
 {
-    XP_LOGFF( "msg: %s from %s() line %d; gameID: %X", msg, func, line,
-              !!gi ? gi->gameID:0 );
+    int offset = 0;
+    offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                           "from %s() line %d; ", func, line );
     if ( !!gi ) {
-        XP_LOGF( "  serverRole: %d", gi->serverRole );
-        XP_LOGF( "  nPlayers: %d", gi->nPlayers );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                               "name: %s, ", gi->gameName );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                               "gameID: %X; created: %d, ", gi->gameID, gi->created );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                               "role: %d, ", gi->serverRole );
+        XP_UCHAR tmp[128];
+        logTypeSet( gi->conTypes, tmp, VSIZE(tmp) );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                               "types: [%s], ", tmp );
+
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                               "nPlayers: %d [", gi->nPlayers );
         for ( XP_U16 ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
-            XP_LOGF( "  player[%d]: local: %s; robotIQ: %d; name: %s; dict: %s; pwd: %s", ii,
-                     boolToStr(lp->isLocal), lp->robotIQ, lp->name, lp->dictName, lp->password );
+            offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
+                                   "{plr[%d]: local: %s; robotIQ: %d; name: %s; dict: %s; pwd: %s}, ", ii,
+                                   boolToStr(lp->isLocal), lp->robotIQ, lp->name, lp->dictName, lp->password );
         }
-        XP_LOGF( "  forceChannel: %d", gi->forceChannel );
-        XP_LOGF( "  dictName: %s", gi->dictName );
-        XP_LOGF( "  isoCode: %s", gi->isoCodeStr );
-        XP_LOGF( "  tradeSub7: %s", boolToStr(gi->tradeSub7) );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "],  forceChannel: %d", gi->forceChannel );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "  dict: %s", gi->dictName );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "  iso: %s", gi->isoCodeStr );
+        // offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "  tradSub7: %s", boolToStr(gi->tradeSub7) );
     }
+}
+
+XP_Bool
+gi_isValid(const CurGameInfo* gi)
+{
+    XP_Bool result =
+        !!gi
+        && 0 < gi->nPlayers && gi->nPlayers <= MAX_NUM_PLAYERS
+        && gi->created
+        && gi->gameID
+        ;
+    return result;
 }
 #endif
 

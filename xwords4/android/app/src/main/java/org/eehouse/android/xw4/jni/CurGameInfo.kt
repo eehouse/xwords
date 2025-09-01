@@ -39,7 +39,7 @@ import java.util.Arrays
 import java.util.Random
 import kotlin.math.abs
 
-class CurGameInfo: Serializable {
+class CurGameInfo(): Serializable {
     enum class XWPhoniesChoice {
         PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW, PHONIES_BLOCK,
     }
@@ -49,41 +49,45 @@ class CurGameInfo: Serializable {
     }
 
     @JvmField
+    var gameName: String? = null
+    @JvmField
     var dictName: String? = null
     @JvmField
-    var players: Array<LocalPlayer?>
+    var players = Array<LocalPlayer>(MAX_NUM_PLAYERS, {LocalPlayer()})
+
     var isoCodeStr: String? = null // public only for access from JNI; use isoCode() from java
     @JvmField
     var gameID: Int = 0
-    var gameSeconds: Int
+    var gameSeconds: Int = 0
     @JvmField
-    var nPlayers: Int
-    var boardSize: Int
-    var traySize: Int
-    var bingoMin: Int
+    var nPlayers: Int = 0
+    var boardSize: Int = 0
+    var traySize: Int = 0
+    var bingoMin: Int = 0
     @JvmField
     var forceChannel: Int = 0
     @JvmField
-    var serverRole: DeviceRole?
+    var serverRole: DeviceRole? = null
+    @JvmField
+    var conTypes: CommsAddrRec.CommsConnTypeSet? = null
+    @JvmField
+    var fromRematch: Boolean = false
 
     @JvmField
-    var inDuplicateMode: Boolean
-    var tradeSub7: Boolean
-    var hintsNotAllowed: Boolean
-    var timerEnabled: Boolean
-    var allowPickTiles: Boolean
-    var allowHintRect: Boolean
-    var phoniesAction: XWPhoniesChoice?
+    var inDuplicateMode: Boolean = false
+    var tradeSub7: Boolean = false
+    var hintsNotAllowed: Boolean = false
+    var timerEnabled: Boolean = false
+    var allowPickTiles: Boolean = false
+    var allowHintRect: Boolean = false
+    var phoniesAction: XWPhoniesChoice? = null
 
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
     private var m_smartness = 0
 
-    // Assert.assertNotNull( m_name );
-    var name: String? = null // not shared across the jni boundary
-
     @JvmOverloads
-    constructor(context: Context, inviteID: String? = null as String?) {
+    constructor(context: Context, inviteID: String? = null) : this() {
         val isNetworked = null != inviteID
         nPlayers = 2
         inDuplicateMode = CommonPrefs.getDefaultDupMode(context)
@@ -92,12 +96,11 @@ class CurGameInfo: Serializable {
         boardSize = CommonPrefs.getDefaultBoardSize(context)
         traySize = XWPrefs.getDefaultTraySize(context)
         bingoMin = XWApp.MIN_TRAY_TILES
-        players = arrayOfNulls(MAX_NUM_PLAYERS)
-        serverRole = if (isNetworked) DeviceRole.SERVER_ISCLIENT
-        else DeviceRole.SERVER_STANDALONE
+        serverRole =
+            if (isNetworked) DeviceRole.SERVER_ISCLIENT
+            else DeviceRole.SERVER_STANDALONE
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed(
-            context,
-            isNetworked
+            context, isNetworked
         )
         tradeSub7 = CommonPrefs.getSub7TradeAllowed(context)
         phoniesAction = CommonPrefs.getDefaultPhonies(context)
@@ -113,7 +116,7 @@ class CurGameInfo: Serializable {
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.
-        for (ii in 0 until MAX_NUM_PLAYERS) {
+        for (ii in 0 until nPlayers) {
             players[ii] = LocalPlayer(context, ii)
         }
         if (isNetworked) {
@@ -140,16 +143,16 @@ class CurGameInfo: Serializable {
         setLang(context, null)
     }
 
-    constructor(src: CurGameInfo) {
-        name = src.name
+    constructor(src: CurGameInfo) : this() {
+        gameName = src.gameName
         gameID = src.gameID
         nPlayers = src.nPlayers
         gameSeconds = src.gameSeconds
         boardSize = src.boardSize
         traySize = src.traySize
         bingoMin = src.bingoMin
-        players = arrayOfNulls(MAX_NUM_PLAYERS)
         serverRole = src.serverRole
+        gameName = src.gameName
         dictName = src.dictName
         isoCodeStr = src.isoCodeStr
         hintsNotAllowed = src.hintsNotAllowed
@@ -160,10 +163,8 @@ class CurGameInfo: Serializable {
         allowPickTiles = src.allowPickTiles
         allowHintRect = src.allowHintRect
         forceChannel = src.forceChannel
-        var ii = 0
-        while (ii < MAX_NUM_PLAYERS) {
-            players[ii] = LocalPlayer(src.players[ii]!!)
-            ++ii
+        for ( ii  in 0 until MAX_NUM_PLAYERS ) {
+            players[ii] = LocalPlayer(src.players[ii])
         }
 
         Utils.testSerialization(this)
@@ -184,10 +185,12 @@ class CurGameInfo: Serializable {
                     .append(", ")
             }
             sb.append("], gameID: ").append(gameID)
+                .append(", gameName: ").append(gameName)
                 .append(", role: ").append(serverRole)
                 .append(", hashCode: ").append(hashCode())
                 .append(", timerEnabled: ").append(timerEnabled)
                 .append(", gameSeconds: ").append(gameSeconds)
+                .append(", conTypes: ").append(conTypes)
                 .append('}')
 
             result = sb.toString()
@@ -291,8 +294,9 @@ class CurGameInfo: Serializable {
             }
         }
 
-    fun addDefaults(context: Context, standalone: Boolean): CurGameInfo {
+    fun addDefaults(context: Context, standalone: Boolean, name: String?): CurGameInfo {
         setLang(context, null)
+        gameName = name
         nPlayers = 2
         players[0] = LocalPlayer(context, 0)
         players[1] = LocalPlayer(context, 1)
@@ -303,6 +307,9 @@ class CurGameInfo: Serializable {
             players[1]!!.isLocal = false
         }
         setServerRole(if (standalone) DeviceRole.SERVER_STANDALONE else DeviceRole.SERVER_ISSERVER)
+        if (!standalone) {
+            conTypes = XWPrefs.getAddrTypes(context)
+        }
         return this
     }
 
@@ -362,12 +369,13 @@ class CurGameInfo: Serializable {
                         && allowHintRect == other.allowHintRect
                         && m_smartness == other.m_smartness
                         && players.contentDeepEquals(other.players)
+                        && TextUtils.equals(gameName, other.gameName)
                         && TextUtils.equals(dictName, other.dictName)
                         && (if ((null == serverRole)) (null == other.serverRole)
                             else serverRole == other.serverRole)
                         && (if ((null == phoniesAction)) (null == other.phoniesAction)
                             else phoniesAction == other.phoniesAction)
-                        && TextUtils.equals(name, other.name)
+                        && TextUtils.equals(gameName, other.gameName)
                 } else false
             Assert.assertTrue(result == fromSuper)
         }

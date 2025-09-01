@@ -25,18 +25,25 @@
 #include "strutils.h"
 #include "stats.h"
 
-typedef struct _MQTTConStorage {
+struct MQTTConStorage {
     LaunchParams* params;
     struct mosquitto* mosq;
-    MQTTDevID clientID;
-    gchar clientIDStr[32];
-    int msgPipe[2];
+    struct  {
+        MQTTDevID clientID;
+        gchar clientIDStr[32];
+        gchar* topics[5];
+        int nTopics;
+        XP_U8 qos;
+    } config;
     XP_Bool connected;
     GSList* queue;
-} MQTTConStorage;
+};
+
+#define STORAGE_FREED ((MQTTConStorage*)-1)
 
 typedef struct _QElem {
     gchar* topic;
+    gchar* sum;
     uint8_t* buf;
     uint16_t len;
     XP_U8 qos;
@@ -66,6 +73,8 @@ sendQueueHead( MQTTConStorage* storage )
                 break;
             }
         }
+    } else {
+        XP_LOGFF( "not connected to broker" );
     }
     LOG_RETURN_VOID();
 } /* sendQueueHead */
@@ -136,8 +145,10 @@ enqueue( MQTTConStorage* storage, const char* topic,
         elem->buf = G_MEMDUP( buf, len );
         elem->len = len;
         elem->qos = qos;
+        elem->sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, len );
         storage->queue = g_slist_append( storage->queue, elem );
-        XP_LOGFF( "added elem; len now %d", g_slist_length(storage->queue) );
+        XP_LOGFF( "added elem with sum %s; len now %d", elem->sum,
+                  g_slist_length(storage->queue) );
 
         tickleQueue( storage );
     }
@@ -163,6 +174,7 @@ removeWithMid( gpointer data, gpointer user_data )
                   g_slist_length(storage->queue) );
 
         g_free( qe->topic );
+        g_free( qe->sum );
         g_free( qe->buf );
         g_free( qe );
     }
@@ -194,24 +206,66 @@ dequeue_on_idle( MQTTConStorage* storage, int mid )
     /*guint res = */g_idle_add( dequeueIdle, rsp );
 }
 
+static MQTTConStorage*
+makeStorage( LaunchParams* params )
+{
+    XP_ASSERT( !params->mqttConStorage );
+    MQTTConStorage* storage = XP_CALLOC( params->mpool, sizeof(*storage) );
+    storage->params = params;
+    params->mqttConStorage = storage;
+    XP_LOGFF( "allocated %p (params: %p, addr: %p, mpool: %p)",
+              storage, params, &params->mqttConStorage, params->mpool );
+    return storage;
+}
+
 static MQTTConStorage* 
 getStorage( LaunchParams* params )
 {
-    MQTTConStorage* storage = (MQTTConStorage*)params->mqttConStorage;
-    if ( NULL == storage ) {
-        storage = XP_CALLOC( params->mpool, sizeof(*storage) );
-        params->mqttConStorage = storage;
+    MQTTConStorage* storage = params->mqttConStorage;
+    if ( storage == STORAGE_FREED ) {
+        storage = NULL;
+    } else if ( !storage ) {
+        storage = params->mqttConStorage = makeStorage(params);
     }
     return storage;
 }
 
 static void
-loadClientID( LaunchParams* params, MQTTConStorage* storage )
+loadClientID( MQTTConStorage* storage, const MQTTDevID* devID )
 {
-    dvc_getMQTTDevID( params->dutil, NULL_XWE, &storage->clientID );
-    formatMQTTDevID( &storage->clientID, storage->clientIDStr,
-                     VSIZE(storage->clientIDStr) );
-    XP_ASSERT( 16 == strlen(storage->clientIDStr) );
+    storage->config.clientID = *devID;
+    formatMQTTDevID( &storage->config.clientID, storage->config.clientIDStr,
+                     VSIZE(storage->config.clientIDStr) );
+    XP_ASSERT( 16 == strlen(storage->config.clientIDStr) );
+}
+
+typedef struct _MessageIdleData {
+    MQTTConStorage* storage;
+    gchar* topic;
+    gchar* sum;
+    short payloadlen;
+    unsigned char* payload;
+} MessageIdleData;
+
+static gint
+handleMessageIdle( gpointer data )
+{
+    LOG_FUNC();
+    MessageIdleData* mid = (MessageIdleData*)data;
+    XW_DUtilCtxt* dutil = mid->storage->params->dutil;
+    sts_increment( dutil, NULL_XWE, STAT_MQTT_RCVD );
+
+    XP_LOGFF( "processing message of len %d with sum %s",
+              mid->payloadlen, mid->sum );
+    dvc_parseMQTTPacket( dutil, NULL_XWE, (XP_UCHAR*)mid->topic,
+                         mid->payload, mid->payloadlen );
+
+    g_free( mid->payload );
+    g_free( mid->topic );
+    g_free( mid->sum );
+    g_free( mid );
+
+    return FALSE;
 }
 
 static void
@@ -224,21 +278,17 @@ onMessageReceived( struct mosquitto* XP_UNUSED_DBG(mosq), void *userdata,
 
     XP_ASSERT( message->payloadlen < 0x7FFF );
 
-    const int msgPipe = storage->msgPipe[1];
-    /* write topic, then message */
-    const char* topic = message->topic;
-    short msgLen = htons(1 + strlen(topic));
-    write( msgPipe, &msgLen, sizeof(msgLen) );
-    write( msgPipe, topic, 1 + strlen(topic) );
+    MessageIdleData* mid = g_malloc0(sizeof(*mid));
+    mid->storage = storage;
+    mid->topic = g_strdup(message->topic);
+    mid->payloadlen = message->payloadlen;
+    mid->payload = g_memdup2( message->payload, message->payloadlen );
 
-    short len = (short)message->payloadlen;
-    len = htons( len );
-    write( msgPipe, &len, sizeof(len) );
-    write( msgPipe, message->payload, message->payloadlen );
-    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
-                                              message->payload, message->payloadlen );
-    XP_LOGFF("got message with sum %s", sum );
-    g_free( sum );
+    mid->sum = g_compute_checksum_for_data( G_CHECKSUM_MD5,
+                                            mid->payload, mid->payloadlen );
+    XP_LOGFF( "got msg of len %d with sum %s", mid->payloadlen, mid->sum );
+
+    g_idle_add( handleMessageIdle, mid );
 }
 
 static void
@@ -249,17 +299,13 @@ connect_callback( struct mosquitto* mosq, void* userdata,
     MQTTConStorage* storage = (MQTTConStorage*)userdata;
     storage->connected = XP_TRUE;
 
-    XP_UCHAR topicStorage[256];
-    XP_UCHAR* topics[4];
-    XP_U16 nTopics = VSIZE(topics);
-    XP_U8 qos;
-    dvc_getMQTTSubTopics( storage->params->dutil, NULL_XWE,
-                          topicStorage, VSIZE(topicStorage),
-                          &nTopics, topics, &qos );
     int mid;
-    int err = mosquitto_subscribe_multiple( mosq, &mid, nTopics, topics,
-                                            qos, 0, NULL );
-    XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d", topics[0],
+    int err = mosquitto_subscribe_multiple( mosq, &mid,
+                                            storage->config.nTopics,
+                                            storage->config.topics,
+                                            storage->config.qos, 0, NULL );
+    XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d",
+              storage->config.topics[0],
               mosquitto_strerror(err), mid );
     XP_USE(err);
 
@@ -300,76 +346,34 @@ log_callback( struct mosquitto *mosq, void *userdata, int level,
     /* XP_LOGFF( "msg: %s", str ); */
 }
 
-static gboolean
-handle_gotmsg( GIOChannel* source, GIOCondition XP_UNUSED(condition), gpointer data )
-{
-    MQTTConStorage* storage = (MQTTConStorage*)data;
-    // XP_LOGFF( "(len=%d)", message->payloadlen );
-    LOG_FUNC();
-    XW_DUtilCtxt* dutil = storage->params->dutil;
-    sts_increment( dutil, NULL_XWE, STAT_MQTT_RCVD );
-
-    int pipe = g_io_channel_unix_get_fd( source );
-    XP_ASSERT( pipe == storage->msgPipe[0] );
-
-    short topicLen;
-#ifdef DEBUG
-    ssize_t nRead =
-#endif
-        read( pipe, &topicLen, sizeof(topicLen) );
-    XP_ASSERT( nRead == sizeof(topicLen) );
-    topicLen = ntohs(topicLen);
-    XP_U8 topicBuf[topicLen];
-#ifdef DEBUG
-    nRead =
-#endif
-        read( pipe, topicBuf, topicLen );
-    XP_ASSERT( nRead == topicLen);
-    XP_ASSERT( '\0' == topicBuf[topicLen-1] );
-
-    short msgLen;
-#ifdef DEBUG
-    nRead =
-#endif
-        read( pipe, &msgLen, sizeof(msgLen) );
-    XP_ASSERT( nRead == sizeof(msgLen) );
-    msgLen = ntohs(msgLen);
-    XP_U8 msgBuf[msgLen];
-#ifdef DEBUG
-    nRead =
-#endif
-        read( pipe, msgBuf, msgLen );
-    XP_ASSERT( nRead == msgLen );
-
-    dvc_parseMQTTPacket( storage->params->dutil, NULL_XWE,
-                         (XP_UCHAR*)topicBuf, msgBuf, msgLen );
-    LOG_RETURN_VOID();
-    return TRUE;
-} /* handle_gotmsg */
-
 void
-mqttc_init( LaunchParams* params )
+mqttc_init( LaunchParams* params, const MQTTDevID* devID, const XP_UCHAR** topics,
+            XP_U8 qos )
 {
+    LOG_FUNC();
     if ( types_hasType( params->conTypes, COMMS_CONN_MQTT ) ) {
-        XP_ASSERT( !params->mqttConStorage );
         MQTTConStorage* storage = getStorage( params );
-        storage->params = params;
 
-        loadClientID( params, storage );
-#ifdef DEBUG
-        int res =
-#endif
-            pipe( storage->msgPipe );
-        XP_ASSERT( !res );
-        ADD_SOCKET( storage, storage->msgPipe[0], handle_gotmsg );
-    
+        loadClientID( storage, devID );
+
+        for ( int ii = 0; ii < VSIZE(storage->config.topics); ++ii ) {
+            const XP_UCHAR* topic = topics[ii];
+            if (!topic) {
+                break;
+            }
+            storage->config.topics[ii] = g_strdup( topics[ii] );
+            ++storage->config.nTopics;
+        }
+
+        storage->config.qos = qos;
+
         int err = mosquitto_lib_init();
         XP_LOGFF( "mosquitto_lib_init() => %d", err );
         XP_ASSERT( 0 == err );
 
         bool cleanSession = false;
         struct mosquitto* mosq = storage->mosq =
-            mosquitto_new( storage->clientIDStr, cleanSession, storage );
+            mosquitto_new( storage->config.clientIDStr, cleanSession, storage );
 
         err = mosquitto_username_pw_set( mosq, "xwuser", "xw4r0cks" );
         XP_LOGFF( "mosquitto_username_pw_set() => %s", mosquitto_strerror(err) );
@@ -411,24 +415,23 @@ mqttc_cleanup( LaunchParams* params )
               g_slist_length(storage->queue) );
 
     XP_ASSERT( params->mqttConStorage == storage ); /* cheat */
-    XP_FREEP( params->mpool, &storage );
-    params->mqttConStorage = NULL;
+    XP_FREEP( params->mpool, &params->mqttConStorage );
+    params->mqttConStorage = STORAGE_FREED;
 }
 
 const MQTTDevID*
 mqttc_getDevID( LaunchParams* params )
 {
     MQTTConStorage* storage = getStorage( params );
-    return &storage->clientID;
+    return &storage->config.clientID;
 }
 
 const gchar*
 mqttc_getDevIDStr( LaunchParams* params )
 {
     MQTTConStorage* storage = getStorage( params );
-    return storage->clientIDStr;
+    return storage->config.clientIDStr;
 }
-
 
 static void
 msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf,
@@ -439,31 +442,15 @@ msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf,
 }
 
 void
-mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
-              const MQTTDevID* invitee )
+mqttc_enqueue( LaunchParams* params, const XP_UCHAR* topic, const XP_U8* buf,
+               XP_U16 len, XP_U8 qos )
 {
     MQTTConStorage* storage = getStorage( params );
-#ifdef DEBUG
-    gchar buf[32];
-    XP_LOGFF( "need to send to %s", formatMQTTDevID(invitee, buf, sizeof(buf) ) );
-    XP_ASSERT( 16 == strlen(buf) );
-#endif
-
-    dvc_makeMQTTInvites( params->dutil, NULL_XWE, msgAndTopicProc, storage,
-                         invitee, nli );
-}
-
-XP_S16
-mqttc_send( LaunchParams* params, XP_U32 gameID,
-            const SendMsgsPacket* const msgs,
-            XP_U16 streamVersion, const MQTTDevID* addressee  )
-{
-    MQTTConStorage* storage = getStorage( params );
-    XP_S16 nSent = dvc_makeMQTTMessages( params->dutil, NULL_XWE,
-                                         msgAndTopicProc, storage,
-                                         msgs, addressee,
-                                         gameID, streamVersion );
-    return nSent;
+    if ( !!storage ) {
+        (void)enqueue( storage, topic, buf, len, qos );
+    } else {
+        XP_LOGFF( "not sending; storage not yet available or already freed" );
+    }
 }
 
 void

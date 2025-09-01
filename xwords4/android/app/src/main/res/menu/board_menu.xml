@@ -59,8 +59,6 @@
               android:title="@string/board_menu_game_history" />
         <item android:id="@+id/board_menu_game_resign"
               android:title="@string/board_menu_game_resign" />
-        <item android:id="@+id/board_menu_game_resend"
-              android:title="@string/board_menu_game_resend" />
       </menu>
     </item>
     

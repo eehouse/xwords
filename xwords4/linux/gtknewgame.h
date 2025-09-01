@@ -25,9 +25,15 @@
 
 #include "gtkboard.h"
 
+#ifdef XWFEATURE_DEVICE_STORES
+gboolean
+gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi,
+                  CommsAddrRec* addr, XP_Bool isNewGame, XP_Bool fireConnDlg );
+#else
 gboolean gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi,
                            CommsAddrRec* addr, XP_Bool isNewGame,
                            XP_Bool fireConnDlg );
+#endif
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

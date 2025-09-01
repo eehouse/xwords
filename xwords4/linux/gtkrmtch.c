@@ -37,8 +37,9 @@ struct {
 #define OK_RESULT 1000
 
 typedef struct _State {
-    const CommonGlobals* cGlobals;
-    NewOrder* nop;
+    XW_DUtilCtxt* dutil;
+    GameRef parent;
+    RematchOrder* rop;
     GtkWidget* dialog;
     GtkWidget* radios[RO_NUM_ROS];
     int curSel;
@@ -55,13 +56,16 @@ toggled( GtkToggleButton* togglebutton, gpointer user_data )
             if ( state->radios[ii] == GTK_WIDGET(togglebutton) ) {
                 state->curSel = ii;
 
-                server_figureOrder( state->cGlobals->game.server, sROData[ii].ro,
-                                    state->nop );
+                NewOrder no = {};
+                gr_figureOrder( state->dutil,
+                                state->parent, NULL_XWE,
+                                sROData[ii].ro, &no );
 
-                const CurGameInfo* gi = state->cGlobals->gi;
+                const CurGameInfo* gi
+                    = gr_getGI(state->dutil, state->parent, NULL_XWE);
                 const gchar* arr[gi->nPlayers + 1];
                 for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-                    arr[ii] = gi->players[state->nop->order[ii]].name;
+                    arr[ii] = gi->players[no.order[ii]].name;
                 }
                 arr[gi->nPlayers] = NULL;
                 gchar* namesstr = g_strjoinv( " vs. ", (gchar**)arr );
@@ -75,16 +79,21 @@ toggled( GtkToggleButton* togglebutton, gpointer user_data )
 }
 
 XP_Bool
-gtkask_rematch( const CommonGlobals* cGlobals, NewOrder* nop,
-                gchar* gameName, int* nameLen )
+gtkask_rematch( XW_DUtilCtxt* dutil, GtkWidget* parentWin, GameRef parent,
+                RematchOrder* rop, gchar* gameName, int* nameLen )
 {
     XP_USE( gameName );
     XP_USE( nameLen );
 
-    State state = { .cGlobals = cGlobals, .nop = nop, };
+    State state = { .dutil = dutil,
+                    .parent = parent,
+                    .rop = rop,
+    };
 
     state.dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( state.dialog ), TRUE );
+    gtk_window_set_transient_for( GTK_WINDOW(state.dialog),
+                                  GTK_WINDOW(parentWin) );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
@@ -95,9 +104,11 @@ gtkask_rematch( const CommonGlobals* cGlobals, NewOrder* nop,
     for ( int ii = 0; ii < VSIZE(sROData); ++ii ) {
         const gchar* txt = sROData[ii].txt;
         GtkWidget* radio = state.radios[ii]
-            = gtk_radio_button_new_with_label_from_widget( GTK_RADIO_BUTTON(prev), txt );
+            = gtk_radio_button_new_with_label_from_widget( GTK_RADIO_BUTTON(prev),
+                                                           txt );
         g_signal_connect( radio, "toggled", G_CALLBACK(toggled), &state );
-        gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(radio), FALSE, TRUE, 0 );
+        gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(radio), FALSE,
+                            TRUE, 0 );
         prev = radio;
     }    
     g_signal_emit_by_name(state.radios[0], "toggled");
@@ -110,9 +121,17 @@ gtkask_rematch( const CommonGlobals* cGlobals, NewOrder* nop,
 
     gint dlgResult = gtk_dialog_run( GTK_DIALOG(state.dialog) );
 
-    gtk_widget_destroy( state.dialog );
+
+    *rop = sROData[state.curSel].ro;
 
     XP_Bool success = dlgResult == OK_RESULT;
+    if ( success ) {
+        const gchar* name = gtk_entry_get_text( GTK_ENTRY(state.nameField) );
+        *nameLen = snprintf( gameName, *nameLen, "%s", name );
+    }
+
+    gtk_widget_destroy( state.dialog );
+
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }

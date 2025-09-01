@@ -20,6 +20,20 @@
 #include "dllist.h"
 #include "dutil.h"              /* for NULL ??? */
 
+static int
+atEndProc(const DLHead* XP_UNUSED(dl1), const DLHead* XP_UNUSED(dl2))
+{
+    return -1;
+}
+
+DLHead*
+dll_append( DLHead* list, DLHead* node )
+{
+    DLHead* result = dll_insert( list, node, atEndProc );
+    XP_ASSERT( !node->_next );
+    return result;
+}
+
 DLHead*
 dll_insert( DLHead* head, DLHead* node, DLCompProc proc )
 {

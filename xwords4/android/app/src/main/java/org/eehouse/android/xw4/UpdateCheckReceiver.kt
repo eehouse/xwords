@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -317,8 +318,9 @@ class UpdateCheckReceiver : BroadcastReceiver() {
                     appParams.put(k_DEBUG, BuildConfig.DEBUG)
                     params.put(k_APP, appParams)
 
-                    val devID = XwJNI.dvc_getMQTTDevID()
-                    params.put(k_MQTTDEVID, devID)
+                    MQTTUtils.getMQTTDevID()?.let {
+                        params.put(k_MQTTDEVID, it)
+                    }
                 } catch (jse: JSONException) {
                     Log.ex(TAG, jse)
                 }

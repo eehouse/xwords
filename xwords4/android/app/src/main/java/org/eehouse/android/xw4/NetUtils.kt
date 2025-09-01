@@ -26,6 +26,7 @@ import android.text.TextUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.eehouse.android.xw4.jni.Device
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -78,7 +79,7 @@ object NetUtils {
 
     private fun urlForGameID(context: Context, gameID: Int): String {
         val host = XWPrefs.getPrefsString(context, R.string.key_mqtt_host)
-        val myID = XwJNI.dvc_getMQTTDevID()
+        val myID = MQTTUtils.getMQTTDevID()
         // Use the route that doesn't require login
         val url = String.format(
             "https://%s/xw4/ui/gameinfo?gid16=%X&devid=%s",
@@ -173,7 +174,7 @@ object NetUtils {
             val directJson = true
             val result = runConn(conn, jsonParams, directJson)
             if (0 != resultKey) {
-                XwJNI.dvc_onWebSendResult(resultKey, true, result)
+                Device.onWebSendResult(resultKey, true, result)
             }
         }
     }

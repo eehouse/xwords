@@ -27,6 +27,8 @@ import android.widget.ImageView
 import android.widget.TextView
 
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
+import org.eehouse.android.xw4.jni.GameMgr
+import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = GameListGroup::class.java.simpleName
@@ -35,28 +37,28 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     ExpiringLinearLayout(cx, aset),
     LongClickHandler, View.OnClickListener, OnLongClickListener
 {
-    var groupID: Long = 0
-        private set
+    private var mGrp: GroupRef? = null
+    private var mName: String? = null
     private var m_expanded = false
     private var m_cb: SelectableItem? = null
-    private var m_gcb: GroupStateListener? = null
+    private var mGsl: GroupStateListener? = null
     private var m_etv: TextView? = null
     private var m_selected = false
     private var m_nGames = 0
     private var m_dsdel: DrawSelDelegate? = null
-    private var m_expandButton: ImageButton? = null
+    private var mExpandButton: ImageButton? = null
     private var m_check: ImageView? = null
 
     override fun onFinishInflate() {
         super.onFinishInflate()
         m_etv = findViewById<View>(R.id.game_name) as TextView
-        m_expandButton = findViewById<View>(R.id.expander) as ImageButton
+        mExpandButton = findViewById<View>(R.id.expander) as ImageButton
         m_check = findViewById<View>(R.id.group_check) as ImageView
         m_check!!.setOnClickListener(this)
 
         // click on me OR the button expands/contracts...
         setOnClickListener(this)
-        m_expandButton!!.setOnClickListener(this)
+        mExpandButton!!.setOnClickListener(this)
 
         m_dsdel = DrawSelDelegate(this)
         setOnLongClickListener(this)
@@ -69,6 +71,27 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         if (selected != m_selected) {
             toggleSelected()
         }
+    }
+
+    fun load(grp: GroupRef, gsl: GroupStateListener ) {
+        mGrp = grp
+        mGsl = gsl
+        reload()
+    }
+
+    fun reload() {
+        mGrp?.let { grp ->
+            launch {
+                m_expanded = !grp.getGroupCollapsed()
+                m_nGames = grp.getGroupGamesCount()
+                mName = grp.getGroupName()
+                setButton()
+            }
+        }
+    }
+
+    fun getGrp(): GroupRef? {
+        return mGrp
     }
 
     fun setText(text: String?) {
@@ -104,55 +127,33 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     override fun onClick(view: View) {
         when (view.id) {
             R.id.group_check -> toggleSelected()
-            else -> if (0 < m_nGames) {
-                m_expanded = !m_expanded
-                m_gcb!!.onGroupExpandedChanged(this, m_expanded)
-                setButton()
+            R.id.expander, this.id -> {
+                Log.d(TAG, "onClick(): $m_expanded")
+                mGsl!!.onGroupExpandedChanged(this, !m_expanded)
             }
+            else -> Assert.failDbg()
         }
     }
 
     private fun setButton() {
-        if (null != m_expandButton) {
-            m_expandButton!!.visibility =
-                if (0 == m_nGames) GONE else VISIBLE
-            m_expandButton!!.setImageResource(if (m_expanded) R.drawable.expander_ic_maximized else R.drawable.expander_ic_minimized)
+        Log.d(TAG, "setButton()")
+        mExpandButton?.let { button ->
+            button.visibility = if (0 == m_nGames) GONE else VISIBLE
+            val rsrc =
+                if (m_expanded) R.drawable.expander_ic_maximized
+                else R.drawable.expander_ic_minimized
+            button.setImageResource(rsrc)
         }
-    }
 
-    companion object {
-        fun makeForPosition(
-            context: Context,
-            convertView: View?,
-            groupID: Long,
-            nGames: Int,
-            expanded: Boolean,
-            cb: SelectableItem?,
-            gcb: GroupStateListener?
-        ): GameListGroup? {
-            var result: GameListGroup? = null
-            if (null != convertView && convertView is GameListGroup) {
-                result = convertView
-
-                // Hack: once an ExpiringLinearLayout has a background it's not
-                // set up to be reused without one.  Until that's fixed, don't
-                // reuse in that case.
-                if (result!!.hasDelegate()) {
-                    result = null
-                }
-            }
-            if (null == result) {
-                result = LocUtils.inflate(context, R.layout.game_list_group) as GameListGroup
-            }
-            result!!.m_cb = cb
-            result.m_gcb = gcb
-            result.groupID = groupID
-            result.m_nGames = nGames
-            result.m_expanded = expanded
-
-            result.setButton() // in case onFinishInflate already called
-
-            return result
-        }
+        val name =
+            LocUtils.getQuantityString(
+                context,
+                R.plurals.group_name_fmt,
+                m_nGames, mName, m_nGames
+            )
+        val grp =
+            if ( BuildConfig.DEBUG ) " $mGrp"
+            else ""
+        setText(name + grp)
     }
 }

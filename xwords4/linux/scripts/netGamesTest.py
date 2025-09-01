@@ -519,8 +519,7 @@ class Device():
             response = invitee._sendWaitReply('inviteRcvd', gid=game.gid,
                                               nPlayersT=nPlayersT,
                                               dict = self.args.DICTS[0],
-                                              addr = self._mkAddr(self),
-                                              )
+                                              addr = self._mkAddr(self))
             if response['success']:
                 invitee.expectInvite(game.gid, game.rematchLevel)
 
@@ -705,6 +704,8 @@ class Device():
 
         if self.args.WITH_MQTT:
             scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, '--mqtt-host', self.args.MQTT_HOST ]
+        else:
+            scriptArgs += [ '--skip-mqtt-add' ]
 
         if self.args.WITH_SMS:
             scriptArgs += [ '--sms-number', self.smsNumber ]

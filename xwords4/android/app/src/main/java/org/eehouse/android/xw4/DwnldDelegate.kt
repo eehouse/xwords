@@ -43,6 +43,7 @@ import org.eehouse.android.xw4.DictUtils.DownProgListener
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.jni.Device
 
 class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout.import_dict) {
     private val m_activity: Activity
@@ -184,6 +185,7 @@ class DwnldDelegate(delegator: Delegator) : ListDelegateBase(delegator, R.layout
                     XWPrefs.getDefaultLoc((m_activity)!!)
                 DictLangCache.inval(m_activity, m_savedDict, loc, true)
                 callListener(m_uri, true)
+                Device.onDictAdded(m_savedDict!!)
             } else if (null != m_appFile) {
                 // launch the installer
                 val intent = Utils.makeInstallIntent(

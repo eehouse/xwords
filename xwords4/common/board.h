@@ -23,7 +23,7 @@
 #include "comtypes.h"
 #include "model.h"
 #include "gameinfo.h"
-#include "server.h"
+#include "serverp.h"
 #include "draw.h"
 #include "xwstream.h"
 
@@ -31,36 +31,15 @@
 extern "C" {
 #endif
 
-typedef enum {
-    /* keep these three together: for the cursor */
-    XP_KEY_NONE = 0,
-
-    XP_CURSOR_KEY_DOWN,
-    XP_CURSOR_KEY_ALTDOWN,
-    XP_CURSOR_KEY_RIGHT,
-    XP_CURSOR_KEY_ALTRIGHT,
-    XP_CURSOR_KEY_UP,
-    XP_CURSOR_KEY_ALTUP,
-    XP_CURSOR_KEY_LEFT,
-    XP_CURSOR_KEY_ALTLEFT,
-
-    XP_CURSOR_KEY_DEL,
-    XP_RAISEFOCUS_KEY,
-    XP_RETURN_KEY,
-    XP_ALTRETURN_KEY,
-
-    XP_KEY_LAST
-} XP_Key;
-
 #define BONUS_HINT_INTERVAL 15 /* stolen from xwords.c */
 
 /* typedef struct BoardCtxt BoardCtxt; */
 
 BoardCtxt* board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
-                       DrawCtx* draw, XW_UtilCtxt* util );
+                       DrawCtx* draw, XW_UtilCtxt** utilp );
 BoardCtxt* board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                                  ModelCtxt* model, ServerCtxt* server, 
-                                 DrawCtx* draw, XW_UtilCtxt* util,
+                                 DrawCtx* draw, XW_UtilCtxt** utilp,
                                  XP_U16 nPlayers );
 void board_setCallbacks( BoardCtxt* board, XWEnv xwe );
 void board_setDraw( BoardCtxt* board, XWEnv xwe, DrawCtx* draw );
@@ -72,31 +51,10 @@ void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 
 void board_reset( BoardCtxt* board, XWEnv xwe );
 
-void board_drawSnapshot( const BoardCtxt* board, XWEnv xwe, DrawCtx* dctx,
-                         XP_U16 width, XP_U16 height );
+void board_drawThumb( const BoardCtxt* board, XWEnv xwe, DrawCtx* dctx );
 
     /* Layout.  Either done internally or by client */
 #ifdef COMMON_LAYOUT
-
-typedef struct _BoardDims {
-    /* The whole board */
-    XP_U16 left, top;
-    XP_U16 width, height;
-
-    /* board */
-    XP_U16 boardWidth, boardHt;
-
-    /* scoreboard */
-    XP_U16 scoreLeft, scoreWidth, scoreHt;
-
-    /* tray */
-    XP_U16 trayLeft, trayTop, trayWidth, trayHt;
-    XP_U16 traySize;
-
-    /* other */
-    XP_U16 cellSize, maxCellSize;
-    XP_U16 timerWidth;
-} BoardDims;
 
 void board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
                          XP_U16 bLeft, XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
@@ -166,7 +124,8 @@ XP_Bool board_requestHint( BoardCtxt* board, XWEnv xwe,
 #endif
                            XP_Bool usePrev, XP_Bool* workRemainsP );
 
-XP_Bool board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp );
+XP_Bool board_prefsChanged( BoardCtxt* board, XWEnv xwe,
+                            const CommonPrefs* cp );
 
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 
@@ -176,10 +135,6 @@ XP_Bool board_setBlankValue( BoardCtxt* board, XP_U16 XP_UNUSED(player),
 
 void board_resetEngine( BoardCtxt* board );
 
-typedef struct _PhoniesConf {
-    XP_Bool confirmed;
-    XP_U32 key;
-} PhoniesConf;
 XP_Bool board_commitTurn( BoardCtxt* board, XWEnv xwe, const PhoniesConf* pc,
                           XP_Bool turnConfirmed, TrayTileSet* newTiles );
 

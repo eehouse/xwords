@@ -23,8 +23,8 @@
 enum {
     XWSTATE_NONE,               /* 0 */
     XWSTATE_BEGIN,              /* 1 */
-    XWSTATE_NEWCLIENT,          /* was a host, now a reset client */
-    XWSTATE_NEED_SHOWSCORE,       /* client-only */
+    XWSTATE_NEWCLIENT,          /* was a host, now a reset client: relay only */
+    __XWSTATE_NEED_SHOWSCORE,       /* client-only */
     __XWSTATE_WAITING_ALL_REG,      /* 4 (unused) */
     XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
     XWSTATE_NEEDSEND_BADWORD_INFO, /* 6 */

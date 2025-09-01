@@ -45,23 +45,30 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         if (BuildConfig.NON_RELEASE && !isTaskRoot) {
             Log.e(TAG, "isTaskRoot() => false!!! What to do?")
         }
-        val dlgt = DualpaneDelegate(this)
-        super.onCreate(savedInstanceState, dlgt)
-        m_root = findViewById<View>(R.id.main_container) as LinearLayout
-        supportFragmentManager.addOnBackStackChangedListener(this)
 
-        // Nothing to do if we're restarting
-        if (savedInstanceState == null) {
-            // In case this activity was started with special instructions from an Intent,
-            // pass the Intent's extras to the fragment as arguments
-            addFragmentImpl(
-                GamesListFrag.newInstance(),
-                intent.extras, null
-            )
+        if ( RecoveryActivity.active() ) {
+            super.onCreate( savedInstanceState )
+            RecoveryActivity.start(this)
+            finish()
+        } else {
+            val dlgt = DualpaneDelegate(this)
+            super.onCreate(savedInstanceState, dlgt)
+            m_root = findViewById<View>(R.id.main_container) as LinearLayout
+            supportFragmentManager.addOnBackStackChangedListener(this)
+
+            // Nothing to do if we're restarting
+            if (savedInstanceState == null) {
+                // In case this activity was started with special instructions from an Intent,
+                // pass the Intent's extras to the fragment as arguments
+                addFragmentImpl(
+                    GamesListFrag.newInstance(),
+                    intent.extras, null
+                )
+            }
+            setSafeToRun()
+
+            KAService.startIf(this)
         }
-        setSafeToRun()
-
-        KAService.startIf(this)
     } // onCreate
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -74,6 +81,7 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         super.onPostResume()
         setVisiblePanes()
         logPaneFragments()
+        // getDelegate().onPostResume()
     }
 
     // called when we're brought to the front (probably as a result of
@@ -190,11 +198,11 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
 
     fun dispatchOnCreateContextMenu(
         menu: ContextMenu, view: View,
-        menuInfo: ContextMenuInfo
+        ignoreMe: ContextMenuInfo?
     ) {
         val frags = visibleFragments
         for (frag in frags) {
-            frag!!.getDelegate()!!.onCreateContextMenu(menu, view, menuInfo)
+            frag!!.getDelegate()!!.onCreateContextMenu(menu, view, ignoreMe)
         }
     }
 

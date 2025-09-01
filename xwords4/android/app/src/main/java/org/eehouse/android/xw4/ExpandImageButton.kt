@@ -23,6 +23,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageButton
 
+private val TAG: String = ExpandImageButton::class.java.simpleName
+
 class ExpandImageButton(context: Context, aset: AttributeSet?) :
     ImageButton(context, aset), View.OnClickListener
 {

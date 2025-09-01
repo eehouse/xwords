@@ -66,6 +66,9 @@ GSList* gdb_listGames( sqlite3* pDb );
 /* free list and data allocated by above */
 void gdb_freeGamesList( GSList* games );
 
+GSList* gdb_keysLike( sqlite3* pDb, const XP_UCHAR* prefix );
+void gdb_freeKeysList( GSList* keys );
+
 /* Mapping of relayID -> rowid */
 GHashTable* gdb_getRelayIDsToRowsMap( sqlite3* pDb );
 

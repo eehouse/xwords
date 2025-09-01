@@ -20,7 +20,7 @@
 #include <pthread.h>
 
 #include "util.h"
-#include "smsproto.h"
+#include "smsprotop.h"
 #include "comtypes.h"
 #include "strutils.h"
 #include "xwmutex.h"

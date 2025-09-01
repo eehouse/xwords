@@ -130,22 +130,24 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
 
     // SizeChangeListener
     override fun sizeChanged(width: Int, height: Int, isPortrait: Boolean) {
-        installListeners()
+        tryInstallListeners()
         doShowHide()
     }
 
-    fun installListeners() {
+    private fun tryInstallListeners() {
         tryAddListeners(mOnclicklisteners)
         tryAddListeners(mOnlongclicklisteners)
     }
 
     private fun tryAddListeners(map: MutableMap<Buttons, Any>) {
-        val iter = map.keys.iterator()
-        while (iter.hasNext()) {
-            val key = iter.next()
-            val listener = map[key]
-            setListener(key, listener)
-            iter.remove()
+        mLayout?.let {   // don't bother if mLayout still unset
+            val iter = map.keys.iterator()
+            while (iter.hasNext()) {
+                val key = iter.next()
+                val listener = map[key]!!
+                setListener(key, listener)
+                iter.remove()
+            }
         }
     }
 
@@ -178,5 +180,7 @@ class Toolbar(private val mActivity: Activity, private val mDlgDlgt: HasDlgDeleg
         scroller.addView(mLayout)
 
         scroller.visibility = if (mVisible) View.VISIBLE else View.GONE
+
+        tryInstallListeners()
     }
 }

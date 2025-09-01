@@ -31,7 +31,8 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
 class NewWithKnowns(cx: Context, aset: AttributeSet?) :
@@ -52,83 +53,90 @@ class NewWithKnowns(cx: Context, aset: AttributeSet?) :
     private var mCurRadio = 0
     private var mNamesSpinner: Spinner? = null
     private var mStandalone = false
+    private var mGameName: String? = null
 
-    fun setCallback(listener: ButtonChangeListener):NewWithKnowns {
+    fun setCallback(listener: ButtonChangeListener): NewWithKnowns {
         mListener = listener
         return this
     }
 
     fun configure(standalone: Boolean, gameName: String?) {
-        val context = context
         mStandalone = standalone
-        val hasKnowns = !standalone && XwJNI.hasKnownPlayers()
-        val toHide: IntArray
-        if (hasKnowns) {
-            val knowns = XwJNI.kplr_getPlayers()
-            mCurKnown = DBUtils.getStringFor(
-                context, KP_NAME_KEY,
-                knowns!![0]
-            )
-            val adapter = ArrayAdapter(
-                context,
-                android.R.layout.simple_spinner_item,
-                knowns
-            )
-            adapter.setDropDownViewResource(
-                android.R.layout
-                    .simple_spinner_dropdown_item
-            )
-            mNamesSpinner = findViewById<Spinner>(R.id.names)
-            mNamesSpinner?.let {
-                it.adapter = adapter
-                it.onItemSelectedListener = this
-                Assert.assertTrueNR(!TextUtils.isEmpty(mCurKnown))
-                for (ii in knowns.indices) {
-                    if (knowns[ii] == mCurKnown) {
-                        it.setSelection(ii)
-                        break
+        mGameName = gameName
+
+        launchWhenStarted {
+            val standalone = mStandalone
+            val gameName = mGameName
+            val context = context
+            val hasKnowns = !standalone && Knowns.hasKnownPlayers()
+            val toHide: IntArray
+            if (hasKnowns) {
+                val knowns = Knowns.getPlayers()
+                mCurKnown = DBUtils.getStringFor(
+                    context, KP_NAME_KEY,
+                    knowns!![0]
+                )
+                val adapter = ArrayAdapter(
+                    context,
+                    android.R.layout.simple_spinner_item,
+                    knowns
+                )
+                adapter.setDropDownViewResource(
+                    android.R.layout
+                        .simple_spinner_dropdown_item
+                )
+                mNamesSpinner = findViewById<Spinner>(R.id.names)
+                mNamesSpinner?.let {
+                    it.adapter = adapter
+                    it.onItemSelectedListener = this@NewWithKnowns
+                    Assert.assertTrueNR(!TextUtils.isEmpty(mCurKnown))
+                    for (ii in knowns.indices) {
+                        if (knowns[ii] == mCurKnown) {
+                            it.setSelection(ii)
+                            break
+                        }
                     }
                 }
-            }
-            toHide = intArrayOf(
-                R.id.radio_default, R.id.choose_expl_default,
-            )
-        } else {
-            toHide = intArrayOf(
-                R.id.radio_unknown,
-                R.id.choose_expl_new,
-                R.id.radio_known,
-                R.id.names,
-                R.id.expl_known,
-            )
-
-            val tv = findViewById<View>(R.id.choose_expl_default) as TextView
-            val id = if (standalone) R.string.choose_expl_default_solo
-            else R.string.choose_expl_default_net
-            tv.text = LocUtils.getString(context, id)
-        }
-
-        toHide.map{findViewById<View>(it).visibility = GONE}
-
-        findViewById<EditWClear>(R.id.name_edit).setText(gameName)
-
-        val group = findViewById<RadioGroup>(R.id.group)
-        group.setOnCheckedChangeListener(this)
-
-        // Get the id of the radio button used last time. Since views' IDs can
-        // change from one build to another, double-check that it's in the set
-        // of known possible values, and if not don't try to use it.
-        val key = if (standalone) KP_PREVSOLO_KEY else KP_PREVNET_KEY
-        val legalIds =
-            if ( standalone ) {
-                setOf(R.id.radio_default, R.id.radio_configure,)
+                toHide = intArrayOf(
+                    R.id.radio_default, R.id.choose_expl_default,
+                )
             } else {
-                setOf(R.id.radio_known, R.id.radio_unknown, R.id.radio_configure,)
+                toHide = intArrayOf(
+                    R.id.radio_unknown,
+                    R.id.choose_expl_new,
+                    R.id.radio_known,
+                    R.id.names,
+                    R.id.expl_known,
+                )
+
+                val tv = findViewById<View>(R.id.choose_expl_default) as TextView
+                val id = if (standalone) R.string.choose_expl_default_solo
+                else R.string.choose_expl_default_net
+                tv.text = LocUtils.getString(context, id)
             }
 
-        val lastSet = DBUtils.getCheckedIntFor(context, key, legalIds, 0)
-        if (lastSet != 0) {
-            group.check(lastSet)
+            toHide.map{findViewById<View>(it).visibility = GONE}
+
+            findViewById<EditWClear>(R.id.name_edit).setText(gameName)
+
+            val group = findViewById<RadioGroup>(R.id.group)
+            group.setOnCheckedChangeListener(this@NewWithKnowns)
+
+            // Get the id of the radio button used last time. Since views' IDs can
+            // change from one build to another, double-check that it's in the set
+            // of known possible values, and if not don't try to use it.
+            val key = if (standalone) KP_PREVSOLO_KEY else KP_PREVNET_KEY
+            val legalIds =
+                if ( standalone ) {
+                    setOf(R.id.radio_default, R.id.radio_configure,)
+                } else {
+                    setOf(R.id.radio_known, R.id.radio_unknown, R.id.radio_configure,)
+                }
+
+            val lastSet = DBUtils.getCheckedIntFor(context, key, legalIds, 0)
+            if (lastSet != 0) {
+                group.check(lastSet)
+            }
         }
     }
 

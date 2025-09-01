@@ -60,6 +60,7 @@ import org.eehouse.android.xw4.SelectableItem.LongClickHandler
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.XWExpListAdapter.GroupTest
 import org.eehouse.android.xw4.XWListItem.ExpandedListener
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -809,6 +810,7 @@ class DictsDelegate(delegator: Delegator) :
     private fun deleteDict(dict: String, loc: DictLoc) {
         DictUtils.deleteDict(mActivity, dict, loc)
         DictLangCache.inval(mActivity, dict, loc, false)
+        Device.onDictRemoved(dict)
     }
 
     private fun startDownload(isoCode: ISOCode?, name: String) {

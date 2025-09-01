@@ -104,9 +104,6 @@ typedef struct StreamCtxVTable {
 
     void (*m_stream_setVersion)( XWStreamCtxt* dctx, XP_U16 vers );
     XP_U16  (*m_stream_getVersion)( const XWStreamCtxt* dctx );
-
-    void  (*m_stream_setOnCloseProc)( XWStreamCtxt* dctx, MemStreamCloseCallback proc,
-                                      XWEnv xwe );
 } StreamCtxVTable;
 
 
@@ -201,8 +198,5 @@ struct XWStreamCtxt {
 
 #define stream_getVersion(sc) \
          (sc)->vtable->m_stream_getVersion((sc))
-
-#define stream_setOnCloseProc(sc, p, xwe)                   \
-    (sc)->vtable->m_stream_setOnCloseProc((sc), (p), (xwe))
 
 #endif /* _XWSTREAM_H_ */

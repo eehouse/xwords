@@ -25,6 +25,7 @@ DEFINES += -DLOG_COMMS_MSGNOS
 DEFINES += -DDI_DEBUG
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 DEFINES += -DDEBUG_HASHING
+# DEFINES += -DSEQUENTIAL_GIDS
 CFLAGS += -DDEBUG_TS -rdynamic
 PLATFORM = obj_linux_memdbg
 else
@@ -41,6 +42,7 @@ CFLAGS += -DGITREV="\"$(shell git describe --tags --dirty)\""
 CFLAGS += -DGTK_DISABLE_SINGLE_INCLUDES
 CFLAGS += -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
 CFLAGS += -DGSEAL_ENABLE
+# CFLAGS += -DUSE_MUTEXES
 
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
@@ -120,7 +122,7 @@ DEFINES += -DXWFEATURE_TURNCHANGENOTIFY
 DEFINES += -DXWFEATURE_TRAYUNDO_ONE
 DEFINES += -DXWFEATURE_BONUSALL
 # DEFINES += -DXWFEATURE_BONUSALLHINT
-DEFINES += -DXWFEATURE_HILITECELL
+# DEFINES += -DXWFEATURE_HILITECELL
 # allow change dict inside running game
 DEFINES += -DXWFEATURE_CHANGEDICT
 DEFINES += -DXWFEATURE_DEVID
@@ -133,7 +135,9 @@ DEFINES += -DCOMMON_LAYOUT
 DEFINES += -DNATIVE_NLI
 DEFINES += -DXWFEATURE_COMMS_INVITE
 DEFINES += -DXWFEATURE_RO_BYNAME
-DEFINES += -DDUTIL_TIMERS
+DEFINES += -DXWFEATURE_DEVICE_STORES
+
+
 # DEFINES += -DRELAY_VIA_HTTP
 
 DEFINES += -DXWFEATURE_TESTSORT
@@ -199,7 +203,6 @@ DEFINES += -DPERIMETER_FOCUS
 #GPROFFLAG = -pg
 
 # INCLUDES += -I/usr/lib/glib/include
-INCLUDES += ${EXTRAINCS}
 
 ifdef DO_GTK
 GTK_OBJS = \
@@ -216,9 +219,12 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \
 	$(BUILD_PLAT_DIR)/gtkaskbad.o \
+	$(BUILD_PLAT_DIR)/gtkaskgo.o \
 	$(BUILD_PLAT_DIR)/gtkchat.o \
 	$(BUILD_PLAT_DIR)/gtkkpdlg.o \
 	$(BUILD_PLAT_DIR)/gtkrmtch.o \
+	$(BUILD_PLAT_DIR)/gtkedalr.o \
+	$(BUILD_PLAT_DIR)/gtkaskgrp.o \
 
 endif
 ifdef DO_CURSES
@@ -230,7 +236,8 @@ CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/cursesdraw.o \
 	$(BUILD_PLAT_DIR)/cursesask.o \
 	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
-	$(BUILD_PLAT_DIR)/cursesletterask.o
+	$(BUILD_PLAT_DIR)/cursesletterask.o \
+	$(BUILD_PLAT_DIR)/curseschat.o
 endif
 ifndef LIB_NO_UI
 MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \
@@ -245,10 +252,10 @@ OBJ = \
 	$(BUILD_PLAT_DIR)/linuxdict.o \
 	$(BUILD_PLAT_DIR)/linuxutl.o \
 	$(BUILD_PLAT_DIR)/gamesdb.o \
-	$(BUILD_PLAT_DIR)/relaycon.o \
 	$(BUILD_PLAT_DIR)/mqttcon.o \
 	$(BUILD_PLAT_DIR)/lindutil.o \
 	$(BUILD_PLAT_DIR)/extcmds.o \
+	$(BUILD_PLAT_DIR)/lindmgr.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -lpthread -luuid -lcurl $(GPROFFLAG)
@@ -293,7 +300,7 @@ include ../common/rules.mk
 # use. Strictly speaking the alpa stuff isn't needed to build the
 # linux version of CrossWords.
 
-REQUIRED_DEBS = gcc libgtk-3-dev \
+REQUIRED_DEBS = gcc \
 		libbluetooth-dev \
 		libncurses5-dev \
 		libncursesw5-dev \

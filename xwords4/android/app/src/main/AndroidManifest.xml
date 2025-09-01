@@ -93,6 +93,8 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="RecoveryActivity"
+              />
     <activity android:name="BTInviteActivity"
 			  android:label="@string/bt_invite_title"
               />
@@ -118,7 +120,7 @@
       </intent-filter>
     </receiver>
     <receiver android:name="TimerReceiver"/>
-    <receiver android:name="DupeModeTimer"/>
+    <!--receiver android:name="DupeModeTimer"/-->
 
     <receiver android:name="UpdateCheckReceiver"
               android:exported="true"

@@ -33,7 +33,11 @@
 #define TRAY_SIZE "Tray size"
 
 typedef struct GtkNewGameState {
+#ifdef XWFEATURE_DEVICE_STORES
+    LaunchParams* params;
+#else
     GtkGameGlobals* globals;
+#endif
     CurGameInfo* gi;
     NewGameCtx* newGameCtxt;
 
@@ -51,6 +55,7 @@ typedef struct GtkNewGameState {
     int bingoMin;
     gchar* dict;
 
+    GtkWidget* dialog;
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
     GtkWidget* roleCombo;
     GtkWidget* settingsButton;
@@ -65,6 +70,7 @@ typedef struct GtkNewGameState {
     GtkWidget* timerField;
     GtkWidget* duplicateCheck;
     GtkWidget* sub7Check;
+    GtkWidget* nameEdit;
 } GtkNewGameState;
 
 static void
@@ -96,8 +102,8 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
         }
 
         if ( state->loaded && SERVER_STANDALONE != role  ) {
-            gtkConnsDlg( state->globals, &state->addr, role,
-                         !state->isNewGame );
+            gtkConnsDlg( state->params, state->dialog, &state->addr,
+                         role, !state->isNewGame );
         }
     }
 }
@@ -113,7 +119,8 @@ phonies_combo_changed( GtkComboBox* combo, gpointer gp )
 static void
 handle_settings( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
 {
-    gtkConnsDlg( state->globals, &state->addr, state->role, !state->isNewGame );
+    gtkConnsDlg( state->params, state->dialog, &state->addr,
+                 state->role, !state->isNewGame );
 }
 
 static void
@@ -220,7 +227,7 @@ static gint
 call_connsdlg_func( gpointer data )
 {
     GtkNewGameState* state = (GtkNewGameState*)data;
-    gtkConnsDlg( state->globals, &state->addr, state->role,
+    gtkConnsDlg( state->params, state->dialog, &state->addr, state->role,
                  !state->isNewGame );
     return 0;
 }
@@ -242,7 +249,7 @@ addPhoniesCombo( GtkNewGameState* state, GtkWidget* parent )
 
     g_signal_connect( phoniesCombo, "changed",
                       G_CALLBACK(phonies_combo_changed), state );
-    XWPhoniesChoice startChoice = state->globals->cGlobals.params->pgi.phoniesAction;
+    XWPhoniesChoice startChoice = state->params->pgi.phoniesAction;
     gtk_combo_box_set_active( GTK_COMBO_BOX(phoniesCombo), startChoice );
     gtk_widget_show( phoniesCombo );
     gtk_box_pack_start( GTK_BOX(hbox), phoniesCombo, FALSE, TRUE, 0 );
@@ -390,7 +397,7 @@ addDictsRow( GtkNewGameState* state, GtkWidget* parent )
     gtk_widget_show( dictCombo );
     gtk_box_pack_start( GTK_BOX(hbox), dictCombo, FALSE, TRUE, 0 );
 
-	GSList* dicts = listDicts( state->globals->cGlobals.params );
+	GSList* dicts = ldm_listDicts( state->params->ldm );
     GSList* iter = dicts;
     for ( int ii = 0; !!iter; iter = iter->next, ++ii ) {
         const gchar* name = iter->data;
@@ -410,19 +417,39 @@ addDictsRow( GtkNewGameState* state, GtkWidget* parent )
     gtk_box_pack_start( GTK_BOX(parent), hbox, FALSE, TRUE, 0 );
 } /* addDictsRow */
 
-static GtkWidget*
+static void
 makeNewGameDialog( GtkNewGameState* state )
 {
-    GtkWidget* dialog;
     GtkWidget* vbox;
     GtkWidget* hbox;
     GtkWidget* roleCombo;
     char* roles[] = { "Standalone", "Host" };
 
-    dialog = gtk_dialog_new();
-    gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
+    state->dialog = gtk_dialog_new();
+    gtk_window_set_modal( GTK_WINDOW( state->dialog ), TRUE );
+
+    const CommonAppGlobals* cag = state->params->cag;
+    GtkAppGlobals* aGlobals = (GtkAppGlobals*)cag;
+    gtk_window_set_transient_for( GTK_WINDOW(state->dialog),
+                                  GTK_WINDOW(aGlobals->window) );
 
     vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+
+    {
+        GtkWidget* nameRow = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+        GtkWidget* label = gtk_label_new("Game name:");
+        gtk_box_pack_start( GTK_BOX(nameRow), label, FALSE, TRUE, 0 );
+        state->nameEdit = gtk_entry_new();
+        gchar name[64];
+        snprintf( name, sizeof(name), "Game %ld", 1 + (XP_RANDOM() % 64) );
+        gtk_entry_set_text( GTK_ENTRY(state->nameEdit), name );
+        gtk_box_pack_start( GTK_BOX(nameRow), state->nameEdit, FALSE, TRUE, 0 );
+        gtk_box_pack_start( GTK_BOX(vbox), nameRow, FALSE, TRUE, 0 );
+
+        GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+        gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
+                            FALSE, TRUE, 0 );
+    }
 
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
@@ -546,15 +573,13 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
-    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
+    gtk_dialog_add_action_widget( GTK_DIALOG(state->dialog), vbox, 0 );
 
-    gtk_widget_show_all (dialog);
+    gtk_widget_show_all( state->dialog );
 
     if ( state->fireConnDlg ) {
         (void)g_idle_add( call_connsdlg_func, state );
     }
-
-    return dialog;
 } /* makeNewGameDialog */
 
 static GtkWidget*
@@ -637,7 +662,7 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
         gchar buf[32];
         cp = !!value.ng_cp ? value.ng_cp : "";
         if ( NG_COL_NAME == col && '\0' == cp[0] ) {
-            LaunchParams* params = state->globals->cGlobals.params;
+            LaunchParams* params = state->params;
             if ( !!params->localName ) {
                 cp = params->localName;
             } else {
@@ -741,6 +766,80 @@ checkAndWarn( GtkNewGameState* state, GtkWidget* dialog )
     }
 }
 
+#ifdef XWFEATURE_DEVICE_STORES
+gboolean
+gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi, CommsAddrRec* addr,
+                  XP_Bool isNewGame, XP_Bool fireConnDlg )
+{
+    GtkNewGameState state = {};
+
+    state.params = params;
+    state.gi = gi;
+    state.newGameCtxt = newg_make( isNewGame, params->dutil,
+                                   gtk_newgame_col_enable,
+                                   gtk_newgame_attr_enable,
+                                   gtk_newgame_col_get,
+                                   gtk_newgame_col_set,
+                                   gtk_newgame_attr_set,
+                                   &state );
+    state.isNewGame = isNewGame;
+    state.fireConnDlg = fireConnDlg;
+
+    setDefaults( gi );
+
+    /* returns when button handler calls gtk_main_quit */
+    do {
+        state.revert = FALSE;
+        state.loaded = XP_FALSE;
+        state.nCols = gi->boardSize;
+        state.nTrayTiles = gi->traySize;
+        state.bingoMin = gi->bingoMin;
+        if ( 0 == state.nCols ) {
+            state.nCols = params->pgi.boardSize;
+        }
+        state.role = gi->serverRole;
+
+        XP_MEMCPY( &state.addr, addr, sizeof(state.addr) );
+
+        makeNewGameDialog( &state );
+
+        newg_load( state.newGameCtxt, NULL_XWE, gi );
+        state.loaded = XP_TRUE;
+
+        gtk_main();
+
+        checkAndWarn( &state, state.dialog );
+        if ( !state.cancelled && !state.revert ) {
+            if ( newg_store( state.newGameCtxt, NULL_XWE, gi, XP_TRUE ) ) {
+                gi->boardSize = state.nCols;
+                gi->traySize = state.nTrayTiles;
+                gi->bingoMin = state.bingoMin;
+                gi->conTypes = state.addr._conTypes;
+                replaceStringIfDifferent( params->mpool,
+                                          &gi->dictName, state.dict );
+                const gchar* gameName =
+                    gtk_entry_get_text( GTK_ENTRY(state.nameEdit) );
+                replaceStringIfDifferent( params->mpool,
+                                          &gi->gameName, gameName );
+                gi->phoniesAction = state.phoniesAction;
+            } else {
+                /* Do it again if we warned user of inconsistency. */
+                state.revert = XP_TRUE;
+            }
+        }
+
+        gtk_widget_destroy( state.dialog );
+        state.fireConnDlg = XP_FALSE;
+    } while ( state.revert );
+
+    newg_destroy( state.newGameCtxt );
+
+    if ( !state.cancelled ) {
+        XP_MEMCPY( addr, &state.addr, sizeof(state.addr) );
+    }
+    return !state.cancelled;
+}
+#else
 gboolean
 gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
                   XP_Bool isNewGame, XP_Bool fireConnDlg )
@@ -812,5 +911,6 @@ gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
     }
     return !state.cancelled;
 } /* newGameDialog */
+#endif
 
 #endif /* PLATFORM_GTK */

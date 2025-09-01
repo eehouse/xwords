@@ -585,12 +585,6 @@
          and if you decline does nothing. -->
     <string name="board_menu_game_final">Final scores</string>
     <string name="board_menu_game_resign">Resign</string>
-    <!-- Meaningful only for networked games, this menu causes all
-         messages that have not yet been acknowledged by a remote
-         device in the game to be resent.  Eventually I hope to be
-         able to remove this from non-debug versions of the game
-         because users should not have to do do this EVER. -->
-    <string name="board_menu_game_resend">Resend moves</string>
     <!--       
        ############################################################
        # Board info/error dialog messages
@@ -2241,7 +2235,6 @@
     <string name="radio_name_tablet">Tablet/no radio</string>
     <string name="radio_name_gsm">GSM</string>
     <string name="radio_name_cdma">CDMA</string>
-    <string name="game_summary_field_rowid">rowid</string>
     <string name="game_summary_field_gameid">gameid</string>
     <string name="game_summary_field_npackets">Pending packet count</string>
     <string name="expl_update_url">Update checks URL</string>

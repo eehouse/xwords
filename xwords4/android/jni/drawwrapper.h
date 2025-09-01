@@ -27,11 +27,6 @@
 
 #include "andglobals.h"
 
-DrawCtx* makeDraw( MPFORMAL JNIEnv* env,
-#ifdef MAP_THREAD_TO_ENV
-                   EnvThreadInfo* ti,
-#endif
-                   jobject j_draw );
-void destroyDraw( DrawCtx** dctx, JNIEnv* env );
+DrawCtx* makeDraw( JNIEnv* env, jobject j_draw, DrawTarget dt );
 
 #endif

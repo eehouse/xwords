@@ -53,7 +53,6 @@ LOCAL_DEFINES += \
 	-DMQTT_GAMEID_TOPICS \
 	-DGITREV=\"${GITREV}\" \
 
-LOCAL_DEFINES += -DDUTIL_TIMERS
 LOCAL_DEFINES += -DXWFEATURE_DEVICE
 
 # XWFEATURE_RAISETILE: first, fix to not use timer
@@ -79,6 +78,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/dragdrpp.c   \
 	$(COMMON_PATH)/pool.c       \
 	$(COMMON_PATH)/tray.c       \
+	$(COMMON_PATH)/util.c       \
 	$(COMMON_PATH)/dictnry.c    \
 	$(COMMON_PATH)/dictiter.c   \
 	$(COMMON_PATH)/dictmgr.c    \
@@ -87,6 +87,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/strutils.c   \
 	$(COMMON_PATH)/engine.c     \
 	$(COMMON_PATH)/board.c      \
+	$(COMMON_PATH)/draw.c      	\
 	$(COMMON_PATH)/mempool.c    \
 	$(COMMON_PATH)/game.c       \
 	$(COMMON_PATH)/server.c     \
@@ -105,6 +106,9 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/xwarray.c    \
 	$(COMMON_PATH)/stats.c      \
 	$(COMMON_PATH)/timers.c     \
+	$(COMMON_PATH)/gamemgr.c    \
+	$(COMMON_PATH)/gameref.c    \
+	$(COMMON_PATH)/chatp.c    	\
 	$(COMMON_PATH)/cJSON.c      \
 	$(COMMON_PATH)/cJSON_Utils.c\
 

@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef USE_MUTEXES
+
 #include "xwmutex.h"
 
 #ifdef DEBUG
@@ -218,4 +220,5 @@ mtx_crashToTest()
 
     pthread_join( thread2, NULL );
 }
+#endif
 #endif

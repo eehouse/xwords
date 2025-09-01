@@ -59,12 +59,16 @@ COMMON5 = \
 	$(COMMONOBJDIR)/dbgutil.o \
 	$(COMMONOBJDIR)/smsproto.o \
 	$(COMMONOBJDIR)/dutil.o \
+	$(COMMONOBJDIR)/util.o \
 	$(COMMONOBJDIR)/device.o \
+	$(COMMONOBJDIR)/chatp.o \
 	$(COMMONOBJDIR)/knownplyr.o \
 	$(COMMONOBJDIR)/dllist.o \
 	$(COMMONOBJDIR)/xwarray.o \
+	$(COMMONOBJDIR)/gameref.o \
 	$(COMMONOBJDIR)/stats.o \
 	$(COMMONOBJDIR)/timers.o \
+	$(COMMONOBJDIR)/gamemgr.o \
 	$(COMMONOBJDIR)/md5.o \
 
 CJSON = \

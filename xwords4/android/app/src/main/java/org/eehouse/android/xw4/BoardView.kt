@@ -34,35 +34,40 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 import org.eehouse.android.xw4.DbgUtils.printStack
+import org.eehouse.android.xw4.BoardCanvas.DrawProgress
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler
+import org.eehouse.android.xw4.jni.BoardHandler.DrawDoneProc
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
-import org.eehouse.android.xw4.jni.JNIThread
-import org.eehouse.android.xw4.jni.JNIThread.JNICmd
+import org.eehouse.android.xw4.jni.DrawCtx
+import org.eehouse.android.xw4.jni.GameRef
+import org.eehouse.android.xw4.jni.UtilCtxt
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
-class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
-    mContext, attrs
-), BoardHandler {
+class BoardView(private val mContext: Context, attrs: AttributeSet?) :
+    View(mContext, attrs), BoardHandler, DrawProgress
+{
     private val mDefaultFontHt: Int
     private val mMediumFontHt: Int
-    private var mJniGamePtr: GamePtr? = null
     private var mGi: CurGameInfo? = null
     private var mIsSolo = false
     private var mLayoutWidth = 0
     private var mDimsTossCount = 0 // hack hack hack!!
     private var mLayoutHeight = 0
     private var mCanvas: BoardCanvas? = null // owns the bitmap
-    private var mJniThread: JNIThread? = null
+    private var mUtils: UtilCtxt? = null
+    private var mGR: GameRef? = null
     private var mParent: Activity? = null
     private var mMeasuredFromDims = false
     private var mDims: BoardDims? = null
     private var mConnTypes: CommsConnTypeSet? = null
     private var mNRP: NewRecentsProc? = null
+    private var mDDProc: DrawDoneProc? = null
     private var mLastSpacing = MULTI_INACTIVE
+    private var mBitmap: Bitmap? = null // the board
 
     // called when inflating xml
     init {
@@ -72,8 +77,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val wantMore = null != mJniThread
-        if (wantMore) {
+        var draw = false
+        val wantMore = mGR?.let { gr ->
             val action = event.action
             val xx = event.x.toInt()
             val yy = event.y.toInt()
@@ -82,45 +87,58 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
                     mLastSpacing = MULTI_INACTIVE
                     if (ConnStatusHandler.handleDown(xx, yy)) {
                         // do nothing
-                    } else if (XwJNI.board_containsPt(mJniGamePtr, xx, yy)) {
-                        handle(JNICmd.CMD_PEN_DOWN, xx, yy)
+                    } else if (gr.containsPt(xx, yy)) {
+                        gr.handlePenDown(xx, yy)
                     } else {
                         Log.d(TAG, "onTouchEvent(): in white space")
                     }
                 }
 
-                MotionEvent.ACTION_MOVE -> if (ConnStatusHandler.handleMove(xx, yy)) {
-                    // do nothing
-                } else if (MULTI_INACTIVE == mLastSpacing) {
-                    handle(JNICmd.CMD_PEN_MOVE, xx, yy)
-                } else {
-                    val zoomBy = figureZoom(event)
-                    if (0 != zoomBy) {
-                        handle(
-                            JNICmd.CMD_ZOOM,
-                            if (zoomBy < 0) -2 else 2
-                        )
+                MotionEvent.ACTION_MOVE ->
+                    if (ConnStatusHandler.handleMove(xx, yy)) {
+                        // do nothing
+                    } else if (MULTI_INACTIVE == mLastSpacing) {
+                        gr.handlePenMove(xx, yy)
+                    } else {
+                        figureZoom(event).let{ zoomBy ->
+                            if (0 != zoomBy) {
+                                gr.zoom(if (zoomBy < 0) -2 else 2)
+                            }
+                        }
                     }
-                }
 
-                MotionEvent.ACTION_UP -> if (ConnStatusHandler.handleUp(xx, yy)) {
-                    // do nothing
-                } else {
-                    handle(JNICmd.CMD_PEN_UP, xx, yy)
-                }
+                MotionEvent.ACTION_UP ->
+                    if (ConnStatusHandler.handleUp(xx, yy)) {
+                        // do nothing
+                    } else {
+                        gr.handlePenUp(xx, yy)
+                    }
 
                 MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_2_DOWN -> {
-                    handle(JNICmd.CMD_PEN_UP, xx, yy)
+                    gr.handlePenUp(xx, yy)
                     mLastSpacing = getSpacing(event)
                 }
 
-                MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_POINTER_2_UP -> mLastSpacing =
-                    MULTI_INACTIVE
+                MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_POINTER_2_UP ->
+                    mLastSpacing = MULTI_INACTIVE
 
                 else -> Log.w(TAG, "onTouchEvent: unknown action: %d", action)
             }
-        }
+            // invalidate()
+            true
+        } ?: false
+
         return wantMore // true required to get subsequent events
+    }
+
+
+    fun draw() {
+        mGR?.let {
+            launch {
+                it.draw()
+                invalidate()
+            }
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -166,49 +184,29 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         //        width, height );
     }
 
-    // @Override
-    // public void onSizeChanged( int width, int height, int oldWidth, int oldHeight )
-    // {
-    //     DbgUtils.logf( "BoardView.onSizeChanged(): width: %d => %d; height: %d => %d",
-    //                    oldWidth, width, oldHeight, height );
-    //     super.onSizeChanged( width, height, oldWidth, oldHeight );
-    // }
-    // This will be called from the UI thread
-    override fun onDraw(canvas: Canvas) {
-        synchronized(this) {
-            if (!layoutBoardOnce()) {
-                // Log.d( TAG, "onDraw(): layoutBoardOnce() failed" );
-            } else if (!mMeasuredFromDims) {
-                // Log.d( TAG, "onDraw(): m_measuredFromDims not set" );
-            } else {
-                var bitmap = sBitmap
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    bitmap = Bitmap.createBitmap(bitmap!!)
-                }
-                canvas.drawBitmap(bitmap!!, 0f, 0f, Paint())
-                ConnStatusHandler.draw(
-                    mContext, canvas, mConnTypes, mIsSolo
-                )
-            }
-        }
+    // It may make sense to kick off layout from here rather than onDraw().
+    override fun onSizeChanged( width: Int, height: Int, oldWidth: Int, oldHeight: Int )
+    {
+        Log.d(TAG, "onSizeChanged($width, $height, $oldWidth, $oldHeight)")
+        super.onSizeChanged( width, height, oldWidth, oldHeight )
     }
 
-    private fun layoutBoardOnce(): Boolean {
+    // It's an error to do any drawing outside of onDraw() -- meaning that
+    // starting a coroutine here and then drawing is a no-no. So leave that
+    // operation in actuallyDraw()
+    override fun onDraw(canvas: Canvas) {
         val width = width
         val height = height
-        var layoutDone = width == mLayoutWidth && height == mLayoutHeight
-        if (layoutDone) {
-            // Log.d( TAG, "layoutBoardOnce(): layoutDone true" );
+        if (width == mLayoutWidth && height == mLayoutHeight) {
+            actuallyDraw(canvas)
         } else if (null == mGi) {
             // nothing to do either
-            Log.d(TAG, "layoutBoardOnce(): no m_gi")
-        } else if (null == mJniThread) {
+            Log.d(TAG, "onDraw(): no m_gi")
+        } else if (null == mGR) {
             // nothing to do either
-            Log.d(TAG, "layoutBoardOnce(): no m_jniThread")
+            Log.d(TAG, "onDraw(): no mGR")
         } else if (null == mDims) {
-            // Log.d( TAG, "layoutBoardOnce(): null m_dims" );
-            // m_canvas = null;
-            // need to synchronize??
+            Log.d( TAG, "onDraw(): null mDims" ); // don't see this!!
             val paint = Paint()
             paint.textSize = mMediumFontHt.toFloat()
             val scratch = Rect()
@@ -217,99 +215,139 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
             val timerWidth = scratch.width()
             val fontWidth =
                 min(mDefaultFontHt.toDouble(), (timerWidth / timerTxt.length).toDouble())
-                    .toInt()
-            Log.d(
-                TAG, "layoutBoardOnce(): posting JNICmd.CMD_LAYOUT(w=%d, h=%d)",
-                width, height
-            )
-            handle(
-                JNICmd.CMD_LAYOUT, width, height,
-                fontWidth, mDefaultFontHt
-            )
+                .toInt()
+            doLayout( width, height, fontWidth, mDefaultFontHt)
             // We'll be back....
         } else {
-            Log.d(TAG, "layoutBoardOnce(): DOING IT")
+            val gr = mGR!!
             // If board size has changed we need a new bitmap
             val bmHeight = 1 + mDims!!.height
             val bmWidth = 1 + mDims!!.width
-            if (null != sBitmap) {
-                if (sBitmap!!.getHeight() != bmHeight
-                    || sBitmap!!.getWidth() != bmWidth
-                ) {
-                    sBitmap = null
-                    mCanvas = null
-                }
-            }
-            if (null == sBitmap) {
-                sBitmap = Bitmap.createBitmap(
-                    bmWidth, bmHeight,
-                    Bitmap.Config.ARGB_8888
-                )
-            } else if (sIsFirstDraw) {
-                // clear so prev game doesn't seem to appear briefly.  Color
-                // doesn't seem to matter....
-                sBitmap!!.eraseColor(0)
-            }
-            if (null == mCanvas) {
-                mCanvas = BoardCanvas(
-                    mParent!!, sBitmap!!, mJniThread,
-                    mDims, mNRP
-                )
-            } else {
-                mCanvas!!.setJNIThread(mJniThread)
-            }
-            handle(JNICmd.CMD_SETDRAW, mCanvas!!)
-            handle(JNICmd.CMD_DRAW)
+            Log.d(TAG, "onDraw(): DOING IT/creating mBitmap($bmWidth x $bmHeight)")
+            mBitmap = Bitmap.createBitmap(
+                bmWidth, bmHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            mCanvas = BoardCanvas(mParent!!, mBitmap!!, gr, mDims, mNRP, this)
+            gr.setDraw(mCanvas!!, mUtils!!)
 
             // set so we know we're done
             mLayoutWidth = width
             mLayoutHeight = height
-            layoutDone = true
+
+            gr.draw()    // this is asynchronous: invalidate may come too early
+            invalidate() // get onDraw() called again
         }
-        // Log.d( TAG, "layoutBoardOnce()=>%b", layoutDone );
-        return layoutDone
-    } // layoutBoardOnce
+    }
+
+    private fun actuallyDraw(canvas: Canvas) {
+        Log.d(TAG, "actuallyDraw()")
+        if (!mMeasuredFromDims) {
+            Log.d( TAG, "actuallyDraw(): m_measuredFromDims not set" );
+        } else {
+            Log.d(TAG, "actuallyDraw(): I'm ready to draw to $canvas")
+            val bitmap = 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Bitmap.createBitmap(mBitmap!!)
+                } else mBitmap!!
+            Assert.assertNotNull(bitmap)
+            DbgUtils.assertOnUIThread()
+
+            Log.d(TAG, "calling canvas.drawBitmap(); should put bits on screen!!")
+            canvas.drawBitmap(bitmap, 0f, 0f, Paint())
+
+            mConnTypes?.let {
+                ConnStatusHandler.draw(
+                    mContext, canvas, it, mIsSolo
+                )
+            }
+            Log.d(TAG, "done drawing bitmap")
+        }
+    }
+
+    fun getDraw(): DrawCtx? {
+        Assert.assertTrue( null != mCanvas )
+        return mCanvas
+    }
+
+    fun setUtils(utils: UtilCtxt) {
+        mUtils = utils
+    }
+
+    private fun doLayout(
+        width: Int, height: Int, fontWidth: Int, fontHeight: Int
+    ) {
+        Log.d(TAG, "doLayout($width, $height)")
+        val squareTiles = XWPrefs.getSquareTiles(mContext!!)
+        Utils.launch {
+            val gr = mGR!!
+            val dims = gr.figureLayout(0, 0, width, height,
+                                       150,  /*scorePct*/200,  /*trayPct*/
+                                       width, fontWidth, fontHeight, squareTiles)
+
+            // Make space for net status icon if appropriate
+            if (mGi!!.serverRole != CurGameInfo.DeviceRole.SERVER_STANDALONE) {
+                val statusWidth = dims.boardWidth / 15
+                dims.scoreWidth -= statusWidth
+                val left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth
+                ConnStatusHandler.setRect(
+                    left, dims.top, left + statusWidth,
+                    dims.top + dims.scoreHt
+                )
+            } else {
+                ConnStatusHandler.clearRect()
+            }
+
+            gr.applyLayout(dims)
+
+            dimsChanged(dims)
+        }
+    }
 
     // BoardHandler interface implementation
     override fun startHandling(
-        parent: Activity, thread: JNIThread,
-        connTypes: CommsConnTypeSet?,
-        proc: NewRecentsProc?
+        parent: Activity, gr: GameRef,
+        gi: CurGameInfo, proc: NewRecentsProc?,
+        ddProc: DrawDoneProc?
     ) {
-        Log.d(TAG, "startHandling(thread=%H, parent=%s)", thread, parent)
         mParent = parent
-        mJniThread = thread
-        mJniGamePtr = thread.getGamePtr()
-        mGi = thread.getGI()
-        mIsSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == mGi?.serverRole
-        mConnTypes = connTypes
+        mGR = gr
+        mGi = gi
+        mIsSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole
+        mConnTypes = gi.conTypes!!
         mLayoutWidth = 0
         mLayoutHeight = 0
         mNRP = proc
-        sIsFirstDraw = sCurGameID != mGi!!.gameID
-        sCurGameID = mGi!!.gameID
+        mDDProc = ddProc
+        // sCurGameID = mGi!!.gameID
 
         // Set the jni layout if we already have one
         mDims?.let {
-            handle(JNICmd.CMD_LAYOUT, it)
-        }
-
-        // Make sure we draw.  Sometimes when we're reloading after
-        // an obsuring Activity goes away we otherwise won't.
-        invalidate()
+            Log.d(TAG, "startHandling(): have dims so calling applyLayout()")
+            gr.applyLayout(it)
+            // Make sure we draw.  Sometimes when we're reloading after
+            // an obsuring Activity goes away we otherwise won't.
+            invalidate()
+        } ?: run{ Log.d(TAG, "startHandling(): mDims not set!!") }
     }
 
     override fun stopHandling() {
-        mJniThread = null
-        mJniGamePtr = null
-        mCanvas?.setJNIThread(null)
+        mGR?.setDraw()
+        mGR = null
+        mCanvas?.setGR(null)
+    }
+
+    // This isn't working yet, but the idea is that we let the common code
+    // decide when to draw and use draw_endDraw() to know to transfer bits to
+    // the screen.
+    override fun drawDone() {
+        invalidate()
+        mDDProc?.let {it.drawDone()}
     }
 
     fun doJNIDraw() {
         synchronized(this) {
-            mJniGamePtr?.let {
-                XwJNI.board_draw(it)
-            }
+            mGR?.draw()
         }
 
         // Force update now that we have bits to copy. I don't know why (yet),
@@ -319,9 +357,13 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         invalidate()
     }
 
-    fun dimsChanged(dims: BoardDims) {
+    private fun dimsChanged(dims: BoardDims) {
         mDims = dims
-        mParent!!.runOnUiThread { requestLayout() }
+        Log.d(TAG, "dimsChanged(): mDims set; requesting layout")
+        mParent!!.runOnUiThread {
+            requestLayout()
+            invalidate()
+        }
     }
 
     fun orientationChanged() {
@@ -368,22 +410,20 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         return zoomDir
     }
 
-    private fun handle(cmd: JNICmd, vararg args: Any) {
-        if (null == mJniThread) {
-            Log.w(TAG, "not calling handle(%s)", cmd.toString())
-            printStack(TAG)
-        } else {
-            mJniThread!!.handle(cmd, *args)
-        }
-    }
+    // private fun handle(cmd: JNICmd, vararg args: Any) {
+    //     Assert.fail()
+    //     // if (null == mGR) {
+    //     //     Log.w(TAG, "not calling handle(%s)", cmd.toString())
+    //     //     printStack(TAG)
+    //     // } else {
+    //     //     mGR!!.handle(cmd, *args)
+    //     // }
+    // }
 
     companion object {
         private val TAG = BoardView::class.java.getSimpleName()
         private const val MIN_FONT_DIPS = 10.0f
         private const val MULTI_INACTIVE = -1
-        private var sIsFirstDraw = false
-        private var sCurGameID = 0
-        private var sBitmap: Bitmap? = null // the board
         private const val PINCH_THRESHOLD = 40
     }
 }

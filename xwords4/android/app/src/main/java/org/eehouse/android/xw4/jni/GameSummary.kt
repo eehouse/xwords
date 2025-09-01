@@ -57,10 +57,9 @@ class GameSummary : Serializable {
     @JvmField
     var scores: IntArray? = null
     var gameOver: Boolean = false
+    var collapsed: Boolean = false
     var quashed: Boolean = false
     private var m_players: Array<String?>? = null
-    @JvmField
-    var conTypes: CommsConnTypeSet? = null
 
     // relay-related fields
     @JvmField
@@ -83,6 +82,17 @@ class GameSummary : Serializable {
     @JvmField
     var canRematch: Boolean = false
 
+    @JvmField
+    var nMissing = -1
+    @JvmField
+    var nInvited = 0
+    @JvmField
+    var nGuestDevs = 0
+    @JvmField
+    var hostAddr: CommsAddrRec? = null
+    @JvmField
+    var fromRematch = false
+
     private var m_giFlags: Int? = null
     private var m_playersSummary: String? = null
     private var m_gi: CurGameInfo? = null
@@ -92,15 +102,21 @@ class GameSummary : Serializable {
     constructor()
 
     constructor(gi: CurGameInfo) {
-        nPlayers = gi.nPlayers
-        isoCode = gi.isoCode()
-        serverRole = gi.serverRole
-        gameID = gi.gameID
-        m_gi = gi
+        Assert.failDbg()
+        // nPlayers = gi.nPlayers
+        // isoCode = gi.isoCode()
+        // serverRole = gi.serverRole
+        // gameID = gi.gameID
+        // m_gi = gi
     }
 
     fun inRelayGame(): Boolean {
         return null != relayID
+    }
+
+    fun setGI(gi: CurGameInfo) {
+        m_gi = gi
+        giflags()               // force set flags
     }
 
     override fun equals(obj: Any?): Boolean {
@@ -118,6 +134,7 @@ class GameSummary : Serializable {
                          && nPlayers == other.nPlayers
                          && missingPlayers == other.missingPlayers
                          && gameOver == other.gameOver
+                         && collapsed == other.collapsed
                          && quashed == other.quashed
                          && seed == other.seed
                          && modtime == other.modtime
@@ -127,8 +144,6 @@ class GameSummary : Serializable {
                          && nPacketsPending == other.nPacketsPending
                          && scores.contentEquals(other.scores)
                          && m_players.contentEquals(other.m_players)
-                         && (if ((null == conTypes)) (null == other.conTypes)
-                             else conTypes == other.conTypes)
                          && TextUtils.equals(relayID, other.relayID)
                          && remoteDevs.contentEquals(other.remoteDevs)
                          && (if ((null == serverRole)) (null == other.serverRole)
@@ -148,20 +163,20 @@ class GameSummary : Serializable {
         return result
     }
 
-    fun summarizePlayers(): String? {
-        val result: String?
-        if (null == m_gi) {
-            result = m_playersSummary
-        } else {
-            val names = arrayOfNulls<String>(nPlayers)
-            for (ii in 0 until nPlayers) {
-                names[ii] = m_gi!!.players[ii]!!.name
-            }
-            result = TextUtils.join("\n", names)
-            m_playersSummary = result
-        }
-        return result
-    }
+    // fun summarizePlayers(): String? {
+    //     val result: String?
+    //     if (null == m_gi) {
+    //         result = m_playersSummary
+    //     } else {
+    //         val names = arrayOfNulls<String>(nPlayers)
+    //         for (ii in 0 until nPlayers) {
+    //             names[ii] = m_gi!!.players[ii]!!.name
+    //         }
+    //         result = TextUtils.join("\n", names)
+    //         m_playersSummary = result
+    //     }
+    //     return result
+    // }
 
     fun summarizeDevs(): String? {
         var result: String? = null
@@ -186,30 +201,31 @@ class GameSummary : Serializable {
     }
 
     fun readPlayers(context: Context, playersStr: String?) {
-        if (null != playersStr) {
-            m_players = arrayOfNulls(nPlayers)
-            val sep = if (playersStr.contains("\n")) {
-                "\n"
-            } else {
-                LocUtils.getString(context, R.string.vs_join)
-            }
-            var nxt: Int
-            var ii = 0
-            nxt = 0
-            while (true) {
-                val prev = nxt
-                nxt = playersStr.indexOf(sep, nxt)
-                val name =
-                    if (-1 == nxt) playersStr.substring(prev)
-                    else playersStr.substring(prev, nxt)
-                m_players!![ii] = name
-                if (-1 == nxt) {
-                    break
-                }
-                nxt += sep.length
-                ++ii
-            }
-        }
+        Assert.fail();
+        // if (null != playersStr) {
+        //     m_players = arrayOfNulls(nPlayers)
+        //     val sep = if (playersStr.contains("\n")) {
+        //         "\n"
+        //     } else {
+        //         LocUtils.getString(context, R.string.vs_join)
+        //     }
+        //     var nxt: Int
+        //     var ii = 0
+        //     nxt = 0
+        //     while (true) {
+        //         val prev = nxt
+        //         nxt = playersStr.indexOf(sep, nxt)
+        //         val name =
+        //             if (-1 == nxt) playersStr.substring(prev)
+        //             else playersStr.substring(prev, nxt)
+        //         m_players!![ii] = name
+        //         if (-1 == nxt) {
+        //             break
+        //         }
+        //         nxt += sep.length
+        //         ++ii
+        //     }
+        // }
     }
 
     fun setPlayerSummary(summary: String?) {
@@ -231,50 +247,55 @@ class GameSummary : Serializable {
 
     // FIXME: should report based on whatever conType is giving us a
     // successful connection.
-    fun summarizeRole(context: Context, rowid: Long): String? {
+    suspend fun summarizeRole(context: Context, gr: GameRef): String? {
         var result: String? = null
-        if (isMultiGame) {
-
+        if ( !gr.haveDicts() ) {
+            result = LocUtils.getString(context, R.string.summary_no_dicts)
+        } else if (isMultiGame) {
             val missing = countMissing()
-            if (0 < missing) {
-                val si = DBUtils.getInvitesFor(context, rowid)
-                if (si.minPlayerCount >= missing) {
-                    result = if ((null != roomName))
-                        LocUtils.getString(context,R.string.summary_invites_out_fmt,
-                                           roomName)
-                    else
-                        LocUtils.getString(context,R.string.summary_invites_out)
-                }
-            }
+            // if (0 < missing) {
+            //     val si = DBUtils.getInvitesFor(context, rowid)
+            //     if (si.minPlayerCount >= missing) {
+            //         result = if ((null != roomName))
+            //             LocUtils.getString(context,R.string.summary_invites_out_fmt,
+            //                                roomName)
+            //         else
+            //             LocUtils.getString(context,R.string.summary_invites_out)
+            //     }
+            // }
 
             // Otherwise, use BT or SMS
             if (null == result) {
-                if (conTypes!!.contains(CommsConnType.COMMS_CONN_BT)
-                    || conTypes!!.contains(CommsConnType.COMMS_CONN_SMS)
-                    || conTypes!!.contains(CommsConnType.COMMS_CONN_MQTT)
-                ) {
-                    val fmtID =
-                        if (0 < missing) {
-                            if (DeviceRole.SERVER_ISSERVER == serverRole) {
-                                R.string.summary_wait_host
+                gr.getGI()!!.conTypes?.let { conTypes ->
+                    if (conTypes.contains(CommsConnType.COMMS_CONN_BT)
+                            || conTypes.contains(CommsConnType.COMMS_CONN_SMS)
+                            || conTypes.contains(CommsConnType.COMMS_CONN_MQTT)
+                    ) {
+                        val fmtID =
+                            if (0 < missing) {
+                                if (DeviceRole.SERVER_ISSERVER == serverRole) {
+                                    R.string.summary_wait_host
+                                } else {
+                                    R.string.summary_wait_guest
+                                }
+                            } else if (gameOver) {
+                                R.string.summary_gameover
+                            } else if (quashed) {
+                                R.string.summary_game_gone
+                            } else if (null != remoteDevs
+                                           && conTypes.contains(CommsConnType.COMMS_CONN_SMS)) {
+                                result = LocUtils
+                                    .getString(context,
+                                               R.string.summary_conn_sms_fmt,
+                                               TextUtils.join(", ",
+                                                              m_remotePhones!!))
+                                0
                             } else {
-                                R.string.summary_wait_guest
+                                R.string.summary_conn
                             }
-                    } else if (gameOver) {
-                        R.string.summary_gameover
-                    } else if (quashed) {
-                        R.string.summary_game_gone
-                    } else if (null != remoteDevs
-                        && conTypes!!.contains(CommsConnType.COMMS_CONN_SMS)) {
-                        result =
-                            LocUtils.getString(context, R.string.summary_conn_sms_fmt,
-                                               TextUtils.join(", ", m_remotePhones!!))
-                            0
-                    } else {
-                        R.string.summary_conn
-                    }
-                    if (null == result) {
-                        result = LocUtils.getString(context, fmtID)
+                        if (null == result) {
+                            result = LocUtils.getString(context, fmtID)
+                        }
                     }
                 }
             }
@@ -283,28 +304,19 @@ class GameSummary : Serializable {
     }
 
     fun relayConnectPending(): Boolean {
-        var result = (conTypes!!.contains(CommsConnType.COMMS_CONN_RELAY)
-                && (null == relayID || 0 == relayID!!.length))
-        if (result) {
-            // Don't report it as unconnected if a game's happening
-            // anyway, e.g. via BT.
-            result = 0 > turn && !gameOver
-        }
-        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result,
-        //                turn );
-        return result
+        return false
     }
 
     val isMultiGame: Boolean
         get() = (serverRole != DeviceRole.SERVER_STANDALONE)
 
     private fun isLocal(indx: Int): Boolean {
-        return localTurnNextImpl(m_giFlags!!, indx)
+        return localTurnNextImpl(giflags()!!, indx)
     }
 
     private fun isRobot(indx: Int): Boolean {
         val flag = 1 shl (indx * 2)
-        val result = 0 != (m_giFlags!! and flag)
+        val result = 0 != (giflags()!! and flag)
         return result
     }
 
@@ -346,6 +358,7 @@ class GameSummary : Serializable {
             // Make sure it's big enough
             Assert.assertTrue(0 == (FORCE_CHANNEL_MASK.inv() and m_gi!!.forceChannel))
             result = result or (m_gi!!.forceChannel shl FORCE_CHANNEL_OFFSET)
+            m_giFlags = result
             // Log.d( TAG, "giflags(): adding forceChannel %d", m_gi.forceChannel );
         }
         return result
@@ -357,7 +370,8 @@ class GameSummary : Serializable {
     }
 
     fun setGiFlags(flags: Int) {
-        m_giFlags = flags
+        Assert.failDbg()
+        // m_giFlags = flags
     }
 
     val channel: Int
@@ -368,27 +382,25 @@ class GameSummary : Serializable {
             return channel
         }
 
-    fun summarizePlayer(context: Context, rowid: Long, indx: Int): String? {
-        var player = m_players!![indx]
+    fun summarizePlayer(context: Context, indx: Int): String? {
+        var player: String = "Player $indx"
         var formatID = 0
-        if (!isLocal(indx)) {
-            val isMissing = 0 != ((1 shl indx) and missingPlayers)
-            if (isMissing) {
-                val kp = GameUtils.inviteeName(context, rowid, indx)
-                player =
-                    if (TextUtils.isEmpty(kp))
-                        LocUtils.getString(context, R.string.missing_player)
-                    else
-                        LocUtils.getString(context, R.string.invitee_fmt, kp)
+        m_gi?.let { gi ->
+            if ( isLocal(indx) ) {
+                player = gi.players[indx]!!.name
+            } else if ( isRobot(indx) ) {
+                formatID = R.string.robot_name_fmt
             } else {
-                formatID = R.string.str_nonlocal_name_fmt
+                val isMissing = 0 != ((1 shl indx) and missingPlayers)
+                if ( isMissing ) {
+                    player = LocUtils.getString(context, R.string.missing_player)
+                } else {
+                    player = gi.players[indx]!!.name
+                }
             }
-        } else if (isRobot(indx)) {
-            formatID = R.string.robot_name_fmt
-        }
-
-        if (0 != formatID) {
-            player = LocUtils.getString(context, formatID, player)
+            if (0 != formatID) {
+                player = LocUtils.getString(context, formatID, player)
+            }
         }
         return player
     }
@@ -421,7 +433,7 @@ class GameSummary : Serializable {
     fun nextTurnIsLocal(): Boolean {
         var result = false
         if (!gameOver && 0 <= turn) {
-            Assert.assertTrue(null != m_gi || null != m_giFlags)
+            Assert.assertTrue(null != m_gi || null != giflags())
             result = localTurnNextImpl(giflags(), turn)
         }
         return result
@@ -475,7 +487,10 @@ class GameSummary : Serializable {
             if (BuildConfig.NON_RELEASE) {
                 StringBuffer("{")
                     .append("nPlayers: ").append(nPlayers).append(',')
-                    .append("}")
+                    .append("collapsed: ").append(collapsed).append(',')
+                    .append("},")
+                    .append("{role: ").append(serverRole!!).append("},")
+                    .append("{nMissing: ").append(nMissing).append("},")
                     .toString()
             } else {
                 super.toString()

@@ -72,10 +72,10 @@ class DualpaneDelegate(delegator: Delegator) :
 
     override fun onCreateContextMenu(
         menu: ContextMenu, view: View,
-        menuInfo: ContextMenuInfo
+        ignoreMe: ContextMenuInfo?
     ) {
         val main = m_activity as MainActivity
-        main.dispatchOnCreateContextMenu(menu, view, menuInfo)
+        main.dispatchOnCreateContextMenu(menu, view, ignoreMe)
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {

@@ -33,7 +33,6 @@
 #include "main.h"
 #include "linuxdict.h"
 #include "linuxmain.h"
-#include "gamesdb.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
@@ -80,9 +79,11 @@ linux_gid_debugff( XP_U32 gid, const char* func, const char* file, int line,
 }
 
 void
-linux_debugff( const char* func, const char* file, int line, const char* fmt, ...)
+linux_debugff( const char* func, const char* file, int line,
+               const char* fmt, ...)
 {
-    gchar* header = g_strdup_printf( "%s:%d:%s(): %s", file, line, func, fmt );
+    gchar* header = g_strdup_printf( "%s:%d:%s(): %s", file, line,
+                                     func, fmt );
 
     va_list ap;
     va_start( ap, fmt );
@@ -118,42 +119,48 @@ linux_freep( void** ptrp )
 }
 #endif
 
+typedef struct _LinUtilCtxt {
+    XW_UtilCtxt super;
+} LinUtilCtxt;
+
 static void
-linux_util_getInviteeName( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
-                           XP_U16 index, XP_UCHAR* buf, XP_U16* bufLen )
-{
-    int len = XP_SNPRINTF( buf, *bufLen-1, "(%d invited)", index );
-    if ( len < *bufLen ) {
-        *bufLen = len + 1;
-    } else {
-        *bufLen = 0;
-    }
-}
-
-static XW_DUtilCtxt*
-linux_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    return cGlobals->params->dutil;
-}
-
-void
-linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
+linux_util_destroy( XW_UtilCtxt* uc, XWEnv xwe)
 {
 #ifdef MEM_DEBUG
-    util->mpool = mpool;
+    MemPoolCtx* mpool = uc->_mpool;
 #endif
-    util->vtable = XP_MALLOC( mpool, sizeof(UtilVtable) );
 
-    util->vtable->m_util_getInviteeName = linux_util_getInviteeName;
-
-    util->vtable->m_util_getDevUtilCtxt = linux_util_getDevUtilCtxt;
+    XP_FREE( mpool, uc->vtable );
+    util_super_cleanup( uc, xwe );
+    XP_FREE( mpool, uc );
+    mpool_destroy( mpool );
 }
 
-void
-linux_util_vt_destroy( XW_UtilCtxt* util )
+XW_UtilCtxt*
+linux_util_make( XW_DUtilCtxt* dutil, const CurGameInfo* gi, GameRef gr )
 {
-    XP_FREE( util->mpool, util->vtable );
+    XP_ASSERT( !!gi );
+#ifdef MEM_DEBUG
+    XP_UCHAR tag[64];
+    sprintf( tag, "%s() for gr %lX", __func__, gr );
+    MemPoolCtx* mpool = mpool_make(tag);
+#endif
+    LinUtilCtxt* lutil = XP_CALLOC( mpool, sizeof(*lutil) );
+    XP_LOGFF( "util %p made mpool %p", lutil, mpool );
+    XW_UtilCtxt* super = &lutil->super;
+
+    super->vtable = XP_CALLOC( mpool, sizeof(*super->vtable) );
+    util_super_init( MPPARM(mpool) super, gi, dutil, gr, linux_util_destroy );
+
+    return super;
+}
+
+CommonAppGlobals*
+getCag( const XW_UtilCtxt* util )
+{
+    XW_DUtilCtxt* dutil = util_getDevUtilCtxt( util );
+    LaunchParams* params = dutil->closure;
+    return params->cag;
 }
 
 const XP_UCHAR*
@@ -355,6 +362,7 @@ formatConfirmTrade( CommonGlobals* cGlobals, const XP_UCHAR** tiles,
               tileBuf );
 }
 
+#if 0
 typedef struct _MsgRec {
     XP_U8* msg;
     XP_U16 msglen;
@@ -440,6 +448,7 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
     g_hash_table_unref( hash );
     cGlobals->noConnMsgs = NULL;
 } /* writeNoConnMsgs */
+#endif
 
 void
 formatTimerText( gchar* buf, int bufLen, int secondsLeft )

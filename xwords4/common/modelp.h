@@ -22,6 +22,7 @@
 
 #include "model.h"
 #include "movestak.h"
+#include "chatp.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -42,6 +43,7 @@ typedef struct _PlayerCtxt {
     XP_U8 nUndone;       /* tiles above nPending we can reuse */
     XP_U8 dividerLoc;
     PendingTile pendingTiles[MAX_TRAY_TILES];
+    XP_U32 secondsUsed;
 } PlayerCtxt;
 
 typedef struct _RecordWordsInfo {
@@ -51,11 +53,12 @@ typedef struct _RecordWordsInfo {
 
 typedef struct ModelVolatiles {
     XW_DUtilCtxt* dutil;
-    XW_UtilCtxt* util;
-    struct CurGameInfo* gi;
+    XW_UtilCtxt** utilp;
+    const CurGameInfo* gi;
     const DictionaryCtxt* dict;
     PlayerDicts dicts;
     StackCtxt* stack;
+    ChatState* chat;
     BoardListener boardListenerFunc;
     void* boardListenerData;
     TrayListener trayListenerFunc;

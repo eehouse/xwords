@@ -39,6 +39,7 @@ gint gtkask( GtkWidget* parent, const gchar *message,
 gint gtkask_timeout( GtkWidget* parent, const gchar *message, 
                      GtkButtonsType buttons, const AskPair* buttxts, 
                      uint32_t timeoutMS );
+bool gtkask_confirm( GtkWidget* parent, const gchar *message );
 
 /* Put up buttxts as radio buttons/single choice with and OK button to confirm
    and a cancel. That's later; for now just call gtkask() with a ton of

@@ -1,6 +1,5 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,26 +16,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef _LINDMGR_H_
+#define _LINDMGR_H_
 
-#ifndef _DICTMGR_H_
-#define _DICTMGR_H_
+#include "comtypes.h"
 
-#ifdef CPLUS
-extern "C" {
-#endif
+typedef struct LinDictMgr LinDictMgr;
 
-#include "mempool.h"
+typedef void (*DictAddedProc)(void* closure, const XP_UCHAR* dictName);
+typedef void (*DictRemovedProc)(void* closure, const XP_UCHAR* dictName);
 
-typedef struct DictMgrCtxt DictMgrCtxt;
-
-DictMgrCtxt* dmgr_make( MPFORMAL_NOCOMMA );
-void dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe );
-
-void dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtxt* dict );
-const DictionaryCtxt* dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key );
-
-#ifdef CPLUS
-}
-#endif
-
+LinDictMgr* ldm_init(DictAddedProc ap, DictRemovedProc rp, void* closure);
+void ldm_destroy( LinDictMgr* ldm );
+void ldm_addDir( LinDictMgr* ldm, const char* path );
+XP_Bool ldm_pathFor( LinDictMgr* ldm, const char* dictName,
+                     char buf[], XP_U16 bufLen );
+GSList* ldm_listDicts( LinDictMgr* ldm );
 #endif

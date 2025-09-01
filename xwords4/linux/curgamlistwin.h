@@ -31,14 +31,14 @@ void cgl_destroy( CursGameList* cgl );
 void cgl_resized( CursGameList* cgl, int width, int height );
 
 void cgl_refresh( CursGameList* cgl );
-void cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select );
-void cgl_remove( CursGameList* cgl, sqlite3_int64 rowid );
+void cgl_refreshOne( CursGameList* cgl, GameRef gr, bool select );
+void cgl_remove( CursGameList* cgl, GameRef gr );
 
 void cgl_moveSel( CursGameList* cgl, bool down );
 
 void cgl_draw( CursGameList* cgl );
 
-const GameInfo* cgl_getSel( CursGameList* cgl );
+const GameRef cgl_getSel( CursGameList* cgl );
 void cgl_setSel( CursGameList* cgl, int sel );
 int cgl_getNGames( CursGameList* cgl );
 

@@ -1431,7 +1431,7 @@ copyParsedPat( const DictionaryCtxt* XP_UNUSED_DBG(dict), Pat* pat,
 enum { STARTS_WITH, CONTAINS, ENDS_WITH, N_SEGS };
 
 DictIter*
-di_makeIter( const DictionaryCtxt* dict, XWEnv xwe, const DIMinMax* minmax,
+di_makeIter( const DictionaryCtxt* dict, const DIMinMax* minmax,
              const XP_UCHAR** strPats, XP_U16 nPats,
              const PatDesc* tilePats, XP_U16 XP_UNUSED_DBG(nTilePats) )
 {
@@ -1474,7 +1474,7 @@ di_makeIter( const DictionaryCtxt* dict, XWEnv xwe, const DIMinMax* minmax,
     if ( success ) {
         XP_LOGFF( "making iter of size %zu", sizeof(*iter) );
         iter = XP_CALLOC( dict->mpool, sizeof(*iter) );
-        initIter( iter, dict_ref( dict, xwe ), minmax, pats, nUsed, NULL );
+        initIter( iter, dict_ref( dict ), minmax, pats, nUsed, NULL );
     }
     return iter;
 }
@@ -1605,7 +1605,7 @@ initIter( DictIter* iter, const DictionaryCtxt* dict, const DIMinMax* minmax,
           const Pat* pats, XP_U16 nPats, Indexer* indexer )
 {
     XP_MEMSET( iter, 0, sizeof(*iter) );
-    iter->dict = dict;
+    iter->dict = dict_ref( dict );
     iter->indexer = indexer;
 #ifdef MULTI_SET
     iter->blankVal = dict_getBlankTile( dict );

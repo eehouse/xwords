@@ -32,7 +32,7 @@ import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.Utils.getMD5SumFor
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.DictInfo
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.TmpDict
 import org.eehouse.android.xw4.loc.LocUtils
 
 object DictLangCache {
@@ -378,7 +378,7 @@ object DictLangCache {
             val names = arrayOf<String?>(dal.name)
             val pairs = DictUtils.openDicts(context, names)
 
-            info = XwJNI.dict_getInfo(
+            info = TmpDict.dict_getInfo(
                 pairs.m_bytes[0], dal.name,
                 pairs.m_paths[0],
                 DictLoc.DOWNLOAD == dal.loc

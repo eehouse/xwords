@@ -40,7 +40,7 @@
 
 #include "comtypes.h" /* that's *common* types */
 #include "xwstream.h"
-#include "server.h"
+#include "serverp.h"
 
 /* typedef struct CommMgrCtxt CommMgrCtxt; */
 

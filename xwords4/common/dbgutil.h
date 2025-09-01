@@ -30,6 +30,18 @@ const char* StackMoveType_2str( StackMoveType typ );
 
 
 # ifdef DEBUG
+void miToStr(const MoveInfo* mi, XP_UCHAR buf[], XP_U16* bufLen );
+#define LOG_MI(MI, COMMENT) {                       \
+        const MoveInfo* mip = (MI);                 \
+        XP_UCHAR buf[256];                          \
+        XP_U16 bufLen = VSIZE(buf);                 \
+        miToStr( mip, buf, &bufLen );               \
+        XP_LOGFF( "%s; mi: %s)", COMMENT, buf );    \
+    }
+
+const XP_UCHAR* whyToStr( XWTimerReason why );
+
+
 void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
 const char* devIDTypeToStr(DevIDType typ);
 void assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,

@@ -31,6 +31,9 @@ extern "C" {
 
 typedef struct MemPoolCtx MemPoolCtx;
 
+void mempool_dbg_init();
+void mempool_dbg_checkall();
+
 MemPoolCtx* mpool_make( const XP_UCHAR* tag );
 void mpool_destroy( MemPoolCtx* mpool );
 const XP_UCHAR* mpool_getTag( const MemPoolCtx* mpool );

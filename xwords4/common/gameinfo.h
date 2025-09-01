@@ -30,7 +30,6 @@ typedef struct LocalPlayer {
     XP_UCHAR* name;
     XP_UCHAR* password;
     XP_UCHAR* dictName;
-    XP_U16 secondsUsed;
     XP_Bool isLocal;
     XP_U8 robotIQ;              /* 0 means not a robot; 1-100 means how
                                    dumb is it with 1 meaning very smart */
@@ -43,6 +42,8 @@ typedef struct LocalPlayer {
 #define SMART_ROBOT 1
 
 typedef struct CurGameInfo {
+    XP_U32 created;             /* creation timestamp */
+    XP_UCHAR* gameName;
     XP_UCHAR* dictName;
     LocalPlayer players[MAX_NUM_PLAYERS];
     XP_U32 gameID;      /* uniquely identifies game */
@@ -54,6 +55,7 @@ typedef struct CurGameInfo {
     XP_U8 bingoMin;
     XP_U8 forceChannel;
     DeviceRole serverRole;
+    ConnTypeSetBits conTypes;
 
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;
@@ -63,16 +65,25 @@ typedef struct CurGameInfo {
     XP_Bool tradeSub7;
     XWPhoniesChoice phoniesAction;
     XP_Bool confirmBTConnect;   /* only used for BT */
+    XP_Bool fromRematch;
+#ifdef DEBUG
+    XP_Bool freed;
+#endif
 } CurGameInfo;
 
 #define MIN_TRADE_TILES(GI) ((GI)->tradeSub7 ? 1 : (GI)->traySize)
 
 #ifdef DEBUG
-# define LOGGI( gip, msg ) game_logGI( (gip), (msg), __func__, __LINE__ )
-    void game_logGI( const CurGameInfo* gi, const char* msg,
+    XP_Bool gi_isValid(const CurGameInfo* gi);
+    void game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
                      const char* func, int line );
+# define LOG_GI( GIP, MSG ) {                                           \
+        XP_UCHAR buf[512*2];                                            \
+        game_logGI( (GIP), buf, VSIZE(buf), __func__, __LINE__ );       \
+        XP_LOGFF( "msg: %s; gi(p=%p): {%s}", MSG, (GIP), buf );         \
+    }
 #else
-# define LOGGI(gi, msg)
+# define LOG_GI(gi, msg)
 #endif
 
 #ifdef CPLUS

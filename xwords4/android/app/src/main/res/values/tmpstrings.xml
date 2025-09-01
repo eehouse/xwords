@@ -35,6 +35,11 @@
   <string name="pref_item_allowMulti_summary">Usually this means
   accepting invitations from the same device</string>
 
+  <string name="games_menu_fromclip">games_menu_fromclip</string>
+  <string name="no_clipboard">no_clipboard</string>
+  <string name="summary_no_dicts">summary_no_dicts</string>
+
+
   <string name="button_copyAddr">Copy address</string>
 
 </resources>

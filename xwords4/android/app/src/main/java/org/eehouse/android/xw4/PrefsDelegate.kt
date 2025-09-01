@@ -177,7 +177,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                 R.string.key_show_sms -> NBSProto.smsToastEnable(sp.getBoolean(key, false))
                 R.string.key_enable_nbs -> {
                     if (!sp.getBoolean(key, true)) {
-                        NBSProto.stopThreads()
+                        // NBSProto.stopThreads()
                     }
                 }
 
@@ -200,7 +200,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                     DictUtils.invalDictList()
                 }
 
-                R.string.key_thumbsize -> DBUtils.clearThumbnails(mActivity)
+                R.string.key_thumbsize -> GamesListDelegate.clearThumbnails()
                 R.string.key_default_language -> {}
                 R.string.key_force_radio -> SMSPhoneInfo.reset()
                 R.string.key_disable_nag, R.string.key_disable_nag_solo ->

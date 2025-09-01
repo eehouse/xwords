@@ -32,7 +32,6 @@
 #include "linuxmain.h"
 #include "strutils.h"
 #include "linuxutl.h"
-#include "dictmgr.h"
 
 typedef struct DictStart {
     XP_U32 numNodes;
@@ -44,13 +43,13 @@ typedef struct LinuxDictionaryCtxt {
     DictionaryCtxt super;
     XP_U8* dictBase;
     size_t dictLength;
+    XP_UCHAR* shortName;
     XP_Bool useMMap;
 } LinuxDictionaryCtxt;
 
 /************************ Prototypes ***********************/
 static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
-                                 const LaunchParams* params,
-                                 const char* fileName );
+                                 const char* path, const char* fileName );
 static void linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv xwe );
 static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
 
@@ -58,25 +57,24 @@ static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
  *
  ****************************************************************************/
 DictionaryCtxt* 
-linux_dictionary_make( MPFORMAL XWEnv xwe, const LaunchParams* params,
+linux_dictionary_make( MPFORMAL const LaunchParams* params,
                        const char* dictFileName, XP_Bool useMMap )
 {
+    XP_LOGFF( "(name=%s)", dictFileName );
     LinuxDictionaryCtxt* result = NULL;
-    if ( !!dictFileName ) {
-        /* dmgr_get increments ref count before returning! */
-        result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, xwe, dictFileName );
-    }
-    if ( !result ) {
-        result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
 
-        dict_super_init( MPPARM(mpool) &result->super );
-        MPASSIGN( result->super.mpool, mpool );
-        result->super.destructor = linux_dictionary_destroy;
+    char path[256];
+    if ( ldm_pathFor( params->ldm, dictFileName, path, sizeof(path) ) ) {
+        result = (LinuxDictionaryCtxt*)
+            XP_CALLOC(mpool, sizeof(*result));
+
+        dict_super_init( MPPARM(mpool) &result->super,
+                         linux_dictionary_destroy );
 
         result->useMMap = useMMap;
 
         if ( !!dictFileName ) {
-            XP_Bool success = initFromDictFile( result, params, dictFileName );
+            XP_Bool success = initFromDictFile( result, path, dictFileName );
             if ( success ) {
                 result->super.func_dict_getShortName = linux_dict_getShortName;
                 setBlankTile( &result->super );
@@ -85,16 +83,24 @@ linux_dictionary_make( MPFORMAL XWEnv xwe, const LaunchParams* params,
                 XP_FREE( mpool, result );
                 result = NULL;
             }
-
-            dmgr_put( params->dictMgr, xwe, dictFileName, &result->super );
         } else {
-            XP_LOGF( "%s(): no file name!!", __func__ );
+            XP_LOGFF( "no file name!!" );
         }
-        (void)dict_ref( &result->super, xwe );
     }
-
+    LOG_RETURNF( "%p", &result->super );
     return &result->super;
-} /* gtk_dictionary_make */
+} /* linux_dictionary_make */
+
+void
+stripExtn( const char* name, char buf[], XP_U16 bufLen )
+{
+    XP_U16 len = strlen(name);
+    XP_ASSERT( len < bufLen );
+    XP_SNPRINTF( buf, bufLen, "%s", name );
+    if ( g_str_has_suffix( buf, ".xwd" ) ) {
+        buf[len-4] = '\0';
+    }
+}
 
 void
 computeChecksum( DictionaryCtxt* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
@@ -147,23 +153,17 @@ dict_splitFaces( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe), const XP_U8* utf8,
 } /* dict_splitFaces */
 
 static XP_Bool
-initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params, 
+initFromDictFile( LinuxDictionaryCtxt* dctx, const char* path,
                   const char* fileName )
 {
     XP_Bool formatOk = XP_TRUE;
     size_t dictLength;
     XP_U32 topOffset;
-    char path[256];
+    DictionaryCtxt* super = &dctx->super;
 
-    if ( file_exists( fileName ) ) {
-        snprintf( path, VSIZE(path), "%s", fileName );
-    } else if ( !getDictPath( params, fileName, path, VSIZE(path) ) ) {
-        XP_LOGF( "%s: path=%s", __func__, path );
-        goto closeAndExit;
-    }
     struct stat statbuf;
     if ( 0 != stat( path, &statbuf ) || 0 == statbuf.st_size ) {
-        goto closeAndExit;
+        XP_ASSERT(0);
     }
     dctx->dictLength = statbuf.st_size;
 
@@ -174,7 +174,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             dctx->dictBase = mmap( NULL, dctx->dictLength, PROT_READ, 
                                    MAP_PRIVATE, fileno(dictF), 0 );
         } else {
-            dctx->dictBase = XP_MALLOC( dctx->super.mpool, dctx->dictLength );
+            dctx->dictBase = XP_MALLOC( super->mpool, dctx->dictLength );
             if ( dctx->dictLength != fread( dctx->dictBase, 1, 
                                             dctx->dictLength, dictF ) ) {
                 XP_ASSERT( 0 );
@@ -202,31 +202,26 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
 
         XP_U32 numEdges;
         if ( dictLength > 0 ) {
-            numEdges = dictLength / dctx->super.nodeSize;
+            numEdges = dictLength / super->nodeSize;
 #ifdef DEBUG
-            XP_ASSERT( (dictLength % dctx->super.nodeSize) == 0 );
-            dctx->super.numEdges = numEdges;
+            XP_ASSERT( (dictLength % super->nodeSize) == 0 );
+            super->numEdges = numEdges;
 #endif
-            dctx->super.base = (array_edge*)ptr;
+            super->base = (array_edge*)ptr;
 
-            dctx->super.topEdge = dctx->super.base + topOffset;
+            super->topEdge = super->base + topOffset;
         } else {
-            dctx->super.base = NULL;
-            dctx->super.topEdge = NULL;
+            super->base = NULL;
+            super->topEdge = NULL;
             numEdges = 0;
         }
 
-        dctx->super.name = copyString( dctx->super.mpool, fileName );
+        super->name = copyString( super->mpool, fileName );
 
         if ( ! checkSanity( &dctx->super, numEdges ) ) {
-            goto closeAndExit;
+            formatOk = XP_FALSE;
         }
     }
-    goto ok;
-
- closeAndExit:
-    formatOk = XP_FALSE;
- ok:
 
     return formatOk;
 } /* initFromDictFile */
@@ -266,6 +261,9 @@ static void
 linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
 {
     LinuxDictionaryCtxt* ctxt = (LinuxDictionaryCtxt*)dict;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = dict->mpool;
+#endif
 
     freeSpecials( ctxt );
 
@@ -273,26 +271,35 @@ linux_dictionary_destroy( DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe) )
         if ( ctxt->useMMap ) {
             (void)munmap( ctxt->dictBase, ctxt->dictLength );
         } else {
-            XP_FREE( dict->mpool, ctxt->dictBase );
+            XP_FREE( mpool, ctxt->dictBase );
         }
     }
 
     dict_super_destroy( &ctxt->super );
+    XP_FREEP( mpool, &ctxt->shortName );
 
-    XP_FREE( dict->mpool, ctxt );
+    XP_FREE( mpool, ctxt );
 } /* linux_dictionary_destroy */
 
 static const XP_UCHAR*
 linux_dict_getShortName( const DictionaryCtxt* dict )
 {
-    const XP_UCHAR* full = dict_getName( dict );
-    const XP_UCHAR* c = strchr( full, '/' );
-    if ( !!c ) {
-        ++c;
-    } else {
-        c = full;
+    LinuxDictionaryCtxt* ldict = (LinuxDictionaryCtxt*)dict;
+    if ( !ldict->shortName ) {
+        const XP_UCHAR* longName = dict_getName(dict);
+        int len = strlen(longName);
+        XP_UCHAR buf[len+1];
+        stripExtn( longName, buf, len+1 );
+
+        const XP_UCHAR* str = strchr( buf, '/' );
+        if ( !!str ) {
+            ++str;
+        } else {
+            str = buf;
+        }
+        ldict->shortName = copyString( dict->mpool, str );
     }
-    return c;
+    return ldict->shortName;
 }
 
 #else  /* CLIENT_ONLY *IS* defined */

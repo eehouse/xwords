@@ -20,22 +20,13 @@
 
 #include "dictnry.h"
 #include "strutils.h"
-#include "dictmgr.h"
+#include "dictmgrp.h"
 #include "xwmutex.h"
+#include "xwarray.h"
 
 #ifdef CPLUS
 extern "C" {
 #endif
-
-#ifndef DMGR_MAX_DICTS
-# define DMGR_MAX_DICTS 4
-#endif
-
-    /* Maintains a LRU list of DMGR_MAX_DICTS dicts and their key.  There's no
-       crossplatform linked list implementation for Android and a short list
-       will probably do, so we'll keep this really simple: Any mention of a
-       key, whether lookup or addition, moves the item to the front of the
-       list.  If somebody has to die he comes off the end. */
 
 typedef struct _DictPair {
     XP_UCHAR* key;
@@ -43,120 +34,130 @@ typedef struct _DictPair {
 } DictPair;
 
 struct DictMgrCtxt {
-    DictPair pairs[DMGR_MAX_DICTS];
+    XWArray* pairs;
     MutexState mutex;
-    MPSLOT
 };
 
-static void moveToFront( DictMgrCtxt* dmgr, XP_U16 indx );
-static XP_S16 findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key );
-#if defined DEBUG && defined PRINT_LOTS
-    static void printInOrder( const DictMgrCtxt* dmgr );
-#else
-# define printInOrder( dmgr )
-#endif
-
-#define NOT_FOUND -1
-
-
-DictMgrCtxt* 
-dmgr_make( MPFORMAL_NOCOMMA )
+static int
+sortByKeyProc(const void* dl1, const void* dl2,
+              XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure))
 {
-    DictMgrCtxt* dmgr = XP_CALLOC( mpool, sizeof(*dmgr) );
-    MUTEX_INIT( &dmgr->mutex, XP_FALSE );
-    MPASSIGN( dmgr->mpool, mpool );
-    return dmgr;
+    const XP_UCHAR* key1 = ((DictPair*)dl1)->key;
+    const XP_UCHAR* key2 = ((DictPair*)dl2)->key;
+    int result = strcmp( key1, key2 );
+    return result;
 }
 
 void
-dmgr_destroy( DictMgrCtxt* dmgr, XWEnv xwe )
+dmgr_make( XW_DUtilCtxt* dutil )
 {
-    XP_U16 ii;
-    for ( ii = 0; ii < DMGR_MAX_DICTS; ++ii ) {
-        DictPair* pair = &dmgr->pairs[ii];
-        dict_unref( pair->dict, xwe );
-        XP_FREEP( dmgr->mpool, &pair->key );
-    }
-    MUTEX_DESTROY( &dmgr->mutex );
-    XP_FREE( dmgr->mpool, dmgr );
+    LOG_FUNC();
+    DictMgrCtxt* dictMgr = XP_CALLOC( dutil->mpool, sizeof(*dictMgr) );
+    MUTEX_INIT( &dictMgr->mutex, XP_FALSE );
+
+    dictMgr->pairs = arr_make(MPPARM(dutil->mpool) sortByKeyProc, NULL);
+
+    dutil->dictMgr = dictMgr;
+}
+
+typedef struct _DestroyDictData {
+    XWEnv xwe;
+    XW_DUtilCtxt* dutil;
+} DestroyDictData;
+
+static void
+destroyDictDataProc( void* elem, void* closure )
+{
+    DestroyDictData* ddd = (DestroyDictData*)closure;
+    DictPair* pair = (DictPair*)elem;
+    dict_unref( pair->dict, ddd->xwe );
+    XP_FREE( ddd->dutil->mpool, pair->key );
+    XP_FREE( ddd->dutil->mpool, pair );
+}
+
+void
+dmgr_destroy( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    DictMgrCtxt* dictMgr = dutil->dictMgr;
+    DestroyDictData ddd = {
+        .xwe = xwe,
+        .dutil = dutil,
+    };
+    arr_removeAll( dictMgr->pairs, destroyDictDataProc, &ddd );
+    arr_destroy( dictMgr->pairs );
+    MUTEX_DESTROY( &dictMgr->mutex );
+    XP_FREEP( dutil->mpool, &dutil->dictMgr );
+}
+
+static void
+putImpl( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key,
+         const DictionaryCtxt* dict )
+{
+    DictPair* dp = XP_CALLOC( dutil->mpool, sizeof(*dp) );
+    dp->dict = dict_ref( dict );
+    dp->key = copyString( dutil->mpool, key );
+    arr_insert( dutil->dictMgr->pairs, xwe, dp );
 }
 
 const DictionaryCtxt*
-dmgr_get( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key )
+dmgr_get( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
 {
+    XP_LOGFF( "(key: %s)", key );
     const DictionaryCtxt* result = NULL;
 
-    WITH_MUTEX_CHECKED( &dmgr->mutex, 1 );
+    DictMgrCtxt* dictMgr = dutil->dictMgr;
+    WITH_MUTEX_CHECKED( &dictMgr->mutex, 1 );
 
-    XP_S16 index = findFor( dmgr, key );
-    if ( 0 <= index ) {
-        result = dict_ref( dmgr->pairs[index].dict, xwe ); /* so doesn't get nuked in a race */
-        moveToFront( dmgr, index );
+    XP_U32 indx;
+    DictPair dp = { .key = (XP_UCHAR*)key };
+    if ( arr_find( dictMgr->pairs, xwe, &dp, &indx ) ) {
+        DictPair* dp = (DictPair*)arr_getNth( dictMgr->pairs, indx );
+        result = dict_ref( dp->dict );
+    } else {
+        const DictionaryCtxt* dict = dutil_makeDict( dutil, xwe, key );
+        if ( !!dict ) {
+            putImpl( dutil, xwe, key, dict );
+            result = dict;
+        }
     }
-
+    
     XP_LOGFF( "(key=%s)=>%p", key, result );
-    printInOrder( dmgr );
+    // printInOrder( dmgr );
     END_WITH_MUTEX();
     return result;
 }
 
 void
-dmgr_put( DictMgrCtxt* dmgr, XWEnv xwe, const XP_UCHAR* key, const DictionaryCtxt* dict )
+dmgr_remove( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
 {
-    WITH_MUTEX( &dmgr->mutex );
-
-    XP_S16 loc = findFor( dmgr, key );
-    if ( NOT_FOUND == loc ) { /* reuse the last one */
-        moveToFront( dmgr, VSIZE(dmgr->pairs) - 1 );
-        DictPair* pair = dmgr->pairs; /* the head */
-        dict_unref( pair->dict, xwe );
-        pair->dict = dict_ref( dict, xwe );
-        replaceStringIfDifferent( dmgr->mpool, &pair->key, key );
+    DictMgrCtxt* dictMgr = dutil->dictMgr;
+    WITH_MUTEX_CHECKED( &dictMgr->mutex, 1 );
+    XP_U32 indx;
+    DictPair dp = { .key = (XP_UCHAR*)key };
+    if ( arr_find( dictMgr->pairs, xwe, &dp, &indx ) ) {
+        DictPair* dp = (DictPair*)arr_getNth( dictMgr->pairs, indx );
+        arr_remove( dictMgr->pairs, xwe, dp );
+        DestroyDictData ddd = { .xwe = xwe, .dutil = dutil, };
+        destroyDictDataProc( dp, &ddd );
     } else {
-        moveToFront( dmgr, loc );
+        XP_LOGFF( "dict %s not found", key );
+        XP_ASSERT(0);
     }
-    XP_LOGFF( "(key=%s, dict=%p)", key, dict );
-    printInOrder( dmgr );
-
     END_WITH_MUTEX();
 }
 
-static XP_S16
-findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key )
+void
+dmgr_put( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key,
+          const DictionaryCtxt* dict )
 {
-    XP_S16 result = NOT_FOUND;
-    XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
-        DictPair* pair = &dmgr->pairs[ii];
-        if ( !!pair->key && 0 == XP_STRCMP( key, pair->key ) ) {
-            result = ii;
-            break;
-        }
-    }
-    return result;
-}
+    DictMgrCtxt* dictMgr = dutil->dictMgr;
+    DictPair dp = { .key = (XP_UCHAR*)key };
+    XP_ASSERT( !arr_find( dictMgr->pairs, xwe, &dp, NULL ) );
 
-static void 
-moveToFront( DictMgrCtxt* dmgr, XP_U16 indx )
-{
-    if ( 0 < indx ) {
-        DictPair tmp = dmgr->pairs[indx];
-        XP_MEMMOVE( &dmgr->pairs[1], &dmgr->pairs[0], indx * sizeof(tmp));
-        dmgr->pairs[0] = tmp;
-    }
+    WITH_MUTEX( &dictMgr->mutex );
+    putImpl( dutil, xwe, key, dict );
+    END_WITH_MUTEX();
 }
-
-#if defined DEBUG && defined PRINT_LOTS
-static void
-printInOrder( const DictMgrCtxt* dmgr )
-{
-    XP_U16 ii;
-    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
-        const XP_UCHAR* name = dmgr->pairs[ii].key;
-        XP_LOGFF( "dict[%d]: %s", ii, (NULL == name)? "<empty>" : name );
-    }
-}
-#endif
 
 #ifdef CPLUS
 }

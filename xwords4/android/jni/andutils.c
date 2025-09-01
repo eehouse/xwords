@@ -134,7 +134,10 @@ void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
     jfieldID fid = getFieldID( env, obj, name, "I");
-    XP_ASSERT( !!fid );
+    if ( !fid ) {
+        XP_LOGFF( "getFieldID(%s) failed", name );
+        XP_ASSERT(0);
+    }
     (*env)->SetIntField( env, obj, fid, value );
 }
 
@@ -497,8 +500,7 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!cls );
 #ifdef DEBUG
     char buf[128] = {};
-    /* int len = sizeof(buf); */
-    /* getClassName( env, obj, buf, &len ); */
+    getClassName( env, obj, buf, sizeof(buf) );
 #endif
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     if ( !mid ) {
@@ -514,7 +516,7 @@ void
 setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
                    const char* fieldName )
 {
-    jobject jtypset = addrTypesToJ( env, addr );
+    jobject jtypset = conTypesToJ( env, addr->_conTypes );
     XP_ASSERT( !!jtypset );
     setObjectField( env, jTarget, fieldName,
                     "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";",
@@ -542,6 +544,49 @@ jobject
 makeObjectEmptyConstr( JNIEnv* env, const char* className )
 {
     return makeObject( env, className, "()V" );
+}
+
+jobject
+makeJSummaryRec( JNIEnv* env, jobject jsummary, const GameSummary* gs,
+                 const CurGameInfo* gi )
+{
+    setInt( env, jsummary, "nMoves", gs->nMoves );
+    setBool( env, jsummary, "gameOver", gs->gameOver );
+    setBool( env, jsummary, "collapsed", gs->collapsed );
+    setBool( env, jsummary, "quashed", gs->quashed );
+    setInt( env, jsummary, "turn", gs->turn );
+    setBool( env, jsummary, "turnIsLocal", gs->turnIsLocal );
+    setBool( env, jsummary, "canRematch", gs->canRematch );
+    setInt( env, jsummary, "lastMoveTime", gs->lastMoveTime );
+    setInt( env, jsummary, "dupTimerExpires", gs->dupTimerExpires );
+
+    setInt( env, jsummary, "missingPlayers", gs->missingPlayers );
+    setInt( env, jsummary, "nPacketsPending", gs->nPacketsPending );
+
+    setInt( env, jsummary, "nMissing", gs->nMissing );
+    setInt( env, jsummary, "nInvited", gs->nInvited );
+
+    setInt( env, jsummary, "nPlayers", gi->nPlayers );
+    intToJenumField( env, jsummary, gi->serverRole, "serverRole",
+                     PKG_PATH("jni/CurGameInfo$DeviceRole") );
+
+    jintArray jscores = makeIntArray( env, gi->nPlayers, gs->scores.arr,
+                                      sizeof(gs->scores.arr[0]) );
+    setObjectField( env, jsummary, "scores", "[I", jscores );
+
+    setInt( env, jsummary, "gameID", gi->gameID );
+
+    // isoCode = gi.isoCode()
+    
+    return jsummary;
+}
+
+jobject
+makeJSummary( JNIEnv* env, const GameSummary* gs, const CurGameInfo* gi )
+{
+    XP_LOGFF( "here" );
+    jobject jsum = makeObjectEmptyConstr( env, PKG_PATH("jni/GameSummary") );
+    return makeJSummaryRec( env, jsum, gs, gi );
 }
 
 jobject
@@ -605,9 +650,8 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 }
 
 jobject
-addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
+conTypesToJ( JNIEnv* env, ConnTypeSetBits types )
 {
-    XP_ASSERT( !!addr );
     jobject result =
         makeObjectEmptyConstr( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
     XP_ASSERT( !!result );
@@ -616,7 +660,7 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
                                   "(Ljava/lang/Object;)Z" );
     XP_ASSERT( !!mid );
     CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+    for ( XP_U32 st = 0; types_iter( types, &typ, &st ); ) {
         jobject jtyp = intToJEnum( env, typ, 
                                    PKG_PATH("jni/CommsAddrRec$CommsConnType") );
         XP_ASSERT( !!jtyp );
@@ -640,16 +684,12 @@ makeAddrArray( JNIEnv* env, XP_U16 count, const CommsAddrRec* addrs )
     return result;
 }
 
-/* Writes a java version of CommsAddrRec into a C one */
-void
-getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
+ConnTypeSetBits
+getTypesFromSet( JNIEnv* env, jobject jtypeset )
 {
-    XP_MEMSET( addr, 0, sizeof(*addr) );
-    /* Iterate over types in the set in jaddr, and for each call
-       addr_addType() and then copy in the types. */
-    jobject jtypeset = getObjectField( env, jaddr, "conTypes",
-                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
     XP_ASSERT( !!jtypeset );
+    ConnTypeSetBits result = 0;
+
     jmethodID mid = getMethodID( env, jtypeset, "getTypes", 
                                  "()[L" PKG_PATH("jni/CommsAddrRec$CommsConnType;") );
     XP_ASSERT( !!mid );
@@ -662,6 +702,29 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         deleteLocalRef( env, jtype );
         CommsConnType typ = (CommsConnType)asInt;
 
+        XP_LOGFF( "adding type %s", ConnType2Str( typ ) );
+        types_addType( &result, typ );
+    }
+
+    deleteLocalRef( env, jtypesarr );
+
+    LOG_RETURNF( "0x%x", result );
+    return result;
+}
+
+/* Writes a java version of CommsAddrRec into a C one */
+void
+getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
+{
+    XP_MEMSET( addr, 0, sizeof(*addr) );
+    /* Iterate over types in the set in jaddr, and for each call
+       addr_addType() and then copy in the types. */
+    jobject jtypeset = getObjectField( env, jaddr, "conTypes",
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!jtypeset );
+    ConnTypeSetBits conTypes = getTypesFromSet( env, jtypeset );
+    CommsConnType typ;
+    for ( XP_U32 state = 0; types_iter( conTypes, &typ, &state ); ) {
         addr_addType( addr, typ );
 
         switch ( typ ) {
@@ -707,7 +770,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
             XP_ASSERT(0);
         }
     }
-    deleteLocalRefs( env, jtypeset, jtypesarr, DELETE_NO_REF );
+    deleteLocalRef( env, jtypeset );
 }
 
 jint
@@ -823,10 +886,10 @@ setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
 }
 
 XWStreamCtxt*
-and_empty_stream( MPFORMAL AndGameGlobals* globals )
+and_tmp_stream( XW_DUtilCtxt* dutil )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            globals, 0, NULL, NULL );
+    VTableMgr* vtMgr = dutil->vtMgr;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(dutil->mpool) vtMgr, 0 );
     return stream;
 }
 
@@ -916,6 +979,25 @@ wrapResults( MTPData* mtp )
     setObjectField( env, result, "packets", "[[B", jPackets );
 
     return result;
+}
+
+void
+loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
+{
+    XP_ASSERT( !!j_cp );
+    cp->showBoardArrow = getBool( env, j_cp, "showBoardArrow" );
+    cp->showRobotScores = getBool( env, j_cp, "showRobotScores" );
+    cp->hideTileValues = getBool( env, j_cp, "hideTileValues" );
+    cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
+    cp->showColors = getBool( env, j_cp, "showColors" );
+    cp->sortNewTiles = getBool( env, j_cp, "sortNewTiles" );
+    cp->allowPeek = getBool( env, j_cp, "allowPeek" );
+    cp->skipMQTTAdd = getBool( env, j_cp, "skipMQTTAdd" );
+#ifdef XWFEATURE_CROSSHAIRS
+    cp->hideCrosshairs = getBool( env, j_cp, "hideCrosshairs" );
+#endif
+    cp->tvType = jenumFieldToInt( env, j_cp, "tvType",
+                                  PKG_PATH("jni/CommonPrefs$TileValueType"));
 }
 
 #ifdef DEBUG
@@ -1037,9 +1119,9 @@ android_gid_debugff( const XP_U32 gid, const char* func, const char* file,
  * NOTE: this must be called in advance of any jni error, because methods on
  * env can't be called once there's an exception pending.
  */
-#if 0
-static void
-getClassName( JNIEnv* env, jobject obj, char* out, int* outLen )
+#ifdef DEBUG
+char*
+getClassName( JNIEnv* env, jobject obj, char* out, int outLen )
 {
     XP_ASSERT( !!obj );
     jclass cls1 = (*env)->GetObjectClass( env, obj );
@@ -1058,16 +1140,14 @@ getClassName( JNIEnv* env, jobject obj, char* out, int* outLen )
     jstring strObj = (jstring)(*env)->CallObjectMethod( env, clsObj, mid );
 
     jint slen = (*env)->GetStringUTFLength( env, strObj );
-    if ( slen < *outLen ) {
-        *outLen = slen;
+    if ( slen < outLen ) {
         (*env)->GetStringUTFRegion( env, strObj, 0, slen, out );
         out[slen] = '\0';
     } else {
-        *outLen = 0;
         out[0] = '\0';
     }
     deleteLocalRefs( env, clsObj, cls1, cls2, strObj, DELETE_NO_REF );
-    LOG_RETURNF( "%s", out );
+    return out;
 }
 #endif
 #endif

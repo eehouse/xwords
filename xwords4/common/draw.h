@@ -110,8 +110,7 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(measureText)(DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* buf,
                                        XP_U16* widthP, XP_U16* heightP);
 #endif
-
-    void DRAW_VTABLE_NAME(destroyCtxt) (DrawCtx* dctx, XWEnv xwe);
+    void DRAW_VTABLE_NAME(destroy) (DrawCtx* dctx, XWEnv xwe);
 
     void DRAW_VTABLE_NAME(dictChanged)(DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
                                        const DictionaryCtxt* dict);
@@ -213,6 +212,9 @@ typedef struct DrawCtxVTable {
                                            XWBonusType bonus, XP_Bool vert,
                                            HintAtts hintAtts,
                                            CellFlags flags);
+    void DRAW_VTABLE_NAME(getThumbData) (DrawCtx* dctx, XWEnv xwe, XWStreamCtxt* stream );
+    XP_U16 DRAW_VTABLE_NAME(getThumbSize) (DrawCtx* dctx, XWEnv xwe );
+
 #ifdef XWFEATURE_MINIWIN
     const XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) (DrawCtx* dctx, XWEnv xwe,
                                                     XWMiniTextType textHint);
@@ -227,12 +229,13 @@ typedef struct DrawCtxVTable {
 
 struct DrawCtx {
     DrawCtxVTable* vtable;
+    int refCount;
+    DrawTarget dt;
 };
 
-/* Franklin's compiler is too old to support __VA_ARGS__... */
-# define DRAW_CALL(name, dc, ...) ((dc)->vtable->m_draw_##name)((dc), __VA_ARGS__)
+#define DRAW_CALL(name, dc, ...) ((dc)->vtable->m_draw_##name)((dc), __VA_ARGS__)
 
-#define draw_destroyCtxt(dc,...) DRAW_CALL(destroyCtxt, dc, __VA_ARGS__)
+#define draw_destroy(dc, ...) DRAW_CALL(destroy, dc, __VA_ARGS__)
 #define draw_dictChanged(dc, ...) DRAW_CALL(dictChanged, dc,__VA_ARGS__)
 #define draw_beginDraw(dc,...) DRAW_CALL(beginDraw, dc, __VA_ARGS__)
 #define draw_endDraw(dc, ...) DRAW_CALL(endDraw, dc, __VA_ARGS__)
@@ -274,6 +277,10 @@ struct DrawCtx {
 #define draw_clearRect(dc, ...) DRAW_CALL(clearRect,(dc),__VA_ARGS__)
 #define draw_drawBoardArrow(dc, ...)            \
     DRAW_CALL(drawBoardArrow,(dc),__VA_ARGS__)
+#define draw_getThumbData(dc, ...)              \
+    DRAW_CALL(getThumbData,(dc),__VA_ARGS__)
+#define draw_getThumbSize(dc, ...)              \
+    DRAW_CALL(getThumbSize,(dc),__VA_ARGS__)
 
 #ifdef XWFEATURE_MINIWIN
 # define draw_getMiniWText(dc, e, b) CALL_DRAW_NAME1(getMiniWText, (dc),(e),(b))
@@ -296,5 +303,25 @@ struct DrawCtx {
 
 void InitDrawDefaults(DrawCtxVTable* vtable);
 #endif /* DRAW_WITH_PRIMITIVES */
+
+void draw_super_init( DrawCtx* super, DrawTarget dt );
+
+DrawCtx* _draw_ref( DrawCtx* dc
+#ifdef DEBUG
+                    ,const char* proc, int line
+#endif
+                    );
+void _draw_unref( DrawCtx* dc, XWEnv xwe
+#ifdef DEBUG
+                    ,const char* proc, int line
+#endif
+                  );
+
+#ifdef DEBUG
+# define draw_ref(DC) _draw_ref((DC), __func__, __LINE__)
+# define draw_unref(DC, XWE) _draw_unref((DC), XWE, __func__, __LINE__)
+#else
+foo
+#endif
 
 #endif

@@ -27,7 +27,7 @@
 typedef struct _JNIState JNIState;
 
 #ifdef DEBUG
-# define MAP_THREAD_TO_ENV
+// # define MAP_THREAD_TO_ENV
 #endif
 
 typedef struct _AndGameGlobals {
@@ -36,7 +36,7 @@ typedef struct _AndGameGlobals {
     DrawCtx* dctx;
     XW_UtilCtxt* util;
     struct JNIUtilCtxt* jniutil;
-    TransportProcs* xportProcs;
+    // TransportProcs* xportProcs;
     XW_DUtilCtxt* dutil;
     JNIState* state;
 } AndGameGlobals;

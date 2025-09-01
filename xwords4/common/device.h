@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +23,7 @@
 #define _DEVICE_H_
 
 #include "dutil.h"
+#include "gameref.h"
 
 // void device_load( XW_DUtilCtxt dctxt );
 # ifdef XWFEATURE_DEVICE
@@ -30,6 +32,15 @@ void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
 #  define dvc_store(dctxt, xwe)
 # endif
 
+XP_S16 dvc_sendInvite( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* nli,
+                       XP_U32 createdStamp, const CommsAddrRec* addr,
+                       CommsConnType typ );
+XP_S16 dvc_sendMsgs( XW_DUtilCtxt* duc, XWEnv xwe,
+                     const SendMsgsPacket* const packets,
+                     XP_U16 streamVersion,
+                     const CommsAddrRec* addr, CommsConnType typ,
+                     GameRef gr );
+
 typedef void (*MsgAndTopicProc)( void* closure, const XP_UCHAR* topic,
                                  const XP_U8* msgBuf, XP_U16 msgLen,
                                  XP_U8 qos );
@@ -37,30 +48,19 @@ typedef void (*MsgAndTopicProc)( void* closure, const XP_UCHAR* topic,
 void dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID );
 void dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID );
 void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
-void dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
-                           XP_UCHAR* storage, XP_U16 storageLen,
-                           XP_U16* nTopics, XP_UCHAR* topics[],
-                           XP_U8* qos );
-void dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
-                          MsgAndTopicProc proc, void* closure,
-                          const MQTTDevID* addressee,
-                          const NetLaunchInfo* nli );
 void dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
                              MsgAndTopicProc proc, void* closure,
                              const NetLaunchInfo* nli );
-
-XP_S16 dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
-                             MsgAndTopicProc proc, void* closure,
-                             const SendMsgsPacket* const msgs,
-                             const MQTTDevID* addressee, XP_U32 gameID,
-                             XP_U16 streamVersion );
-
 void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
                               MsgAndTopicProc proc, void* closure,
                               const MQTTDevID* addressee,
                               XP_U32 gameID );
+
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
+void dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
+                         const CommsAddrRec* fromAddr,
+                         const XP_U8* buf, XP_U16 len );
 
 void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                           XP_Bool succeeded, const XP_UCHAR* result );
@@ -79,9 +79,7 @@ void dvc_getIsoCodes( XW_DUtilCtxt* dutil, XWEnv env, WordCollector proc,
 void dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv env, const XP_UCHAR* code,
                         WordCollector proc, void* closure );
 
-#ifdef DUTIL_TIMERS
 void dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv env, TimerKey key );
-#endif
 
 XP_U8 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv env );
 
@@ -90,6 +88,28 @@ void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 /* Utility functions; not an API to count on!! */
-XWStreamCtxt* mkStream( XW_DUtilCtxt* dutil );
+XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
 
+GameRef dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe,
+                            XWStreamCtxt* stream, const CurGameInfo* gi,
+                            XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp);
+
+void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe,
+                      const XP_UCHAR* keys[], XWStreamCtxt* stream );
+XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[]);
+void dvc_removeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[] );
+void dvc_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                      OnGotKey proc, void* closure );
+
+void dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts );
+
+void dvc_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                            const CommsAddrRec* from, const XP_U8* buf,
+                            XP_U16 len );
+void dvc_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe,
+                           const NetLaunchInfo* nli );
+void dvc_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                             const CommsAddrRec* from );
+void dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
+void dvc_onDictRemoved( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
 #endif

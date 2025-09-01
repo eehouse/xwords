@@ -84,7 +84,7 @@ typedef struct _DIMinMax {
     XP_U16 max;
 } DIMinMax;
 
-DictIter* di_makeIter( const DictionaryCtxt* dict, XWEnv xwe,
+DictIter* di_makeIter( const DictionaryCtxt* dict,
                        const DIMinMax* lens, /* NULL means use defaults */
                        const XP_UCHAR** strPats, XP_U16 nStrPats,
                        const PatDesc* pats, XP_U16 nPatDescs );

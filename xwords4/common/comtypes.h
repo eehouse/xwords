@@ -29,6 +29,7 @@
 #endif
 
 #include <pthread.h>
+#include <inttypes.h>
 
 #include "xptypes.h"
 
@@ -56,6 +57,8 @@
 #define MAX_COLS MAX_ROWS
 #define MIN_COLS 11
 
+#define STREAM_VERS_BIGGERGI 0x28 /* added May 2025 */
+#define STREAM_VERS_BIGGI 0x27
 #define STREAM_VERS_SUBSEVEN 0x26
 #define STREAM_VERS_REMATCHORDER 0x25
 #define STREAM_VERS_REMATCHADDRS 0x24
@@ -108,8 +111,8 @@
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-/* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_SUBSEVEN
+/* search for FIX_NEXT_VERSION_CHANGE each time this is changed */
+#define CUR_STREAM_VERS STREAM_VERS_BIGGERGI
 
 typedef struct XP_Rect {
     XP_S16 left;
@@ -151,6 +154,12 @@ typedef enum {
     OBJ_TIMER,
 } BoardObjectType;
 
+typedef enum {
+    _DT_NONE,                   /* error condition */
+    DT_SCREEN,
+    DT_THUMB,
+} DrawTarget;
+
 enum {
     SERVER_STANDALONE,
     SERVER_ISHOST,
@@ -179,6 +188,89 @@ typedef struct SendMsgsPacket {
     XP_U16 len;
 } SendMsgsPacket;
 
+typedef enum { UNPAUSED,
+               PAUSED,
+               AUTOPAUSED,
+} DupPauseType;
+
+#define MAX_ISO_CODE_LEN 8
+
+#define MAX_NUM_PLAYERS 4
+#define MIN_TRAY_TILES 7
+#define MAX_TRAY_TILES 9
+#define PLAYERNUM_NBITS 2
+#define NDEVICES_NBITS 2        /* 1-4, but reduced by 1 fits in 2 bits */
+#define NPLAYERS_NBITS 3
+#define BINGO_BONUS 50
+
+typedef struct _ScoresArray { XP_S16 arr[MAX_NUM_PLAYERS]; } ScoresArray;
+typedef struct _GameSummary {
+    XP_Bool turnIsLocal;
+    XP_Bool gameOver;
+    XP_Bool quashed;
+    XP_Bool collapsed;          /* for the game list's view of game (if present) */
+    XP_Bool canRematch;
+    XP_Bool canOfferRO;
+    XP_S8 turn;
+    XP_U32 lastMoveTime;
+    XP_S32 dupTimerExpires;
+    XP_U8 missingPlayers;
+    XP_U32 nPacketsPending;        /* could be big in worst case */
+    XP_S16 nMoves;
+    XP_UCHAR opponents[64];
+    ScoresArray scores;
+
+    XP_U8 nMissing;
+    XP_U8 nInvited;
+} GameSummary;
+
+typedef struct _BoardDims {
+    /* The whole board */
+    XP_U16 left, top;
+    XP_U16 width, height;
+
+    /* board */
+    XP_U16 boardWidth, boardHt;
+
+    /* scoreboard */
+    XP_U16 scoreLeft, scoreWidth, scoreHt;
+
+    /* tray */
+    XP_U16 trayLeft, trayTop, trayWidth, trayHt;
+    XP_U16 traySize;
+
+    /* other */
+    XP_U16 cellSize, maxCellSize;
+    XP_U16 timerWidth;
+} BoardDims;
+
+typedef struct _PhoniesConf {
+    XP_Bool confirmed;
+    XP_U32 key;
+} PhoniesConf;
+
+
+typedef enum {
+    /* keep these three together: for the cursor */
+    XP_KEY_NONE = 0,
+
+    XP_CURSOR_KEY_DOWN,
+    XP_CURSOR_KEY_ALTDOWN,
+    XP_CURSOR_KEY_RIGHT,
+    XP_CURSOR_KEY_ALTRIGHT,
+    XP_CURSOR_KEY_UP,
+    XP_CURSOR_KEY_ALTUP,
+    XP_CURSOR_KEY_LEFT,
+    XP_CURSOR_KEY_ALTLEFT,
+
+    XP_CURSOR_KEY_DEL,
+    XP_RAISEFOCUS_KEY,
+    XP_RETURN_KEY,
+    XP_ALTRETURN_KEY,
+
+    XP_KEY_LAST
+} XP_Key;
+
 typedef enum {FEA_OK = 0x00, FEA_REMOVE = 0x01, FEA_EXIT = 0x02} ForEachAct;
 
 /* I'm going to try putting all forward "class" decls in the same file */
@@ -197,6 +289,28 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 typedef struct XW_DUtilCtxt XW_DUtilCtxt;
+typedef uint64_t GLItemRef;     /* games list item: group or game */
+typedef uint64_t GameRef;
+typedef uint16_t GroupRef;
+#define GR_FMT "%09" PRIX64
+
+typedef struct _GameStateInfo {
+    XP_U16 visTileCount;
+    XP_U16 nPendingMessages;
+    XW_TrayVisState trayVisState;
+    XP_Bool canHint;
+    XP_Bool canUndo;
+    XP_Bool canRedo;
+    XP_Bool inTrade;
+    XP_Bool tradeTilesSelected;
+    XP_Bool canChat;
+    XP_Bool canShuffle;
+    XP_Bool curTurnSelected;
+    XP_Bool canHideRack;
+    XP_Bool canTrade;
+    XP_Bool canPause;           /* duplicate-mode only */
+    XP_Bool canUnpause;         /* duplicate-mode only */
+} GameStateInfo;
 
 /* Opaque bitfield type meant to be parsed only inside comms.c  */
 typedef XP_U16 XP_PlayerAddr;
@@ -212,13 +326,41 @@ typedef enum {
     NUM_TIMERS_PLUS_ONE          /* must be last */
 } XWTimerReason;
 
-#define MAX_NUM_PLAYERS 4
-#define MIN_TRAY_TILES 7
-#define MAX_TRAY_TILES 9
-#define PLAYERNUM_NBITS 2
-#define NDEVICES_NBITS 2        /* 1-4, but reduced by 1 fits in 2 bits */
-#define NPLAYERS_NBITS 3
-#define BINGO_BONUS 50
+
+typedef XP_U16 TileBit;    /* bits indicating selection of tiles in tray */
+
+typedef struct RematchInfo RematchInfo;
+typedef struct _NewOrder {
+    XP_U8 order[MAX_NUM_PLAYERS];
+} NewOrder;
+
+typedef enum {
+    RO_NONE,
+    RO_SAME,                       /* preserve the parent game's order */
+    RO_LOW_SCORE_FIRST,            /* lowest scorer in parent goes first, etc */
+    RO_HIGH_SCORE_FIRST,           /* highest scorer in parent goes first, etc */
+    RO_JUGGLE,                     /* rearrange randomly */
+#ifdef XWFEATURE_RO_BYNAME
+    RO_BY_NAME,                    /* alphabetical -- for testing only! :-) */
+#endif
+    RO_NUM_ROS,
+} RematchOrder;
+
+typedef struct _XP_Bitmaps {
+    XP_U16 nBitmaps;
+    XP_Bitmap bmps[2];      /* 2 is private, may change */
+} XP_Bitmaps;
+
+typedef struct _CommsMsgState {
+    struct AddressRecord* rec;
+    XP_U32 msgID;
+    XP_PlayerAddr channelNo;
+    XP_U16 len;
+#ifdef DEBUG
+    const CommsCtxt* comms;
+#endif
+    XP_UCHAR sum[36];
+} CommsMsgState;
 
 #if MAX_ROWS <= 16
 typedef XP_U16 RowFlags;
@@ -348,12 +490,21 @@ typedef struct _TrayTileSet {
     TrayTile tiles[MAX_TRAY_TILES];
 } TrayTileSet;
 
+typedef XP_U16 ConnTypeSetBits;
+
 /* making this a struct in case I want to add e.g. a chain of holders */
 typedef struct _MutexState {
+#ifdef USE_MUTEXES
     pthread_mutex_t mutex;
-#ifdef DEBUG
+# ifdef DEBUG
     XP_U16 waitSecs;
-#endif
+# endif
+#else  /* USE_MUTEXES */
+# ifdef DEBUG
+    pthread_t owner;
+    XP_U16 counter;
+# endif
+#endif  /* USE_MUTEXES */
 } MutexState;
 
 #ifdef XWFEATURE_BLUETOOTH

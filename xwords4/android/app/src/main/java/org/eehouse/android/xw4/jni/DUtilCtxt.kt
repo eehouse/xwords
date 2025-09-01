@@ -20,6 +20,7 @@ package org.eehouse.android.xw4.jni
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import android.telephony.PhoneNumberUtils
 
@@ -29,7 +30,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.ref.WeakReference
+
 import org.eehouse.android.xw4.Assert
+import org.eehouse.android.xw4.BoardDelegate
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Channels
 import org.eehouse.android.xw4.DBUtils
@@ -39,18 +45,36 @@ import org.eehouse.android.xw4.GameUtils
 import org.eehouse.android.xw4.GamesListDelegate
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.MQTTUtils
+import org.eehouse.android.xw4.NBSProto
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
+import org.eehouse.android.xw4.ThumbCanvas
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.XWApp
+import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.loc.LocUtils
 import org.eehouse.android.xw4.putAnd
-import org.json.JSONException
-import org.json.JSONObject
 
-class DUtilCtxt {
-    private val m_context: Context
+class DUtilCtxt() {
+
+    interface Listeners {
+        fun onKnownPlayersChange() {}
+        fun onGameChanged(gr: GameRef, flags: Int) {}
+        fun onDictRemoved(gr: GameRef, name: String) {}
+        fun missingDictAdded(gr: GameRef, name: String) {}
+    }
+
+    // No idea why DrawCtx doesn't work here. Code in drawwrapper.c can't find
+    // the method.
+    fun getThumbDraw(nCols: Int): /* DrawCtx? */ Any? {
+        val context = XWApp.getContext()
+        val size = GameUtils.getThumbSize(context, nCols)
+        val thumb = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        return ThumbCanvas(context, thumb, size)
+    }
+    
+    private val mContext: Context
     fun getUserString(stringCode: Int): String {
         val id = when (stringCode) {
             STR_ROBOT_MOVED -> R.string.str_robot_moved_fmt
@@ -81,13 +105,15 @@ class DUtilCtxt {
             STRD_DUP_TRADED -> R.string.dup_traded_fmt
             STRSD_DUP_ONESCORE -> R.string.dup_onescore_fmt
             STRS_DUP_ALLSCORES -> R.string.dup_allscores_fmt
+            STRS_GROUPS_DEFAULT -> R.string.group_new_games
+            STRS_GROUPS_ARCHIVE -> R.string.group_name_archive
             STR_PENDING_PLAYER -> R.string.missing_player
             else -> { Log.w( TAG, "no such stringCode: %d", stringCode)
 					  0
 			}
         }
         // Log.d( TAG, "getUserString(%d) => %s", stringCode, result );
-        return if (0 == id) "" else LocUtils.getString(m_context, id)
+        return if (0 == id) "" else LocUtils.getString(mContext, id)
     }
 
     fun getUserQuantityString(stringCode: Int, quantity: Int): String {
@@ -99,7 +125,7 @@ class DUtilCtxt {
         }
         val result =
 			if (0 != pluralsId) {
-				LocUtils.getQuantityString(m_context, pluralsId, quantity)
+				LocUtils.getQuantityString(mContext, pluralsId, quantity)
 			} else {
 				""
 			}
@@ -107,13 +133,13 @@ class DUtilCtxt {
     }
 
     fun phoneNumbersSame(num1: String?, num2: String?): Boolean {
-        return PhoneNumberUtils.compare(m_context, num1, num2)
+        return PhoneNumberUtils.compare(mContext, num1, num2)
     }
 
     fun store(key: String, data: ByteArray?) {
-        // Log.d( TAG, "store(key=%s)", key );
+        Log.d( TAG, "store(key=%s)", key );
         data?.let {
-            DBUtils.setBytesFor(m_context, key, it)
+            DBUtils.setBytesFor(mContext, key, it)
             if (BuildConfig.DEBUG) {
                 val tmp = load(key)!!
                 if (! tmp.contentEquals(it)) {
@@ -130,11 +156,11 @@ class DUtilCtxt {
 
         // Log.d( TAG, "load(%s, %s) returning %d bytes", key, keySuffix,
         //        null == result ? 0 : result.length );
-        return DBUtils.getBytesFor(m_context, key)
+        return DBUtils.getBytesFor(mContext, key)
     }
 
     init {
-        m_context = XWApp.getContext()
+        mContext = XWApp.getContext()
     }
 
     private val sCleared = HashSet<Int>()
@@ -152,7 +178,7 @@ class DUtilCtxt {
             }
 
             if (synchronized(sCleared) {sCleared.remove(key)}) {
-                XwJNI.dvc_onTimerFired(key)
+                Device.onTimerFired(key)
             }
         }
     }
@@ -170,10 +196,16 @@ class DUtilCtxt {
         isRobot: Boolean
     ): String {
         return if (isRobot) {
-			CommonPrefs.getDefaultRobotName(m_context)
+			CommonPrefs.getDefaultRobotName(mContext)
 		} else{
-			CommonPrefs.getDefaultPlayerName( m_context, posn )
+			CommonPrefs.getDefaultPlayerName( mContext, posn )
 		}
+    }
+
+    fun getSelfAddr(): CommsAddrRec {
+        Log.d(TAG, "getSelfAddr()")
+        val result = CommsAddrRec.getSelfAddr(mContext)
+        return result
     }
 
     // A pause can come in when a game's open or when it's not. If it's open,
@@ -181,38 +213,65 @@ class DUtilCtxt {
     // or at least kick off DupeModeTimer to cancel or start the timer-running
     // notification.
     fun notifyPause(
-        gameID: Int, pauseType: Int, pauser: Int,
+        gr: Long, pauseType: Int, pauser: Int,
         pauserName: String, expl: String?
     ) {
-        val rowids: LongArray = DBUtils.getRowIDsFor(m_context, gameID)
-        // Log.d( TAG, "got %d games with gameid", rowids.length );
-        val isPause = UNPAUSED != pauseType
-        for (rowid in rowids) {
-            val msg = msgForPause(rowid, pauseType, pauserName, expl)
-            JNIThread.getRetained(rowid).use { thread ->
-                if (null != thread) {
-                    thread.notifyPause(pauser, isPause, msg)
-                } else {
-                    val intent: Intent = GamesListDelegate
-                        .makeRowidIntent(m_context, rowid)
-                    val titleID: Int =
-                        if (isPause) R.string.game_paused_title else R.string.game_unpaused_title
-                    val channelID = Channels.ID.DUP_PAUSED
-                    Utils.postNotification(
-                        m_context, intent, titleID, msg,
-                        rowid, channelID
-                    )
+        Assert.failDbg()
+        // val rowids: LongArray = DBUtils.getRowIDsFor(mContext, gameID)
+        // // Log.d( TAG, "got %d games with gameid", rowids.length );
+        // val isPause = UNPAUSED != pauseType
+        // for (rowid in rowids) {
+        //     val msg = msgForPause(rowid, pauseType, pauserName, expl)
+        //     JNIThread.getRetained(rowid).use { thread ->
+        //         if (null != thread) {
+        //             thread.notifyPause(pauser, isPause, msg)
+        //         } else {
+        //             val intent: Intent = GamesListDelegate
+        //                 .makeRowidIntent(mContext, rowid)
+        //             val titleID: Int =
+        //                 if (isPause) R.string.game_paused_title else R.string.game_unpaused_title
+        //             val channelID = Channels.ID.DUP_PAUSED
+        //             Utils.postNotification(
+        //                 mContext, intent, titleID, msg,
+        //                 rowid, channelID
+        //             )
 
-                    // DupeModeTimer.timerPauseChanged( m_context, rowid );
+        //             // DupeModeTimer.timerPauseChanged( mContext, rowid );
+        //         }
+        //     }
+        // }
+    }
+
+    fun informMove(grval: Long, turn: Int, expl: String, words: String?) {
+        val gr = GameRef(grval)
+        BoardDelegate.getIfOpen(gr)?.informMove(turn, expl, words)
+            ?: run {
+                val bmr = GameUtils.BackMoveResult()
+                Utils.launch {
+                    bmr.m_lmi = gr.getPlayersLastScore(turn)
+                    val gi = gr.getGI()!!
+                    val locals = gi.playersLocal()
+                    GameUtils.postMoveNotification(
+                        mContext, gr,
+                        bmr, locals[turn],
+                        gi.gameName!!
+                    )
                 }
             }
-        }
+    }
+
+    fun notifyGameOver(grval: Long) {
+        val gr = GameRef(grval)
+        BoardDelegate.getIfOpen(gr)?.notifyGameOver()
+            ?: run {
+                Utils.showToast(mContext, "game over but not open")
+            }
     }
 
     // PENDING: channel is ignored here, meaning there can't be two ends of a
     // game in the same app.
     fun haveGame(gameID: Int, channel: Int): Boolean {
-        return GameUtils.haveWithGameID(m_context, gameID, channel)
+        return GameUtils.haveWithGameID(mContext, gameID, channel)
     }
 
     private fun msgForPause(
@@ -222,23 +281,23 @@ class DUtilCtxt {
         expl: String?
     ): String {
         val msg: String
-        val gameName = GameUtils.getName(m_context, rowid)
+        val gameName = GameUtils.getName(mContext, rowid)
         msg = if (AUTOPAUSED == pauseType) {
             LocUtils.getString(
-                m_context, R.string.autopause_expl_fmt,
+                mContext, R.string.autopause_expl_fmt,
                 gameName
             )
         } else {
             val isPause = PAUSED == pauseType
             if (null != expl && 0 < expl.length) {
                 LocUtils.getString(
-                    m_context,
+                    mContext,
                     if (isPause) R.string.pause_notify_expl_fmt else R.string.unpause_notify_expl_fmt,
                     pauserName, expl
                 )
             } else {
                 LocUtils.getString(
-                    m_context,
+                    mContext,
                     if (isPause) R.string.pause_notify_fmt else R.string.unpause_notify_fmt,
                     pauserName
                 )
@@ -249,20 +308,19 @@ class DUtilCtxt {
 
     fun getDictPath(name: String, path: Array<String?>, bytes: Array<ByteArray?>) {
         Log.d(TAG, "getDictPath(name='%s')", name)
-        val pairs: DictUtils.DictPairs = DictUtils.openDicts(m_context, arrayOf(name as String?))
+        val pairs: DictUtils.DictPairs = DictUtils.openDicts(mContext, arrayOf(name as String?))
         // Log.d( TAG, "openDicts() => %s", pairs );
         path[0] = pairs.m_paths.get(0)
         bytes[0] = pairs.m_bytes.get(0)
         // Log.d( TAG, "getDictPath(%s): have path: %s; bytes: %s", name, path[0], bytes[0] );
-        Assert.assertTrueNR(path[0] != null || bytes[0] != null)
     }
 
-    fun onDupTimerChanged(gameID: Int, oldVal: Int, newVal: Int) {
-        DupeModeTimer.timerChanged(m_context, gameID, newVal)
+    fun onDupTimerChanged(gr: Long, oldVal: Int, newVal: Int) {
+        DupeModeTimer.timerChanged(mContext, GameRef(gr), newVal)
     }
 
     fun sendViaWeb(resultKey: Int, api: String?, jsonParams: String) {
-        NetUtils.sendViaWeb(m_context, resultKey, api, jsonParams)
+        NetUtils.sendViaWeb(mContext, resultKey, api, jsonParams)
     }
 
     val regValues: String
@@ -275,7 +333,7 @@ class DUtilCtxt {
 					.putAnd("versI", Build.VERSION.SDK_INT)
 					.putAnd("vrntCode", BuildConfig.VARIANT_CODE)
 					.putAnd("vrntName", BuildConfig.VARIANT_NAME)
-					.putAnd("loc", LocUtils.getCurLocale(m_context))
+					.putAnd("loc", LocUtils.getCurLocale(mContext))
                 params.toString()
             } catch (je: JSONException) {
                 Log.e(TAG, "getRegValues() ex: %s", je)
@@ -284,25 +342,71 @@ class DUtilCtxt {
             return result
         }
 
-    fun onInviteReceived(nli: NetLaunchInfo) {
-        // Log.d( TAG, "onInviteReceived(%s)", nli );
-        MQTTUtils.makeOrNotify(m_context, nli)
+    fun dictGone(grval: Long, dictName: String) {
+        val gr = GameRef(grval)
+        Log.d(TAG, "dictGone($gr, $dictName)")
+        pruned().map{ it.onDictRemoved(gr, dictName) }
     }
 
-    fun onMessageReceived(gameID: Int, from: CommsAddrRec, msg: ByteArray) {
-        // Log.d( TAG, "onMessageReceived()" );
-        Assert.assertTrueNR(from.contains(CommsAddrRec.CommsConnType.COMMS_CONN_MQTT))
-        MQTTUtils.handleMessage(m_context, from, gameID, msg)
+    fun missingDictAdded(grval: Long, dictName: String) {
+        val gr = GameRef(grval)
+        Log.d(TAG, "dictGone($gr, $dictName)")
+        pruned().map{ it.missingDictAdded(gr, dictName) }
+    }
+
+    fun startMQTTListener( devID: String, topics: Array<String>, qos: Int ) {
+        MQTTUtils.startListener(mContext, devID, topics, qos);
+    }
+
+    fun sendViaMQTT(topic: String, msg: ByteArray, qos: Int) {
+        MQTTUtils.send(mContext, topic, msg, qos)
+    }
+
+    fun sendViaNBS(msg: ByteArray, phone: String, port: Int) {
+        Log.d(TAG, "sendViaNBS($msg, $phone)")
+        NBSProto.sendPacket(mContext, msg, phone, port)
     }
 
     fun onGameGoneReceived(gameID: Int, from: CommsAddrRec) {
-        GameUtils.onGameGone(m_context, gameID)
+        GameUtils.onGameGone(mContext, gameID)
         Assert.assertTrueNR(from.contains(CommsAddrRec.CommsConnType.COMMS_CONN_MQTT))
-        MQTTUtils.handleGameGone(m_context, from, gameID)
+        MQTTUtils.handleGameGone(mContext, from, gameID)
+    }
+
+    fun onGroupChanged(grpval: Int, flags: Int) {
+        val grp = GroupRef(grpval)
+        GamesListDelegate.onGroupChanged(mContext, grp, flags)
     }
 
     fun onCtrlReceived(msg: ByteArray) {
-        MQTTUtils.handleCtrlReceived(m_context, msg)
+        MQTTUtils.handleCtrlReceived(mContext, msg)
+    }
+
+    fun makeUtil(): UtilCtxt {
+        Log.d(TAG, "makeUtil()")
+        return UtilCtxtImpl()
+    }
+
+    fun removeStored(key: String) {
+        Log.d(TAG, "removeStored($key) called")
+        DBUtils.delKVPair(mContext, key)
+    }
+
+    fun getKeysLike(pattern: String): Array<String> {
+        Log.d(TAG, "getKeysLike()")
+        return DBUtils.getKeysLike(mContext, pattern)
+    }
+
+    fun onKnownPlayersChange() {
+        pruned().map{ it.onKnownPlayersChange() }
+    }
+
+    fun onGameChanged(grVal: Long, flags: Int) {
+        pruned().map{ it.onGameChanged(GameRef(grVal), flags) }
+    }
+
+    fun getCommonPrefs(): CommonPrefs {
+        return CommonPrefs.get(mContext)
     }
 
     companion object {
@@ -339,10 +443,57 @@ class DUtilCtxt {
         private const val STR_PENDING_PLAYER = 30
         private const val STR_BONUS_ALL_SUB = 31
         private const val STRS_DUP_ALLSCORES = 32
+        private const val STRS_GROUPS_DEFAULT = 33
+        private const val STRS_GROUPS_ARCHIVE = 34
 
         // Must match enum DupPauseType
         const val UNPAUSED = 0
         const val PAUSED = 1
         const val AUTOPAUSED = 2
+
+        // must match enum GameChangeEvent
+        const val GCE_ADDED = 0x01
+        const val GCE_DELETED = 0x02
+        const val GCE_PLAYER_JOINED = 0x04
+        const val GCE_CONFIG_CHANGED = 0x08
+        const val GCE_SUMMARY_CHANGED = 0x10
+        const val GCE_TURN_CHANGED = 0x20
+        const val GCE_BOARD_CHANGED = 0x40
+
+        // must match enum GroupChangeEvent
+        const val GRCE_ADDED = 0x01
+        const val GRCE_DELETED = 0x02
+        const val GRCE_MOVED = 0x04
+        const val GRCE_RENAMED = 0x08
+        const val GRCE_COLLAPSED = 0x10
+        const val GRCE_EXPANDED = 0x20
+        const val GRCE_GAMES_REORDERED = 0x40
+        const val GRCE_GAME_ADDED = 0x80
+        const val GRCE_GAME_REMOVED = 0x100
+
+
+        val sListeners: MutableSet<WeakReference<Listeners>> =
+            HashSet<WeakReference<Listeners>>()
+
+        fun registerListener(proc: Listeners) {
+            synchronized(sListeners) {
+                sListeners.add(WeakReference<Listeners>(proc))
+            }
+        }
+
+        private fun pruned(): List<Listeners> {
+            val procs =
+                synchronized(sListeners) {
+                    val iter = sListeners.iterator()
+                    while (iter.hasNext()) {
+                        if (null == iter.next().get()) {
+                            iter.remove();
+                        }
+                    }
+                    sListeners.mapNotNull{it.get()} // Don't assert non-null: could have changed!!
+                }
+            return procs
+        }
+
     }
 }

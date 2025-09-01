@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2025 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,10 +23,9 @@
 
 #ifdef PLATFORM_GTK
 
-#include <glib.h>
 #include "gtkboard.h"
 
-gchar* gtkGetChatMessage( GtkGameGlobals* globals );
+void launchChat( GtkGameGlobals* globals );
 
 #endif
 #endif  /* #ifndef _GTKCHAT_H_ */

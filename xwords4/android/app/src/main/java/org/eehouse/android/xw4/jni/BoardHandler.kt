@@ -25,11 +25,15 @@ interface BoardHandler {
     interface NewRecentsProc {
         fun sawNew()
     }
+    interface DrawDoneProc {
+        fun drawDone()
+    }
 
     fun startHandling(
-        parent: Activity, thread: JNIThread,
-        connTypes: CommsConnTypeSet?, // null for standalone game
-        proc: NewRecentsProc?
+        parent: Activity, gr: GameRef,
+        gi: CurGameInfo,
+        nrProc: NewRecentsProc?,
+        ddProc: DrawDoneProc?
     )
 
     fun stopHandling()

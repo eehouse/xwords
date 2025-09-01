@@ -166,7 +166,7 @@ model_figureFinalScores( const ModelCtxt* model, ScoresArray* finalScoresP,
     const TrayTileSet* tray;
     const PlayerCtxt* player;
     const DictionaryCtxt* dict = model_getDictionary( model );
-    CurGameInfo* gi = model->vol.gi;
+    const CurGameInfo* gi = model->vol.gi;
 
     if ( !!finalScoresP ) {
         XP_MEMSET( finalScoresP, 0, sizeof(*finalScoresP) );
@@ -206,7 +206,7 @@ model_figureFinalScores( const ModelCtxt* model, ScoresArray* finalScoresP,
         if ( !!finalScoresP ) {
             XP_S16 score = model_getPlayerScore( model, ii );
             if ( gi->timerEnabled ) {
-                score -= player_timePenalty( gi, ii );
+                score -= model_timePenalty( model, ii );
             }
             finalScoresP->arr[ii] = score + penalty;
         }
@@ -284,7 +284,7 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
 
     } else if ( !tilesInLine( model, turn, &isHorizontal ) ) {
         if ( !silent ) { /* tiles out of line */
-            util_userError( model->vol.util, xwe, ERR_TILES_NOT_IN_LINE );
+            util_userError( *model->vol.utilp, xwe, ERR_TILES_NOT_IN_LINE );
         }
     } else {
         MoveInfo moveInfo;
@@ -312,7 +312,7 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
                 if ( !silent ) {
                     XP_ASSERT( !!bcs.stream );
                     const DictionaryCtxt* dict = model_getPlayerDict( model, turn );
-                    util_informWordsBlocked( model->vol.util, xwe, bcs.nBadWords,
+                    util_informWordsBlocked( *model->vol.utilp, xwe, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
                     stream_destroy( bcs.stream );
                 }
@@ -467,7 +467,7 @@ isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* mInfo, XP_Bool silent )
                 ++newTile;
             } else if ( modelIsEmptyAt( model, col, row ) ) {
                 if ( !silent ) {
-                    util_userError( model->vol.util, xwe, ERR_NO_EMPTIES_IN_TURN );
+                    util_userError( *model->vol.utilp, xwe, ERR_NO_EMPTIES_IN_TURN );
                 }
                 result = XP_FALSE;
                 goto exit;
@@ -521,14 +521,14 @@ isLegalMove( ModelCtxt* model, XWEnv xwe, MoveInfo* mInfo, XP_Bool silent )
                 goto exit;
             } else {
                 if ( !silent ) {
-                    util_userError(model->vol.util, xwe, ERR_TWO_TILES_FIRST_MOVE);
+                    util_userError(*model->vol.utilp, xwe, ERR_TWO_TILES_FIRST_MOVE);
                 }
                 result = XP_FALSE;
                 goto exit;
             }
         } else {
             if ( !silent ) {
-                util_userError( model->vol.util, xwe, ERR_TILES_MUST_CONTACT );
+                util_userError( *model->vol.utilp, xwe, ERR_TILES_MUST_CONTACT );
             }
             result = XP_FALSE;
             goto exit;

@@ -28,30 +28,30 @@ struct XWArray {
     XP_U32 capacity;            /* what's allocated */
 
     ArCompProc proc;
+    void* procClosure;
 
     MPSLOT
 };
 
-static int dfltCmpProc(const void* dl1, const void* dl2);
 static void ensureRoom( XWArray* array, XP_U32 forNew );
-static int findFit( XWArray* array, const void* node );
+static XP_U32 findFit( XWArray* array, XWEnv xwe, const void* node );
 static void moveUpOne( XWArray* array, int from );
 static void moveDownOne( XWArray* array, int from );
 #ifdef DEBUG
-static void assertSorted( XWArray* array );
+static void assertSorted( XWArray* array, XWEnv xwe );
 #else
-# define assertSorted(X)
+# define assertSorted(X, xwe)
 #endif
 
 
 XWArray*
-arr_make(MPFORMAL_NOCOMMA)
+arr_make(MPFORMAL ArCompProc sortProc, void* procClosure)
 {
     XWArray* array = XP_CALLOC(mpool, sizeof(*array) );
 #ifdef MEM_DEBUG
     array->mpool = mpool;
 #endif
-    array->proc = dfltCmpProc;
+    arr_setSort( array, NULL, sortProc, procClosure );
     return array;
 }
 
@@ -71,62 +71,72 @@ arr_length( const XWArray* array )
     return array->nElems;
 }
 
-void
-arr_append( XWArray* array, void* node )
-{
-    ensureRoom( array, 1 );
-    array->elems[array->nElems++] = node;
-}
-
 XP_Bool
-arr_find( XWArray* array, const void* target )
+arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp )
 {
-    int indx = findFit( array, target );
-    return indx < array->nElems
-        && 0 == (*array->proc)(array->elems[indx], target);
+    XP_U32 indx = findFit( array, xwe, target );
+    XP_Bool found = indx < array->nElems
+        && 0 == (*array->proc)(array->elems[indx], target, xwe, array->procClosure);
+    if ( found && !!locp ) {
+        *locp = indx;
+    }
+    return found;
 }
 
 void
-arr_remove( XWArray* array, void* node )
+arr_remove( XWArray* array, XWEnv xwe, void* node )
 {
-    int loc = findFit( array, node );
+    assertSorted( array, xwe );
+    int loc = findFit( array, xwe, node );
+    XP_ASSERT( 0 <= loc );
+    arr_removeAt( array, xwe, loc );
+    assertSorted( array, xwe );
+}
+
+void
+arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc )
+{
+    assertSorted( array, xwe );
     moveDownOne( array, loc );
     --array->nElems;
+    assertSorted( array, xwe );
 }
 
 void
-arr_insert( XWArray* array, void* node )
+arr_insert( XWArray* array, XWEnv xwe, void* node )
 {
-    assertSorted( array );
+    assertSorted( array, xwe );
+    int indx = ( !array->proc || 0 == array->nElems )
+        ? array->nElems
+        : findFit( array, xwe, node );
+    arr_insertAt( array, node, indx );
+    assertSorted( array, xwe );
+}
+
+void
+arr_insertAt( XWArray* array, void* node, XP_U32 loc )
+{
+    XP_ASSERT( 0 <= loc && loc <= array->nElems );
     ensureRoom( array, 1 );
-    if ( !array->proc || 0 == array->nElems ) {
-        array->elems[array->nElems++] = node;
-    } else {
-        int indx = findFit( array, node );
-        XP_ASSERT( 0 <= indx && indx <= array->nElems );
-        moveUpOne( array, indx );
-        array->elems[indx] = node;
-        ++array->nElems;
-    }
-    assertSorted( array );
+    moveUpOne( array, loc );
+    array->elems[loc] = node;
+    ++array->nElems;
 }
 
 void*
 arr_getNth( XWArray* array, XP_U32 nn )
 {
+    XP_LOGFF( "nn=%d; nElems=%d", nn, array->nElems );
     XP_ASSERT( nn < array->nElems );
     return array->elems[nn];
 }
 
 void
-arr_setSort( XWArray* array, ArCompProc newProc )
+arr_setSort( XWArray* array, XWEnv xwe, ArCompProc newProc, void* procClosure )
 {
-    if ( !newProc ) {
-        newProc = dfltCmpProc;
-    }
-
     if ( newProc != array->proc ) {
         array->proc = newProc;
+        array->procClosure = procClosure;
         if ( 0 < array->nElems ) {
             void** oldElems = array->elems;
             XP_U32 oldNElems = array->nElems;
@@ -134,19 +144,20 @@ arr_setSort( XWArray* array, ArCompProc newProc )
             array->nElems = array->capacity = 0;
 
             for ( int ii = 0; ii < oldNElems; ++ii ) {
-                arr_insert( array, oldElems[ii] );
+                arr_insert( array, xwe, oldElems[ii] );
             }
             XP_FREE( array->mpool, oldElems );
         }
     }
+    assertSorted( array, xwe );
 }
 
 void
-arr_map( XWArray* array, ArMapProc mapProc, void* closure )
+arr_map( XWArray* array, XWEnv xwe, ArMapProc mapProc, void* closure )
 {
-    void** elems = array->elems;
+    assertSorted( array, xwe );
     for ( int indx = 0; indx < array->nElems; ++indx ) {
-        ForEachAct fea = (*mapProc)(elems[indx], closure);
+        ForEachAct fea = (*mapProc)(array->elems[indx], closure, xwe);
         if ( FEA_REMOVE & fea ) {
             moveDownOne( array, indx );
             --array->nElems;
@@ -156,6 +167,7 @@ arr_map( XWArray* array, ArMapProc mapProc, void* closure )
             break;
         }
     }
+    assertSorted( array, xwe );
 }
 
 void
@@ -172,8 +184,9 @@ arr_removeAll( XWArray* array, ArDisposeProc dispProc, void* closure )
     array->nElems = array->capacity = 0;
 }
 
-static int
-dfltCmpProc(const void* dl1, const void* dl2)
+int
+PtrCmpProc(const void* dl1, const void* dl2,
+           XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure))
 {
     return dl1 - dl2;
 }
@@ -191,12 +204,12 @@ ensureRoom( XWArray* array, XP_U32 forNew )
 
 #ifdef DEBUG
 static void
-assertSorted( XWArray* array )
+assertSorted( XWArray* array, XWEnv xwe )
 {
     ArCompProc proc = array->proc;
     if ( !!proc ) {
         for ( int ii = 1; ii < array->nElems; ++ii ) {
-            int res = (*proc)( array->elems[ii-1], array->elems[ii] );
+            int res = (*proc)( array->elems[ii-1], array->elems[ii], xwe, array->procClosure );
             XP_ASSERT( res <= 0 );
         }
     }
@@ -205,27 +218,67 @@ assertSorted( XWArray* array )
 
 /* Via an AI summary, so how to attribute? */
 static int
-findFit( XWArray* array, const void* node )
+findFitBinary( XWArray* array, XWEnv xwe, const void* node )
 {
-    int low = 0;
-    int high = array->nElems - 1;
-    int result;
+    int result = -1;
+    if ( 0 == array->nElems ) {
+        result = 0;
+    } else {
+        int low = 0;
+        int high = array->nElems - 1;
 
-    while ( low <= high ) {
-        int mid = (low + high) / 2;
-        int comp = (*array->proc)( array->elems[mid], node );
-        if ( 0 == comp ) {
-            result = mid;
-            break;
-        } else if ( 0 > comp ) {
-            low = mid + 1;
-            result = low;
-        } else {
-            high = mid - 1;
-            result = high + 1;
+        while ( low <= high ) {
+            int mid = (low + high) / 2;
+            int comp = (*array->proc)( array->elems[mid], node, xwe, array->procClosure );
+            if ( 0 == comp ) {
+                result = mid;
+                break;
+            } else if ( 0 > comp ) {
+                low = mid + 1;
+                result = low;
+            } else {
+                high = mid - 1;
+                result = high + 1;
+            }
         }
     }
+    XP_ASSERT( 0 <= result );
+    XP_ASSERT( result < 0xFFFF );
+    return (XP_U32)result;
+}
 
+typedef struct _MatchData {
+    const void* sought;
+    int index;
+} MatchData;
+
+static ForEachAct
+findExact( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+{
+    ForEachAct result = FEA_OK;
+    MatchData* md = (MatchData*)closure;
+    if ( elem == md->sought ) {
+        result |= FEA_EXIT;
+    } else {
+        ++md->index;
+    }
+    return result;
+}
+
+static XP_U32
+findFitMapped( XWArray* array, XWEnv xwe, const void* node )
+{
+    MatchData md = { .sought = node, };
+    arr_map( array, xwe, findExact, &md );
+    return md.index;
+}
+
+static XP_U32
+findFit( XWArray* array, XWEnv xwe, const void* node )
+{
+    XP_U32 result = !!array->proc
+        ? findFitBinary( array, xwe, node )
+        : findFitMapped( array, xwe, node );
     return result;
 }
 

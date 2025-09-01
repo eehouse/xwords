@@ -28,8 +28,13 @@ import android.os.Handler
 import android.provider.Settings
 import android.text.format.DateUtils
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 import java.io.Serializable
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -37,6 +42,7 @@ import kotlin.math.min
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -52,7 +58,7 @@ object ConnStatusHandler {
 
     private var s_rect: Rect? = null
     private var s_downOnMe = false
-    private var s_cbacks: ConnStatusCBacks? = null
+    private var s_cbacks: WeakReference<ConnStatusCBacks?>? = null
     private var s_fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     init {
@@ -75,7 +81,7 @@ object ConnStatusHandler {
     }
 
     fun setHandler(cbacks: ConnStatusCBacks?) {
-        s_cbacks = cbacks
+        s_cbacks = WeakReference<ConnStatusCBacks?>(cbacks)
     }
 
     fun handleDown(xx: Int, yy: Int): Boolean {
@@ -85,8 +91,8 @@ object ConnStatusHandler {
 
     fun handleUp(xx: Int, yy: Int): Boolean {
         val result = s_downOnMe && s_rect!!.contains(xx, yy)
-        if (result && null != s_cbacks) {
-            s_cbacks!!.onStatusClicked()
+        if (result) {
+            s_cbacks?.get()?.onStatusClicked()
         }
         s_downOnMe = false
         return result
@@ -109,7 +115,7 @@ object ConnStatusHandler {
     )
 
     fun getStatusText(
-        context: Context, gamePtr: XwJNI.GamePtr,
+        context: Context, gr: GameRef,
         gameID: Int, connTypes: CommsConnTypeSet?,
         addr: CommsAddrRec?
     ): String? {
@@ -140,7 +146,7 @@ object ConnStatusHandler {
                     }
 
                     sb.append(String.format("\n\n*** %s ", typ.longName(context)))
-                    val did = addDebugInfo(context, gamePtr, addr, typ)
+                    val did = addDebugInfo(context, gr, addr, typ)
                     if (null != did) {
                         sb.append(did).append(" ")
                     }
@@ -201,7 +207,9 @@ object ConnStatusHandler {
             }
 
             if (BuildConfig.DEBUG) {
-                sb.append("\n").append(XwJNI.comms_getStats(gamePtr))
+                Utils.launch {
+                    sb.append("\n").append(gr.getStats())
+                }
             }
             msg = sb.toString()
         }
@@ -216,9 +224,7 @@ object ConnStatusHandler {
     }
 
     private fun invalidateParent() {
-        if (null != s_cbacks) {
-            s_cbacks!!.invalidateParent()
-        }
+        s_cbacks?.get()?.invalidateParent()
     }
 
     fun updateMoveCount(
@@ -264,7 +270,7 @@ object ConnStatusHandler {
         isIn: Boolean
     ) {
         val cbacks =
-            if (null == cbacks) s_cbacks
+            if (null == cbacks) s_cbacks?.get()
             else cbacks
 
         synchronized(ConnStatusHandler::class.java) {
@@ -279,22 +285,21 @@ object ConnStatusHandler {
     }
 
     @JvmOverloads
-    fun showSuccessIn(cbcks: ConnStatusCBacks? = s_cbacks) {
+    fun showSuccessIn(cbcks: ConnStatusCBacks? = s_cbacks?.get()) {
         showSuccess(cbcks, true)
     }
 
     @JvmOverloads
-    fun showSuccessOut(cbcks: ConnStatusCBacks? = s_cbacks) {
+    fun showSuccessOut(cbcks: ConnStatusCBacks? = s_cbacks?.get()) {
         showSuccess(cbcks, false)
     }
 
     fun draw(
         context: Context, canvas: Canvas,
-        connTypes: CommsConnTypeSet?, isSolo: Boolean
+        connTypes: CommsConnTypeSet, isSolo: Boolean
     ) {
         if (!isSolo && null != s_rect) {
             synchronized(ConnStatusHandler::class.java) {
-                val connTypes = connTypes!!
                 val scratchR = Rect(s_rect)
                 val quarterHeight = scratchR.height() / 4
 
@@ -535,7 +540,7 @@ object ConnStatusHandler {
     }
 
     private fun addDebugInfo(
-        context: Context, gamePtr: XwJNI.GamePtr,
+        context: Context, gr: GameRef,
         addr: CommsAddrRec?, typ: CommsConnType
     ): String? {
         var result: String? = null

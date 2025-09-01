@@ -1,6 +1,5 @@
-/* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright © 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright © 2009 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -271,7 +270,8 @@ and_dictionary_make_empty( MPFORMAL JNIUtilCtxt* jniutil )
 #ifdef DEBUG
     anddict->dbgid = rand();
 #endif
-    dict_super_init( MPPARM(mpool) (DictionaryCtxt*)anddict );
+    dict_super_init( MPPARM(mpool) (DictionaryCtxt*)anddict,
+                     and_dictionary_destroy );
     MPASSIGN( anddict->super.mpool, mpool );
 
     LOG_RETURNF( "%p", anddict );
@@ -283,8 +283,7 @@ makeDicts( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
            EnvThreadInfo* ti,
 #endif
-           DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
-           DictionaryCtxt** dictp, PlayerDicts* dicts,
+           JNIUtilCtxt* jniutil, DictionaryCtxt** dictp, PlayerDicts* dicts,
            jobjectArray jnames, jobjectArray jdicts, jobjectArray jpaths,
            jstring jlang )
 {
@@ -299,7 +298,7 @@ makeDicts( MPFORMAL JNIEnv* env,
                     NULL : (*env)->GetObjectArrayElement( env, jpaths, ii );
             if ( NULL != jdict || NULL != jpath ) { 
                 jstring jname = (*env)->GetObjectArrayElement( env, jnames, ii );
-                dict = makeDict( MPPARM(mpool) env, TI_IF(ti) dictMgr, jniutil,
+                dict = makeDict( MPPARM(mpool) env, TI_IF(ti) jniutil,
                                  jname, jdict, jpath, jlang, false );
                 XP_ASSERT( !!dict );
                 deleteLocalRefs( env, jdict, jname, DELETE_NO_REF );
@@ -320,7 +319,7 @@ makeDict( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
           EnvThreadInfo* ti,
 #endif
-          DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstring jname,
+          JNIUtilCtxt* jniutil, jstring jname,
           jbyteArray jbytes, jstring jpath, jstring jlangname, jboolean check )
 {
     jbyte* bytes = NULL;
@@ -328,65 +327,57 @@ makeDict( MPFORMAL JNIEnv* env,
     off_t bytesSize = 0;
 
     const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
-    /* remember: dmgr_get calls dict_ref() */
-    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dmgr_get( dictMgr,
-                                                               env, name );
 
-    if ( NULL == anddict ) {
-        if ( NULL == jpath ) {
-            bytesSize = (*env)->GetArrayLength( env, jbytes );
-            byteArray = (*env)->NewGlobalRef( env, jbytes );
-            bytes = (*env)->GetByteArrayElements( env, byteArray, NULL );
-        } else {
-            const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
+    if ( NULL == jpath ) {
+        bytesSize = (*env)->GetArrayLength( env, jbytes );
+        byteArray = (*env)->NewGlobalRef( env, jbytes );
+        bytes = (*env)->GetByteArrayElements( env, byteArray, NULL );
+    } else {
+        const char* path = (*env)->GetStringUTFChars( env, jpath, NULL );
 
-            struct stat statbuf;
-            if ( 0 == stat( path, &statbuf ) && 0 < statbuf.st_size ) {
-                int fd = open( path, O_RDONLY );
-                if ( fd >= 0 ) {
-                    void* ptr = mmap( NULL, statbuf.st_size, PROT_READ, 
-                                      MAP_PRIVATE, fd, 0 );
-                    close( fd );
-                    if ( MAP_FAILED != ptr ) {
-                        bytes = ptr;
-                        bytesSize = statbuf.st_size;
-                    }
+        struct stat statbuf;
+        if ( 0 == stat( path, &statbuf ) && 0 < statbuf.st_size ) {
+            int fd = open( path, O_RDONLY );
+            if ( fd >= 0 ) {
+                void* ptr = mmap( NULL, statbuf.st_size, PROT_READ,
+                                  MAP_PRIVATE, fd, 0 );
+                close( fd );
+                if ( MAP_FAILED != ptr ) {
+                    bytes = ptr;
+                    bytesSize = statbuf.st_size;
                 }
             }
-            (*env)->ReleaseStringUTFChars( env, jpath, path );
         }
+        (*env)->ReleaseStringUTFChars( env, jpath, path );
+    }
 
-        if ( NULL != bytes ) {
-            anddict = (AndDictionaryCtxt*)
-                and_dictionary_make_empty( MPPARM(mpool) jniutil );
+    AndDictionaryCtxt* anddict = NULL;
+    if ( NULL != bytes ) {
+        anddict = (AndDictionaryCtxt*)
+            and_dictionary_make_empty( MPPARM(mpool) jniutil );
 #ifdef MAP_THREAD_TO_ENV
-            anddict->ti = ti;
+        anddict->ti = ti;
 #endif
-            anddict->bytes = bytes;
-            anddict->byteArray = byteArray;
-            anddict->bytesSize = bytesSize;
+        anddict->bytes = bytes;
+        anddict->byteArray = byteArray;
+        anddict->bytesSize = bytesSize;
 
-            anddict->super.destructor = and_dictionary_destroy;
+        /* copy the name */
+        anddict->super.name = copyString( mpool, name );
+        XP_LOGFF( "(dict=%p); code=%x; name=%s", anddict,
+                  anddict->dbgid, anddict->super.name );
+        anddict->super.langName = getStringCopy( MPPARM(mpool)
+                                                 env, jlangname );
 
-            /* copy the name */
-            anddict->super.name = copyString( mpool, name );
-            XP_LOGFF( "(dict=%p); code=%x; name=%s", anddict,
-                     anddict->dbgid, anddict->super.name );
-            anddict->super.langName = getStringCopy( MPPARM(mpool) 
-                                                     env, jlangname );
-
-            XP_U32 numEdges = 0;
-            XP_Bool parses = parseDict( anddict, env, (XP_U8*)anddict->bytes,
-                                        bytesSize, &numEdges );
-            if ( !parses || (check && !checkSanity( &anddict->super, 
-                                                    numEdges ) ) ) {
-                and_dictionary_destroy( (DictionaryCtxt*)anddict, env );
-                anddict = NULL;   /* This will blow up soon! */
-                XP_ASSERT(0);
-            }
+        XP_U32 numEdges = 0;
+        XP_Bool parses = parseDict( anddict, env, (XP_U8*)anddict->bytes,
+                                    bytesSize, &numEdges );
+        if ( !parses || (check && !checkSanity( &anddict->super,
+                                                numEdges ) ) ) {
+            and_dictionary_destroy( (DictionaryCtxt*)anddict, env );
+            anddict = NULL;   /* This will blow up soon! */
+            XP_ASSERT(0);
         }
-        dmgr_put( dictMgr, env, name, &anddict->super );
-        dict_ref( &anddict->super, env );
     }
     
     (*env)->ReleaseStringUTFChars( env, jname, name );

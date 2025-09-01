@@ -36,5 +36,7 @@
 # define STR_PENDING_PLAYER                30
 # define STR_BONUS_ALL_SUB                 31
 # define STRS_DUP_ALLSCORES                32
-# define N_AND_USER_STRINGS                32
+# define STRS_GROUPS_DEFAULT               33
+# define STRS_GROUPS_ARCHIVE               34
+# define N_AND_USER_STRINGS                34
 #endif

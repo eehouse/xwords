@@ -31,7 +31,7 @@ typedef struct _PageData {
 } PageData;
 
 typedef struct _GtkConnsState {
-    GtkGameGlobals* globals;
+    LaunchParams* params;
     CommsAddrRec* addr;
     DeviceRole role;
 
@@ -293,13 +293,13 @@ makeSMSPage( GtkConnsState* state, PageData* data )
     GtkWidget* vbox = boxWithUseCheck( state, data );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
-        state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.myPhone;
+        state->addr->u.sms.phone : state->params->connInfo.sms.myPhone;
     GtkWidget* hbox = makeLabeledField( "My phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
 
     int portVal = hasSMS ? state->addr->u.sms.port
-        : state->globals->cGlobals.params->connInfo.sms.port;
+        : state->params->connInfo.sms.port;
     gchar port[32];
     snprintf( port, sizeof(port), "%d", portVal );
     hbox = makeLabeledField( "My port", &state->smsport, port );
@@ -329,14 +329,14 @@ getNextData( GtkConnsState* state, CommsConnType typ, gchar* label )
 }
 
 gboolean
-gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
-             XP_Bool readOnly )
+gtkConnsDlg( LaunchParams* params, GtkWidget* parent, CommsAddrRec* addr,
+             DeviceRole role, XP_Bool readOnly )
 {
     GtkConnsState state;
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.readOnly = readOnly;
-    state.globals = globals;
+    state.params = params;
     state.addr = addr;
     state.role = role;
 
@@ -406,6 +406,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
+    gtk_window_set_transient_for( GTK_WINDOW(dialog), GTK_WINDOW(parent) );
     gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );

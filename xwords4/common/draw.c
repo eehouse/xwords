@@ -17,9 +17,51 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "draw.h"
+
+void
+draw_super_init( DrawCtx* dc, DrawTarget dt )
+{
+    XP_LOGFF( "%p: refCount starts at 1", dc );
+    dc->refCount = 1;
+    dc->dt = dt;
+}
+
+DrawCtx*
+_draw_ref( DrawCtx* dc
+#ifdef DEBUG
+           ,const char* proc, int line
+#endif
+                    )
+{
+    if ( !!dc ) {
+        ++dc->refCount;
+        XP_LOGFF( "%p: refCount now %d (from %s(), line %d)",
+                  dc, dc->refCount, proc, line );
+    }
+    return dc;
+}
+
+void
+_draw_unref( DrawCtx* dc, XWEnv xwe
+#ifdef DEBUG
+                    ,const char* proc, int line
+#endif
+                  )
+{
+    if ( !!dc ) {
+        XP_ASSERT( 0 < dc->refCount );
+        --dc->refCount;
+        XP_LOGFF( "%p: refCount now %d (from %s(), line %d)",
+                  dc, dc->refCount, proc, line );
+        if ( !dc->refCount ) {
+            draw_destroy( dc, xwe );
+        }
+    }
+}
+
 #ifdef DRAW_WITH_PRIMITIVES
 
-#include "draw.h"
 #include "xptypes.h"
 
 static void

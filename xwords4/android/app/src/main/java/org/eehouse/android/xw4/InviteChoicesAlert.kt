@@ -21,6 +21,8 @@ package org.eehouse.android.xw4
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 import java.lang.ref.WeakReference
 
@@ -28,6 +30,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.InviteView.ItemClicked
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -94,7 +97,8 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             .inflate(context, R.layout.invite_view) as InviteView
         val okClicked = DialogInterface.OnClickListener { dlg, pos ->
             Assert.assertTrue(Action.SKIP_CALLBACK != state.m_action)
-            mInviteView!!.getChoice()?.let { choice ->
+            val inviteView = mInviteView!!
+            inviteView.getChoice()?.let { choice ->
                 val activity = context as XWActivity
                 if (choice is InviteMeans) {
                     activity.inviteChoiceMade(
@@ -102,10 +106,14 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
                         choice, *state.getParams()
                     )
                 } else if (choice is Array<*> && choice.isArrayOf<String>()) {
-                    val addrs = choice
-                        .map{player -> XwJNI.kplr_getAddr(player as String) as Any}
-                        .toTypedArray()
-                    activity.onPosButton(state.m_action!!, *addrs)
+                    inviteView.launch {
+                        val addrs = choice
+                            .map{player -> Knowns.getAddr(player as String) as Any}
+                            .toTypedArray()
+                        withContext(Dispatchers.Main) {
+                            activity.onPosButton(state.m_action!!, *addrs)
+                        }
+                    }
                 } else {
                     Assert.failDbg()
                 }
@@ -117,7 +125,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
             .setPositiveButton(android.R.string.ok, okClicked)
             .setNegativeButton(android.R.string.cancel, null)
         mInviteView!!.setChoices(
-            means, lastSelMeans, nMissing, nInvited
+            means, nMissing, nInvited
         )
             .setNli(nli)
             .setCallbacks(this)

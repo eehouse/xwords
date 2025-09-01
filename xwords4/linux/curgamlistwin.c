@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "gamemgr.h"
 #include "curgamlistwin.h"
 #include "linuxmain.h"
 #include "device.h"
@@ -56,7 +57,7 @@ void
 cgl_destroy( CursGameList* cgl )
 {
     if ( !!cgl->window ) {
-        g_slist_free_full( cgl->games, g_free );
+        g_slist_free( cgl->games );
         delwin( cgl->window );
     } else {
         XP_LOGFF( "no window??" );
@@ -73,40 +74,51 @@ cgl_resized( CursGameList* cgl, int width, int height )
     cgl_draw( cgl );
 }
 
-static void
-addOne( CursGameList* cgl, sqlite3_int64 rowid )
-{
-    GameInfo gib;
-    if ( gdb_getGameInfoForRow( cgl->params->pDb, rowid, &gib ) ) {
-        GameInfo* gibp = g_malloc( sizeof(*gibp) );
-        *gibp = gib;
-        cgl->games = g_slist_append( cgl->games, gibp );
-    }
-}
+#ifdef XWFEATURE_DEVICE_STORES
+/* static void */
+/* onGameProc( GameRef gr, XWEnv XP_UNUSED(xwe), void* closure ) */
+/* { */
+/*     CursGameList* cgl  = (CursGameList*)closure; */
+/*     cgl->games = g_slist_append( cgl->games, (void*)gr ); */
+/* } */
+#endif
 
 /* Load from the DB */
 void
 cgl_refresh( CursGameList* cgl )
 {
-    g_slist_free_full( cgl->games, g_free );
+    g_slist_free( cgl->games );
     cgl->games = NULL;
 
+#ifdef XWFEATURE_DEVICE_STORES
+    XP_LOGFF( "item count: %d", gmgr_countItems( cgl->params->dutil, NULL_XWE ) );
+    // gmgr_getGames( cgl->params->dutil, NULL_XWE, onGameProc, cgl );
+    XP_U16 count = gmgr_countItems( cgl->params->dutil, NULL_XWE );
+    for ( XP_U16 ii = 0; ii < count; ++ii ) {
+        GLItemRef ir = gmgr_getNthItem(cgl->params->dutil, NULL_XWE, ii );
+        if ( gmgr_isGame(ir) ) {
+            GameRef gr = gmgr_toGame(ir);
+            cgl->games = g_slist_append( cgl->games, (void*)gr );
+        }
+    }
+#else
     sqlite3* pDb = cgl->params->pDb;
     GSList* games = gdb_listGames( pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
         addOne( cgl, *rowid );
     }
+#endif
     cgl_draw( cgl );
 }
 
 static GSList*
-findFor( CursGameList* cgl, sqlite3_int64 rowid )
+findFor( CursGameList* cgl, GameRef gr )
 {
     GSList* result = NULL;
     for ( GSList* iter = cgl->games; !!iter && !result; iter = iter->next ) {
-        GameInfo* gib = (GameInfo*)iter->data;
-        if ( gib->rowid == rowid ) {
+        GameRef one = (GameRef)iter->data;
+        if ( one == gr ) {
             result = iter;
         }
     }
@@ -114,40 +126,26 @@ findFor( CursGameList* cgl, sqlite3_int64 rowid )
 }
 
 void
-cgl_refreshOne( CursGameList* cgl, sqlite3_int64 rowid, bool select )
+cgl_refreshOne( CursGameList* cgl, GameRef gr, bool XP_UNUSED(select) )
 {
-    // Update the info. In place if it exists, otherwise creating a new list
-    // elem
+    // This is a no-op unless we start storing stuff
     
-    GameInfo gib;
-    if ( gdb_getGameInfoForRow( cgl->params->pDb, rowid, &gib ) ) {
-        GameInfo* found;
-        GSList* elem = findFor( cgl, rowid );
-        if ( !!elem ) {
-            found = (GameInfo*)elem->data;
-            *found = gib;
-        } else {
-            found = g_malloc( sizeof(*found) );
-            *found = gib;
-            cgl->games = g_slist_append( cgl->games, found );
-        }
-
-        if ( select ) {
-            cgl->curSel = g_slist_index( cgl->games, found );
-        }
-        adjustCurSel( cgl );
-    }
+    GSList* elem = findFor( cgl, gr );
+    XP_ASSERT( !!elem );
+    adjustCurSel( cgl );
 }
 
 void
-cgl_remove( CursGameList* cgl, sqlite3_int64 rowid )
+cgl_remove( CursGameList* cgl, GameRef gr )
 {
-    GSList* elem = findFor( cgl, rowid );
+    XP_LOGFF( "before: %d", g_slist_length( cgl->games ) );
+    GSList* elem = findFor( cgl, gr );
+    XP_ASSERT( !!elem );
     if ( !!elem ) {
-        g_free( elem->data );
         cgl->games = g_slist_delete_link( cgl->games, elem );
     }
     adjustCurSel( cgl );
+    XP_LOGFF( "after: %d", g_slist_length( cgl->games ) );
 }
 
 void
@@ -192,6 +190,7 @@ cgl_draw( CursGameList* cgl )
     werase( win );
 
     const int nGames = g_slist_length( cgl->games );
+    XP_LOGFF( "nGames: %d", nGames );
 
     /* Draw '+' at far right if scrollable */
     int nBelow = nGames - (cgl->height-2) - cgl->yOffset;
@@ -203,8 +202,7 @@ cgl_draw( CursGameList* cgl )
         mvwaddstr( win, 0, cgl->width-1, "+" );
     }
 
-    const char* cols[] = {"#", "RowID", "Lang", "Scores", "GameID", "Role",
-                          "nTot", "nMiss", "Seed", "#Mv", "Turn", "nPend", "DupTimer" };
+    const char* cols[] = {"#", "Lang", "GameID", "Role", "nTot", "Chats", };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
@@ -213,25 +211,17 @@ cgl_draw( CursGameList* cgl )
     }
     int line = 1;
     for ( int ii = 0; ii < nShown; ++ii ) {
-        const GameInfo* gi = g_slist_nth_data( cgl->games, ii + cgl->yOffset );
+        GameRef gr = (GameRef)g_slist_nth_data( cgl->games, ii + cgl->yOffset );
+        XP_ASSERT( gr );
+        const CurGameInfo* gi = gr_getGI( cgl->params->dutil, gr, NULL_XWE );
         int col = 0;
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
-        data[line][col++] = g_strdup_printf( "%05lld", gi->rowid );
-        data[line][col++] = g_strdup( gi->isoCode );
-        data[line][col++] = g_strdup( gi->scores );
-        data[line][col++] = g_strdup_printf( "%d", gi->gameID );
-        data[line][col++] = g_strdup_printf( "%d", gi->role );
-        data[line][col++] = g_strdup_printf( "%d", gi->nTotal );
-        data[line][col++] = g_strdup_printf( "%d", countBits(gi->nMissing) );
-        data[line][col++] = g_strdup_printf( "%d", gi->seed );
-        data[line][col++] = g_strdup_printf( "%d", gi->nMoves );
-        data[line][col++] = g_strdup_printf( "%d", gi->turn );
-        data[line][col++] = g_strdup_printf( "%d", gi->nPending );
-
-        gchar buf[64];
-        formatSeconds( gi->dupTimerExpires, buf, VSIZE(buf) );
-        data[line][col++] = g_strdup( buf );
-
+        data[line][col++] = g_strdup( gi->isoCodeStr );
+        data[line][col++] = g_strdup_printf( "%x", gi->gameID );
+        data[line][col++] = g_strdup_printf( "%d", gi->serverRole );
+        data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
+        data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(cgl->params->dutil,
+                                                                   gr, NULL_XWE ));
         XP_ASSERT( col == VSIZE(data[line]) );
         ++line;
     }
@@ -265,17 +255,20 @@ cgl_draw( CursGameList* cgl )
     MQTTDevID devID;
     dvc_getMQTTDevID( cgl->params->dutil, NULL_XWE, &devID );
     XP_UCHAR didBuf[32];
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d, relayid: %d, mqttid: %s",
-              cgl->pid, nGames, relayID, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ) );
+    gchar* dbName = g_path_get_basename(cgl->params->dbName);
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; relayid: %d; mqttid: %s; db: %s",
+              cgl->pid, nGames, relayID, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
+              dbName );
     mvwaddstr( win, 0, 0, buf );
+    g_free( dbName );
     
     wrefresh( win );
 }
 
-const GameInfo*
+const GameRef
 cgl_getSel( CursGameList* cgl )
 {
-    return g_slist_nth_data( cgl->games, cgl->curSel );
+    return (GameRef)g_slist_nth_data( cgl->games, cgl->curSel );
 }
 
 void
@@ -291,5 +284,7 @@ cgl_setSel( CursGameList* cgl, int sel )
 int
 cgl_getNGames( CursGameList* cgl )
 {
-    return g_slist_length( cgl->games );
+    int len = g_slist_length( cgl->games );
+    XP_LOGFF( "() => %d", len );
+    return len;
 }

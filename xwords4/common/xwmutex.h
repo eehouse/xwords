@@ -23,6 +23,7 @@
 #include "xptypes.h"
 #include "comtypes.h"
 
+#ifdef USE_MUTEXES
 #ifdef DEBUG
 
 void mtx_lock_prv(MutexState* state, XP_U16 waitSecs, const char* file,
@@ -68,4 +69,36 @@ void mtx_crashToTest();
 
 #define MUTEX_DESTROY(STATE) mtx_destroy_prv((STATE))
 
-#endif
+#else   /* USE_MUTEXES */
+# define WITH_MUTEX_CHECKED(M,C) WITH_MUTEX(M)
+# define MUTEX_INIT_CHECKED(M,B,C) MUTEX_INIT(M,B)
+# define MUTEX_INIT(M,B)
+# define MUTEX_DESTROY(M)
+# ifdef DEBUG
+# define WITH_MUTEX(M) {                        \
+    MutexState* _ms = (M);                      \
+    pthread_t _self = pthread_self();           \
+    if ( 0 == _ms->counter ) {                  \
+        XP_ASSERT( !_ms->owner );               \
+        _ms->owner = _self;                     \
+    } else {                                    \
+        XP_ASSERT( _ms->owner == _self );       \
+    }                                           \
+    ++_ms->counter;                             \
+
+# define END_WITH_MUTEX()                       \
+    XP_ASSERT( 0 < _ms->counter );              \
+    --_ms->counter;                             \
+    if ( 0 == _ms->counter ) {                  \
+        _ms->owner = 0;                         \
+    }                                           \
+    }                                           \
+
+# else
+# define WITH_MUTEX(M)
+# define END_WITH_MUTEX()
+# endif
+
+#endif  /* USE_MUTEXES */
+
+#endif  /* #ifndef _XWMUTEX_H_ */

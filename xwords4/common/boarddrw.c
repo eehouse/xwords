@@ -49,7 +49,7 @@
 #include "board.h"
 #include "scorebdp.h"
 #include "game.h"
-#include "server.h"
+#include "serverp.h"
 #include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"
@@ -636,6 +636,8 @@ board_draw( BoardCtxt* board, XWEnv xwe )
         drawBoard( board, xwe );
 
         draw_endDraw( board->draw, xwe );
+    } else {
+        XP_LOGFF( "got false from beginDraw()" );
     }
     return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */

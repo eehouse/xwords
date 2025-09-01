@@ -89,24 +89,25 @@ object NagTurnReceiver {
                                 LocUtils.getString(context, R.string.prev_player)
                             } else summary.prevPlayer!!
 
-                        val msgIntent =
-                            GamesListDelegate.makeRowidIntent(context, rowid)
-                        val millis = formatMillis(
-                            context,
-                            now - info.m_lastMoveMillis
-                        )
-                        var body = String.format(
-                            LocUtils.getString(context,R.string.nag_body_fmt),
-                            prevPlayer, millis
-                        )
-                        if (lastWarning) {
-                            body = LocUtils.getString(context, R.string.nag_warn_last_fmt, body)
-                        }
-                        Utils.postNotification(
-                            context, msgIntent,
-                            R.string.nag_title, body,
-                            rowid
-                        )
+                        Log.d(TAG, "not making intent...")
+                        // val msgIntent =
+                        //     GamesListDelegate.makeRowidIntent(context, rowid)
+                        // val millis = formatMillis(
+                        //     context,
+                        //     now - info.m_lastMoveMillis
+                        // )
+                        // var body = String.format(
+                        //     LocUtils.getString(context,R.string.nag_body_fmt),
+                        //     prevPlayer, millis
+                        // )
+                        // if (lastWarning) {
+                        //     body = LocUtils.getString(context, R.string.nag_warn_last_fmt, body)
+                        // }
+                        // Utils.postNotification(
+                        //     context, msgIntent,
+                        //     R.string.nag_title, body,
+                        //     rowid
+                        // )
                     }
                 }
                 DBUtils.updateNeedNagging(context, needNagging!!)

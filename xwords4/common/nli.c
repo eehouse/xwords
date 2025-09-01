@@ -75,15 +75,16 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 }
 
 void
-nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util,
+nliToGI( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
          CurGameInfo* gi )
 {
-    gi_setNPlayers( gi, xwe, util, nli->nPlayersT, nli->nPlayersH );
+    gi_setNPlayers( MPPARM(mpool) dutil, xwe, gi,
+                    nli->nPlayersT, nli->nPlayersH );
     gi->gameID = nli->gameID;
+    XP_STRNCPY( &gi->isoCodeStr[0], nli->isoCodeStr, VSIZE(gi->isoCodeStr)-1 );
 
     XP_U16 nLocals = 0;
     XP_Bool remotesAreRobots = nli->remotesAreRobots;
-    XW_DUtilCtxt* duc = util_getDevUtilCtxt( util, xwe );
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp = &gi->players[ii];
         if ( lp->isLocal ) {
@@ -92,9 +93,9 @@ nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util,
             }
             XP_UCHAR buf[64];
             XP_U16 len = VSIZE(buf);
-            dutil_getUsername( duc, xwe, nLocals++, XP_TRUE, remotesAreRobots,
-                               buf, &len );
-            replaceStringIfDifferent( util->mpool, &lp->name, buf );
+            dutil_getUsername( dutil, xwe, nLocals++, XP_TRUE,
+                               remotesAreRobots, buf, &len );
+            replaceStringIfDifferent( mpool, &lp->name, buf );
         }
     }
 
@@ -107,7 +108,10 @@ nliToGI( const NetLaunchInfo* nli, XWEnv xwe, XW_UtilCtxt* util,
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
     gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
-    replaceStringIfDifferent( util->mpool, &gi->dictName, nli->dict );
+    replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
+    replaceStringIfDifferent( mpool, &gi->gameName, nli->gameName );
+
+    gi->conTypes = nli->_conTypes;
 }
 
 static XP_U32 
@@ -236,6 +240,7 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
         nli->nPlayersH = stream_getU8( stream );
         nli->gameID = stream_getU32( stream );
         nli->forceChannel = stream_getU8( stream );
+        XP_LOGFF( "read forceChannel: %X", nli->forceChannel );
 
         if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
             stringFromStreamHere( stream, nli->room, sizeof(nli->room) );

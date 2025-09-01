@@ -39,7 +39,8 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
     open fun postNotification(device: String?, gameID: Int, rowid: Long)
     {
         val body = LocUtils.getString(mContext, R.string.new_game_body)
-        GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
+        // GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
+        Assert.failDbg()
     }
 
     fun receiveMessage(
@@ -84,11 +85,11 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
                         mContext, rowid, msg, addr,
                         sink, bmr, isLocalP
                     )
-                ) {
+                ) {/*
                     GameUtils.postMoveNotification(
                         mContext, rowid, bmr,
                         isLocalP[0]
-                    )
+                    )*/
                     consumed = true
                 }
             }

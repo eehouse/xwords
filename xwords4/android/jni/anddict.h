@@ -1,7 +1,6 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
 /*
- * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright © 2009-2025 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,7 +21,6 @@
 #define _ANDDICT_H_
 
 #include "dictnry.h"
-#include "dictmgr.h"
 #include "comtypes.h"
 #include "jniutlswrapper.h"
 
@@ -34,15 +32,14 @@ DictionaryCtxt* makeDict( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
                           EnvThreadInfo* ti,
 #endif
-                          DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
-                          jstring jname, jbyteArray bytes,
+                          JNIUtilCtxt* jniutil, jstring jname, jbyteArray bytes,
                           jstring path, jstring jlang, jboolean check );
 
 void makeDicts( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
                 EnvThreadInfo* ti,
 #endif
-                DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
+                JNIUtilCtxt* jniutil,
                 DictionaryCtxt** dict, PlayerDicts* dicts, jobjectArray jnames, 
                 jobjectArray jdicts, jobjectArray jpaths, jstring jlang );
 

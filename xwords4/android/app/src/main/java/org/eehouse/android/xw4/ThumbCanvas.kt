@@ -20,23 +20,12 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Rect
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.DrawCtx
+import org.eehouse.android.xw4.jni.TmpDict
 
-class ThumbCanvas(context: Context, bitmap: Bitmap)
-	: BoardCanvas(context, bitmap) {
-    // These should not be needed if common code gets fixed!  So the
-    // whole class should go away. PENDING
-    override fun scoreBegin(
-        rect: Rect, numPlayers: Int, scores: IntArray,
-        remCount: Int
-    ): Boolean {
-        return false
-    }
-
-    override fun trayBegin(rect: Rect, owner: Int, score: Int): Boolean {
-        return false
-    }
+private val TAG = ThumbCanvas::class.java.getSimpleName()
+class ThumbCanvas(context: Context, bitmap: Bitmap, private val mSize: Int)
+	: BoardCanvas(context, bitmap, DrawCtx.DT_THUMB) {
 
     // Unlike superclass, where the game was loaded on the main thread
     // but dictChanged() is called on the JNI thread, this instance
@@ -46,7 +35,11 @@ class ThumbCanvas(context: Context, bitmap: Bitmap)
     override fun dictChanged(dictPtr: Long) {
         if (0L != dictPtr) {
             mFontDims = null
-            mDictChars = XwJNI.dict_getChars(dictPtr)
+            mDictChars = TmpDict.dict_getChars(dictPtr)
         }
+    }
+
+    override fun getThumbSize(): Int {
+        return mSize;
     }
 }

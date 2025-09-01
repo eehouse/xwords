@@ -40,39 +40,7 @@ enum {
 
 #define MAX_SCORE_LEN 31
 
-typedef struct GtkDrawCtx {
-    DrawCtxVTable* vtable;
-
-/*     GdkDrawable* pixmap; */
-    GtkWidget* drawing_area;
-    cairo_surface_t* surface;
-    GdkDrawingContext* dc;
-
-    struct GtkGameGlobals* globals;
-
-    cairo_t* _cairo;
-
-    GdkRGBA black;
-    GdkRGBA white;
-    GdkRGBA grey;
-    GdkRGBA red;		/* for pending tiles */
-    GdkRGBA tileBack;	/* for pending tiles */
-    GdkRGBA cursor;
-    GdkRGBA bonusColors[4];
-    GdkRGBA playerColors[MAX_NUM_PLAYERS];
-
-	GList* fontsPerSize;
-
-    struct {
-        XP_UCHAR str[MAX_SCORE_LEN+1];
-        XP_U16 fontHt;
-    } scoreCache[MAX_NUM_PLAYERS];
-    
-    XP_U16 trayOwner;
-    XP_U16 cellHeight;
-    TileValueType tvType;
-    XP_Bool scoreIsVertical;
-} GtkDrawCtx;
+typedef struct GtkDrawCtx GtkDrawCtx;
 
 typedef struct ClientStreamRec {
     XWStreamCtxt* stream;
@@ -81,14 +49,14 @@ typedef struct ClientStreamRec {
 } ClientStreamRec;
 
 typedef struct _DropTypeData {
-    CommsCtxt* comms;
+    XW_DUtilCtxt* dutil;
+    GameRef gr;
     CommsConnType typ;
 } DropTypeData;
 
 typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
     GtkWidget* window;
-    GtkAppGlobals* apg;
 /*     GdkPixmap* pixmap; */
     GtkWidget* drawing_area;
 
@@ -121,6 +89,8 @@ typedef struct GtkGameGlobals {
     XP_UCHAR stateChar;
 
     DropTypeData dropData[COMMS_CONN_NTYPES];
+
+    void* chatOpenState;        /* belongs to gtkchat.c */
 
     XP_Bool gridOn;
     XP_Bool mouseDown;
@@ -171,7 +141,7 @@ typedef struct GtkGameGlobals {
 #define GTK_RIGHT_MARGIN GTK_BOARD_LEFT_MARGIN
 
 void initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params,
-                          const CurGameInfo* gi );
+                          GameRef gr );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
                         sqlite3_int64 rowid );
@@ -180,6 +150,10 @@ void destroy_board_window( GtkWidget* widget, GtkGameGlobals* globals );
 GtkWidget* makeAddSubmenu( GtkWidget* menubar, gchar* label );
 GtkWidget* createAddItem( GtkWidget* parent, gchar* label,
                           GCallback handlerFunc, gpointer closure );
+void setupGtkUtilCallbacks( XW_UtilCtxt* util );
+
+CommonGlobals* allocGTKBoardGlobals();
+void gtkShowFinalScores( GtkGameGlobals* globals, XP_Bool ignoreTimeout );
 
 #endif /* PLATFORM_GTK */
 

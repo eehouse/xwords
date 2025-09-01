@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import org.eehouse.android.xw4.jni.GameRef
 import java.io.Serializable
 
 object Channels {
@@ -53,7 +54,8 @@ object Channels {
 
     // I want each rowid to be able to have a notification active for it for
     // each channel. So let's try generating and storing random ints.
-    private fun notificationId(rowid: Long, channel: ID): Int {
+    private fun notificationId(gr: GameRef, channel: ID): Int {
+        val asLong = gr.gr
         val context = XWApp.getContext()
         var result: Int
         synchronized(Channels::class.java) {
@@ -73,17 +75,17 @@ object Channels {
                 dirty = true
             }
             val map: MutableMap<Long, Int> = sData!!.mMap[channel]!!
-            if (!map.containsKey(rowid)) {
-                map[rowid] = sData!!.newID()
+            if (!map.containsKey(asLong)) {
+                map[asLong] = sData!!.newID()
                 dirty = true
             }
 
             if (dirty) {
                 DBUtils.setSerializableFor(context, IDS_KEY, sData)
             }
-            result = map[rowid]!!
+            result = map[asLong]!!
         }
-        Log.d(TAG, "notificationId(%s, %d) => %d", channel, rowid, result)
+        Log.d(TAG, "notificationId(%s, %d) => %d", channel, asLong, result)
         return result
     }
 
@@ -97,8 +99,8 @@ object Channels {
         DUP_PAUSED(R.string.dup_paused_expl),
         KEEP_ALIVE(R.string.movechecker_name, NotificationManager.IMPORTANCE_HIGH);
 
-        fun idFor(rowid: Long): Int {
-            return notificationId(rowid, this)
+        fun idFor(gr: GameRef): Int {
+            return notificationId(gr, this)
         }
 
         fun getDesc(): Int { return mExpl }

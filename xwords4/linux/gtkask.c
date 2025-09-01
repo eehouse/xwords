@@ -77,6 +77,14 @@ gtkask_timeout( GtkWidget* parent, const gchar* message,
 } /* gtkask_timeout */
 
 bool
+gtkask_confirm( GtkWidget* parent, const gchar *message )
+{
+    bool result =
+        GTK_RESPONSE_YES == gtkask( parent, message, GTK_BUTTONS_YES_NO, NULL );
+    return result;
+}
+
+bool
 gtkask_radios( GtkWidget* parent, const gchar *message,
                const AskPair* buttxts, int* chosen )
 {

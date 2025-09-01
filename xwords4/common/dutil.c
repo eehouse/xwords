@@ -26,8 +26,10 @@
 #include "knownplyr.h"
 #include "device.h"
 #include "stats.h"
-#include "timers.h"
+#include "timersp.h"
 #include "xwmutex.h"
+#include "gamemgrp.h"
+#include "dictmgrp.h"
 
 static void
 super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
@@ -65,18 +67,24 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 
     MPASSIGN( dutil->mpool, mpool );
 
+    XP_ASSERT( !dutil->vtable.m_dutil_loadStream );
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_loadStream, super );
+    XP_ASSERT( !dutil->vtable.m_dutil_storeStream );
     SET_VTABLE_ENTRY( &dutil->vtable, dutil_storeStream, super );
 
+    dmgr_make( dutil );
     tmr_init( dutil );
+    gmgr_init( dutil );
     sts_init( dutil );
 }
 
 void
 dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    dmgr_destroy( dutil, xwe );
     tmr_cleanup( dutil, xwe );
     kplr_cleanup( dutil );
     sts_cleanup( dutil, xwe );
+    gmgr_cleanup( dutil, xwe );
     dvc_cleanup( dutil, xwe );
 }

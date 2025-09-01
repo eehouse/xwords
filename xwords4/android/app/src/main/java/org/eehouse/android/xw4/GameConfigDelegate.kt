@@ -42,7 +42,6 @@ import android.widget.TextView
 import org.eehouse.android.xw4.ConnViaViewLayout.CheckEnabledWarner
 import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter
 import org.eehouse.android.xw4.DlgDelegate.Action
-import org.eehouse.android.xw4.GameLock.GameLockedException
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.Utils.OnNothingSelDoesNothing
@@ -55,10 +54,8 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
-import org.eehouse.android.xw4.jni.JNIThread
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.LocalPlayer
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
 class GameConfigDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.game_config), View.OnClickListener,
@@ -74,13 +71,12 @@ class GameConfigDelegate(delegator: Delegator) :
     private var mJugglePlayersButton: Button? = null
     private var mDictSpinner: Spinner? = null
     private var mPlayerDictSpinner: Spinner? = null
-    private var mRowid: Long = 0
+    private var mGR: GameRef? = null
     private var mIsNewGame = false
     private var mNewGameIsSolo = false // only used if m_isNewGame is true
     private var mNewGameName: String? = null
     private var mGi: CurGameInfo? = null
     private var mGiOrig: CurGameInfo? = null
-    private var mJniThread: JNIThread? = null
     private var mWhichPlayer = 0
     private var mPhoniesSpinner: Spinner? = null
     private var mBoardsizeSpinner: Spinner? = null
@@ -391,10 +387,11 @@ class GameConfigDelegate(delegator: Delegator) :
         DictLangCache.setLast(mBrowseText)
         mCp = CommonPrefs.get(mActivity)
         val args = arguments!!
-        mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND.toLong())
+        val grval = args.getLong(GameUtils.INTENT_KEY_GAMEREF, 0)
+        mGR = if (0L == grval) null else GameRef(grval)
         mNewGameIsSolo = args.getBoolean(INTENT_FORRESULT_SOLO, false)
         mNewGameName = args.getString(INTENT_FORRESULT_NAME)
-        mIsNewGame = DBUtils.ROWID_NOTFOUND.toLong() == mRowid
+        mIsNewGame = null == mGR
         mAddPlayerButton = findViewById(R.id.add_player) as Button
         mAddPlayerButton!!.setOnClickListener(this)
         mChangeConnButton = findViewById(R.id.change_connection) as Button
@@ -415,9 +412,6 @@ class GameConfigDelegate(delegator: Delegator) :
     } // init
 
     override fun onResume() {
-        if (!mIsNewGame) {
-            mJniThread = JNIThread.getRetained(mRowid)
-        }
         super.onResume()
         loadGame()
     }
@@ -426,10 +420,6 @@ class GameConfigDelegate(delegator: Delegator) :
         saveChanges() // save before clearing m_giOrig!
         mGiOrig = null // flag for onStart and onResume
         super.onPause()
-        if (null != mJniThread) {
-            mJniThread!!.release()
-            mJniThread = null
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -473,143 +463,130 @@ class GameConfigDelegate(delegator: Delegator) :
         }
     }
 
-    private fun loadGame() {
-        if (null == mGiOrig) {
-            mGiOrig = CurGameInfo(mActivity)
-            if (mIsNewGame) {
-                mGiOrig!!.addDefaults(mActivity, mNewGameIsSolo)
-            }
-            if (mIsNewGame) {
-                loadGame(null)
-            } else if (null != mJniThread) {
-                mJniThread!!.getGamePtr()?.retain().use { gamePtr -> loadGame(gamePtr) }
-            } else {
-                GameLock.tryLockRO(mRowid).use { lock ->
-                    if (null != lock) {
-                        GameUtils.loadMakeGame(mActivity, mGiOrig!!, lock)
-                            .use { gamePtr -> loadGame(gamePtr) }
-                    }
-                }
-            }
-        }
-    }
-
     // Exists only to be called from inside two try-with-resource blocks above
-    private fun loadGame(gamePtr: GamePtr?) {
-        if (null == gamePtr && !mIsNewGame) {
+    private fun loadGame() {
+        if ( null != mGiOrig ) {
+            // do nothing
+        } else if (null == mGR && !mIsNewGame) {
             Assert.failDbg()
         } else {
-            mGameStarted = !mIsNewGame
-            if (mGameStarted) {
-                mGameStarted = (XwJNI.model_getNMoves(gamePtr) > 0
-                        || XwJNI.comms_isConnected(gamePtr))
-            }
-            if (mGameStarted) {
-                if (null == m_gameLockedCheck) {
-                    m_gameLockedCheck = findViewById(R.id.game_locked_check) as CheckBox
-                    m_gameLockedCheck!!.visibility = View.VISIBLE
-                    m_gameLockedCheck!!.setOnClickListener(this)
-                }
-                handleLockedChange()
-            }
-            if (null == mGi) {
-                mGi = CurGameInfo(mGiOrig!!)
-            }
-            mCarOrig =
-                if (mIsNewGame) {
-                    if (mNewGameIsSolo) {
-                        CommsAddrRec() // empty
+            // val gr = mGR!!
+            launch {
+                mGiOrig =
+                    if ( mIsNewGame ) {
+                        CurGameInfo(mActivity)
+                            .addDefaults(mActivity, mNewGameIsSolo, mNewGameName)
                     } else {
-                        CommsAddrRec.getSelfAddr(mActivity)
+                        mGR!!.getGI()
                     }
-                } else if (XwJNI.game_hasComms(gamePtr)) {
-                    XwJNI.comms_getSelfAddr(gamePtr)
-                } else if (!localOnlyGame()) {
-                    CommsAddrRec.getSelfAddr(mActivity)
-                } else {
-                    // Leaving this null breaks stuff: an empty set, rather than a
-                    // null one, represents a standalone game
-                    CommsAddrRec()
+                mGameStarted = !mIsNewGame
+                    && (mGR!!.getGameIsConnected() || 0 < mGR!!.getNMoves())
+                if (mGameStarted) {
+                    if (null == m_gameLockedCheck) {
+                        m_gameLockedCheck = findViewById(R.id.game_locked_check) as CheckBox
+                        m_gameLockedCheck!!.visibility = View.VISIBLE
+                        m_gameLockedCheck!!.setOnClickListener(this@GameConfigDelegate)
+                    }
+                    handleLockedChange()
                 }
+                if (null == mGi) {
+                    mGi = CurGameInfo(mGiOrig!!)
+                }
+                mCarOrig =
+                    if (mIsNewGame) {
+                        if (mNewGameIsSolo) {
+                            CommsAddrRec() // empty
+                        } else {
+                            CommsAddrRec.getSelfAddr(mActivity)
+                        }
+                    } else if (!localOnlyGame()) {
+                        mGR!!.getSelfAddr()
+                    } else {
+                        // Leaving this null breaks stuff: an empty set, rather than a
+                        // null one, represents a standalone game
+                        CommsAddrRec()
+                    }
 
-            // load if the first time through....
-            if (null == mConTypes) {
-                mConTypes = mCarOrig!!.conTypes!!.clone() as CommsConnTypeSet
-                // add NFC IFF it's a networked game
-                if (0 < mConTypes!!.types.size && nfcAvail(mActivity)[0]) {
-                    mConTypes!!.add(CommsConnType.COMMS_CONN_NFC)
-                    mCarOrig!!.conTypes!!.add(CommsConnType.COMMS_CONN_NFC)
-                }
-            }
-            if (!mIsNewGame) {
-                buildDisabledsMap(gamePtr)
-                setDisableds()
-            }
-            mCar = CommsAddrRec(mCarOrig!!)
-            setTitle()
-            val label = findViewById(R.id.lang_separator) as TextView
-            label.text =
-                getString(if (localOnlyGame()) R.string.lang_label else R.string.langdict_label)
-            mDictSpinner = findViewById(R.id.dict_spinner) as Spinner
-            if (localOnlyGame()) {
-                mDictSpinner!!.visibility = View.GONE
-                mDictSpinner = null
-            }
-            setConnLabel()
-            loadPlayersList()
-            configLangSpinner()
-            if (mIsNewGame) {
-                val et = requireViewById(R.id.game_name_edit) as EditText
-                et.setText(mNewGameName)
-            } else {
-                requireViewById(R.id.game_name_edit_row).visibility = View.GONE
-            }
-            val gi = mGi!!
-            mPhoniesSpinner!!.setSelection(gi.phoniesAction!!.ordinal)
-            setSmartnessSpinner()
-            tweakTimerStuff()
-            setChecked(R.id.hints_allowed, !gi.hintsNotAllowed)
-            setChecked(R.id.trade_sub_seven, gi.tradeSub7)
-            setChecked(R.id.pick_faceup, gi.allowPickTiles)
-            requireViewById(R.id.trade_sub_seven)
-                .setOnClickListener {
-                    if (!mSub7HintShown) {
-                        mSub7HintShown = true
-                        makeNotAgainBuilder(
-                            R.string.key_na_sub7new,
-                            R.string.sub_seven_allowed_sum
-                        )
-                            .setTitle(R.string.new_feature_title)
-                            .show()
+                // load if the first time through....
+                if (null == mConTypes) {
+                    mConTypes = mCarOrig!!.conTypes!!.clone() as CommsConnTypeSet
+                    // add NFC IFF it's a networked game
+                    if (0 < mConTypes!!.types.size && nfcAvail(mActivity)[0]) {
+                        mConTypes!!.add(CommsConnType.COMMS_CONN_NFC)
+                        mCarOrig!!.conTypes!!.add(CommsConnType.COMMS_CONN_NFC)
                     }
                 }
-            setBoardsizeSpinner()
-            val curSel = intArrayOf(-1)
-            val value = String.format("%d", gi.traySize)
-            val adapter = mTraysizeSpinner!!.adapter
-            for (ii in 0 until adapter.count) {
-                if (value == adapter.getItem(ii)) {
-                    mTraysizeSpinner!!.setSelection(ii)
-                    curSel[0] = ii
-                    break
+                if (!mIsNewGame) {
+                    buildDisabledsMap(mGR!!)
+                    setDisableds()
                 }
-            }
-            mTraysizeSpinner!!
-                .setOnItemSelectedListener(object : OnNothingSelDoesNothing() {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?, spinner: View,
-                        position: Int, id: Long
-                    ) {
-                        if (curSel[0] != position) {
-                            curSel[0] = position
+                mCar = CommsAddrRec(mCarOrig!!)
+                setTitle()
+                val label = findViewById(R.id.lang_separator) as TextView
+                label.text =
+                    getString(if (localOnlyGame()) R.string.lang_label else R.string.langdict_label)
+                mDictSpinner = findViewById(R.id.dict_spinner) as Spinner
+                if (localOnlyGame()) {
+                    mDictSpinner!!.visibility = View.GONE
+                    mDictSpinner = null
+                }
+                setConnLabel()
+                loadPlayersList()
+                configLangSpinner()
+                if (mIsNewGame) {
+                    val et = requireViewById(R.id.game_name_edit) as EditText
+                    et.setText(mNewGameName)
+                } else {
+                    requireViewById(R.id.game_name_edit_row).visibility = View.GONE
+                }
+                val gi = mGi!!
+                mPhoniesSpinner!!.setSelection(gi.phoniesAction!!.ordinal)
+                setSmartnessSpinner()
+                tweakTimerStuff()
+                setChecked(R.id.hints_allowed, !gi.hintsNotAllowed)
+                setChecked(R.id.trade_sub_seven, gi.tradeSub7)
+                setChecked(R.id.pick_faceup, gi.allowPickTiles)
+                requireViewById(R.id.trade_sub_seven)
+                    .setOnClickListener {
+                        if (!mSub7HintShown) {
+                            mSub7HintShown = true
                             makeNotAgainBuilder(
-                                R.string.key_na_traysize,
-                                R.string.not_again_traysize
+                                R.string.key_na_sub7new,
+                                R.string.sub_seven_allowed_sum
                             )
+                                .setTitle(R.string.new_feature_title)
                                 .show()
                         }
                     }
-                })
+                setBoardsizeSpinner()
+                val curSel = intArrayOf(-1)
+                val value = String.format("%d", gi.traySize)
+                val adapter = mTraysizeSpinner!!.adapter
+                for (ii in 0 until adapter.count) {
+                    if (value == adapter.getItem(ii)) {
+                        mTraysizeSpinner!!.setSelection(ii)
+                        curSel[0] = ii
+                        break
+                    }
+                }
+                mTraysizeSpinner!!
+                    .setOnItemSelectedListener(object : OnNothingSelDoesNothing() {
+                                                   override fun onItemSelected(
+                                                       parent: AdapterView<*>?, spinner: View,
+                                                       position: Int, id: Long
+                                                   ) {
+                                                       if (curSel[0] != position) {
+                                                           curSel[0] = position
+                                                           makeNotAgainBuilder(
+                                                               R.string.key_na_traysize,
+                                                               R.string.not_again_traysize
+                                                           )
+                                                               .show()
+                                                       }
+                                                   }
+                                               })
+                setMyTitle()
+            }
         }
     } // loadGame
 
@@ -796,14 +773,15 @@ class GameConfigDelegate(delegator: Delegator) :
             mHaveClosed = true
             val intent = Intent()
             if (mIsNewGame) {
-                intent.putExtra(INTENT_KEY_GI, mGi)
+                val gi = mGi!!
+                gi.conTypes = mCar!!.conTypes
+                val et = findViewById(R.id.game_name_edit) as EditText
+                gi.gameName = et.getText().toString()
+                intent.putExtra(INTENT_KEY_GI, gi)
                 // PENDING pass only types, not full addr. Types are defaults
                 // we can insert later.
-                intent.putExtra(INTENT_KEY_SADDR, mCar)
-                val et = findViewById(R.id.game_name_edit) as EditText
-                intent.putExtra(INTENT_KEY_NAME, et.getText().toString())
             } else {
-                intent.putExtra(GameUtils.INTENT_KEY_ROWID, mRowid)
+                intent.putExtra(GameUtils.INTENT_KEY_GAMEREF, mGR!!.gr)
             }
             setResult(Activity.RESULT_OK, intent)
             finish()
@@ -1034,14 +1012,14 @@ class GameConfigDelegate(delegator: Delegator) :
         mBoardsizeSpinner!!.setSelection(selection)
     }
 
-    private fun buildDisabledsMap(gamePtr: GamePtr?) {
+    private suspend fun buildDisabledsMap(gr: GameRef) {
         if (BuildConfig.DEBUG && !localOnlyGame()) {
             if (null == mDisabMap) {
                 mDisabMap = HashMap()
                 for (typ in CommsConnType.entries) {
                     val bools = booleanArrayOf(
-                        XwJNI.comms_getAddrDisabled(gamePtr, typ, false),
-                        XwJNI.comms_getAddrDisabled(gamePtr, typ, true)
+                        gr.getAddrDisabled(typ, false),
+                        gr.getAddrDisabled(typ, true)
                     )
                     mDisabMap!![typ] = bools
                 }
@@ -1135,31 +1113,24 @@ class GameConfigDelegate(delegator: Delegator) :
             .populate(mActivity)
     } // saveChanges
 
-    private fun applyChanges(lock: GameLock, forceNew: Boolean) {
+    private fun applyChanges(gr: GameRef, forceNew: Boolean) {
         if (!mIsNewGame) {
-            GameUtils.applyChanges1(
-                mActivity, mGi!!, mCar, mDisabMap,
-                lock, forceNew
-            )
-            DBUtils.saveThumbnail(mActivity, lock, null) // clear it
+            gr.setGI(mGi!!)
+            // GameUtils.applyChanges1(
+            //     mActivity, mGi!!, mCar, mDisabMap,
+            //     lock, forceNew
+            // )
+            // DBUtils.saveThumbnail(mActivity, lock, null) // clear it
         }
     }
 
     private fun applyChanges(forceNew: Boolean) {
         if (!mIsNewGame && !isFinishing()) {
-            if (null != mJniThread) {
-                applyChanges(mJniThread!!.getLock(), forceNew)
-            } else {
-                try {
-                    GameLock.lock(mRowid, 100L).use { lock -> applyChanges(lock!!, forceNew) }
-                } catch (gle: GameLockedException) {
-                    Log.e(TAG, "applyChanges(): failed to get lock")
-                }
-            }
+            applyChanges(mGR!!, forceNew)
         }
     }
 
-    override fun setTitle() {
+    private fun setMyTitle() {
         val title: String
         if (mIsNewGame) {
             val strID = if (mNewGameIsSolo) R.string.new_game else R.string.new_game_networked
@@ -1171,7 +1142,7 @@ class GameConfigDelegate(delegator: Delegator) :
             } else {
                 R.string.title_game_config_fmt
             }
-            val name = GameUtils.getName(mActivity, mRowid)
+            val name = mGi!!.gameName
             title = getString(strID, name)
         }
         setTitle(title)
@@ -1203,8 +1174,6 @@ class GameConfigDelegate(delegator: Delegator) :
         private const val LOCAL_TYPES = "LOCAL_TYPES"
         private const val DIS_MAP = "DIS_MAP"
         const val INTENT_KEY_GI = "key_gi"
-        const val INTENT_KEY_SADDR = "key_saddr"
-        const val INTENT_KEY_NAME = "key_name"
         private val sDisabledWhenLocked = intArrayOf(
             R.id.juggle_players,
             R.id.add_player,
@@ -1226,10 +1195,10 @@ class GameConfigDelegate(delegator: Delegator) :
         fun editForResult(
             delegator: Delegator,
             requestCode: RequestCode?,
-            rowID: Long
+            gr: GameRef
         ) {
             val bundle = Bundle()
-            bundle.putLong(GameUtils.INTENT_KEY_ROWID, rowID)
+            bundle.putLong(GameUtils.INTENT_KEY_GAMEREF, gr.gr)
             delegator
                 .addFragmentForResult(
                     GameConfigFrag.newInstance(delegator),

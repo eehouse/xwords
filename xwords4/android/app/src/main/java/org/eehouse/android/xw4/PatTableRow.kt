@@ -29,7 +29,7 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 
-import org.eehouse.android.xw4.jni.XwJNI.PatDesc
+import org.eehouse.android.xw4.jni.TmpDict.PatDesc
 
 private val TAG: String = PatTableRow::class.java.simpleName
 

@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+#include "comtypes.h"
 #include "xptypes.h"
 #include "comtypes.h"
 
@@ -35,6 +36,7 @@ typedef struct DLHead {
 typedef int (*DLCompProc)(const DLHead* dl1, const DLHead* dl2);
 
 DLHead* dll_insert( DLHead* list, DLHead* node, DLCompProc proc );
+DLHead* dll_append( DLHead* list, DLHead* node );
 DLHead* dll_remove( DLHead* list, DLHead* node );
 XP_U16 dll_length( const DLHead* list );
 DLHead* dll_sort( DLHead* list, DLCompProc proc );
