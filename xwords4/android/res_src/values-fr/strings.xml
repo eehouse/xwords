@@ -1698,8 +1698,7 @@ de ce joueur.</string>
        ########################################################### 
       -->
     <!-- copyright info -->
-    <string name="about_copyright">CrossWords pour Android
-\nCopyright (C) 1998-2024 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
+    <string name="about_copyright">CrossWords pour Android \nCopyright (C) 1998-2024 par Eric House. Ce logiciel libre/open source est sous la Licence Publique GNU.</string>
     <!-- Another paragraph in the about dialog -->
     <!--<string name="about_web">For a manual or sourcecode see:
     http://xwords.sf.net/android.php.  To report bugs, suggest
