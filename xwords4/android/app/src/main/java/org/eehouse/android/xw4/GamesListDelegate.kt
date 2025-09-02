@@ -767,6 +767,11 @@ class GamesListDelegate(delegator: Delegator) :
                     .create()
             }
 
+            DlgID.CONVERT_GAMES -> {
+                val state = params[0] as GameConvertView.GameConvertState
+                dialog = GameConvertView.makeDialog(mActivity, state)
+            }
+
             else -> dialog = super.makeDialog(alert, *params)
         }
         return dialog
@@ -925,6 +930,12 @@ class GamesListDelegate(delegator: Delegator) :
 
         mGamesList = findViewById(R.id.games) as RecyclerView
         initGamesView()
+
+        launch {
+            GameConvertView.needed(mActivity)?.let {
+                showDialogFragment(DlgID.CONVERT_GAMES, it)
+            }
+        }
     } // init
 
     private fun initGamesView() {
