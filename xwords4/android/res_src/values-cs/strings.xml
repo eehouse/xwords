@@ -130,8 +130,7 @@
     <string name="gameOver">Hra skončena</string>
     <!-- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> -->
     <!-- about dialog stuff -->
-    <string name="about_copyright">CrossWords pro Android.
-\nCopyright (C) 1998-2024 Eric House. Tento software je vydán pod licencí GNU Public License.</string>
+    <string name="about_copyright">CrossWords pro Android. \nCopyright (C) 1998-2024 Eric House. Tento software je vydán pod licencí GNU Public License.</string>
     <string name="about_web">(Starý) manuál a zdrojové kódy najdete na: http://xwords.sf.net. Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd. můžete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator">Český překlad Tomáš Morkus, Lucie Vávrová</string>
