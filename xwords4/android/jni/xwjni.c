@@ -1626,6 +1626,21 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroupName
     return result;
 }
 
+#ifdef XWFEATURE_GAMEREF_CONVERT
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroup
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname )
+{
+    jint result = 0;
+    DVC_HEADER(jniGlobalPtr);
+    const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    result = gmgr_getGroup( globalState->dutil, env, name );
+    (*env)->ReleaseStringUTFChars( env, jname, name );
+    DVC_HEADER_END();
+    return result;
+}
+#endif
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1deleteGroup
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint grp )
