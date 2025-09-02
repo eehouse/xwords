@@ -111,8 +111,7 @@
     <string name="perms_rationale_title">已解释的 Android 权限</string>
     <string name="slmenu_clear_sel">删除已选项</string>
     <string name="clr_crosshairs">十字线颜色</string>
-    <string name="about_copyright">CrossWords for Android
-\nCopyright (C) 1998-2024 by Eric House. 这款自由/开源软件是根据 GNU 公共许可证发布的。</string>
+    <string name="about_copyright">CrossWords for Android \nCopyright (C) 1998-2024 by Eric House. 这款自由/开源软件是根据 GNU 公共许可证发布的。</string>
     <string name="phone_lookup_rationale">要重新进行使用数据短信的游戏，CrossWord 需要访问电话号码的权限。</string>
     <string name="word_to_clip_fmt">已复制“%1$s”</string>
     <string name="dict_desc_fmt">%1$s（%2$s/%3$d 词）</string>
