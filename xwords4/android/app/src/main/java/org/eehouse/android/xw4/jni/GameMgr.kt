@@ -153,13 +153,12 @@ object GameMgr {
         }
     }
 
-    // gmgr_addGroup returns a GroupRef, but we don't need it, and don't want
-    // this to have to be a suspend
-    fun addGroup(name: String) {
-        Device.post {
+    suspend fun addGroup(name: String): GroupRef {
+        val grp = Device.await {
             val jniState = XwJNI.getJNIState()
             gmgr_addGroup(jniState, name)
-        }
+        } as Int
+        return GroupRef(grp)
     }
 
     fun deleteGroup(grp: GroupRef) {

@@ -644,7 +644,7 @@ class GamesListDelegate(delegator: Delegator) :
                     val name = namer.name
                     val hasName = DBUtils.getGroup(mActivity, name)
                     if (DBUtils.GROUPID_UNSPEC == hasName) {
-                        GameMgr.addGroup(name)
+                        launch { GameMgr.addGroup(name) }
 
                         // DBUtils.addGroup(mActivity, name)
                         // mkListAdapter()
