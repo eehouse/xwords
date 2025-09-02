@@ -1264,8 +1264,7 @@
        ########################################################### 
       -->
     <!-- copyright info -->
-    <string name="about_copyright">CrossWords para Android
-\nCopyright (C) 1998-2024 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
+    <string name="about_copyright">CrossWords para Android \nCopyright (C) 1998-2024 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">Para um manual ou código-fonte (velho) veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir recursos, oferecer ajuda, etc., por favor envie um email: xwords@eehouse.org.</string>
     <!-- Empty in English, this should contain the name of the
@@ -1519,7 +1518,7 @@
         <item quantity="one">Tem certeza de que deseja redefinir o 1 jogo selecionado\?
 \n
 \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Tem certeza de que deseja redefinir os %1$d jogos selecionados\?
 \n
 \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
@@ -1542,7 +1541,7 @@
         <item quantity="one">Este jogo está a esperar que um jogador remoto receba e responda a um convite.
 \n
 \nVerá esta mensagem até que o jogador convidado tenha respondido.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Este jogo está a esperar que %1$d jogadores remotos recebam e respondam a um convite.
 \n
 \nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
@@ -1794,7 +1793,7 @@
     <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s trocou uma pedra</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">%1$s trocou %2$d pedras</item>
     </plurals>
     <plurals name="lmi_move_fmt">
@@ -1946,7 +1945,7 @@
         <item quantity="many">"
 \n
 \n(%1$d partidas também serão apagadas.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
@@ -1970,7 +1969,7 @@
         <item quantity="many">"
 \n
 \n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -2080,13 +2079,13 @@
     <string name="notify_title_fmt">jogada %1$s</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Muitas pedras selecionadas. Se faz favor, selecione apenas um.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Muitas pedras selecionadas. Se faz favor, favor selecione mais do que %1$d.</item>
     </plurals>
     <string name="chat_hint">Escreva aqui…</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Tem certeza que quer mudar a pedra selecionado (%2$s)?</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Tem certeza que quer mudar as %1$d pedras selecionadas (%2$s)?</item>
     </plurals>
     <string name="invite_sms_fmt">Toque na ligação para aceitar o meu convite e se juntar ao jogo de Palavras Cruzadas: %1$s</string>
@@ -2119,13 +2118,13 @@
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">Falta uma pedra no quadro escondido:
 \n</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Faltam %1$d pedras no agrupamento e no quadro escondido:
 \n</item>
     </plurals>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">Falta uma pedra no agrupamento.</item>
-        <item quantity="many"></item>
+        <item quantity="many"/>
         <item quantity="other">Faltam %1$d pedras no agrupamento .</item>
     </plurals>
     <string name="str_pass">passar
@@ -2226,7 +2225,7 @@
         <item quantity="many">"
 \n
 \n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
