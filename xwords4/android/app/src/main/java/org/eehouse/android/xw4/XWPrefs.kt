@@ -295,18 +295,18 @@ open class XWPrefs {
             return getPrefsBoolean(context, R.string.key_default_loc, true)
         }
 
-        // fun getDefaultNewGameGroup(context: Context): Long {
-        //     var groupID = getPrefsLong(
-        //         context, R.string.key_default_group,
-        //         DBUtils.GROUPID_UNSPEC
-        //     )
-        //     if (DBUtils.GROUPID_UNSPEC == groupID) {
-        //         groupID = getAnyGroup(context)
-        //         setPrefsLong(context, R.string.key_default_group, groupID)
-        //     }
-        //     Assert.assertTrue(DBUtils.GROUPID_UNSPEC != groupID)
-        //     return groupID
-        // }
+        fun getDefaultNewGameGroup(context: Context): Long {
+            var groupID = getPrefsLong(
+                context, R.string.key_default_group,
+                DBUtils.GROUPID_UNSPEC
+            )
+            if (DBUtils.GROUPID_UNSPEC == groupID) {
+                groupID = getAnyGroup(context)
+                setPrefsLong(context, R.string.key_default_group, groupID)
+            }
+            Assert.assertTrue(DBUtils.GROUPID_UNSPEC != groupID)
+            return groupID
+        }
 
         fun getDefaultRematchOrder(context: Context): RematchOrder? {
             val storedStr = getPrefsString(context, R.string.key_rematch_order)

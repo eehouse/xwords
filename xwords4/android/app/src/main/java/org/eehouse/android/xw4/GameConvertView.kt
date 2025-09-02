@@ -26,6 +26,7 @@ import android.widget.TextView
 
 import java.io.Serializable
 
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = GameConvertView::class.java.simpleName
@@ -48,6 +49,20 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     private fun configure(state: GameConvertState) {
         mState = state
+    }
+
+    private fun convert() {
+        launch {
+            val groupID = XWPrefs.getDefaultNewGameGroup(context)
+            DBUtils.getGroups(context).map { entry ->
+                val ggi = entry.value!!
+                val grp = GameMgr.addGroup(ggi.m_name)
+                grp.setGroupCollapsed(!ggi.m_expanded)
+                if (entry.key == groupID) {
+                    GameMgr.makeGroupDefault(grp)
+                }
+            }
+        }
     }
     
     companion object {
@@ -79,7 +94,9 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             val dialog = LocUtils.makeAlertBuilder(context)
                 .setView(view)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(android.R.string.ok, null)
+                .setPositiveButton(R.string.button_convert) {dlg, button ->
+                    view.convert()
+                }
                 .create()
             return dialog
         }

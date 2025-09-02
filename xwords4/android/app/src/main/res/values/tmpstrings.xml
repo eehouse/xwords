@@ -43,5 +43,6 @@
 
   <string name="game_convert_expl">Explanation of game conversion
   process</string>
+  <string name="button_convert">Convert</string>
 
 </resources>
