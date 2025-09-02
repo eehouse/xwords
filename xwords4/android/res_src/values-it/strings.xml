@@ -536,8 +536,7 @@
     <string name="changes_title">Modifiche recenti</string>
     <string name="xlator">[Vuoto]</string>
     <string name="about_web">Per un (vecchio) manuale o codice sorgente vai a: http://xwords.sf.net/android.php. Per segnalare bug, suggerimenti, collaborazioni, ecc., invia un\'e-mail a: xwords@eehouse.org.</string>
-    <string name="about_copyright">CrossWords per Android
-\nCopyright (C) 1998-2024 di Eric House. Questo software libero/open source è rilasciato su licenza della GNU Public License.</string>
+    <string name="about_copyright">CrossWords per Android \nCopyright (C) 1998-2024 di Eric House. Questo software libero/open source è rilasciato su licenza della GNU Public License.</string>
     <string name="about_btaddr_fmt">Indirizzo MAC BT: %1$s</string>
     <string name="about_devid_fmt">ID dispositivo: %1$s</string>
     <string name="about_vers_fmt2">Info versione:
