@@ -3080,7 +3080,7 @@ class GamesListDelegate(delegator: Delegator) :
                 if (it.mGR?.equals(gr)?:false) it else null
             }
             if (null == result) {
-                Log.d(TAG, "findHolderFor($gr) found NOTHING")
+                Log.d(TAG, "findHolderFor(gr=$gr) found NOTHING")
             }
             return result
         }
@@ -3090,7 +3090,7 @@ class GamesListDelegate(delegator: Delegator) :
                 if (it.mGrp?.equals(grp)?:false) it else null
             }
             if (null == result) {
-                Log.d(TAG, "findHolderFor($grp) found NOTHING")
+                Log.d(TAG, "findHolderFor(grp=$grp) found NOTHING")
             }
             return result
         }
@@ -3252,15 +3252,15 @@ class GamesListDelegate(delegator: Delegator) :
         }
 
         fun onGroupChanged(context: Context, grp: GroupRef, flags: Int) {
-            Log.d(TAG, "onGroupChanged($grp, %x)".format(flags))
+            Log.d(TAG, "onGroupChanged(grp=$grp, flags=0x%x)".format(flags))
 
             s_self?.get()?.let {
-                        if ( 0 == flags and
+                        if ( 0 != flags and
                              (DUtilCtxt.GRCE_ADDED
                               or DUtilCtxt.GRCE_DELETED
                               or DUtilCtxt.GRCE_MOVED) ) {
                             it.initGamesView()
-                        } else if ( 0 == flags and
+                        } else if ( 0 != flags and
                                     (DUtilCtxt.GRCE_RENAMED
                                      or DUtilCtxt.GRCE_COLLAPSED
                                      or DUtilCtxt.GRCE_EXPANDED
