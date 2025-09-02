@@ -993,8 +993,7 @@
 \n\tFonte (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
     <string name="about_credits">Créditos: ícones da barra de ferramentas por Sarah Chu. Ícones da barra de navegação do Noun Project: \"archive\" por Trendy: \"rematch\" por Becris e \"swap\" por iconomania. Localização por voluntários via weblate.org.</string>
-    <string name="about_copyright">CrossWords for Android
-\nCopyright (C) 1998-2024 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
+    <string name="about_copyright">CrossWords for Android \nCopyright (C) 1998-2025 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
     <string name="about_devid_fmt">ID do dispositivo: %1$s</string>
     <string name="about_btaddr_fmt">Endr MAC BT: %1$s</string>
     <string name="phone_lookup_rationale_others">Sem esta permissão a revanche continuará mas irá gerar um jogo que não pode ser jogado via dados SMS.</string>
