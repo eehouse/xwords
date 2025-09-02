@@ -72,6 +72,7 @@ enum class DlgID {
     SET_MQTTID,
     MQTT_PEERS,
     KACONFIG,
+    CONVERT_GAMES,
     ;
 
     private var m_addToStack: Boolean

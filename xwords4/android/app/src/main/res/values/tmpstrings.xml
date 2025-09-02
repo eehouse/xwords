@@ -41,4 +41,7 @@
 
   <string name="button_copyAddr">Copy address</string>
 
+  <string name="game_convert_expl">Explanation of game conversion
+  process</string>
+
 </resources>
