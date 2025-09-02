@@ -781,32 +781,24 @@ object DBUtils {
         return rowid
     }
 
-    fun loadGame(context: Context, lock: GameLock): ByteArray? {
+    fun loadGame(context: Context, rowid: Long): ByteArray? {
         var result: ByteArray? = null
-        Assert.failDbg()
-        // val rowid = lock.rowid
-        // Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
-        // if (Quarantine.safeToOpen(rowid)) {
-        //     result = getCached(rowid)
-        //     if (null == result) {
-        //         val columns = arrayOf(DBHelper.SNAPSHOT)
-        //         val selection = String.format(ROW_ID_FMT, rowid)
-        //         initDB(context)
-        //         synchronized(s_dbHelper!!) {
-        //             val cursor = query(TABLE_NAMES.SUM, columns, selection)
-        //             if (1 == cursor.count && cursor.moveToFirst()) {
-        //                 result = cursor.getBlob(
-        //                     cursor
-        //                         .getColumnIndex(DBHelper.SNAPSHOT)
-        //                 )
-        //             } else {
-        //                 Log.e(TAG, "loadGame: none for rowid=%d", rowid)
-        //             }
-        //             cursor.close()
-        //         }
-        //         setCached(rowid, result)
-        //     }
-        // }
+        Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
+        val columns = arrayOf(DBHelper.SNAPSHOT)
+        val selection = String.format(ROW_ID_FMT, rowid)
+        initDB(context)
+        synchronized(s_dbHelper!!) {
+            val cursor = query(TABLE_NAMES.SUM, columns, selection)
+            if (1 == cursor.count && cursor.moveToFirst()) {
+                result = cursor.getBlob(
+                    cursor.getColumnIndex(DBHelper.SNAPSHOT)
+                )
+            } else {
+                Log.e(TAG, "loadGame: none for rowid=%d", rowid)
+                Assert.failDbg()
+            }
+            cursor.close()
+        }
         return result
     }
 

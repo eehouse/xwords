@@ -209,6 +209,21 @@ gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
     arr_map( gs->groups, xwe, findByName, &fgs );
     return fgs.result;
 }
+
+GameRef
+gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
+{
+    GameRef gr = 0;
+    LOG_FUNC();
+    XP_U8 strVersion = stream_getU8( stream );
+    XP_LOGFF( "got strVersion: 0x%x", strVersion );
+    stream_setVersion( stream, strVersion );
+    CurGameInfo gi = {};
+    gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
+    LOG_GI( &gi, __func__ );
+    LOG_RETURNF( GR_FMT, gr );
+    return gr;
+}
 #endif
 
 static void

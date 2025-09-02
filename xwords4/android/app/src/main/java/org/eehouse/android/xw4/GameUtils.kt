@@ -98,7 +98,8 @@ object GameUtils {
     }
 
     fun savedGame(context: Context, lock: GameLock): ByteArray? {
-        return DBUtils.loadGame(context, lock)
+        Assert.fail()
+        return null // DBUtils.loadGame(context, lock)
     } // savedGame
 
     /**
