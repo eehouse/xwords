@@ -176,6 +176,17 @@ object GameMgr {
         return GroupRef(grp)
     }
 
+    suspend fun getGroup(name: String): GroupRef? {
+        val grp = Device.await {
+            val jniState = XwJNI.getJNIState()
+            gmgr_getGroup(jniState, name)
+        } as Int
+        val result =
+            if (grp == 0) null
+            else GroupRef(grp)
+        return result
+    }
+
     fun makeGroupDefault(grp: GroupRef) {
         Device.post {
             val jniState = XwJNI.getJNIState()
@@ -258,6 +269,8 @@ object GameMgr {
 
     @JvmStatic
     private external fun gmgr_getDefaultGroup(jniState: Long): Int
+    @JvmStatic
+    private external fun gmgr_getGroup(jniState: Long, name: String): Int
     @JvmStatic
     private external fun gmgr_makeGroupDefault(jniState: Long, grp: Int)
     @JvmStatic

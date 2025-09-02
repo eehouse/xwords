@@ -103,8 +103,6 @@ static XWArray* makeGroupGamesArray( XW_DUtilCtxt* duc, XWEnv xwe, GroupState* g
 static void onCollapsedChange( XW_DUtilCtxt* duc, XWEnv xwe,
                                GroupState* grps, XP_Bool newVal );
 
-/* static GroupState* findGroupByName( XW_DUtilCtxt* duc, const XP_UCHAR* name ); */
-
 struct GameMgrState {
     XWArray* list;
     XWArray* deletedList;
@@ -183,6 +181,35 @@ gmgr_addGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
     postOnGroupChanged( duc, xwe, grp, GRCE_ADDED );
     return grp;
 }
+
+#ifdef XWFEATURE_GAMEREF_CONVERT
+typedef struct _FindGrpByNameState {
+    const XP_UCHAR* name;
+    GroupRef result;
+} FindGrpByNameState;
+
+static ForEachAct
+findByName( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+{
+    ForEachAct result = FEA_OK;
+    FindGrpByNameState* fgs = (FindGrpByNameState*)closure;
+    GroupState* gs = (GroupState*)elem;
+    if ( 0 == XP_STRCMP( fgs->name, gs->name ) ) {
+        fgs->result = gs->grp;
+        result |= FEA_EXIT;
+    }
+    return result;
+}
+
+GroupRef
+gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
+{
+    GameMgrState* gs = duc->gameMgrState;
+    FindGrpByNameState fgs = { .name = name, };
+    arr_map( gs->groups, xwe, findByName, &fgs );
+    return fgs.result;
+}
+#endif
 
 static void
 addToGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )

@@ -35,14 +35,14 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     : LinearLayout( mContext, attrs ) {
     private var mState: GameConvertState? = null
 
-    class GameConvertState(val names: List<String>,
+    class GameConvertState(val groupKeys: List<Long>,
                            val allGames: ArrayList<String>): Serializable {
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         findViewById<TextView>(R.id.names)
-            .setText(mState!!.names.joinToString(separator=", "))
+            .setText(mState!!.groupKeys.joinToString(separator=", "))
         findViewById<TextView>(R.id.games)
             .setText(mState!!.allGames.joinToString(separator=", "))
     }
@@ -55,11 +55,13 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         launch {
             val groupID = XWPrefs.getDefaultNewGameGroup(context)
             DBUtils.getGroups(context).map { entry ->
-                val ggi = entry.value!!
-                val grp = GameMgr.addGroup(ggi.m_name)
-                grp.setGroupCollapsed(!ggi.m_expanded)
-                if (entry.key == groupID) {
-                    GameMgr.makeGroupDefault(grp)
+                if (entry.key in mState!!.groupKeys) {
+                    val ggi = entry.value!!
+                    val grp = GameMgr.addGroup(ggi.m_name)
+                    grp.setGroupCollapsed(!ggi.m_expanded)
+                    if (entry.key == groupID) {
+                        GameMgr.makeGroupDefault(grp)
+                    }
                 }
             }
         }
@@ -68,14 +70,15 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     companion object {
         suspend fun needed(context: Context): GameConvertState? {
             val groups = DBUtils.getGroups(context)
-            val names =
-                groups.keys.mapNotNull { rowid ->
-                    groups[rowid]?.let {
-                        val name = it.m_name
-                        Log.d(TAG, "got group name $name")
-                        name
+            val groupKeys = ArrayList<Long>()
+            groups.keys.map { id ->
+                groups[id]?.let {
+                    val grp = GameMgr.getGroup(it.m_name)
+                    if (null == grp) {
+                        groupKeys.add(id)
                     }
                 }
+            }
 
             val allGames: ArrayList<String> = ArrayList<String>()
             for (groupID in groups.keys) {
@@ -83,7 +86,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                     .map{ allGames.add(it.toString()) }
             }
 
-            return GameConvertState(names, allGames)
+            return GameConvertState(groupKeys, allGames)
         }
 
         fun makeDialog(context: Context, state: GameConvertState): Dialog? {
