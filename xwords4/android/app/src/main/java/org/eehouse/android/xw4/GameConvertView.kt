@@ -36,7 +36,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     private var mState: GameConvertState? = null
 
     class GameConvertState(val groupKeys: List<Long>,
-                           val allGames: ArrayList<String>): Serializable {
+                           val games: ArrayList<Long>): Serializable {
     }
 
     override fun onAttachedToWindow() {
@@ -44,7 +44,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         findViewById<TextView>(R.id.names)
             .setText(mState!!.groupKeys.joinToString(separator=", "))
         findViewById<TextView>(R.id.games)
-            .setText(mState!!.allGames.joinToString(separator=", "))
+            .setText(mState!!.games.joinToString(separator=", "))
     }
 
     private fun configure(state: GameConvertState) {
@@ -53,6 +53,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     private fun convert() {
         launch {
+            // groups...
             val groupID = XWPrefs.getDefaultNewGameGroup(context)
             DBUtils.getGroups(context).map { entry ->
                 if (entry.key in mState!!.groupKeys) {
@@ -63,6 +64,13 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                         GameMgr.makeGroupDefault(grp)
                     }
                 }
+            }
+
+            // games...
+            for (rowid in mState!!.games) {
+                val bytes = DBUtils.loadGame(context, rowid)
+                val gr = GameMgr.convertGame(bytes!!)
+                break
             }
         }
     }
@@ -80,13 +88,16 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 }
             }
 
-            val allGames: ArrayList<String> = ArrayList<String>()
+            val allGames: ArrayList<Long> = ArrayList<Long>()
             for (groupID in groups.keys) {
                 DBUtils.getGroupGames(context, groupID)
-                    .map{ allGames.add(it.toString()) }
+                    .map{ allGames.add(it) }
             }
 
-            return GameConvertState(groupKeys, allGames)
+            val result =
+                if (0 < groupKeys.size || 0 < allGames.size) GameConvertState(groupKeys, allGames)
+                else null
+            return result
         }
 
         fun makeDialog(context: Context, state: GameConvertState): Dialog? {

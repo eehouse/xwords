@@ -187,6 +187,14 @@ object GameMgr {
         return result
     }
 
+    suspend fun convertGame(bytes: ByteArray): GameRef? {
+        val gr = Device.await {
+            val jniState = XwJNI.getJNIState()
+            gmgr_convertGame(jniState, bytes)
+        } as Long
+        return if (gr == 0L) null else GameRef(gr)
+    }
+
     fun makeGroupDefault(grp: GroupRef) {
         Device.post {
             val jniState = XwJNI.getJNIState()
@@ -271,6 +279,8 @@ object GameMgr {
     private external fun gmgr_getDefaultGroup(jniState: Long): Int
     @JvmStatic
     private external fun gmgr_getGroup(jniState: Long, name: String): Int
+    @JvmStatic
+    private external fun gmgr_convertGame(jniState: Long, bytes: ByteArray): Long
     @JvmStatic
     private external fun gmgr_makeGroupDefault(jniState: Long, grp: Int)
     @JvmStatic
