@@ -117,8 +117,8 @@ newg_load( NewGameCtx* ngc, XWEnv xwe, const CurGameInfo* gi )
         }
     }
 
-    ngc->role = role = gi->serverRole;
-    localOnly = (role == SERVER_ISCLIENT) && ngc->isNewGame;
+    ngc->role = role = gi->deviceRole;
+    localOnly = (role == ROLE_ISGUEST) && ngc->isNewGame;
     value.ng_role = role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
@@ -226,8 +226,8 @@ newg_store( NewGameCtx* ngc, XWEnv xwe, CurGameInfo* gi, XP_Bool warn )
     if ( consistent ) {
         XP_Bool makeLocal = XP_FALSE;
         gi->nPlayers = ngc->nPlayersShown;
-        gi->serverRole = ngc->role;
-        makeLocal = ngc->role != SERVER_ISHOST;
+        gi->deviceRole = ngc->role;
+        makeLocal = ngc->role != ROLE_ISHOST;
 
         gi->gameSeconds = ngc->timerSeconds;
         gi->timerEnabled = gi->gameSeconds > 0;
@@ -369,7 +369,7 @@ checkConsistent( NewGameCtx* ngc, XWEnv XP_UNUSED(xwe), XP_Bool warnUser )
     XP_U16 ii;
 
     /* If ISSERVER, make sure there's at least one non-local player. */
-    consistent = ngc->role != SERVER_ISHOST;
+    consistent = ngc->role != ROLE_ISHOST;
     for ( ii = 0; !consistent && ii < ngc->nPlayersShown; ++ii ) {
         DeepValue dValue;
         dValue.col = NG_COL_REMOTE;
@@ -429,8 +429,8 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     } else {
         /* If standalone or client, remote is hidden.  If server but not
            new game, it's disabled */
-        if ( (role == SERVER_ISHOST )
-             || (role == SERVER_ISCLIENT && !isNewGame ) ) {
+        if ( (role == ROLE_ISHOST )
+             || (role == ROLE_ISGUEST && !isNewGame ) ) {
             if ( isNewGame ) {
                 enable[NG_COL_REMOTE] = TRI_ENAB_ENABLED;
             } else {
@@ -450,7 +450,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
 
             /* No changing name or robotness since they're sent to remote
                host. */
-            tmp = (isNewGame || role == SERVER_STANDALONE)? 
+            tmp = (isNewGame || role == ROLE_STANDALONE)?
                 TRI_ENAB_ENABLED:TRI_ENAB_DISABLED;
             enable[NG_COL_NAME] = tmp;
             enable[NG_COL_ROBOT] = tmp;
@@ -505,7 +505,7 @@ changeRole( NewGameCtx* ngc, XWEnv xwe, DeviceRole newRole )
     if ( changing ) {
         if ( !ngc->changedNPlayers ) {
             NGValue value;
-            if ( newRole == SERVER_ISCLIENT ) {
+            if ( newRole == ROLE_ISGUEST ) {
                 value.ng_u16 = ngc->nLocalPlayers;
             } else {
                 value.ng_u16 = ngc->nPlayersTotal;
@@ -531,12 +531,12 @@ setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
      checkbox column header if required. */
 
     (*ngc->enableAttrProc)( closure, NG_ATTR_REMHEADER, 
-                            ( (ngc->role == SERVER_ISHOST)
+                            ( (ngc->role == ROLE_ISHOST)
                               || (!ngc->isNewGame
-                                  && (ngc->role != SERVER_STANDALONE)) )?
+                                  && (ngc->role != ROLE_STANDALONE)) )?
                             TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN );
 
-    if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
+    if ( ngc->role == ROLE_ISGUEST && ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
     } else {
         strID = STR_TOTALPLAYERS;
@@ -558,7 +558,7 @@ considerEnable( NewGameCtx* ngc )
         ngc->juggleEnabled = newEnable;
     }
 
-    newEnable = (ngc->role == SERVER_STANDALONE)?
+    newEnable = (ngc->role == ROLE_STANDALONE)?
         TRI_ENAB_HIDDEN : TRI_ENAB_ENABLED;
 
     if ( newEnable != ngc->settingsEnabled ) {

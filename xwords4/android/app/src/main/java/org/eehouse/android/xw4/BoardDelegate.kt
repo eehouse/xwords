@@ -759,7 +759,7 @@ class BoardDelegate(delegator: Delegator) :
                 enable = mGameOver && !mGR!!.isArchived()
                 Utils.setItemVisible(menu, R.id.board_menu_archive, enable)
                 val netGame = (null != mGi
-                                   && DeviceRole.SERVER_STANDALONE != mGi!!.serverRole)
+                                   && DeviceRole.ROLE_STANDALONE != mGi!!.deviceRole)
                 enable = netGame && (BuildConfig.DEBUG
                                          || XWPrefs.getDebugEnabled(mActivity))
                 Utils.setItemVisible(menu, R.id.board_menu_game_netstats, enable)
@@ -1367,7 +1367,7 @@ class BoardDelegate(delegator: Delegator) :
         val gi = mGi!!
         val result =
             if (0 < mSummary!!.nMissing // Isn't there a better test??
-                    && DeviceRole.SERVER_ISSERVER == gi.serverRole
+                    && DeviceRole.ROLE_ISHOST == gi.deviceRole
             ) {
                 NetLaunchInfo(gi).let { nli ->
                     Assert.assertTrue(0 <= mSummary!!.nGuestDevs)
@@ -1453,7 +1453,7 @@ class BoardDelegate(delegator: Delegator) :
 
          // Post a notification if in background, or play sound if not. But
          // do nothing for standalone case.
-         if (DeviceRole.SERVER_STANDALONE == mGi!!.serverRole) {
+         if (DeviceRole.ROLE_STANDALONE == mGi!!.deviceRole) {
              // do nothing
          } else if (isVisible) {
              Utils.playNotificationSound(mActivity)
@@ -2017,7 +2017,7 @@ class BoardDelegate(delegator: Delegator) :
             //                 )
             //             }
             //             Utils.cancelNotification(mActivity, mRowid)
-            if (mGi!!.serverRole != DeviceRole.SERVER_STANDALONE) {
+            if (mGi!!.deviceRole != DeviceRole.ROLE_STANDALONE) {
                 askNBSPermissions()
                 warnIfNoTransport()
                 tryInvites()

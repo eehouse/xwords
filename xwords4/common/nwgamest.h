@@ -34,7 +34,7 @@
 EXTERN_C_START
 
 #include "mempool.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "comms.h"
 #include "util.h"
 #include "game.h"

@@ -1359,7 +1359,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     NetLaunchInfo nli;
     nli_init( &nli, cGlobals->gi, &selfAddr, nPlayers, forceChannel );
 
-    if ( SERVER_ISHOST != cGlobals->gi->serverRole ) {
+    if ( ROLE_ISHOST != cGlobals->gi->deviceRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
 
         /* Invite first based on an invitee provided. Otherwise, fall back to

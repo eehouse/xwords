@@ -3207,7 +3207,7 @@ class GamesListDelegate(delegator: Delegator) :
             gi: CurGameInfo, addrTypes: CommsConnTypeSet?,
             archiveAfter: Boolean, deleteAfter: Boolean
         ): Intent {
-            val isSolo = gi.serverRole == CurGameInfo.DeviceRole.SERVER_STANDALONE
+            val isSolo = gi.deviceRole == CurGameInfo.DeviceRole.ROLE_STANDALONE
             val extras = JSONObject()
                 .put(REMATCH_GAMEREF_EXTRA, gr.gr)
                 .put(REMATCH_IS_SOLO, isSolo)

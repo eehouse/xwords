@@ -62,7 +62,7 @@ extern "C" {
 /*     if ( !!gi ) { */
 /*         XP_U16 ii, remoteCount = 0; */
 
-/*         if ( SERVER_STANDALONE != gi->serverRole ) { */
+/*         if ( ROLE_STANDALONE != gi->deviceRole ) { */
 /*             for ( ii = 0; ii < gi->nPlayers; ++ii ) { */
 /*                 if ( !gi->players[ii].isLocal ) { */
 /*                     ++remoteCount; */
@@ -72,7 +72,7 @@ extern "C" {
 /*             /\* I think this error is caught in nwgamest.c now *\/ */
 /*             XP_ASSERT( remoteCount > 0 ); */
 /*             if ( remoteCount == 0 ) { */
-/*                 gi->serverRole = SERVER_STANDALONE; */
+/*                 gi->deviceRole = ROLE_STANDALONE; */
 /*             } */
 /*         } */
 
@@ -100,7 +100,7 @@ onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
 {
     XP_ASSERT( amNowGuest );
     XWGame* game = (XWGame*)closure;
-    server_onRoleChanged( game->server, xwe, amNowGuest );
+    ctrl_onRoleChanged( game->server, xwe, amNowGuest );
 }
 #endif
 
@@ -108,9 +108,9 @@ onRoleChanged( XWEnv xwe, void* closure, XP_Bool amNowGuest  )
 static void
 setListeners( XWGame* game, const CommonPrefs* cp )
 {
-    server_prefsChanged( game->server, cp );
+    ctrl_prefsChanged( game->server, cp );
     board_prefsChanged( game->board, cp );
-    server_setTimerChangeListener( game->server, timerChangeListener, game );
+    ctrl_setTimerChangeListener( game->server, timerChangeListener, game );
 }
 
 #endif
@@ -148,9 +148,9 @@ setListeners( XWGame* game, const CommonPrefs* cp )
 /*         model_setDictionary( game->model, xwe, dict ); */
 /*         model_setPlayerDicts( game->model, xwe, &playerDicts ); */
 
-/*         if ( gi->serverRole != SERVER_STANDALONE ) { */
+/*         if ( gi->deviceRole != ROLE_STANDALONE ) { */
 /*             game->comms = comms_make( xwe, util, */
-/*                                       gi->serverRole != SERVER_ISCLIENT, */
+/*                                       gi->deviceRole != ROLE_ISGUEST, */
 /*                                       selfAddr, hostAddr, */
 /* #ifdef XWFEATURE_RELAY */
 /*                                       nPlayersHere, nPlayersTotal, */
@@ -163,7 +163,7 @@ setListeners( XWGame* game, const CommonPrefs* cp )
 /*         } */
 
 
-/*         game->server = server_make( xwe, game->model, game->comms, util ); */
+/*         game->server = ctrl_make( xwe, game->model, game->comms, util ); */
 /*         game->board = board_make( xwe, game->model, game->server, */
 /*                                   NULL, util ); */
 /*         board_setCallbacks( game->board, xwe ); */
@@ -309,10 +309,10 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
                 }
             }
 
-            XP_ASSERT( hasComms == (SERVER_STANDALONE != gi->serverRole) );
+            XP_ASSERT( hasComms == (ROLE_STANDALONE != gi->deviceRole) );
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( xwe, stream, util,
-                                                    gi->serverRole != SERVER_ISCLIENT,
+                                                    gi->deviceRole != ROLE_ISGUEST,
 #ifdef XWFEATURE_RELAY
                                                     onRoleChanged, game,
 #endif
@@ -325,7 +325,7 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
             game->model = model_makeFromStream( MPPARM(mpool) xwe, stream, dict,
                                                 &playerDicts, util );
 
-            game->server = server_makeFromStream( xwe, stream,
+            game->server = ctrl_makeFromStream( xwe, stream,
                                                   game->model, game->comms, 
                                                   util, gi->nPlayers );
 
@@ -340,13 +340,13 @@ game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     }
 
     if ( success && !!game && !!game->comms ) {
-        XP_ASSERT( comms_getIsHost(game->comms) == server_getIsHost(game->server) );
+        XP_ASSERT( comms_getIsHost(game->comms) == ctrl_getIsHost(game->server) );
 
 #ifdef XWFEATURE_KNOWNPLAYERS
         const XP_U32 created = game->created;
         if ( !!game->comms && 0 != created
-             && server_getGameIsConnected( game->server ) ) {
-            server_gatherPlayers( game->server, xwe, created );
+             && ctrl_getGameIsConnected( game->server ) ) {
+            ctrl_gatherPlayers( game->server, xwe, created );
         }
 #endif
     }
@@ -411,7 +411,7 @@ game_saveToStream( GameRef gr, const CurGameInfo* gi,
         }
 
         model_writeToStream( game->model, stream );
-        server_writeToStream( game->server, stream );
+        ctrl_writeToStream( game->server, stream );
         board_writeToStream( game->board, stream );
         */
     }
@@ -445,16 +445,16 @@ game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
     /*     XP_LOGFF( "ERROR: comms NULL!" ); */
     /* } */
     /* if ( result ) { */
-    /*     // used to call server_do() here??? */
+    /*     // used to call ctrl_do() here??? */
     /*     result = gr_receiveMessage( duc, gr, xwe, stream ); */
     /* } */
     /* gr_msgProcessed( duc, gr, xwe, &commsState, !result ); */
 
     /* if ( result ) { */
-    /*     // used to call server_do() here??? */
+    /*     // used to call ctrl_do() here??? */
     /*     /\* in case MORE work's pending.  Multiple calls are required in at */
     /*        least one case, where I'm a host handling client registration *AND* */
-    /*        I'm a robot.  Only one server_do and I'll never make that first */
+    /*        I'm a robot.  Only one ctrl_do and I'll never make that first */
     /*        robot move.  That's because comms can't detect a duplicate initial */
     /*        packet (in validateInitialMessage()). *\/ */
     /* } */
@@ -467,10 +467,10 @@ game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
 void
 game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
 {
-    const ServerCtxt* server = game->server;
+    const CtrlrCtxt* ctrlr = game->ctrlr;
     BoardCtxt* board = game->board;
 
-    XP_Bool gameOver = server_getGameIsOver( server );
+    XP_Bool gameOver = ctrl_getGameIsOver( ctrlr );
     gsi->curTurnSelected = board_curTurnSelected( board );
     gsi->trayVisState = board_getTrayVisState( board );
     gsi->visTileCount = board_visTileCount( board );
@@ -484,21 +484,21 @@ game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
     gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!game->comms ? 
         comms_countPendingPackets(game->comms, NULL) : 0;
-    gsi->canPause = server_canPause( server );
-    gsi->canUnpause = server_canUnpause( server );
+    gsi->canPause = ctrl_canPause( ctrlr );
+    gsi->canUnpause = ctrl_canUnpause( ctrlr );
 }
 
 void
 game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary )
 {
     XP_MEMSET( summary, 0, sizeof(*summary) );
-    ServerCtxt* server = game->server;
-    summary->turn = server_getCurrentTurn( server, &summary->turnIsLocal );
-    summary->lastMoveTime = server_getLastMoveTime(server);
-    summary->gameOver = server_getGameIsOver( server );
+    CtrlrCtxt* ctrlr = game->ctrlr;
+    summary->turn = ctrl_getCurrentTurn( ctrlr, &summary->turnIsLocal );
+    summary->lastMoveTime = ctrl_getLastMoveTime(ctrlr);
+    summary->gameOver = ctrl_getGameIsOver( ctrlr );
     summary->nMoves = model_getNMoves( game->model );
-    summary->dupTimerExpires = server_getDupTimerExpires( server );
-    summary->canRematch = server_canRematch( server, &summary->canOfferRO );
+    summary->dupTimerExpires = ctrl_getDupTimerExpires( ctrlr );
+    summary->canRematch = ctrl_canRematch( ctrlr, &summary->canOfferRO );
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         const LocalPlayer* lp  = &gi->players[ii];
@@ -510,7 +510,7 @@ game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary 
         }
     }
     if ( !!game->comms ) {
-        summary->missingPlayers = server_getMissingPlayers( server );
+        summary->missingPlayers = ctrl_getMissingPlayers( ctrlr );
         summary->nPacketsPending =
             comms_countPendingPackets( game->comms, &summary->quashed );
     }
@@ -532,8 +532,8 @@ game_dispose( XWGame* game, XWEnv xwe )
 /* #ifdef XWFEATURE_KNOWNPLAYERS */
 /*     const XP_U32 created = game->created; */
 /*     if ( !!game->comms && 0 != created */
-/*          && server_getGameIsConnected( game->server ) ) { */
-/*         server_gatherPlayers( game->server, xwe, created ); */
+/*          && ctrl_getGameIsConnected( game->ctrlr ) ) { */
+/*         ctrl_gatherPlayers( game->ctrlr, xwe, created ); */
 /*     } */
 /* #endif */
 
@@ -556,9 +556,9 @@ game_dispose( XWGame* game, XWEnv xwe )
 /*         model_destroy( game->model, xwe ); */
 /*         game->model = NULL; */
 /*     } */
-/*     if ( !!game->server ) { */
-/*         server_destroy( game->server, xwe ); */
-/*         game->server = NULL; */
+/*     if ( !!game->ctrlr ) { */
+/*         ctrl_destroy( game->ctrlr, xwe ); */
+/*         game->ctrlr = NULL; */
 /*     } */
 } /* game_dispose */
 
@@ -601,7 +601,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->boardSize = (XP_U8)srcGI->boardSize;
     destGI->traySize = srcGI->traySize;
     destGI->bingoMin = srcGI->bingoMin;
-    destGI->serverRole = srcGI->serverRole;
+    destGI->deviceRole = srcGI->deviceRole;
 
     destGI->hintsNotAllowed = srcGI->hintsNotAllowed;
     destGI->timerEnabled = srcGI->timerEnabled;
@@ -671,7 +671,7 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
             equal = gi1->forceChannel == gi2->forceChannel;
             break;
         case 7:
-            equal = gi1->serverRole == gi2->serverRole;
+            equal = gi1->deviceRole == gi2->deviceRole;
             break;
         case 8:
             equal = gi1->hintsNotAllowed == gi2->hintsNotAllowed;
@@ -867,8 +867,8 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     } else {
         gi->traySize = gi->bingoMin = 7;
     }
-    gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
-    /* XP_LOGF( "%s: read serverRole of %d", __func__, gi->serverRole ); */
+    gi->deviceRole = (DeviceRole)stream_getBits( stream, 2 );
+    /* XP_LOGF( "%s: read deviceRole of %d", __func__, gi->deviceRole ); */
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
         (void)stream_getBits( stream, 2 );
@@ -908,7 +908,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     // XP_LOGFF( "read forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
 
     if ( STREAM_VERS_BIGGERGI <= strVersion
-         && gi->serverRole != SERVER_STANDALONE ) {
+         && gi->deviceRole != ROLE_STANDALONE ) {
         gi->conTypes = stream_getU16( stream );
     }
 
@@ -988,7 +988,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     } else {
         XP_LOGFF( "strVersion: %d so not writing traySize", strVersion );
     }
-    stream_putBits( stream, 2, gi->serverRole );
+    stream_putBits( stream, 2, gi->deviceRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
@@ -1017,7 +1017,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     }
 
     if ( STREAM_VERS_BIGGERGI <= strVersion
-         && gi->serverRole != SERVER_STANDALONE ) {
+         && gi->deviceRole != ROLE_STANDALONE ) {
         stream_putU16( stream, gi->conTypes );
     }
 
@@ -1072,7 +1072,7 @@ player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* buf )
 GameRef
 gi_formatGR( const CurGameInfo* gi )
 {
-    GameRef gr = formatGR( gi->gameID, gi->serverRole );
+    GameRef gr = formatGR( gi->gameID, gi->deviceRole );
     return gr;
 }
 
@@ -1090,7 +1090,7 @@ game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
         offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
                                "gameID: %X; created: %d, ", gi->gameID, gi->created );
         offset += XP_SNPRINTF( &buf[offset], bufLen - offset,
-                               "role: %d, ", gi->serverRole );
+                               "role: %d, ", gi->deviceRole );
         XP_UCHAR tmp[128];
         logTypeSet( gi->conTypes, tmp, VSIZE(tmp) );
         offset += XP_SNPRINTF( &buf[offset], bufLen - offset,

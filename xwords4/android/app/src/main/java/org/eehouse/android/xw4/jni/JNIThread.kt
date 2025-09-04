@@ -171,10 +171,10 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     //         mSummary = DBUtils.getSummary(context, lock)
 
-    //         // if (mGi!!.serverRole != DeviceRole.SERVER_STANDALONE) {
+    //         // if (mGi!!.deviceRole != DeviceRole.ROLE_STANDALONE) {
     //         //     mXport = CommsTransport(
     //         //         context, xportHandler!!, m_rowid,
-    //         //         mGi!!.serverRole
+    //         //         mGi!!.deviceRole
     //         //     )
     //         // }
 
@@ -304,7 +304,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         )
 
         // Make space for net status icon if appropriate
-        if (mGi!!.serverRole != DeviceRole.SERVER_STANDALONE) {
+        if (mGi!!.deviceRole != DeviceRole.ROLE_STANDALONE) {
             val statusWidth = dims.boardWidth / 15
             dims.scoreWidth -= statusWidth
             val left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth
@@ -795,7 +795,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         fun tryConnect(gamePtr: GamePtr, gi: CurGameInfo): Boolean {
             Log.d(TAG, "tryConnect(rowid=%d)", gamePtr.rowid)
             // XwJNI.comms_start(gamePtr)
-            if (gi.serverRole == DeviceRole.SERVER_ISCLIENT) {
+            if (gi.deviceRole == DeviceRole.ROLE_ISGUEST) {
                 // XwJNI.server_initClientConnection(gamePtr)
             }
             return false // XwJNI.server_do(gamePtr)

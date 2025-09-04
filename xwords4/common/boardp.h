@@ -144,7 +144,7 @@ typedef struct _BadWordList {
 struct BoardCtxt {
 /*     BoardVTable* vtable; */
     ModelCtxt* model;
-    ServerCtxt* server;
+    CtrlrCtxt* ctrlr;
     DrawCtx* draw;
     XW_DUtilCtxt* dutil;
     XW_UtilCtxt** utilp;

@@ -424,7 +424,7 @@ comms_make( XWEnv xwe, XW_UtilCtxt** utilp, XP_Bool isServer,
 
     XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
     comms->isServer = isServer;
-    XP_ASSERT( isServer == (util_getGI(*utilp)->serverRole == SERVER_ISHOST) );
+    XP_ASSERT( isServer == (util_getGI(*utilp)->deviceRole == ROLE_ISHOST) );
     comms->forceChannel = forceChannel;
 
     if ( !!selfAddr ) {

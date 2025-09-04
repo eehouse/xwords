@@ -32,7 +32,7 @@ COMMON1 = \
 COMMON2 = \
 	$(COMMONOBJDIR)/model.o \
 	$(COMMONOBJDIR)/mscore.o \
-	$(COMMONOBJDIR)/server.o \
+	$(COMMONOBJDIR)/contrlr.o \
 	$(COMMONOBJDIR)/pool.o \
 
 COMMON3 = \

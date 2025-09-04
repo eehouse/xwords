@@ -567,7 +567,7 @@ makeJSummaryRec( JNIEnv* env, jobject jsummary, const GameSummary* gs,
     setInt( env, jsummary, "nInvited", gs->nInvited );
 
     setInt( env, jsummary, "nPlayers", gi->nPlayers );
-    intToJenumField( env, jsummary, gi->serverRole, "serverRole",
+    intToJenumField( env, jsummary, gi->deviceRole, "deviceRole",
                      PKG_PATH("jni/CurGameInfo$DeviceRole") );
 
     jintArray jscores = makeIntArray( env, gi->nPlayers, gs->scores.arr,

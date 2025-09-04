@@ -380,9 +380,9 @@ class XwJNI private constructor() {
             util: UtilCtxt?, draw: DrawCtx?, cp: CommonPrefs, procs: TransportProcs?
         ): GamePtr? {
             // Only standalone doesn't provide self address
-            Assert.assertTrueNR(null != selfAddr || gi.serverRole == DeviceRole.SERVER_STANDALONE)
+            Assert.assertTrueNR(null != selfAddr || gi.deviceRole == DeviceRole.ROLE_STANDALONE)
             // Only client should be providing host addr
-            Assert.assertTrueNR(null == hostAddr || gi.serverRole == DeviceRole.SERVER_ISCLIENT)
+            Assert.assertTrueNR(null == hostAddr || gi.deviceRole == DeviceRole.ROLE_ISGUEST)
             val gamePtr = initGameJNI(0)
             game_makeNewGame(gamePtr, gi, selfAddr, hostAddr, util, draw, cp, procs)
             return gamePtr

@@ -195,7 +195,7 @@ object DBUtils {
                 }
                 col = cursor.getColumnIndex(DBHelper.SERVERROLE)
                 tmpInt = cursor.getInt(col)
-                summary!!.serverRole = DeviceRole.entries[tmpInt]
+                summary!!.deviceRole = DeviceRole.entries[tmpInt]
             }
             cursor.close()
         }
@@ -286,7 +286,7 @@ object DBUtils {
                 //         }
                 //     }
                 // }
-                values.put(DBHelper.SERVERROLE, summary.serverRole!!.ordinal)
+                values.put(DBHelper.SERVERROLE, summary.deviceRole!!.ordinal)
             }
             initDB(context)
             synchronized(s_dbHelper!!) {
@@ -545,7 +545,7 @@ object DBUtils {
                 val columns = arrayOf(DBHelper.CONTYPE, DBHelper.LASTMOVE)
                 var earliestMoveSecs = Long.MAX_VALUE
                 val selection =
-                    "${DBHelper.SERVERROLE} != ${DeviceRole.SERVER_STANDALONE.ordinal}" +
+                    "${DBHelper.SERVERROLE} != ${DeviceRole.ROLE_STANDALONE.ordinal}" +
                     " AND ${DBHelper.GROUPID} != ${getArchiveGroup(context)}" +
                     " AND ${DBHelper.LASTMOVE} > $secsLast"
                 // Log.d(TAG, "getKAMinutesLeft: selection: $selection")
@@ -581,7 +581,7 @@ object DBUtils {
         // val selection = String.format(
         //     "%s != %d AND %s > 0 AND %s != %d",
         //     DBHelper.SERVERROLE,
-        //     DeviceRole.SERVER_STANDALONE.ordinal,
+        //     DeviceRole.ROLE_STANDALONE.ordinal,
         //     DBHelper.NPACKETSPENDING,
         //     DBHelper.GROUPID, getArchiveGroup(context)
         // )
@@ -2491,7 +2491,7 @@ object DBUtils {
 
         init {
             m_lastMoveMillis = 1000 * lastMove
-            isSolo = DeviceRole.SERVER_STANDALONE == role
+            isSolo = DeviceRole.ROLE_STANDALONE == role
         }
     }
 

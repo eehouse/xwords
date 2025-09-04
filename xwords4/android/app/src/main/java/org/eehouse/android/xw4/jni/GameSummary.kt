@@ -76,7 +76,7 @@ class GameSummary : Serializable {
 
     @JvmField
     var isoCode: ISOCode? = null
-    var serverRole: DeviceRole? = null
+    var deviceRole: DeviceRole? = null
     @JvmField
     var nPacketsPending: Int = 0
     @JvmField
@@ -105,7 +105,7 @@ class GameSummary : Serializable {
         Assert.failDbg()
         // nPlayers = gi.nPlayers
         // isoCode = gi.isoCode()
-        // serverRole = gi.serverRole
+        // deviceRole = gi.deviceRole
         // gameID = gi.gameID
         // m_gi = gi
     }
@@ -146,8 +146,8 @@ class GameSummary : Serializable {
                          && m_players.contentEquals(other.m_players)
                          && TextUtils.equals(relayID, other.relayID)
                          && remoteDevs.contentEquals(other.remoteDevs)
-                         && (if ((null == serverRole)) (null == other.serverRole)
-                             else serverRole == other.serverRole)
+                         && (if ((null == deviceRole)) (null == other.deviceRole)
+                             else deviceRole == other.deviceRole)
                          && (if ((null == m_giFlags)) (null == other.m_giFlags)
                              else m_giFlags == other.m_giFlags)
                          && TextUtils.equals(m_playersSummary, other.m_playersSummary)
@@ -273,7 +273,7 @@ class GameSummary : Serializable {
                     ) {
                         val fmtID =
                             if (0 < missing) {
-                                if (DeviceRole.SERVER_ISSERVER == serverRole) {
+                                if (DeviceRole.ROLE_ISHOST == deviceRole) {
                                     R.string.summary_wait_host
                                 } else {
                                     R.string.summary_wait_guest
@@ -308,7 +308,7 @@ class GameSummary : Serializable {
     }
 
     val isMultiGame: Boolean
-        get() = (serverRole != DeviceRole.SERVER_STANDALONE)
+        get() = (deviceRole != DeviceRole.ROLE_STANDALONE)
 
     private fun isLocal(indx: Int): Boolean {
         return localTurnNextImpl(giflags()!!, indx)
@@ -489,7 +489,7 @@ class GameSummary : Serializable {
                     .append("nPlayers: ").append(nPlayers).append(',')
                     .append("collapsed: ").append(collapsed).append(',')
                     .append("},")
-                    .append("{role: ").append(serverRole!!).append("},")
+                    .append("{role: ").append(deviceRole!!).append("},")
                     .append("{nMissing: ").append(nMissing).append("},")
                     .toString()
             } else {

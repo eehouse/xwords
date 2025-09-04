@@ -24,7 +24,8 @@
 #include "commstyp.h"
 #include "mempool.h"
 #include "xwrelay.h"
-#include "serverp.h"
+#include "contrlrp.h"
+
 
 EXTERN_C_START
 

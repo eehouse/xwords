@@ -218,7 +218,7 @@ cgl_draw( CursGameList* cgl )
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
         data[line][col++] = g_strdup( gi->isoCodeStr );
         data[line][col++] = g_strdup_printf( "%x", gi->gameID );
-        data[line][col++] = g_strdup_printf( "%d", gi->serverRole );
+        data[line][col++] = g_strdup_printf( "%d", gi->deviceRole );
         data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
         data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(cgl->params->dutil,
                                                                    gr, NULL_XWE ));

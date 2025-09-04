@@ -1267,7 +1267,7 @@ startGame( GameState* gs )
 
     resizeBoard( globals, gs );
 
-    if ( SERVER_ISCLIENT == gs->gi.serverRole ) {
+    if ( ROLE_ISGUEST == gs->gi.deviceRole ) {
         server_initClientConnection( gs->game.server, NULL_XWE );
     }
     
@@ -1596,8 +1596,8 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* nli,
             main_getLocalName( globals, playerName, sizeof(playerName) );
 
             gs = newGameState( globals );
-            gs->gi.serverRole = !!params && !params->isRobot
-                ? SERVER_ISSERVER : SERVER_STANDALONE;
+            gs->gi.deviceRole = !!params && !params->isRobot
+                ? SERVER_ISSERVER : ROLE_STANDALONE;
 
             gs->gi.phoniesAction = PHONIES_WARN;
             gs->gi.hintsNotAllowed = !!params && !params->allowHints || false;
@@ -1626,7 +1626,7 @@ loadAndDraw( Globals* globals, const NetLaunchInfo* nli,
             XP_LOGFF( "calling game_makeNewGame()" );
             const CommsAddrRec* selfAddr = NULL;
             CommsAddrRec _selfAddr;
-            if ( SERVER_STANDALONE != gs->gi.serverRole ) {
+            if ( ROLE_STANDALONE != gs->gi.deviceRole ) {
                 makeSelfAddr( globals, &_selfAddr );
                 selfAddr = &_selfAddr;
             }

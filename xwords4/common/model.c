@@ -115,7 +115,7 @@ model_make( XWEnv xwe, const DictionaryCtxt* dict,
         model_setDictionary( result, xwe, dict );
         model_setPlayerDicts( result, xwe, dicts );
 
-        if ( SERVER_STANDALONE != result->vol.gi->serverRole ) {
+        if ( ROLE_STANDALONE != result->vol.gi->deviceRole ) {
              result->vol.chat = cht_init( xwe, utilp );
         }
     }
@@ -317,7 +317,7 @@ model_destroy( ModelCtxt* model, XWEnv xwe )
     model_unrefDicts( model, xwe );
     ModelVolatiles* vol = &model->vol;
     stack_destroy( vol->stack );
-    if ( SERVER_STANDALONE != vol->gi->serverRole ) {
+    if ( ROLE_STANDALONE != vol->gi->deviceRole ) {
         cht_destroy( vol->chat );
     }
     /* is this it!? */
@@ -2608,7 +2608,7 @@ makeTmpModel( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
 
 void
 model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
-                        ServerCtxt* server, XP_Bool gameOver )
+                        CtrlrCtxt* ctrlr, XP_Bool gameOver )
 {
     MovePrintClosure closure = {
         .stream = stream,
@@ -2624,7 +2624,7 @@ model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
            method */
-        server_writeFinalScores( server, xwe, stream );
+        ctrl_writeFinalScores( ctrlr, xwe, stream );
     }
 } /* model_writeGameHistory */
 

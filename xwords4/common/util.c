@@ -140,7 +140,7 @@ util_clearTimer( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWTimerReason why )
 }
 
 /* Eventually this should go away and at some point the game's CurGameInfo
-   should be updated via server_inviteeName() to hold names that can be used
+   should be updated via ctrl_inviteeName() to hold names that can be used
    to display -- that will be replaced when invitees register with a
    potentially different name. */
 void

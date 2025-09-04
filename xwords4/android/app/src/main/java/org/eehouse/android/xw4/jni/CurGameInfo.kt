@@ -45,7 +45,7 @@ class CurGameInfo(): Serializable {
     }
 
     enum class DeviceRole {
-        SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT,
+        ROLE_STANDALONE, ROLE_ISHOST, ROLE_ISGUEST,
     }
 
     @JvmField
@@ -67,7 +67,7 @@ class CurGameInfo(): Serializable {
     @JvmField
     var forceChannel: Int = 0
     @JvmField
-    var serverRole: DeviceRole? = null
+    var deviceRole: DeviceRole? = null
     @JvmField
     var conTypes: CommsAddrRec.CommsConnTypeSet? = null
     @JvmField
@@ -96,9 +96,9 @@ class CurGameInfo(): Serializable {
         boardSize = CommonPrefs.getDefaultBoardSize(context)
         traySize = XWPrefs.getDefaultTraySize(context)
         bingoMin = XWApp.MIN_TRAY_TILES
-        serverRole =
-            if (isNetworked) DeviceRole.SERVER_ISCLIENT
-            else DeviceRole.SERVER_STANDALONE
+        deviceRole =
+            if (isNetworked) DeviceRole.ROLE_ISGUEST
+            else DeviceRole.ROLE_STANDALONE
         hintsNotAllowed = !CommonPrefs.getDefaultHintsAllowed(
             context, isNetworked
         )
@@ -151,7 +151,7 @@ class CurGameInfo(): Serializable {
         boardSize = src.boardSize
         traySize = src.traySize
         bingoMin = src.bingoMin
-        serverRole = src.serverRole
+        deviceRole = src.deviceRole
         gameName = src.gameName
         dictName = src.dictName
         isoCodeStr = src.isoCodeStr
@@ -186,7 +186,7 @@ class CurGameInfo(): Serializable {
             }
             sb.append("], gameID: ").append(gameID)
                 .append(", gameName: ").append(gameName)
-                .append(", role: ").append(serverRole)
+                .append(", role: ").append(deviceRole)
                 .append(", hashCode: ").append(hashCode())
                 .append(", timerEnabled: ").append(timerEnabled)
                 .append(", gameSeconds: ").append(gameSeconds)
@@ -244,7 +244,7 @@ class CurGameInfo(): Serializable {
     }
 
     fun setServerRole(newRole: DeviceRole?) {
-        serverRole = newRole
+        deviceRole = newRole
         Assert.assertTrue(nPlayers > 0)
         if (nPlayers == 0) { // must always be one visible player
             Assert.assertFalse(players[0]!!.isLocal)
@@ -306,7 +306,7 @@ class CurGameInfo(): Serializable {
         } else {
             players[1]!!.isLocal = false
         }
-        setServerRole(if (standalone) DeviceRole.SERVER_STANDALONE else DeviceRole.SERVER_ISSERVER)
+        setServerRole(if (standalone) DeviceRole.ROLE_STANDALONE else DeviceRole.ROLE_ISHOST)
         if (!standalone) {
             conTypes = XWPrefs.getAddrTypes(context)
         }
@@ -320,7 +320,7 @@ class CurGameInfo(): Serializable {
      */
     fun changesMatter(other: CurGameInfo): Boolean {
         var matter = nPlayers != other.nPlayers
-            || serverRole != other.serverRole
+            || deviceRole != other.deviceRole
             || !TextUtils.equals(isoCodeStr, other.isoCodeStr)
             || boardSize != other.boardSize
             || traySize != other.traySize
@@ -371,8 +371,8 @@ class CurGameInfo(): Serializable {
                         && players.contentDeepEquals(other.players)
                         && TextUtils.equals(gameName, other.gameName)
                         && TextUtils.equals(dictName, other.dictName)
-                        && (if ((null == serverRole)) (null == other.serverRole)
-                            else serverRole == other.serverRole)
+                        && (if ((null == deviceRole)) (null == other.deviceRole)
+                            else deviceRole == other.deviceRole)
                         && (if ((null == phoniesAction)) (null == other.phoniesAction)
                             else phoniesAction == other.phoniesAction)
                         && TextUtils.equals(gameName, other.gameName)
@@ -393,7 +393,7 @@ class CurGameInfo(): Serializable {
     }
 
     fun forceRemoteConsistent(): Boolean {
-        var consistent = serverRole == DeviceRole.SERVER_STANDALONE
+        var consistent = deviceRole == DeviceRole.ROLE_STANDALONE
         if (!consistent) {
             if (remoteCount() == 0) {
                 players[0]!!.isLocal = false
@@ -446,7 +446,7 @@ class CurGameInfo(): Serializable {
         val names = arrayOfNulls<String>(nPlayers)
         for (ii in 0 until nPlayers) {
             val lp = players[ii]
-            if (lp!!.isLocal || serverRole == DeviceRole.SERVER_STANDALONE) {
+            if (lp!!.isLocal || deviceRole == DeviceRole.ROLE_STANDALONE) {
                 var name: String?
                 if (lp.isRobot()) {
                     val format = LocUtils.getString(context, R.string.robot_name_fmt)
@@ -517,7 +517,7 @@ class CurGameInfo(): Serializable {
         // MAX_NUM_PLAYERS, or by making an unusable player usable.
         if (added) {
             players[nPlayers]!!.isLocal =
-                serverRole == DeviceRole.SERVER_STANDALONE
+                deviceRole == DeviceRole.ROLE_STANDALONE
             ++nPlayers
         }
         return added

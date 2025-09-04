@@ -356,8 +356,8 @@ linuxOpenGame( CommonGlobals* cGlobals )
     }
 
     if ( opened ) {
-        DeviceRole serverRole = cGlobals->gi->serverRole;
-        XP_LOGF( "%s(): server role: %d", __func__, serverRole );
+        DeviceRole deviceRole = cGlobals->gi->deviceRole;
+        XP_LOGF( "%s(): server role: %d", __func__, deviceRole );
         // linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
     LOG_RETURNF( "%s", boolToStr(opened) );
@@ -3128,13 +3128,13 @@ main( int argc, char** argv )
                    + mainParams.info.serverInfo.nRemotePlayers );
 
         if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-            mainParams.pgi.serverRole = SERVER_STANDALONE;
+            mainParams.pgi.deviceRole = ROLE_STANDALONE;
         } else if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
-                mainParams.pgi.serverRole = SERVER_ISHOST;
+                mainParams.pgi.deviceRole = ROLE_ISHOST;
             }
         } else {
-            mainParams.pgi.serverRole = SERVER_ISCLIENT;
+            mainParams.pgi.deviceRole = ROLE_ISGUEST;
         }
 
         /* sanity checks */
@@ -3179,7 +3179,7 @@ main( int argc, char** argv )
         }
 
         if ( 0 < mainParams.info.serverInfo.nRemotePlayers
-             && SERVER_STANDALONE == mainParams.pgi.serverRole ) {
+             && ROLE_STANDALONE == mainParams.pgi.deviceRole ) {
             mainParams.needsNewGame = XP_TRUE;
         }
 
@@ -3223,12 +3223,12 @@ main( int argc, char** argv )
 
         if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
-                mainParams.serverRole = SERVER_STANDALONE;
+                mainParams.deviceRole = ROLE_STANDALONE;
             } else {
-                mainParams.serverRole = SERVER_ISHOST;
+                mainParams.deviceRole = ROLE_ISHOST;
             }	    
         } else {
-            mainParams.serverRole = SERVER_ISCLIENT;
+            mainParams.deviceRole = ROLE_ISGUEST;
         }
 
         XP_ASSERT( !!mainParams.dbName );
