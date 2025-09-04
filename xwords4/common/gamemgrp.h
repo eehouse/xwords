@@ -40,6 +40,7 @@ XWStreamCtxt* gmgr_loadGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 void gmgr_saveGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+XWStreamCtxt* gmgr_loadComms( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 void gmgr_storeSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XWStreamCtxt* stream );
 
 void gmgr_rmFromGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp );

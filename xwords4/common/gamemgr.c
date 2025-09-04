@@ -39,6 +39,7 @@
 #define KEY_SUM "sum"
 #define KEY_REFS "refs"
 #define KEY_GI "gi"
+#define KEY_COMMS "comms"
 #define MAX_KEYS 4
 #define FLAG_HASCOMMS 0x01
 #define MAX_GROUP_NAME 32
@@ -761,7 +762,7 @@ gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 {
     XP_LOGFF( "(" GR_FMT ")", gr );
     // First, create the keys since that requires live gr
-    const char* midKeys[] = { KEY_DATA, KEY_GI, KEY_GRP, KEY_SUM, };
+    const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP, KEY_SUM, };
     KeyStore ks[VSIZE(midKeys)];
     for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
         mkKeys( gr, &ks[ii], midKeys[ii] );
@@ -849,6 +850,15 @@ gmgr_storeSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XWStreamCtxt* stream )
 }
 
 XWStreamCtxt*
+gmgr_loadComms( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_COMMS );
+    XWStreamCtxt* stream = dvc_loadStream( duc, xwe, ks.keys );
+    return stream;
+}
+
+XWStreamCtxt*
 gmgr_loadData( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 {
     KeyStore ks;
@@ -899,10 +909,19 @@ gmgr_saveGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
         if ( gr_haveData( duc, gr, xwe ) ) {
             GameMgrState* gs = duc->gameMgrState;
             XP_U16 saveToken = ++gs->nextSaveToken;
+            const CurGameInfo* gi = gr_getGI( duc, gr, xwe );
+            XP_Bool haveComms = gi->serverRole != SERVER_STANDALONE;
+            XWStreamCtxt* commsStream = haveComms ? dvc_makeStream( duc ): NULL;
             XWStreamCtxt* stream = dvc_makeStream( duc );
-            gr_dataToStream( duc, gr, xwe, stream, saveToken );
+            gr_dataToStream( duc, gr, xwe, commsStream, stream, saveToken );
 
             KeyStore ks;
+            if ( haveComms ) {
+                mkKeys( gr, &ks, KEY_COMMS );
+                dvc_storeStream( duc, xwe, ks.keys, commsStream );
+                stream_destroy( commsStream );
+            }
+
             mkKeys( gr, &ks, KEY_DATA );
             dvc_storeStream( duc, xwe, ks.keys, stream );
             stream_destroy( stream );

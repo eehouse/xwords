@@ -49,6 +49,7 @@ struct GameData {
     CurGameInfo gi;
     GameSummary sum;
     XP_Bool sumLoaded;
+    XP_Bool commsLoaded;
     GroupRef grp;
     XW_UtilCtxt* util;
     BoardCtxt* board;
@@ -140,6 +141,36 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
     setSaveTimer(duc, xwe, gd, gr);             \
     GR_HEADER_END()                             \
 
+static void
+loadCommsOnce(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
+{
+    if ( !gd->commsLoaded ) {
+        gd->commsLoaded = XP_TRUE;
+        const CurGameInfo* gi = &gd->gi;
+        if ( SERVER_STANDALONE != gi->serverRole ) {
+            XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
+            if ( !!stream ) {
+                XP_U8 strVersion = stream_getU8( stream );
+                XP_LOGFF( "strVersion: 0x%X", strVersion );
+                stream_setVersion( stream, strVersion );
+                gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
+                                                  gi->serverRole != SERVER_ISCLIENT,
+                                                  gi->forceChannel );
+                stream_destroy( stream );
+            } else {
+                XP_Bool isClient = SERVER_ISCLIENT == gi->serverRole;
+                const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
+                CommsAddrRec selfAddr = {0};
+                dutil_getSelfAddr( duc, xwe, &selfAddr );
+                XW_UtilCtxt** utilp = &gd->util;
+                gd->comms = comms_make( xwe, utilp, gi->serverRole != SERVER_ISCLIENT,
+                                        &selfAddr, hostAddr, gi->forceChannel );
+            }
+        } else {
+            XP_ASSERT( !gd->comms );
+        }
+    }
+}
 
 static void
 loadDictsOnce( XW_DUtilCtxt* dutil, XWEnv xwe, GameData* gd )
@@ -227,6 +258,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
             }
             break;
         case COMMS:
+            loadCommsOnce(duc, xwe, gd );
             // Eventually comms should be loaded first, maybe before dict, as
             // it doesn't need dict but DOES need to exist on guest in order
             // to preserve hostAddr of inviting device.
@@ -340,25 +372,38 @@ gr_giToStream( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe, XWStreamCtxt* stream )
 }
 
 void
-gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* stream, XP_U16 saveToken )
+gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
+                 XWStreamCtxt* stream, XP_U16 saveToken )
 {
     GR_HEADER();
-    XP_ASSERT( !!gd->model );
+    if ( !!gd->comms ) {
+        stream_putU8( commsStream, CUR_STREAM_VERS );
+        stream_setVersion( commsStream, CUR_STREAM_VERS );
+        comms_writeToStream( gd->comms, commsStream, saveToken );
+    } else {
+        XP_ASSERT( !commsStream );
+    }
+
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
-    XP_Bool haveComms = !!gd->comms;
-    XP_U8 flags = haveComms ? FLAG_HASCOMMS : 0;
-    stream_putU8( stream, flags );
-    XP_LOGFF( "put flags: %x", flags );
-    if ( haveComms ) {
-        comms_writeToStream( gd->comms, stream, saveToken );
-    }
+    /* bad? having only comms set is now a thing!!! */
+    XP_ASSERT( !!gd->model );
 
     model_writeToStream( gd->model, xwe, stream );
     server_writeToStream( gd->server, stream );
     board_writeToStream( gd->board, stream );
     GR_HEADER_END();
+}
+
+static void
+unloadComms( GameData* gd, XWEnv xwe )
+{
+    if ( !!gd->comms ) {
+        comms_stop( gd->comms );
+        comms_destroy( gd->comms, xwe );
+        gd->comms = NULL;
+    }
 }
 
 static void
@@ -386,6 +431,8 @@ destroyData( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe,
     if ( !!gd ) {
         unloadData( gd, xwe );
         destroyStreamIf( &gd->thumbData );
+
+        unloadComms( gd, xwe );
 
         unrefDicts( xwe, gd );
 
@@ -480,7 +527,6 @@ makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     XP_ASSERT( gi_isValid( gi ) );
     LOG_GI(gi, __func__);
     XP_ASSERT( gi->gameID );
-    XP_Bool isClient = XP_FALSE;
 
     XP_Bool success = !!gd->dict;
 
@@ -503,17 +549,6 @@ makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
             model_setPlayerDicts( gd->model, xwe, &gd->playerDicts );
         } else {
             XP_ASSERT(0);
-        }
-
-        if ( gi->serverRole != SERVER_STANDALONE ) {
-            isClient = SERVER_ISCLIENT == gi->serverRole;
-            const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
-            CommsAddrRec selfAddr = {0};
-            dutil_getSelfAddr( duc, xwe, &selfAddr );
-            gd->comms = comms_make( xwe, utilp, gi->serverRole != SERVER_ISCLIENT,
-                                    &selfAddr, hostAddr, gi->forceChannel );
-        } else {
-            XP_ASSERT( !gd->comms );
         }
 
         gd->server = server_make( xwe, gd->model, gd->comms, utilp );
@@ -561,22 +596,6 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
     if ( !gd->dict ) {
         goto exit;
     }
-
-    XP_Bool hasComms = XP_FALSE;
-    if ( strVersion < STREAM_VERS_GICREATED ) {
-        hasComms = stream_getU8( stream );
-    } else {
-        XP_U8 flags = stream_getU8( stream );
-        XP_LOGFF( "read flags: %x", flags );
-        hasComms = flags & FLAG_HASCOMMS;
-    }
-
-    XP_ASSERT( hasComms == (SERVER_STANDALONE != gi->serverRole) );
-    gd->comms = hasComms
-        ? comms_makeFromStream( xwe, stream, &gd->util,
-                                gi->serverRole != SERVER_ISCLIENT,
-                                gi->forceChannel )
-        : NULL;
 
     gd->model = model_makeFromStream( xwe, stream, gd->dict,
                                       &gd->playerDicts, &gd->util );
@@ -771,7 +790,7 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
 void
 gr_getSelfAddr( DUTIL_GR_XWE, CommsAddrRec* addr )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_getSelfAddr( gd->comms, addr );
     GR_HEADER_END();
 }
@@ -780,7 +799,7 @@ XP_S16
 gr_resendAll(DUTIL_GR_XWE, CommsConnType filter, XP_Bool force )
 {
     XP_S16 result = -1;
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     result = comms_resendAll( gd->comms, xwe, filter, force );
     GR_HEADER_END();
     return result;
@@ -830,7 +849,7 @@ void
 gr_invite( DUTIL_GR_XWE, const NetLaunchInfo* nli,
            const CommsAddrRec* destAddr, XP_Bool sendNow )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_invite( gd->comms,xwe, nli, destAddr, sendNow );
     GR_HEADER_END();
 }
@@ -914,7 +933,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
                       const XP_U8* msgBuf, XP_U16 msgLen,
                       const MsgCountState* mcs )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     XWStreamCtxt* stream = dvc_makeStream( duc );
     stream_putBytes( stream, msgBuf, msgLen );
 
@@ -922,7 +941,13 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
     XP_Bool result = comms_checkIncomingStream( gd->comms, xwe, stream, from,
                                                 &commsState, mcs );
     if ( result ) {
-        result = server_receiveMessage( gd->server, xwe, stream );
+        XP_Bool haveServer = !!gd->server;
+        if ( !haveServer ) {
+            loadToLevel( duc, gr, xwe, MODEL, &haveServer, NULL );
+        }
+        if ( haveServer ) {
+            result = server_receiveMessage( gd->server, xwe, stream );
+        }
     }
     comms_msgProcessed( gd->comms, xwe, &commsState, !result );
     if ( result ) {
@@ -944,7 +969,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
 void
 gr_setQuashed( DUTIL_GR_XWE, XP_Bool set )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_setQuashed( gd->comms, xwe, set );
     GR_HEADER_END();
 }
@@ -1148,7 +1173,7 @@ XP_U16
 gr_getChannelSeed( DUTIL_GR_XWE )
 {
     XP_U16 result = 0;
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     result = comms_getChannelSeed( gd->comms );
     GR_HEADER_END();
     return result;
@@ -1158,7 +1183,7 @@ XP_U16
 gr_countPendingPackets( DUTIL_GR_XWE, XP_Bool* quashed )
 {
     XP_U16 result = 0;
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     result = !!gd->comms ? comms_countPendingPackets( gd->comms, quashed ) : 0;
     GR_HEADER_END();
     return result;
@@ -1198,7 +1223,7 @@ XP_Bool
 gr_getIsHost( DUTIL_GR_XWE )
 {
     XP_Bool result = XP_FALSE;
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     result = comms_getIsHost( gd->comms );
     GR_HEADER_END();
     return result;
@@ -1704,7 +1729,7 @@ void
 gr_setAddrDisabled( DUTIL_GR_XWE, CommsConnType typ,
                     XP_Bool send, XP_Bool disabled )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_setAddrDisabled( gd->comms,  typ,  send, disabled );
     GR_HEADER_END();
 }
@@ -1732,7 +1757,7 @@ gr_getLikelyChatter( DUTIL_GR_XWE )
 void
 gr_start( DUTIL_GR_XWE )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {
         comms_start( gd->comms, xwe );
     }
@@ -1743,7 +1768,7 @@ gr_start( DUTIL_GR_XWE )
 void
 gr_stop( DUTIL_GR_XWE )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_stop( gd->comms );
     GR_HEADER_END();
 }
@@ -1797,7 +1822,7 @@ void
 gr_getAddrs( DUTIL_GR_XWE,
              CommsAddrRec addr[], XP_U16* nRecs )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {
         comms_getAddrs( gd->comms, addr, nRecs );
     } else {
@@ -1810,7 +1835,7 @@ gr_getAddrs( DUTIL_GR_XWE,
 void
 gr_getStats( RELCONST DUTIL_GR_XWE, XWStreamCtxt* stream )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     comms_getStats( gd->comms, stream );
     GR_HEADER_END();
 }
@@ -2046,7 +2071,7 @@ gr_getAddrDisabled( DUTIL_GR_XWE,
                     CommsConnType typ, XP_Bool send )
 {
     XP_Bool result = XP_FALSE;
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     result = comms_getAddrDisabled( gd->comms, typ, send );
     GR_HEADER_END();
     return result;
@@ -2208,7 +2233,7 @@ gr_writeGameHistory( DUTIL_GR_XWE, XWStreamCtxt* stream,
 void
 gr_saveSucceeded( DUTIL_GR_XWE, XP_U16 saveToken )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {
         comms_saveSucceeded( gd->comms, xwe, saveToken );
     }
