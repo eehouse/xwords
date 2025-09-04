@@ -337,7 +337,7 @@ drawPendingScore( BoardCtxt* board, XWEnv xwe, XP_S16 turnScore, XP_Bool hasCurs
     XP_U16 traySize = board->gi->traySize;
     if ( countTilesToShow( board ) < traySize ) {
         XP_U16 selPlayer = board->selPlayer;
-        XP_Bool curTurn = server_isPlayersTurn( board->server, selPlayer );
+        XP_Bool curTurn = ctrl_isPlayersTurn( board->ctrlr, selPlayer );
         XP_Rect lastTileR;
 
         figureTrayTileRect( board, traySize - 1, &lastTileR );

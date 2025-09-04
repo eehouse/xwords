@@ -85,7 +85,7 @@
 #endif
 #define STREAM_VERS_BLUETOOTH2 0x12
 #define STREAM_SAVE_PREVWORDS 0x11
-#define STREAM_VERS_SERVER_SAVES_TOSHOW 0x10
+#define STREAM_VERS_HOST_SAVES_TOSHOW 0x10
 /* STREAM_VERS_PLAYERDICTS affects stream sent between devices.  May not be
    able to upgrade somebody who's this far back to something with
    STREAM_VERS_BIGBOARD defined.  It was added in rev 3b7b4802, on 2011-04-01,
@@ -161,9 +161,9 @@ typedef enum {
 } DrawTarget;
 
 enum {
-    SERVER_STANDALONE,
-    SERVER_ISHOST,
-    SERVER_ISCLIENT
+    ROLE_STANDALONE,
+    ROLE_ISHOST,
+    ROLE_ISGUEST
 };
 typedef XP_U8 DeviceRole;
 
@@ -283,7 +283,7 @@ typedef struct ModelCtxt ModelCtxt;
 typedef struct CommsCtxt CommsCtxt;
 typedef struct PlayerSocket PlayerSocket;
 typedef struct ScoreBdContext ScoreBdContext;
-typedef struct ServerCtxt ServerCtxt;
+typedef struct CtrlrCtxt CtrlrCtxt;
 typedef struct XWStreamCtxt XWStreamCtxt;
 typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;

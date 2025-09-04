@@ -910,7 +910,7 @@ gmgr_saveGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
             GameMgrState* gs = duc->gameMgrState;
             XP_U16 saveToken = ++gs->nextSaveToken;
             const CurGameInfo* gi = gr_getGI( duc, gr, xwe );
-            XP_Bool haveComms = gi->serverRole != SERVER_STANDALONE;
+            XP_Bool haveComms = gi->deviceRole != ROLE_STANDALONE;
             XWStreamCtxt* commsStream = haveComms ? dvc_makeStream( duc ): NULL;
             XWStreamCtxt* stream = dvc_makeStream( duc );
             gr_dataToStream( duc, gr, xwe, commsStream, stream, saveToken );
@@ -1325,7 +1325,7 @@ gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                    const NetLaunchInfo* nli )
 {
     GameRef gr = 0;
-    if ( !gmgr_haveGame( duc, xwe, nli->gameID, SERVER_ISCLIENT ) ) {
+    if ( !gmgr_haveGame( duc, xwe, nli->gameID, ROLE_ISGUEST ) ) {
         CurGameInfo gi = {};
         nliToGI( MPPARM(duc->mpool) duc, xwe, nli, &gi );
         if ( !gi.created ) {

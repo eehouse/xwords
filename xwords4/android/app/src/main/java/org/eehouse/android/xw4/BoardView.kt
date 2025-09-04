@@ -286,7 +286,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
                                        width, fontWidth, fontHeight, squareTiles)
 
             // Make space for net status icon if appropriate
-            if (mGi!!.serverRole != CurGameInfo.DeviceRole.SERVER_STANDALONE) {
+            if (mGi!!.deviceRole != CurGameInfo.DeviceRole.ROLE_STANDALONE) {
                 val statusWidth = dims.boardWidth / 15
                 dims.scoreWidth -= statusWidth
                 val left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth
@@ -313,7 +313,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
         mParent = parent
         mGR = gr
         mGi = gi
-        mIsSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole
+        mIsSolo = CurGameInfo.DeviceRole.ROLE_STANDALONE == gi.deviceRole
         mConnTypes = gi.conTypes!!
         mLayoutWidth = 0
         mLayoutHeight = 0

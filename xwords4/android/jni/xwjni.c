@@ -469,8 +469,8 @@ makeGI( JNIEnv* env, XW_DUtilCtxt* dutil, CurGameInfo* gi, jobject jgi )
     gi->phoniesAction = 
         jenumFieldToInt( env, jgi, "phoniesAction",
                          PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
-    gi->serverRole = 
-        jenumFieldToInt( env, jgi, "serverRole", 
+    gi->deviceRole =
+        jenumFieldToInt( env, jgi, "deviceRole",
                          PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
     getString( env, jgi, "gameName", AANDS(buf) );
@@ -531,7 +531,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
                      PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
-    intToJenumField( env, jgi, gi->serverRole, "serverRole",
+    intToJenumField( env, jgi, gi->deviceRole, "deviceRole",
                      PKG_PATH("jni/CurGameInfo$DeviceRole") );
 
     jobject jtypset = conTypesToJ( env, gi->conTypes );

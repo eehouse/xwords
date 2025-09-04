@@ -45,7 +45,7 @@ drawScoreBoard( BoardCtxt* board )
         DrawFocusState dfs = dfsFor( board, OBJ_SCORE );
         ScoresArray scores;
         ModelCtxt* model = board->model;
-        XP_S16 nTilesInPool = server_countTilesInPool( board->server );
+        XP_S16 nTilesInPool = ctrl_countTilesInPool( board->ctrlr );
 	    
         if ( board->gameOver ) {
             model_figureFinalScores( model, &scores, NULL );
@@ -116,7 +116,7 @@ drawScoreBoard( BoardCtxt* board )
 #endif
                 dsi->playerNum = ii;
                 dsi->totalScore = scores.arr[ii];
-                dsi->isTurn = server_isPlayersTurn( board->server, ii );
+                dsi->isTurn = ctrl_isPlayersTurn( board->ctrlr, ii );
                 dsi->name = emptyStringIfNull(lp->name);
                 dsi->selected = board->trayVisState != TRAY_HIDDEN
                     && ii==selPlayer;
@@ -175,7 +175,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
         if ( nPlayers > 0 ) {
             ModelCtxt* model = board->model;
             XP_U16 selPlayer = board->selPlayer;
-            XP_S16 nTilesInPool = server_countTilesInPool( board->server );
+            XP_S16 nTilesInPool = ctrl_countTilesInPool( board->ctrlr );
             XP_Rect scoreRect = board->scoreBdBounds;
             XP_S16* adjustDim;
             XP_S16* adjustPt;
@@ -238,7 +238,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                 /* figure spacing for each scoreboard entry */
                 XP_MEMSET( &datum, 0, sizeof(datum) );
                 totalDim = 0;
-                XP_U16 missingPlayers = server_getMissingPlayers( board->server );
+                XP_U16 missingPlayers = ctrl_getMissingPlayers( board->ctrlr );
                 int ii;
                 for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
                     const LocalPlayer* lp = &board->gi->players[ii];
@@ -254,7 +254,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
 #endif
                     dp->dsi.playerNum = ii;
                     dp->dsi.totalScore = scores.arr[ii];
-                    dp->dsi.isTurn = server_isPlayersTurn( board->server, ii );
+                    dp->dsi.isTurn = ctrl_isPlayersTurn( board->ctrlr, ii );
                     dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
                         && ii==selPlayer;
                     dp->dsi.isRobot = LP_IS_ROBOT(lp);
@@ -353,10 +353,10 @@ void
 drawTimer( const BoardCtxt* board, XWEnv xwe )
 {
     if ( !!board->draw && board->gi->timerEnabled ) {
-        XP_S16 secondsLeft = server_getTimerSeconds( board->server, xwe,
+        XP_S16 secondsLeft = ctrl_getTimerSeconds( board->ctrlr, xwe,
                                                      board->selPlayer );
         XP_Bool turnDone = board->gi->inDuplicateMode
-            ? server_dupTurnDone( board->server, board->selPlayer )
+            ? ctrl_dupTurnDone( board->ctrlr, board->selPlayer )
             : XP_FALSE;
         draw_drawTimer( board->draw, xwe, &board->timerBounds,
                         board->selPlayer, secondsLeft, turnDone );

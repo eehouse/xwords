@@ -25,7 +25,7 @@
 #include "model.h"
 #include "board.h"
 #include "comms.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "util.h"
 #include "gameref.h"
 

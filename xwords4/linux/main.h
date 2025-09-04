@@ -150,7 +150,7 @@ typedef struct _LaunchParams {
 #endif
     XP_Bool commsDisableds[COMMS_CONN_NTYPES][2];
 
-    DeviceRole serverRole;
+    DeviceRole deviceRole;
 
     const XP_UCHAR* testMinMax;
     const XP_UCHAR* dumpDelim;

@@ -429,7 +429,7 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
     CommsCtxt* comms = game->comms;
     comms_gameJoined( comms, connname, hid );
     if ( hid > 1 ) {
-        globals->cGlobals.gi->serverRole = SERVER_ISCLIENT;
+        globals->cGlobals.gi->deviceRole = ROLE_ISGUEST;
         server_reset( game->server, game->comms );
     }
 }

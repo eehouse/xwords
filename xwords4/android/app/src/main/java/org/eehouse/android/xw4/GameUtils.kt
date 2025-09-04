@@ -427,8 +427,8 @@ object GameUtils {
                     CommonPrefs.get(context), tp
                 )
                 if (null == gamePtr) {
-                    // Assert.assertTrueNR( gi.serverRole != DeviceRole.SERVER_ISCLIENT ); // firing
-                    if (DeviceRole.SERVER_ISCLIENT == gi.serverRole) {
+                    // Assert.assertTrueNR( gi.deviceRole != DeviceRole.ROLE_ISGUEST ); // firing
+                    if (DeviceRole.ROLE_ISGUEST == gi.deviceRole) {
                         Log.e(
                             TAG, "bad game? ISCLIENT, but has no host address"
                                     + " and won't open"
@@ -724,7 +724,7 @@ object GameUtils {
         context: Context, gi: CurGameInfo,
         groupID: Long, gameName: String?
     ): Long {
-        Assert.assertTrueNR(DeviceRole.SERVER_STANDALONE == gi.serverRole)
+        Assert.assertTrueNR(DeviceRole.ROLE_STANDALONE == gi.deviceRole)
         return makeSaveNew(context, gi, null, null, groupID, gameName, null)
     }
 
@@ -880,7 +880,7 @@ object GameUtils {
             gi.gameID = gameID
         }
         if (isHost) {
-            gi.serverRole = DeviceRole.SERVER_ISSERVER
+            gi.deviceRole = DeviceRole.ROLE_ISHOST
         }
         // Will need to add a setNPlayers() method to gi to make this
         // work
@@ -1533,7 +1533,7 @@ object GameUtils {
     {
         Utils.launch {
             gr.getGI()?.let { gi ->
-                if (DeviceRole.SERVER_STANDALONE != gi.serverRole) {
+                if (DeviceRole.ROLE_STANDALONE != gi.deviceRole) {
                     val gameID = gi.gameID
 
                     val addrs = gr.getAddrs()

@@ -101,7 +101,7 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
             gtk_combo_box_set_active( GTK_COMBO_BOX(combo), state->role );
         }
 
-        if ( state->loaded && SERVER_STANDALONE != role  ) {
+        if ( state->loaded && ROLE_STANDALONE != role  ) {
             gtkConnsDlg( state->params, state->dialog, &state->addr,
                          role, !state->isNewGame );
         }
@@ -797,7 +797,7 @@ gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi, CommsAddrRec* addr,
         if ( 0 == state.nCols ) {
             state.nCols = params->pgi.boardSize;
         }
-        state.role = gi->serverRole;
+        state.role = gi->deviceRole;
 
         XP_MEMCPY( &state.addr, addr, sizeof(state.addr) );
 
@@ -874,7 +874,7 @@ gtkNewGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
         if ( 0 == state.nCols ) {
             state.nCols = globals->cGlobals.params->pgi.boardSize;
         }
-        state.role = gi->serverRole;
+        state.role = gi->deviceRole;
 
         XP_MEMCPY( &state.addr, addr, sizeof(state.addr) );
 

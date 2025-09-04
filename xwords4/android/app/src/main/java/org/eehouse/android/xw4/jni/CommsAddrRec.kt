@@ -427,7 +427,7 @@ class CommsAddrRec : Serializable {
 
         fun getSelfAddr(context: Context, gi: CurGameInfo): CommsAddrRec? {
             val addrRec =
-                if (CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole) null as CommsAddrRec?
+                if (CurGameInfo.DeviceRole.ROLE_STANDALONE == gi.deviceRole) null as CommsAddrRec?
                 else getSelfAddr(context)
             return addrRec
         }

@@ -25,7 +25,7 @@
 #include "model.h"
 #include "board.h"
 #include "comms.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "util.h"
 #include "gameref.h"
 
@@ -37,7 +37,7 @@ typedef struct _XWGame {
     XW_UtilCtxt* util;
     BoardCtxt* board;
     ModelCtxt* model;
-    ServerCtxt* server;
+    CtrlrCtxt* ctrlr;
     CommsCtxt* comms;
     XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;

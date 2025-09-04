@@ -1,5 +1,6 @@
 /* 
- * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2024-2025 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,7 +55,7 @@ struct GameData {
     XW_UtilCtxt* util;
     BoardCtxt* board;
     ModelCtxt* model;
-    ServerCtxt* server;
+    CtrlrCtxt* ctrlr;
     CommsCtxt* comms;
     CommsAddrRec hostAddr; /* hack: store until can init game */
     XWStreamCtxt* thumbData;
@@ -147,23 +148,23 @@ loadCommsOnce(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     if ( !gd->commsLoaded ) {
         gd->commsLoaded = XP_TRUE;
         const CurGameInfo* gi = &gd->gi;
-        if ( SERVER_STANDALONE != gi->serverRole ) {
+        if ( ROLE_STANDALONE != gi->deviceRole ) {
             XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
             if ( !!stream ) {
                 XP_U8 strVersion = stream_getU8( stream );
                 XP_LOGFF( "strVersion: 0x%X", strVersion );
                 stream_setVersion( stream, strVersion );
                 gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
-                                                  gi->serverRole != SERVER_ISCLIENT,
+                                                  gi->deviceRole != ROLE_ISGUEST,
                                                   gi->forceChannel );
                 stream_destroy( stream );
             } else {
-                XP_Bool isClient = SERVER_ISCLIENT == gi->serverRole;
+                XP_Bool isClient = ROLE_ISGUEST == gi->deviceRole;
                 const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
                 CommsAddrRec selfAddr = {0};
                 dutil_getSelfAddr( duc, xwe, &selfAddr );
                 XW_UtilCtxt** utilp = &gd->util;
-                gd->comms = comms_make( xwe, utilp, gi->serverRole != SERVER_ISCLIENT,
+                gd->comms = comms_make( xwe, utilp, gi->deviceRole != ROLE_ISGUEST,
                                         &selfAddr, hostAddr, gi->forceChannel );
             }
         } else {
@@ -391,7 +392,7 @@ gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
     XP_ASSERT( !!gd->model );
 
     model_writeToStream( gd->model, xwe, stream );
-    server_writeToStream( gd->server, stream );
+    ctrl_writeToStream( gd->ctrlr, stream );
     board_writeToStream( gd->board, stream );
     GR_HEADER_END();
 }
@@ -418,9 +419,9 @@ unloadData( GameData* gd, XWEnv xwe )
             gd->comms = NULL;
         }
         model_destroy( gd->model, xwe );
-        server_destroy( gd->server );
+        ctrl_destroy( gd->ctrlr );
         gd->model = NULL;
-        gd->server = NULL;
+        gd->ctrlr = NULL;
     }
 }
 
@@ -474,9 +475,9 @@ setListeners( XW_DUtilCtxt* dutil, XWEnv xwe, GameData* gd )
 {
     CommonPrefs cp = {};
     dutil_getCommonPrefs( dutil, xwe, &cp );
-    server_prefsChanged( gd->server, &cp );
+    ctrl_prefsChanged( gd->ctrlr, &cp );
     board_prefsChanged( gd->board, xwe, &cp );
-    server_setTimerChangeListener( gd->server, timerChangeListener,
+    ctrl_setTimerChangeListener( gd->ctrlr, timerChangeListener,
                                    (void*)gd );
 }
 
@@ -496,8 +497,8 @@ initClientProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
 {
     if ( fired ) {
         GameData* gd = (GameData*)closure;
-        if ( !!gd->server ) {
-            server_initClientConnection( gd->server, xwe );
+        if ( !!gd->ctrlr ) {
+            ctrl_initClientConnection( gd->ctrlr, xwe );
             summarize( duc, xwe, gd );
         }
     }
@@ -508,10 +509,10 @@ finishSetup( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     board_setCallbacks( gd->board, xwe );
     setListeners( duc, xwe, gd );
-    server_addIdle( gd->server, xwe );
+    ctrl_addIdle( gd->ctrlr, xwe );
 
-    if ( gd->gi.serverRole == SERVER_ISCLIENT
-         && !server_getGameIsConnected( gd->server ) ) {
+    if ( gd->gi.deviceRole == ROLE_ISGUEST
+         && !ctrl_getGameIsConnected( gd->ctrlr ) ) {
         tmr_setIdle( duc, xwe, initClientProc, gd );
     }
 }
@@ -551,8 +552,8 @@ makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
             XP_ASSERT(0);
         }
 
-        gd->server = server_make( xwe, gd->model, gd->comms, utilp );
-        gd->board = board_make( xwe, gd->model, gd->server, NULL, utilp );
+        gd->ctrlr = ctrl_make( xwe, gd->model, gd->comms, utilp );
+        gd->board = board_make( xwe, gd->model, gd->ctrlr, NULL, utilp );
 
         finishSetup( duc, xwe, gd );
 
@@ -599,21 +600,21 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
 
     gd->model = model_makeFromStream( xwe, stream, gd->dict,
                                       &gd->playerDicts, &gd->util );
-    gd->server = server_makeFromStream( xwe, stream,
+    gd->ctrlr = ctrl_makeFromStream( xwe, stream,
                                         gd->model, gd->comms,
                                         &gd->util, gi->nPlayers );
     gd->board = board_makeFromStream( xwe, stream, gd->model,
-                                      gd->server, NULL, &gd->util,
+                                      gd->ctrlr, NULL, &gd->util,
                                       gi->nPlayers );
     finishSetup( duc, xwe, gd );
 
-    if ( gd->comms && gd->server ) {
-        XP_ASSERT( comms_getIsHost(gd->comms) == server_getIsHost(gd->server) );
+    if ( gd->comms && gd->ctrlr ) {
+        XP_ASSERT( comms_getIsHost(gd->comms) == ctrl_getIsHost(gd->ctrlr) );
 #ifdef XWFEATURE_KNOWNPLAYERS
         const XP_U32 created = gi->created;
         if ( 0 != created
-             && server_getGameIsConnected( gd->server ) ) {
-            server_gatherPlayers( gd->server, xwe, created );
+             && ctrl_getGameIsConnected( gd->ctrlr ) ) {
+            ctrl_gatherPlayers( gd->ctrlr, xwe, created );
         }
 #endif
         XP_Bool quashed;
@@ -713,8 +714,8 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
     gi_copy( MPPARM(duc->mpool) &tmpGI, &gd->gi );
     tmpGI.gameID = 0;
     replaceStringIfDifferent( duc->mpool, &tmpGI.gameName, newName );
-    if ( SERVER_ISCLIENT == tmpGI.serverRole ) {
-        tmpGI.serverRole = SERVER_ISHOST;
+    if ( ROLE_ISGUEST == tmpGI.deviceRole ) {
+        tmpGI.deviceRole = ROLE_ISHOST;
     }
     GroupRef grp = gd->grp;
     newGR = gr_makeForGI( duc, xwe, &grp, &tmpGI, NULL );
@@ -732,7 +733,7 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
     gi_copy( MPPARM(duc->mpool) &newGI, &newGd->gi );
 
     RematchInfo* rip;
-    if ( server_getRematchInfo( gd->server, xwe, ro, &newGI, &rip ) ) {
+    if ( ctrl_getRematchInfo( gd->ctrlr, xwe, ro, &newGI, &rip ) ) {
         setGIImpl( duc, xwe, newGd, &newGI );
 
         XP_Bool loaded;
@@ -746,13 +747,13 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
             comms_getSelfAddr( gd->comms, &selfAddr );
             selfAddrP = &selfAddr;
 
-            server_setRematchOrder( newGd->server, rip );
+            ctrl_setRematchOrder( newGd->ctrlr, rip );
 
             const CurGameInfo* newGI = &newGd->gi;
             for ( int ii = 0; ; ++ii ) {
                 CommsAddrRec guestAddr;
                 XP_U16 nPlayersH;
-                if ( !server_ri_getAddr( rip, ii, &guestAddr, &nPlayersH )){
+                if ( !ctrl_ri_getAddr( rip, ii, &guestAddr, &nPlayersH )){
                     break;
                 }
 
@@ -765,7 +766,7 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
                 comms_invite( newGd->comms, xwe, &nli, &guestAddr, XP_TRUE );
             }
         }
-        server_disposeRematchInfo( gd->server, rip );
+        ctrl_disposeRematchInfo( gd->ctrlr, rip );
 
         scheduleOnGameAdded( duc, xwe, newGR );
     } else {
@@ -812,7 +813,7 @@ gr_resendAll(DUTIL_GR_XWE, CommsConnType filter, XP_Bool force )
 /*     XP_Bool result = XP_FALSE; */
 /*     GR_HEADER(); */
 /*     XP_ASSERT(0); */
-/*     /\* result = server_getRematchInfo( gd->server, xwe, newUtil, *\/ */
+/*     /\* result = ctrl_getRematchInfo( gd->ctrlr, xwe, newUtil, *\/ */
 /*     /\*                                 gameID, nop, ripp ); *\/ */
 /*     GR_HEADER_END(); */
 /*     return result; */
@@ -841,7 +842,7 @@ void
 gr_setRematchOrder( DUTIL_GR_XWE, RematchInfo* rip )
 {
     GR_HEADER();
-    server_setRematchOrder( gd->server, rip );
+    ctrl_setRematchOrder( gd->ctrlr, rip );
     GR_HEADER_END();
 }
 
@@ -941,17 +942,17 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
     XP_Bool result = comms_checkIncomingStream( gd->comms, xwe, stream, from,
                                                 &commsState, mcs );
     if ( result ) {
-        XP_Bool haveServer = !!gd->server;
-        if ( !haveServer ) {
-            loadToLevel( duc, gr, xwe, MODEL, &haveServer, NULL );
+        XP_Bool haveCtrlr = !!gd->ctrlr;
+        if ( !haveCtrlr ) {
+            loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
         }
-        if ( haveServer ) {
-            result = server_receiveMessage( gd->server, xwe, stream );
+        if ( haveCtrlr ) {
+            result = ctrl_receiveMessage( gd->ctrlr, xwe, stream );
         }
     }
     comms_msgProcessed( gd->comms, xwe, &commsState, !result );
     if ( result ) {
-        server_addIdle( gd->server, xwe );
+        ctrl_addIdle( gd->ctrlr, xwe );
     }
 
     stream_destroy( stream );
@@ -1067,7 +1068,7 @@ gr_getGameIsOver( DUTIL_GR_XWE )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_getGameIsOver( gd->server );
+    result = ctrl_getGameIsOver( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1077,7 +1078,7 @@ gr_getCurrentTurn( DUTIL_GR_XWE, XP_Bool* isLocal )
 {
     XP_S16 result = -1;
     GR_HEADER();
-    result = server_getCurrentTurn( gd->server, isLocal );
+    result = ctrl_getCurrentTurn( gd->ctrlr, isLocal );
     GR_HEADER_END();
     return result;
 }
@@ -1087,7 +1088,7 @@ gr_getLastMoveTime( DUTIL_GR_XWE )
 {
     XP_U32 result = 0;
     GR_HEADER();
-    result = server_getLastMoveTime( gd->server );
+    result = ctrl_getLastMoveTime( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1097,7 +1098,7 @@ gr_getDupTimerExpires( DUTIL_GR_XWE )
 {
     XP_U32 result = 0;
     GR_HEADER();
-    result = server_getDupTimerExpires( gd->server );
+    result = ctrl_getDupTimerExpires( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1107,7 +1108,7 @@ gr_getMissingPlayers( DUTIL_GR_XWE )
 {
     XP_U16 result = 0;
     GR_HEADER();
-    result = server_getMissingPlayers( gd->server );
+    result = ctrl_getMissingPlayers( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1117,8 +1118,8 @@ gr_countTilesInPool( DUTIL_GR_XWE )
 {
     XP_S16 result = -1;
     GR_HEADER();
-    XP_ASSERT( !!gd->server );
-    result = server_countTilesInPool( gd->server );
+    XP_ASSERT( !!gd->ctrlr );
+    result = ctrl_countTilesInPool( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1128,7 +1129,7 @@ gr_handleUndo( DUTIL_GR_XWE, XP_U16 limit )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_handleUndo( gd->server, xwe, limit );
+    result = ctrl_handleUndo( gd->ctrlr, xwe, limit );
     GR_HEADER_END();
     return result;
 }
@@ -1137,7 +1138,7 @@ void
 gr_endGame( DUTIL_GR_XWE )
 {
     GR_HEADER();
-    server_endGame( gd->server, xwe );
+    ctrl_endGame( gd->ctrlr, xwe );
     schedule_draw( duc, xwe, gd );
     GR_HEADER_END();
 }
@@ -1146,7 +1147,7 @@ void
 gr_writeFinalScores( DUTIL_GR_XWE, XWStreamCtxt* stream )
 {
     GR_HEADER();
-    server_writeFinalScores( gd->server, xwe, stream );
+    ctrl_writeFinalScores( gd->ctrlr, xwe, stream );
     GR_HEADER_END();
 }
 
@@ -1214,7 +1215,7 @@ gr_getGameIsConnected( DUTIL_GR_XWE )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_getGameIsConnected( gd->server );
+    result = ctrl_getGameIsConnected( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1441,7 +1442,7 @@ gr_figureOrder( DUTIL_GR_XWE,
                 RematchOrder ro, NewOrder* nop )
 {
     GR_HEADER();
-    server_figureOrder( gd->server, ro, nop );
+    ctrl_figureOrder( gd->ctrlr, ro, nop );
     GR_HEADER_END();
 }
 
@@ -1668,7 +1669,7 @@ gr_formatDictCounts( DUTIL_GR_XWE, XWStreamCtxt* stream,
                      XP_U16 nCols, XP_Bool allFaces )
 {
     GR_HEADER();
-    server_formatDictCounts( gd->server, xwe, stream, nCols, allFaces );
+    ctrl_formatDictCounts( gd->ctrlr, xwe, stream, nCols, allFaces );
     GR_HEADER_END();
 }
 
@@ -1677,7 +1678,7 @@ gr_canRematch( DUTIL_GR_XWE, XP_Bool* canOrder )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_canRematch( gd->server, canOrder );
+    result = ctrl_canRematch( gd->ctrlr, canOrder );
     GR_HEADER_END();
     return result;
 }
@@ -1761,7 +1762,7 @@ gr_start( DUTIL_GR_XWE )
     if ( !!gd->comms ) {
         comms_start( gd->comms, xwe );
     }
-    server_addIdle( gd->server, xwe );
+    ctrl_addIdle( gd->ctrlr, xwe );
     GR_HEADER_END();
 }
 
@@ -1803,7 +1804,7 @@ gr_changeDict( DUTIL_GR_XWE,
     GR_HEADER();
     model_setDictionary( gd->model, xwe, dict );
     setDict( MPPARM(gd->mpool) &gd->gi, dict );
-    server_resetEngines( gd->server );
+    ctrl_resetEngines( gd->ctrlr );
     GR_HEADER_END();
 }
 #endif
@@ -1859,7 +1860,7 @@ gr_getPendingRegs( DUTIL_GR_XWE )
 {
     XP_U16 result = 0;
     GR_HEADER();
-    result = server_getPendingRegs( gd->server );
+    result = ctrl_getPendingRegs( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1869,7 +1870,7 @@ gr_isFromRematch( DUTIL_GR_XWE )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_isFromRematch( gd->server );
+    result = ctrl_isFromRematch( gd->ctrlr );
     GR_HEADER_END();
     return result;
 }
@@ -1878,10 +1879,10 @@ void
 gr_getState( DUTIL_GR_XWE, GameStateInfo* gsi )
 {
     GR_HEADER();
-    const ServerCtxt* server = gd->server;
+    const CtrlrCtxt* ctrlr = gd->ctrlr;
     BoardCtxt* board = gd->board;
 
-    XP_Bool gameOver = server_getGameIsOver( server );
+    XP_Bool gameOver = ctrl_getGameIsOver( ctrlr );
     gsi->curTurnSelected = board_curTurnSelected( board );
     gsi->trayVisState = board_getTrayVisState( board );
     gsi->visTileCount = board_visTileCount( board );
@@ -1895,8 +1896,8 @@ gr_getState( DUTIL_GR_XWE, GameStateInfo* gsi )
     gsi->canTrade = board_canTrade( board, xwe );
     gsi->nPendingMessages = !!gd->comms ? 
         comms_countPendingPackets(gd->comms, NULL) : 0;
-    gsi->canPause = server_canPause( server );
-    gsi->canUnpause = server_canUnpause( server );
+    gsi->canPause = ctrl_canPause( ctrlr );
+    gsi->canUnpause = ctrl_canUnpause( ctrlr );
     GR_HEADER_END();
 }
 
@@ -1937,14 +1938,14 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     const CurGameInfo* gi = &gd->gi;
     GameSummary sum = {};
-    ServerCtxt* server = gd->server;
-    sum.turn = server_getCurrentTurn( server, &sum.turnIsLocal );
+    CtrlrCtxt* ctrlr = gd->ctrlr;
+    sum.turn = ctrl_getCurrentTurn( ctrlr, &sum.turnIsLocal );
     XP_LOGFF( "turn now %d", sum.turn );
-    sum.lastMoveTime = server_getLastMoveTime(server);
-    sum.gameOver = server_getGameIsOver( server );
+    sum.lastMoveTime = ctrl_getLastMoveTime(ctrlr);
+    sum.gameOver = ctrl_getGameIsOver( ctrlr );
     sum.nMoves = model_getNMoves( gd->model );
-    sum.dupTimerExpires = server_getDupTimerExpires( server );
-    sum.canRematch = server_canRematch( server, &sum.canOfferRO );
+    sum.dupTimerExpires = ctrl_getDupTimerExpires( ctrlr );
+    sum.canRematch = ctrl_canRematch( ctrlr, &sum.canOfferRO );
 
     /* Copied from our storage, for now */
     sum.collapsed = gd->sum.collapsed;
@@ -1964,10 +1965,10 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         }
     }
     if ( !!gd->comms ) {
-        sum.missingPlayers = server_getMissingPlayers( server );
+        sum.missingPlayers = ctrl_getMissingPlayers( ctrlr );
         sum.nPacketsPending =
             comms_countPendingPackets( gd->comms, &sum.quashed );
-        server_setReMissing( server, &sum );
+        ctrl_setReMissing( ctrlr, &sum );
     }
 
     if ( 0 != XP_MEMCMP( &gd->sum, &sum, sizeof(sum) ) ) {
@@ -2139,7 +2140,7 @@ gr_getOpenChannel( DUTIL_GR_XWE, XP_U16* channel )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_getOpenChannel( gd->server, channel );
+    result = ctrl_getOpenChannel( gd->ctrlr, channel );
     GR_HEADER_END();
     return result;
 }
@@ -2149,7 +2150,7 @@ gr_tilesPicked( DUTIL_GR_XWE, XP_U16 player,
                 const TrayTileSet* newTiles )
 {
     GR_HEADER();
-    server_tilesPicked( gd->server, xwe, player, newTiles );
+    ctrl_tilesPicked( gd->ctrlr, xwe, player, newTiles );
     GR_HEADER_END();
 }
 
@@ -2216,7 +2217,7 @@ gr_commitTrade( DUTIL_GR_XWE, const TrayTileSet* oldTiles,
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    result = server_commitTrade( gd->server, xwe, oldTiles, newTiles );
+    result = ctrl_commitTrade( gd->ctrlr, xwe, oldTiles, newTiles );
     GR_HEADER_END_SAVE();
     return result;
 }
@@ -2226,7 +2227,7 @@ gr_writeGameHistory( DUTIL_GR_XWE, XWStreamCtxt* stream,
                      XP_Bool gameOver )
 {
     GR_HEADER();
-    model_writeGameHistory( gd->model, xwe, stream, gd->server, gameOver );
+    model_writeGameHistory( gd->model, xwe, stream, gd->ctrlr, gameOver );
     GR_HEADER_END();
 }
 

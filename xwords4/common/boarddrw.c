@@ -49,7 +49,7 @@
 #include "board.h"
 #include "scorebdp.h"
 #include "game.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"

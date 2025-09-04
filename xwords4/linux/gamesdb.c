@@ -438,7 +438,7 @@ gdb_close( sqlite3* pDb )
 /*     pairs[indx++] = g_strdup_printf( "dupTimerExpires=%d", dupTimerExpires); */
 /*     pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr); */
 /*     pairs[indx++] = g_strdup_printf( "nPending=%d", nPending ); */
-/*     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole); */
+/*     pairs[indx++] = g_strdup_printf( "role=%d", gi->deviceRole); */
 /*     pairs[indx++] = g_strdup_printf( "created=%d", gr_getCreated(dutil, gameRef) ); */
 /*     pairs[indx++] = g_strdup_printf( "channel=%d", gi->forceChannel ); */
 /*     pairs[indx++] = g_strdup_printf( "nTiles=%d", nTiles ); */

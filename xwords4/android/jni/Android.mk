@@ -91,7 +91,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/draw.c      	\
 	$(COMMON_PATH)/mempool.c    \
 	$(COMMON_PATH)/game.c       \
-	$(COMMON_PATH)/server.c     \
+	$(COMMON_PATH)/contrlr.c    \
 	$(COMMON_PATH)/model.c      \
 	$(COMMON_PATH)/comms.c      \
 	$(COMMON_PATH)/xwmutex.c    \

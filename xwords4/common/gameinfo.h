@@ -54,7 +54,7 @@ typedef struct CurGameInfo {
     XP_U8 traySize;
     XP_U8 bingoMin;
     XP_U8 forceChannel;
-    DeviceRole serverRole;
+    DeviceRole deviceRole;
     ConnTypeSetBits conTypes;
 
     XP_Bool hintsNotAllowed;

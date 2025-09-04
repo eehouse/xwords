@@ -50,7 +50,7 @@
 #include "util.h"
 #include "scorebdp.h"
 #include "game.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"
@@ -160,14 +160,14 @@ static void clearCurHintRect( BoardCtxt* board );
  *
  ****************************************************************************/
 BoardCtxt*
-board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
+board_make( XWEnv xwe, ModelCtxt* model, CtrlrCtxt* ctrlr, DrawCtx* draw,
             XW_UtilCtxt** utilp )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
 #endif
     BoardCtxt* result = (BoardCtxt*)XP_CALLOC( mpool, sizeof( *result ) );
-    XP_ASSERT( !!server );
+    XP_ASSERT( !!ctrlr );
     XP_ASSERT( !!utilp );
     XP_ASSERT( !!model );
 
@@ -179,7 +179,7 @@ board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
         MPASSIGN(result->mpool, mpool);
 
         result->model = model;
-        result->server = server;
+        result->ctrlr = ctrlr;
 
         result->draw = draw_ref(draw);
         result->utilp = utilp;
@@ -220,7 +220,7 @@ board_destroy( BoardCtxt* board, XWEnv xwe, XP_Bool ownsUtil )
 
 BoardCtxt* 
 board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
-                      ServerCtxt* server, DrawCtx* draw, XW_UtilCtxt** utilp,
+                      CtrlrCtxt* ctrlr, DrawCtx* draw, XW_UtilCtxt** utilp,
                       XP_U16 nPlayers )
 {
     BoardCtxt* board;
@@ -232,7 +232,7 @@ board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    board = board_make( xwe, model, server, draw, utilp );
+    board = board_make( xwe, model, ctrlr, draw, utilp );
     board_setCallbacks( board, xwe );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
@@ -260,7 +260,7 @@ board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
 #endif
     }
 
-    XP_ASSERT( !!server );
+    XP_ASSERT( !!ctrlr );
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
@@ -352,7 +352,7 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 4, 0 );
 #endif
 
-    XP_ASSERT( !!board->server );
+    XP_ASSERT( !!board->ctrlr );
     XP_U16 nPlayers = board->gi->nPlayers;
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -424,7 +424,7 @@ board_drawThumb( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx )
     XP_U16 width, height;
     width = height = draw_getThumbSize( dctx, xwe );
     
-    BoardCtxt* newBoard = board_make( xwe, curBoard->model, curBoard->server,
+    BoardCtxt* newBoard = board_make( xwe, curBoard->model, curBoard->ctrlr,
                                       dctx, curBoard->utilp );
     board_setDraw( newBoard, xwe, dctx ); /* so draw_dictChanged() will get called */
 
@@ -654,8 +654,8 @@ board_setCallbacks( BoardCtxt* board, XWEnv xwe )
     model_setBoardListener( board->model, boardCellChanged, board );
     model_setTrayListener( board->model, boardTilesChanged, board );
     model_setDictListener( board->model, dictChanged, board );
-    server_setTurnChangeListener( board->server, boardTurnChanged, board );
-    server_setGameOverListener( board->server, boardGameOver, board );
+    ctrl_setTurnChangeListener( board->ctrlr, boardTurnChanged, board );
+    ctrl_setGameOverListener( board->ctrlr, boardGameOver, board );
 
     setTimerIf( board, xwe );
 }
@@ -729,8 +729,8 @@ board_prefsChanged( BoardCtxt* board, XWEnv xwe, const CommonPrefs* cp )
 #ifdef XWFEATURE_SEARCHLIMIT
     if ( !board->gi->allowHintRect && board->selInfo->hasHintRect ) {
 
-        EngineCtxt* engine = server_getEngineFor( board->server, xwe,
-                                                  board->selPlayer );
+        EngineCtxt* engine = ctrl_getEngineFor( board->ctrlr, xwe,
+                                                board->selPlayer );
         if ( !!engine ) {
             engine_reset( engine );
         }
@@ -830,7 +830,7 @@ board_getYOffset( const BoardCtxt* board )
 XP_Bool
 board_curTurnSelected( const BoardCtxt* board )
 {
-    return server_isPlayersTurn( board->server, board->selPlayer );
+    return ctrl_isPlayersTurn( board->ctrlr, board->selPlayer );
 }
 
 XP_U16
@@ -843,14 +843,14 @@ board_visTileCount( const BoardCtxt* board )
 void
 board_pause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_pause( board->server, xwe, board->selPlayer, msg );
+    ctrl_pause( board->ctrlr, xwe, board->selPlayer, msg );
     board_invalAll( board );
 }
 
 void
 board_unpause( BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_unpause( board->server, xwe, board->selPlayer, msg );
+    ctrl_unpause( board->ctrlr, xwe, board->selPlayer, msg );
     setTimerIf( board, xwe );
     board_invalAll( board );
 }
@@ -865,7 +865,7 @@ board_canShuffle( const BoardCtxt* board )
 XP_Bool
 board_canHideRack( const BoardCtxt* board )
 {
-    XP_Bool result = 0 <= server_getCurrentTurn( board->server, NULL )
+    XP_Bool result = 0 <= ctrl_getCurrentTurn( board->ctrlr, NULL )
         && (board->boardObscuresTray || !board->gameOver);
     return result;
 }
@@ -875,7 +875,7 @@ board_canTrade( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool result = preflight( board, xwe, XP_FALSE )
         && !board->gi->inDuplicateMode
-        && MIN_TRADE_TILES(board->gi) <= server_countTilesInPool( board->server );
+        && MIN_TRADE_TILES(board->gi) <= ctrl_countTilesInPool( board->ctrlr );
     return result;
 }
 
@@ -903,7 +903,7 @@ board_canHint( const BoardCtxt* board )
 void
 board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
-    server_sendChat( board->server, xwe, msg, board->selPlayer );
+    ctrl_sendChat( board->ctrlr, xwe, msg, board->selPlayer );
 }
 #endif
 
@@ -1084,14 +1084,14 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
                   TrayTileSet* newTiles )
 {
     XP_Bool result = XP_FALSE;
-    const XP_S16 turn = server_getCurrentTurn( board->server, NULL );
+    const XP_S16 turn = ctrl_getCurrentTurn( board->ctrlr, NULL );
     const XP_U16 selPlayer = board->selPlayer;
     ModelCtxt* model = board->model;
     const XP_Bool phoniesConfirmed = !!pconf && pconf->confirmed;
 
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
-    } else if ( !server_isPlayersTurn( board->server, selPlayer ) ) {
+    } else if ( !ctrl_isPlayersTurn( board->ctrlr, selPlayer ) ) {
         util_userError( *board->utilp, xwe, ERR_NOT_YOUR_TURN );
     } else if ( 0 == model_getNumTilesTotal( model, selPlayer ) ) {
         /* game's over but still undoable so turn hasn't changed; do
@@ -1125,19 +1125,19 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
 
             if ( NO_TILES == traySelBits ) {
                 util_userError( *board->utilp, xwe, ERR_NO_EMPTY_TRADE );
-            } else if ( count > server_countTilesInPool(board->server) ) {
+            } else if ( count > ctrl_countTilesInPool(board->ctrlr) ) {
                 util_userError( *board->utilp, xwe, ERR_TOO_MANY_TRADE );
             } else {
                 TrayTileSet selTiles;
                 getSelTiles( board, traySelBits, &selTiles );
                 if ( turnConfirmed ) {
-                    if ( !server_askPickTiles( board->server, xwe, selPlayer, newTiles,
+                    if ( !ctrl_askPickTiles( board->ctrlr, xwe, selPlayer, newTiles,
                                                selTiles.nTiles ) ) {
-                        /* server_commitTrade() changes selPlayer, so board_endTrade
+                        /* ctrl_commitTrade() changes selPlayer, so board_endTrade
                            must be called first() */
                         (void)board_endTrade( board );
 
-                        (void)server_commitTrade( board->server, xwe, &selTiles,
+                        (void)ctrl_commitTrade( board->ctrlr, xwe, &selTiles,
                                                   newTiles );
                     }
                 } else {
@@ -1186,9 +1186,9 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
                 if ( board->skipCommitConfirm || turnConfirmed ) {
                     XP_U16 nToPick = board->gi->traySize
                         - model_getNumTilesInTray( model, selPlayer );
-                    if ( !server_askPickTiles( board->server, xwe, selPlayer, newTiles,
+                    if ( !ctrl_askPickTiles( board->ctrlr, xwe, selPlayer, newTiles,
                                                nToPick ) ) {
-                        result = server_commitMove( board->server, xwe, selPlayer,
+                        result = ctrl_commitMove( board->ctrlr, xwe, selPlayer,
                                                     newTiles )
                             || result;
                         /* invalidate all tiles in case we'll be drawing this tray
@@ -1225,7 +1225,7 @@ selectPlayerImpl( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool reveal,
                   XP_Bool canPeek )
 {
     XP_Bool isLocal;
-    XP_S16 curTurn = server_getCurrentTurn( board->server, &isLocal );
+    XP_S16 curTurn = ctrl_getCurrentTurn( board->ctrlr, &isLocal );
     if ( !board->gameOver && curTurn < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
@@ -1251,7 +1251,7 @@ selectPlayerImpl( BoardCtxt* board, XWEnv xwe, XP_U16 newPlayer, XP_Bool reveal,
         /* Just in case somebody started a trade when it wasn't his turn and
            there were plenty of tiles but now there aren't. */
         if ( newInfo->tradeInProgress && 
-             server_countTilesInPool(board->server) < MIN_TRADE_TILES(board->gi) ) {
+             ctrl_countTilesInPool(board->ctrlr) < MIN_TRADE_TILES(board->gi) ) {
             newInfo->tradeInProgress = XP_FALSE;
             newInfo->traySelBits = 0x00; /* clear any selected */
         }
@@ -1305,7 +1305,7 @@ board_hiliteCellAt( BoardCtxt* board, XWEnv xwe, XP_U16 col, XP_U16 row )
 void
 board_resetEngine( BoardCtxt* board )
 {
-    server_resetEngine( board->server, board->selPlayer );
+    ctrl_resetEngine( board->ctrlr, board->selPlayer );
 } /* board_resetEngine */
 
 XP_Bool
@@ -1439,7 +1439,7 @@ setTimerIf( BoardCtxt* board, XWEnv xwe )
 {
     XP_Bool timerWanted = board->gi->timerEnabled
         && !board->gameOver
-        && !server_canUnpause( board->server );
+        && !ctrl_canUnpause( board->ctrlr );
 
     if ( timerWanted && !board->timerPending ) {
         util_setTimer( *board->utilp, xwe, TIMER_TIMERTICK, 1,
@@ -1452,10 +1452,10 @@ static void
 timerFiredForTimer( BoardCtxt* board, XWEnv xwe )
 {
     board->timerPending = XP_FALSE;
-    if ( !board->gameOver || !server_canUnpause( board->server ) ) {
+    if ( !board->gameOver || !ctrl_canUnpause( board->ctrlr ) ) {
         XP_Bool doDraw = board->gi->inDuplicateMode;
         if ( !doDraw ) {
-            XP_S16 turn = server_getCurrentTurn( board->server, NULL );
+            XP_S16 turn = ctrl_getCurrentTurn( board->ctrlr, NULL );
 
             if ( turn >= 0 ) {
                 model_augmentSecondsUsed( board->model, turn, 1 );
@@ -1504,7 +1504,7 @@ board_pushTimerSave( BoardCtxt* board, XWEnv xwe )
         if ( board->timerSaveCount++ == 0 ) {
             board->timerStoppedTime = dutil_getCurSeconds( board->dutil, xwe );
 #ifdef DEBUG
-            board->timerStoppedTurn = server_getCurrentTurn( board->server,
+            board->timerStoppedTurn = ctrl_getCurrentTurn( board->ctrlr,
                                                              NULL );
 #endif
         }
@@ -1520,7 +1520,7 @@ board_popTimerSave( BoardCtxt* board, XWEnv xwe )
            between calls to board_pushTimerSave and this call, as can happen on
            franklin.  So that's not an error. */
         if ( board->timerSaveCount > 0 ) {
-            XP_S16 turn = server_getCurrentTurn( board->server, NULL );
+            XP_S16 turn = ctrl_getCurrentTurn( board->ctrlr, NULL );
 
             XP_ASSERT( board->timerStoppedTurn == turn );
 
@@ -1548,7 +1548,7 @@ board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe, XWStreamCtxt* stream )
     if ( board->trayVisState != TRAY_REVEALED ) {
         curPlayer = -1;
     }
-    server_formatRemainingTiles( board->server, xwe, stream, curPlayer );
+    ctrl_formatRemainingTiles( board->ctrlr, xwe, stream, curPlayer );
 } /* board_formatRemainingTiles */
 
 static void
@@ -1904,13 +1904,13 @@ board_hideTray( BoardCtxt* board, XWEnv xwe )
 static XP_S16
 chooseBestSelPlayer( const BoardCtxt* board )
 {
-    ServerCtxt* server = board->server;
+    CtrlrCtxt* ctrlr = board->ctrlr;
 
     if ( board->gameOver ) {
         return board->selPlayer;
     } else {
 
-        XP_S16 curTurn = server_getCurrentTurn( server, NULL );
+        XP_S16 curTurn = ctrl_getCurrentTurn( ctrlr, NULL );
 
         if ( curTurn >= 0 ) {
             XP_U16 nPlayers = board->gi->nPlayers;
@@ -2119,7 +2119,7 @@ static XP_Bool
 preflight( BoardCtxt* board, XWEnv xwe, XP_Bool reveal )
 {
     return !board->gameOver
-        && server_getCurrentTurn( board->server, NULL) >= 0
+        && ctrl_getCurrentTurn( board->ctrlr, NULL) >= 0
         && ( !reveal || checkRevealTray( board, xwe ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
@@ -2164,7 +2164,7 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 #ifdef XWFEATURE_SEARCHLIMIT
         PerTurnInfo* pti = board->selInfo;
 #endif
-        EngineCtxt* engine = server_getEngineFor( board->server, xwe, selPlayer );
+        EngineCtxt* engine = ctrl_getEngineFor( board->ctrlr, xwe, selPlayer );
         TrayTileSet tileSet = {};
         ModelCtxt* model = board->model;
 
@@ -2221,8 +2221,8 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
             XP_U16 allTilesBonus = 0;
 # ifdef XWFEATURE_BONUSALLHINT
             if ( 0 == dividerLoc ) {
-                allTilesBonus = server_figureFinishBonus( board->server, 
-                                                          selPlayer );
+                allTilesBonus = ctrl_figureFinishBonus( board->ctrlr,
+                                                        selPlayer );
             }
 # endif
 #endif
@@ -2592,7 +2592,7 @@ board_beginTrade( BoardCtxt* board, XWEnv xwe )
 
     result = preflight( board, xwe, XP_TRUE );
     if ( result ) {
-        XP_S16 tilesLeft = server_countTilesInPool(board->server);
+        XP_S16 tilesLeft = ctrl_countTilesInPool(board->ctrlr);
         if ( tilesLeft < MIN_TRADE_TILES( board->gi ) ) {
             util_userError( *board->utilp, xwe, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
@@ -2726,7 +2726,7 @@ askRevealTray( BoardCtxt* board, XWEnv xwe )
 
     if ( board->gameOver ) {
         revealed = XP_TRUE;
-    } else if ( server_getCurrentTurn( board->server, NULL ) < 0 ) {
+    } else if ( ctrl_getCurrentTurn( board->ctrlr, NULL ) < 0 ) {
         revealed = XP_FALSE;
     } else if ( !lp->isLocal ) {
         util_userError( *board->utilp, xwe, ERR_NO_PEEK_REMOTE_TILES );
@@ -3102,7 +3102,7 @@ handlePenUpInternal( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy,
                 break;
             case OBJ_TIMER:
                 util_timerSelected( *board->utilp, xwe, board->gi->inDuplicateMode,
-                                    server_canPause( board->server ) );
+                                    ctrl_canPause( board->ctrlr ) );
                 break;
             default:
                 XP_ASSERT( XP_FALSE );

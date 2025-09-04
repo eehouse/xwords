@@ -107,7 +107,7 @@ nliToGI( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
-    gi->serverRole = SERVER_ISCLIENT; /* recipient of invitation is client */
+    gi->deviceRole = ROLE_ISGUEST; /* recipient of invitation is client */
     replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
     replaceStringIfDifferent( mpool, &gi->gameName, nli->gameName );
 

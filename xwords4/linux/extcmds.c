@@ -414,7 +414,7 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
         }
     }
 
-    gi.serverRole = isSolo ? SERVER_STANDALONE : SERVER_ISHOST;
+    gi.deviceRole = isSolo ? ROLE_STANDALONE : ROLE_ISHOST;
 
     tmp = cJSON_GetObjectItem( args, "dict" );
     XP_ASSERT( tmp );

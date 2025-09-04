@@ -389,7 +389,7 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         LASTMOVE_ITEM, lastMoveStr,
                         LANG_ITEM, gi->isoCodeStr,
                         CHANNEL_ITEM, gi->forceChannel,
-                        ROLE_ITEM, gi->serverRole,
+                        ROLE_ITEM, gi->deviceRole,
                         CONTYPES_ITEM, gi->conTypes,
                         NTOTAL_ITEM, gi->nPlayers,
                         -1 );

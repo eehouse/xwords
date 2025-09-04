@@ -23,7 +23,7 @@
 #include "comtypes.h"
 #include "model.h"
 #include "gameinfo.h"
-#include "serverp.h"
+#include "contrlrp.h"
 #include "draw.h"
 #include "xwstream.h"
 
@@ -35,10 +35,10 @@ extern "C" {
 
 /* typedef struct BoardCtxt BoardCtxt; */
 
-BoardCtxt* board_make( XWEnv xwe, ModelCtxt* model, ServerCtxt* server,
+BoardCtxt* board_make( XWEnv xwe, ModelCtxt* model, CtrlrCtxt* ctrlr,
                        DrawCtx* draw, XW_UtilCtxt** utilp );
 BoardCtxt* board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
-                                 ModelCtxt* model, ServerCtxt* server, 
+                                 ModelCtxt* model, CtrlrCtxt* ctrlr,
                                  DrawCtx* draw, XW_UtilCtxt** utilp,
                                  XP_U16 nPlayers );
 void board_setCallbacks( BoardCtxt* board, XWEnv xwe );

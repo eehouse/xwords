@@ -1150,7 +1150,7 @@ class GameConfigDelegate(delegator: Delegator) :
 
     private fun localOnlyGame(): Boolean {
         // Log.d( TAG, "localOnlyGame() => %b", result );
-        return DeviceRole.SERVER_STANDALONE == mGi!!.serverRole
+        return DeviceRole.ROLE_STANDALONE == mGi!!.deviceRole
     }
 
     private fun setConnLabel() {
