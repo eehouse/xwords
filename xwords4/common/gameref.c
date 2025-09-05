@@ -78,7 +78,7 @@ static GameData* loadToLevel( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
                               XP_Bool* deleted );
 static void makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
 static void loadData( XW_DUtilCtxt* duc, XWEnv xwe,
-                      GameData* gd, XWStreamCtxt* stream );
+                      GameData* gd, XWStreamCtxt** streamp );
 static void setGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
                        const CurGameInfo* gip );
 
@@ -279,7 +279,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
                     summarize( duc, xwe, gd );
                     setSaveTimer( duc, xwe, gd, gr );
                 } else {
-                    loadData( duc, xwe, gd, stream );
+                    loadData( duc, xwe, gd, &stream );
                 }
             }
             if ( !gd->model ) {
@@ -378,6 +378,7 @@ gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
 {
     GR_HEADER();
     if ( !!gd->comms ) {
+        XP_ASSERT( START_OF_STREAM == stream_getPos( commsStream, POS_READ ) );
         stream_putU8( commsStream, CUR_STREAM_VERS );
         stream_setVersion( commsStream, CUR_STREAM_VERS );
         comms_writeToStream( gd->comms, commsStream, saveToken );
@@ -385,6 +386,7 @@ gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
         XP_ASSERT( !commsStream );
     }
 
+    XP_ASSERT( START_OF_STREAM == stream_getPos( stream, POS_READ ) );
     stream_putU8( stream, CUR_STREAM_VERS );
     stream_setVersion( stream, CUR_STREAM_VERS );
 
@@ -404,6 +406,7 @@ unloadComms( GameData* gd, XWEnv xwe )
         comms_stop( gd->comms );
         comms_destroy( gd->comms, xwe );
         gd->comms = NULL;
+        gd->commsLoaded = XP_FALSE;
     }
 }
 
@@ -417,6 +420,7 @@ unloadData( GameData* gd, XWEnv xwe )
             comms_stop( gd->comms );
             comms_destroy( gd->comms, xwe );
             gd->comms = NULL;
+            gd->commsLoaded = XP_FALSE;
         }
         model_destroy( gd->model, xwe );
         ctrl_destroy( gd->ctrlr );
@@ -584,13 +588,14 @@ resendAllProc( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe, void* closure,
 }
 
 static void
-loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
+loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
 {
     const CurGameInfo* gi = &gd->gi;
     XP_ASSERT( gi_isValid(gi) );
-    XP_U8 strVersion = stream_getU8( stream );
+    XP_ASSERT( START_OF_STREAM == stream_getPos( *streamp, POS_READ ) );
+    XP_U8 strVersion = stream_getU8( *streamp );
     XP_LOGFF( "strVersion: 0x%X", strVersion );
-    stream_setVersion( stream, strVersion );
+    stream_setVersion( *streamp, strVersion );
 
     XP_ASSERT( gi->gameID );
     XP_ASSERT( gi->created );
@@ -598,12 +603,12 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
         goto exit;
     }
 
-    gd->model = model_makeFromStream( xwe, stream, gd->dict,
+    gd->model = model_makeFromStream( xwe, *streamp, gd->dict,
                                       &gd->playerDicts, &gd->util );
-    gd->ctrlr = ctrl_makeFromStream( xwe, stream,
+    gd->ctrlr = ctrl_makeFromStream( xwe, *streamp,
                                         gd->model, gd->comms,
                                         &gd->util, gi->nPlayers );
-    gd->board = board_makeFromStream( xwe, stream, gd->model,
+    gd->board = board_makeFromStream( xwe, *streamp, gd->model,
                                       gd->ctrlr, NULL, &gd->util,
                                       gi->nPlayers );
     finishSetup( duc, xwe, gd );
@@ -625,7 +630,8 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
     }
 
  exit:
-    stream_destroy( stream );
+    stream_destroy( *streamp );
+    *streamp = NULL;
     return;
 } /* loadData */
 
@@ -683,25 +689,158 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
     }
 
     GameRef gr = gi_formatGR( &gi );
-    GameData* gd = makeGD( gr );
-    if ( *grp == gmgr_getArchiveGroup(duc) ) {
-        *grp = gmgr_getDefaultGroup(duc);
+
+    GameData* gd = gmgr_getForRef( duc, xwe, gr, NULL );
+    if ( !!gd ) {
+        XP_LOGFF( "gr " GR_FMT " already exists; doing nothing!", gr );
+        gr = 0;
+    } else {
+        GameData* gd = makeGD( gr );
+        if ( *grp == gmgr_getArchiveGroup(duc) || *grp == GROUP_DEFAULT ) {
+            *grp = gmgr_getDefaultGroup(duc);
+        }
+        gd->grp = *grp;
+        gi_copy( MPPARM(gd->mpool) &gd->gi, &gi );
+
+        gd->util = makeDummyUtil( duc, gd );
+        XP_LOGFF( "created game with id %X", gd->gi.gameID );
+
+        if ( !!hostAddr ) {
+            gd->hostAddr = *hostAddr;
+        }
+
+        gmgr_addGame( duc, xwe, gd, gr );
     }
-    gd->grp = *grp;
-    gi_copy( MPPARM(gd->mpool) &gd->gi, &gi );
+
     gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
-
-    gd->util = makeDummyUtil( duc, gd );
-    XP_LOGFF( "created game with id %X", gd->gi.gameID );
-
-    if ( !!hostAddr ) {
-        gd->hostAddr = *hostAddr;
-    }
-
-    gmgr_addGame( duc, xwe, gd, gr );
-
     return gr;
 }
+
+#ifdef XWFEATURE_GAMEREF_CONVERT
+GameRef
+gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
+                const XP_UCHAR* gameName, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    XP_U8 strVersion = stream_getU8( stream );
+    XP_LOGFF( "got strVersion: 0x%x", strVersion );
+    stream_setVersion( stream, strVersion );
+    GameRef gr;
+    {
+        CurGameInfo gi = {};
+        gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
+        LOG_GI( &gi, __func__ );
+
+        XP_U32 created = strVersion < STREAM_VERS_GICREATED
+            ? 0 : stream_getU32( stream );
+        if ( created && !gi.created ) {
+            gi.created = created;
+        }
+        
+        if ( STREAM_VERS_BIGGERGI > strVersion ) {
+            gi.gameName = copyString( duc->mpool, gameName );
+        }
+        LOG_GI( &gi, __func__ );
+
+        gr = gr_makeForGI( duc, xwe, grpp, &gi, NULL );
+        gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
+    }
+    
+    if ( !!gr ) {
+        GameData* gd = gmgr_getForRef( duc, xwe, gr, NULL );
+        const CurGameInfo* gi = &gd->gi;
+        XW_UtilCtxt* util = makeDummyUtil( duc, gd );
+
+        XP_Bool hasComms;
+        if ( strVersion < STREAM_VERS_GICREATED ) {
+            hasComms = stream_getU8( stream );
+        } else {
+            XP_U8 flags = stream_getU8( stream );
+            hasComms = flags & FLAG_HASCOMMS;
+        }
+
+        /* If we're loading old code, we need to figure out the conTypes field of
+           the gi. If the game's in play, we can get it from addresses. But if it
+           was newly created, our own default hostAddress is it??? */
+        if ( hasComms ) {
+            XP_ASSERT( !gd->comms );
+            gd->comms = comms_makeFromStream( xwe, stream, &util,
+                                              gi->deviceRole != ROLE_ISGUEST,
+                                              gi->forceChannel );
+            gd->commsLoaded = XP_TRUE;
+            ConnTypeSetBits conTypes = 0;
+
+            CommsAddrRec addrs[gi->nPlayers];
+            XP_U16 nRecs = VSIZE(addrs);
+            comms_getAddrs( gd->comms, addrs, &nRecs );
+            for ( int ii = 0; ii < nRecs; ++ii ) {
+                conTypes |= addrs[ii]._conTypes;
+                XP_LOGFF( "conTypes now 0x%x", conTypes );
+            }
+            if ( !conTypes ) {
+                CommsAddrRec selfAddr;
+                comms_getSelfAddr( gd->comms, &selfAddr );
+                conTypes |= selfAddr._conTypes;
+            }
+            XP_LOGFF( "conTypes now 0x%x", conTypes );
+
+            /* Now add it to gi */
+            CurGameInfo tmpGI = {};
+            gi_copy( MPPARM(duc->mpool) &tmpGI, gi );
+            tmpGI.conTypes = conTypes;
+            LOG_GI( &tmpGI, __func__ );
+            setGIImpl( duc, xwe, gd, &tmpGI );
+            gi_disposePlayerInfo( MPPARM(duc->mpool) &tmpGI );
+        }
+
+        /* Now let's write the rest of the stream out so we can save it in the
+           correct format */
+        {
+            loadDictsOnce( duc, xwe, gd );
+            XP_ASSERT( !!gd->dict );
+            gd->model = model_makeFromStream( xwe, stream, gd->dict,
+                                              &gd->playerDicts, &gd->util );
+            gd->ctrlr = ctrl_makeFromStream( xwe, stream,
+                                             gd->model, gd->comms,
+                                             &gd->util, gd->gi.nPlayers );
+            gd->board = board_makeFromStream( xwe, stream, gd->model,
+                                              gd->ctrlr, NULL, &gd->util,
+                                              gd->gi.nPlayers );
+
+            XWStreamCtxt* commsStream = !!gd->comms ? dvc_makeStream(duc) : NULL;
+            XWStreamCtxt* dataStream = dvc_makeStream(duc);
+            gr_dataToStream( duc, gr, xwe, commsStream, dataStream, 0 );
+            gmgr_saveStreams( duc, xwe, gr, &commsStream, &dataStream, 0 );
+
+            unloadData( gd, xwe );
+            // unloadComms( gd, xwe );
+
+            /* board_destroy( gd->board, xwe, XP_FALSE ); */
+            /* gd->board = NULL; */
+            /* ctrl_destroy( gd->ctrlr ); */
+            /* gd->ctrlr = NULL; */
+            /* model_destroy( gd->model, xwe ); */
+            /* gd->model = NULL; */
+            /* if ( !!gd->comms ) { */
+            /*     comms_destroy( gd->comms, xwe ); */
+            /*     gd->comms = NULL; */
+            /*     gd->commsLoaded = XP_FALSE; */
+            /* } */
+        }
+
+        XP_Bool loaded;
+        GameData* gd1 = loadToLevel( duc, gr, xwe, MODEL, &loaded, NULL );
+        XP_ASSERT( gd1 == gd );
+        XP_ASSERT( loaded );
+
+        util_unref( util, xwe );
+
+        postGameChangeEvent( duc, xwe, gd, GCE_ADDED );
+    }
+    LOG_RETURNF( GR_FMT, gr );
+    return gr;
+} /* gr_convertGame */
+#endif
 
 GameRef
 gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,

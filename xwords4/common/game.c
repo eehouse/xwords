@@ -464,29 +464,29 @@ game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
     return XP_FALSE;
 }
 
-void
-game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi )
-{
-    const CtrlrCtxt* ctrlr = game->ctrlr;
-    BoardCtxt* board = game->board;
+/* void */
+/* game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi ) */
+/* { */
+/*     const CtrlrCtxt* ctrlr = game->ctrlr; */
+/*     BoardCtxt* board = game->board; */
 
-    XP_Bool gameOver = ctrl_getGameIsOver( ctrlr );
-    gsi->curTurnSelected = board_curTurnSelected( board );
-    gsi->trayVisState = board_getTrayVisState( board );
-    gsi->visTileCount = board_visTileCount( board );
-    gsi->canHint = !gameOver && board_canHint( board );
-    gsi->canUndo = model_canUndo( game->model );
-    gsi->canRedo = board_canTogglePending( board );
-    gsi->inTrade = board_inTrade( board, &gsi->tradeTilesSelected );
-    gsi->canChat = !!game->comms && comms_canChat( game->comms );
-    gsi->canShuffle = board_canShuffle( board );
-    gsi->canHideRack = board_canHideRack( board );
-    gsi->canTrade = board_canTrade( board, xwe );
-    gsi->nPendingMessages = !!game->comms ? 
-        comms_countPendingPackets(game->comms, NULL) : 0;
-    gsi->canPause = ctrl_canPause( ctrlr );
-    gsi->canUnpause = ctrl_canUnpause( ctrlr );
-}
+/*     XP_Bool gameOver = ctrl_getGameIsOver( ctrlr ); */
+/*     gsi->curTurnSelected = board_curTurnSelected( board ); */
+/*     gsi->trayVisState = board_getTrayVisState( board ); */
+/*     gsi->visTileCount = board_visTileCount( board ); */
+/*     gsi->canHint = !gameOver && board_canHint( board ); */
+/*     gsi->canUndo = model_canUndo( game->model ); */
+/*     gsi->canRedo = board_canTogglePending( board ); */
+/*     gsi->inTrade = board_inTrade( board, &gsi->tradeTilesSelected ); */
+/*     gsi->canChat = !!game->comms && comms_canChat( game->comms ); */
+/*     gsi->canShuffle = board_canShuffle( board ); */
+/*     gsi->canHideRack = board_canHideRack( board ); */
+/*     gsi->canTrade = board_canTrade( board, xwe ); */
+/*     gsi->nPendingMessages = !!game->comms ?  */
+/*         comms_countPendingPackets(game->comms, NULL) : 0; */
+/*     gsi->canPause = ctrl_canPause( ctrlr ); */
+/*     gsi->canUnpause = ctrl_canUnpause( ctrlr ); */
+/* } */
 
 void
 game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary )

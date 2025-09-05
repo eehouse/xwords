@@ -472,38 +472,40 @@ gdb_close( sqlite3* pDb )
 /*     g_free( query ); */
 /* } */
 
-/* GSList* */
-/* gdb_listGames( sqlite3* pDb ) */
-/* { */
-/*     GSList* list = NULL; */
+#ifdef XWFEATURE_GAMEREF_CONVERT
+GSList*
+gdb_listGames( sqlite3* pDb )
+{
+    GSList* list = NULL;
     
-/*     sqlite3_stmt *ppStmt; */
-/*     int result = sqlite3_prepare_v2( pDb,  */
-/*                                      "SELECT rowid FROM games ORDER BY rowid",  */
-/*                                      -1, &ppStmt, NULL ); */
-/*     assertPrintResult( pDb, result, SQLITE_OK ); */
-/*     XP_USE( result ); */
-/*     while ( NULL != ppStmt ) { */
-/*         switch( sqlite3_step( ppStmt ) ) { */
-/*         case SQLITE_ROW:        /\* have data *\/ */
-/*         { */
-/*             sqlite3_int64* data = g_malloc( sizeof( *data ) ); */
-/*             *data = sqlite3_column_int64( ppStmt, 0 ); */
-/*             XP_LOGFF( "got a row; id=%lld", *data ); */
-/*             list = g_slist_append( list, data ); */
-/*         } */
-/*         break; */
-/*         case SQLITE_DONE: */
-/*             sqlite3_finalize( ppStmt ); */
-/*             ppStmt = NULL; */
-/*             break; */
-/*         default: */
-/*             XP_ASSERT( 0 ); */
-/*             break; */
-/*         } */
-/*     } */
-/*     return list; */
-/* } */
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb,
+                                     "SELECT rowid FROM games ORDER BY rowid",
+                                     -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    XP_USE( result );
+    while ( NULL != ppStmt ) {
+        switch( sqlite3_step( ppStmt ) ) {
+        case SQLITE_ROW:        /* have data */
+        {
+            sqlite3_int64* data = g_malloc( sizeof( *data ) );
+            *data = sqlite3_column_int64( ppStmt, 0 );
+            XP_LOGFF( "got a row; id=%lld", *data );
+            list = g_slist_append( list, data );
+        }
+        break;
+        case SQLITE_DONE:
+            sqlite3_finalize( ppStmt );
+            ppStmt = NULL;
+            break;
+        default:
+            XP_ASSERT( 0 );
+            break;
+        }
+    }
+    return list;
+}
+#endif
 
 static void
 dataKiller( gpointer data )

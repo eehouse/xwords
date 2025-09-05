@@ -144,10 +144,11 @@ struct CommsCtxt {
     XP_U16 lastSaveToken;
     XP_U16 forceChannel;
 
+    CommsAddrRec selfAddr;
+
     /* The following fields, down to isServer, are only used if
        XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
        both ways can open each other's saved games files.*/
-    CommsAddrRec selfAddr;
 
     /* Stuff for relays */
     struct {
