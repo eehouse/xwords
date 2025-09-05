@@ -468,26 +468,23 @@ checkConvert( gpointer data )
     LaunchParams* params = apg->cag.params;
     XW_DUtilCtxt* dutil = params->dutil;
 
-    sqlite3_int64 rowid = 0;
     GSList* games = gdb_listGames( params->pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowidp = (sqlite3_int64*)iter->data;
-        rowid = *rowidp;
-        break;
+        sqlite3_int64 rowid = *rowidp;
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                    params->vtMgr );
+        if ( gdb_loadGame( stream, params->pDb, rowid ) ) {
+            XP_UCHAR name[32];
+            snprintf( name, sizeof(name), "Game %lld", rowid );
+            GameRef gr = gmgr_convertGame( dutil, NULL_XWE, GROUP_DEFAULT,
+                                           name, stream );
+            XP_LOGFF( "got gr " GR_FMT, gr );
+        }
+        stream_destroy( stream );
     }
     gdb_freeGamesList( games );
-
-    XP_ASSERT( !!rowid );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
-    if ( gdb_loadGame( stream, params->pDb, rowid ) ) {
-        XP_UCHAR name[32];
-        snprintf( name, sizeof(name), "Game %lld", rowid );
-        GameRef gr = gmgr_convertGame( dutil, NULL_XWE, GROUP_DEFAULT,
-                                       name, stream );
-        XP_LOGFF( "got gr " GR_FMT, gr );
-    }
-    stream_destroy( stream );
 
     return 0;                   /* don't run again */
 }
