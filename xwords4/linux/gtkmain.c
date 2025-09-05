@@ -459,6 +459,46 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     newGameIn( apg, GROUP_DEFAULT );
 }
 
+#ifdef XWFEATURE_GAMEREF_CONVERT
+static gint
+checkConvert( gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+
+    LaunchParams* params = apg->cag.params;
+    XW_DUtilCtxt* dutil = params->dutil;
+
+    sqlite3_int64 rowid = 0;
+    GSList* games = gdb_listGames( params->pDb );
+    for ( GSList* iter = games; !!iter; iter = iter->next ) {
+        sqlite3_int64* rowidp = (sqlite3_int64*)iter->data;
+        rowid = *rowidp;
+        break;
+    }
+    gdb_freeGamesList( games );
+
+    XP_ASSERT( !!rowid );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
+    if ( gdb_loadGame( stream, params->pDb, rowid ) ) {
+        XP_UCHAR name[32];
+        snprintf( name, sizeof(name), "Game %lld", rowid );
+        GameRef gr = gmgr_convertGame( dutil, NULL_XWE, GROUP_DEFAULT,
+                                       name, stream );
+        XP_LOGFF( "got gr " GR_FMT, gr );
+    }
+    stream_destroy( stream );
+
+    return 0;                   /* don't run again */
+}
+
+static void
+handle_convert_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    (void)g_idle_add( checkConvert, closure );
+}
+#endif
+
 static void
 handle_rename_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
@@ -1279,6 +1319,9 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 
     (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
+#ifdef XWFEATURE_GAMEREF_CONVERT
+    (void)addButton( "Convert", hbox, G_CALLBACK(handle_convert_button), apg );
+#endif
     (void)addButton( "New group", hbox, G_CALLBACK(handle_newgroup_button), apg );
     apg->renameButton = addButton( "Rename", hbox,
                                    G_CALLBACK(handle_rename_button), apg );
@@ -1748,7 +1791,6 @@ gtkmain( LaunchParams* params )
     } else if ( !!params->dbFileName ) {
         apg.window = openDBFile( &apg );
     }
-
     gtk_main();
 
     g_object_unref( cmdService );

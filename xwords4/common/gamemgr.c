@@ -212,17 +212,13 @@ gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
 }
 
 GameRef
-gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
+gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                  const XP_UCHAR* gameName, XWStreamCtxt* stream )
 {
-    GameRef gr = 0;
-    LOG_FUNC();
-    XP_U8 strVersion = stream_getU8( stream );
-    XP_LOGFF( "got strVersion: 0x%x", strVersion );
-    stream_setVersion( stream, strVersion );
-    CurGameInfo gi = {};
-    gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
-    LOG_GI( &gi, __func__ );
-    LOG_RETURNF( GR_FMT, gr );
+    GameRef gr = gr_convertGame( duc, xwe, &grp, gameName, stream );
+    if ( !!gr ) {
+        postOnGroupChanged( duc, xwe, grp, GRCE_GAME_ADDED );
+    }
     return gr;
 }
 #endif
@@ -895,6 +891,27 @@ gmgr_saveGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
 }
 
 void
+gmgr_saveStreams( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                  XWStreamCtxt** commsStream, XWStreamCtxt** dataStream,
+                  XP_U16 saveToken )
+{
+    KeyStore ks;
+    if ( !!*commsStream ) {
+        mkKeys( gr, &ks, KEY_COMMS );
+        dvc_storeStream( duc, xwe, ks.keys, *commsStream );
+        stream_destroy( *commsStream );
+        *commsStream = NULL;
+    }
+
+    mkKeys( gr, &ks, KEY_DATA );
+    dvc_storeStream( duc, xwe, ks.keys, *dataStream );
+    stream_destroy( *dataStream );
+    *dataStream = NULL;
+
+    gr_saveSucceeded( duc, gr, xwe, saveToken );
+}
+
+void
 gmgr_saveGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
 {
     XP_Bool deleted;
@@ -915,18 +932,7 @@ gmgr_saveGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
             XWStreamCtxt* stream = dvc_makeStream( duc );
             gr_dataToStream( duc, gr, xwe, commsStream, stream, saveToken );
 
-            KeyStore ks;
-            if ( haveComms ) {
-                mkKeys( gr, &ks, KEY_COMMS );
-                dvc_storeStream( duc, xwe, ks.keys, commsStream );
-                stream_destroy( commsStream );
-            }
-
-            mkKeys( gr, &ks, KEY_DATA );
-            dvc_storeStream( duc, xwe, ks.keys, stream );
-            stream_destroy( stream );
-
-            gr_saveSucceeded( duc, gr, xwe, saveToken );
+            gmgr_saveStreams(duc, xwe, gr, &commsStream, &stream, saveToken );
         }
     }
 }

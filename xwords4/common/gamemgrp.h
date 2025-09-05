@@ -36,6 +36,9 @@ GameData* gmgr_getForRef( XW_DUtilCtxt* dutil, XWEnv xwe, GameRef gr,
 void gmgr_addGame( XW_DUtilCtxt* dutil, XWEnv xwe, GameData* gd, GameRef gr );
 void gmgr_setGD(XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GameData* gd );
 void gmgr_saveGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+void gmgr_saveStreams( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                       XWStreamCtxt** commsStream, XWStreamCtxt** dataStream,
+                       XP_U16 saveToken );
 XWStreamCtxt* gmgr_loadGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 void gmgr_saveGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );

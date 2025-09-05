@@ -98,7 +98,8 @@ void gmgr_clearThumbnails( XW_DUtilCtxt* duc, XWEnv xwe );
 GroupRef gmgr_addGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name );
 #ifdef XWFEATURE_GAMEREF_CONVERT
 GroupRef gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name );
-GameRef gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, XWStreamCtxt* stream );
+GameRef gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                          const XP_UCHAR* name, XWStreamCtxt* stream );
 #endif
 void gmgr_deleteGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
 void gmgr_raiseGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );

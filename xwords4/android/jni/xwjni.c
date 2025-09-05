@@ -1642,13 +1642,18 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroup
 
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1convertGame
-(JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jstream)
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname, jint jgrp,
+ jbyteArray jstream)
 {
     jlong result = 0;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = streamFromJStream( MPPARM(globalState->dutil->mpool)
-                                              env, globalState->vtMgr, jstream );
-    result = gmgr_convertGame( globalState->dutil, env, stream );
+    XWStreamCtxt* stream =
+        streamFromJStream( MPPARM(globalState->dutil->mpool)
+                           env, globalState->vtMgr, jstream );
+    const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    result = gmgr_convertGame( globalState->dutil, env, jgrp, name,
+                               stream );
+    (*env)->ReleaseStringUTFChars( env, jname, name );
     stream_destroy( stream );
     DVC_HEADER_END();
     return result;

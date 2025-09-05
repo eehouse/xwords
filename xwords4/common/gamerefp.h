@@ -30,6 +30,11 @@ typedef struct GameData GameData;
 
 GameRef gr_makeForGI( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef* grp,
                       const CurGameInfo* gi, const CommsAddrRec* hostAddr );
+#ifdef XWFEATURE_GAMEREF_CONVERT
+GameRef gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
+                        const XP_UCHAR* gameName, XWStreamCtxt* stream );
+#endif
+
 void gr_freeData( XW_DUtilCtxt* dutil, GameRef gr, XWEnv xwe, GameData* data );
 void gr_checkNewDict( XW_DUtilCtxt* dutil, XWEnv xwe, GameData* gd,
                       const DictionaryCtxt* dict );
