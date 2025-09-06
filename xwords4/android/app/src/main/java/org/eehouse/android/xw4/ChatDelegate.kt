@@ -32,10 +32,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import java.lang.ref.WeakReference
@@ -101,7 +98,7 @@ class ChatDelegate(delegator: Delegator) :
             mLayout?.let { layout ->
                 Log.d(TAG, "initMsgView(): got layout")
                 layout.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
-                CoroutineScope(Job() + Dispatchers.IO).launch {
+                Utils.launch(Dispatchers.IO) {
                     val count = mGR!!.getChatCount()
                     withContext(Dispatchers.Main) {
                         Log.d(TAG, "count: $count")
@@ -199,7 +196,7 @@ class ChatDelegate(delegator: Delegator) :
                                       position: Int)
         {
             val row = holder.itemView as ViewGroup
-            CoroutineScope(Job() + Dispatchers.IO).launch {
+            Utils.launch(Dispatchers.IO) {
                 val from = IntArray(1)
                 val ts = IntArray(1)
                 val msg = mGR!!.getNthChat( position, from, ts )

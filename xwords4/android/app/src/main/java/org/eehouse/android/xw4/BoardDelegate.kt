@@ -37,10 +37,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import java.io.Serializable
@@ -1464,7 +1461,7 @@ class BoardDelegate(delegator: Delegator) :
 
      fun notifyGameOver() {
          mGameOver = true
-         CoroutineScope(Job() + Dispatchers.IO).launch {
+         launch(Dispatchers.IO) {
              val titleID = R.string.summary_gameover
              val text = mGR!!.writeFinalScores()
              handleGameOver(titleID, text)
@@ -1616,7 +1613,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
 
                 UtilCtxt.ERR_TOO_MANY_TRADE -> {
-                    CoroutineScope(Job() + Dispatchers.IO).launch {
+                    launch(Dispatchers.IO) {
                         val nLeft = mGR!!.countTilesInPool()
                         withContext(Dispatchers.Main) {
                             val msg = getQuantityString(
@@ -2187,7 +2184,7 @@ class BoardDelegate(delegator: Delegator) :
 //     }
 
     private fun startChatActivity() {
-        CoroutineScope(Job() + Dispatchers.IO).launch {
+        launch(Dispatchers.IO) {
             val curPlayer = mGR!!.getLikelyChatter()
             val names = mGi!!.playerNames()
             val locs = mGi!!.playersLocal() // to convert old histories

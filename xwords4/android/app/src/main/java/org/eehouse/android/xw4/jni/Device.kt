@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.Log
+import org.eehouse.android.xw4.Utils
 
 object Device {
     private val TAG: String = Device::class.java.simpleName
@@ -111,7 +112,7 @@ object Device {
         fun done() { running = false }
 
         init {
-            CoroutineScope(Job() + Dispatchers.IO).launch {
+            Utils.launch(Dispatchers.IO) {
                 while (true) {
                     delay(100)
                     if (running) {

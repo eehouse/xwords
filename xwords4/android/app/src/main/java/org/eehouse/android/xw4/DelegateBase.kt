@@ -36,7 +36,9 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 import java.lang.ref.WeakReference
 
@@ -769,8 +771,9 @@ abstract class DelegateBase @JvmOverloads constructor(
         Log.d(TAG, "inviteChoiceMade($action) not implemented")
     }
 
-    fun launch( block: suspend CoroutineScope.() -> Unit) {
-        Utils.launch(block)
+    fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
+        block: suspend CoroutineScope.() -> Unit) {
+        Utils.launch(disp, block)
     }
 
     companion object {
