@@ -1264,7 +1264,7 @@
        ########################################################### 
       -->
     <!-- copyright info -->
-    <string name="about_copyright">CrossWords para Android \nCopyright (C) 1998-2024 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
+    <string name="about_copyright">CrossWords para Android \nCopyright (C) 1998-2025 por Eric House. Este software livre/de código aberto está disponível sob a Licença Pública GNU.</string>
     <!-- Another paragraph in the about dialog -->
     <string name="about_web">Para um manual ou código-fonte (velho) veja: http://xwords.sf.net/android.php. Para reportar bugs, sugerir recursos, oferecer ajuda, etc., por favor envie um email: xwords@eehouse.org.</string>
     <!-- Empty in English, this should contain the name of the
