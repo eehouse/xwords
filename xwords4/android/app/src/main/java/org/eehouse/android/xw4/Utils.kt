@@ -50,6 +50,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -746,8 +747,9 @@ object Utils {
         }
     }
 
-    fun launch(block: suspend CoroutineScope.() -> Unit) {
-        CoroutineScope(Job() + Dispatchers.Main).launch{block()}
+    fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
+               block: suspend CoroutineScope.() -> Unit) {
+        CoroutineScope(Job() + disp).launch{block()}
     }
 
     // But see hexArray above

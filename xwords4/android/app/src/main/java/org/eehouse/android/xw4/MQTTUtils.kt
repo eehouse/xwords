@@ -555,7 +555,7 @@ object MQTTUtils {
                 if (mTopic.startsWith(PONG_PREFIX)) {
                     handlePong(mPacket)
                 } else {
-                    CoroutineScope(Job() + Dispatchers.IO).launch {
+                    Utils.launch(Dispatchers.IO) {
                         Log.d(TAG, "calling Device.parseMQTTPacket")
                         Device.parseMQTTPacket(mTopic, mPacket)
                     }
