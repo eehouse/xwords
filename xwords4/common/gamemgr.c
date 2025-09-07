@@ -51,6 +51,7 @@
 typedef struct _GameEntry {
     GameRef gr;
     GameData* gd;
+    XP_U16 index;
 } GameEntry;
 
 typedef struct _GroupState {
@@ -64,6 +65,7 @@ typedef struct _GroupState {
     SORT_ORDER sos[SO_NSOS];
     XP_UCHAR nSOs;
     XP_Bool collapsed;
+    XP_U16 index;
 } GroupState;
 
 typedef struct _DeleteData {
@@ -1439,6 +1441,58 @@ gmgr_getForRef( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XP_Bool* deletedP )
     // XP_LOGFF( "(" GR_FMT ") => %p", gr, result );
     return result;
 }
+
+#if 0
+typedef struct _IndexState {
+    XW_DUtilCtxt* duc;
+    XP_U16 nextIndex;
+    XP_Bool changed;
+} IndexState;
+
+static ForEachAct
+indexGamesProc( void* elem, void* closure, XWEnv xwe )
+{
+    IndexState* is = (IndexState*)closure;
+    GameRef gr = (GameRef)elem;
+    GameEntry* ge = findFor( is->duc, xwe, gr, XP_FALSE, NULL );
+    XP_ASSERT( !!ge );
+    is->changed = is->changed || ge->index != is->nextIndex;
+    ge->index = is->nextIndex++;
+    return FEA_OK;
+}
+
+
+static ForEachAct
+indexGroupsProc( void* elem, void* closure, XWEnv xwe )
+{
+    IndexState* is = (IndexState*)closure;
+    GroupState* grps = (GroupState*)elem;
+    is->changed = is->changed || grps->index != is->nextIndex;
+    grps->index = is->nextIndex++;
+    if ( !grps->collapsed ) {
+        arr_map( grps->u.games, xwe, indexGamesProc, is );
+    }
+    return FEA_OK;
+}
+
+static void
+invalIndex( XW_DUtilCtxt* duc )
+{
+    GameMgrState* gs = duc->gameMgrState;
+    gs->indexValid = XP_FALSE;
+}
+
+static void
+indexAll( XW_DUtilCtxt* duc, XWEnv xwe )
+{
+    GameMgrState* gs = duc->gameMgrState;
+    IndexState is = {.duc = duc,};
+    arr_map( gs->groups, xwe, indexGroupsProc, &is );
+    XP_LOGFF( "done with %d items (changed: %s)", is.nextIndex + 1,
+              boolToStr(is.changed) );
+    gs->indexValid = XP_TRUE;
+}
+#endif
 
 void
 gmgr_setGD( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GameData* gd )
