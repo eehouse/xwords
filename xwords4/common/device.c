@@ -543,6 +543,12 @@ sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
     /* } */
 }
 
+static void
+sendMsgViaBT()
+{
+    LOG_FUNC();
+}
+
 XP_S16
 dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
               const SendMsgsPacket* const packets,
@@ -563,6 +569,9 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
         break;
     case COMMS_CONN_NFC:
         XP_LOGFF( "Nothing to do for NFC" );
+        break;
+    case COMMS_CONN_BT:
+        sendMsgViaBT();
         break;
     default:
         XP_LOGFF( "don't handle %s", ConnType2Str( typ ) );
