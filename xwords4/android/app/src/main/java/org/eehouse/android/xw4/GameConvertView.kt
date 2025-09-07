@@ -52,26 +52,40 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         mState = state
     }
 
-    private fun convert() {
-        launch {
-            // groups...
+    private fun convert(doAll: Boolean) {
+        Utils.launch(Dispatchers.IO) {
+            val state = mState!!
+
+            // create a groups mapping to use with games
+            val gmap = HashMap<Long, GameMgr.GroupRef>()
             val groupID = XWPrefs.getDefaultNewGameGroup(context)
             DBUtils.getGroups(context).map { entry ->
-                if (entry.key in mState!!.groupKeys) {
+                if (entry.key in state.groupKeys) {
                     val ggi = entry.value!!
                     val grp = GameMgr.addGroup(ggi.m_name)
                     grp.setGroupCollapsed(!ggi.m_expanded)
                     if (entry.key == groupID) {
                         GameMgr.makeGroupDefault(grp)
                     }
+                } else {
+                    Log.d(TAG, "already done")
                 }
+                val grp = GameMgr.getGroup(entry.value!!.m_name)!!
+                gmap.put(entry.key, grp)
             }
 
             // games...
-            for (rowid in mState!!.games) {
-                val bytes = DBUtils.loadGame(context, rowid)
-                val gr = GameMgr.convertGame(bytes!!)
-                break
+            Log.d(TAG, "converting games")
+            var done = false
+            for (rowid in state.games) {
+                if (! done) {
+                    DBUtils.loadGame(context, rowid)?.let { gv ->
+                        val group = gmap.get(gv.group)!!
+                        // val group = GameMgr.GroupRef.GROUP_DEFAULT
+                        val gr = GameMgr.convertGame(gv.name, group, gv.bytes)
+                        done = gr != null && !doAll
+                    }
+                }
             }
         }
     }
@@ -102,7 +116,6 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
 
         fun makeDialog(context: Context, state: GameConvertState): Dialog? {
-            Log.d(TAG, "makeDialog($state)")
             val view = LocUtils.inflate(context, R.layout.game_convert_view)
                 as GameConvertView
             view.configure(state)
@@ -110,7 +123,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 .setView(view)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.button_convert) {dlg, button ->
-                    view.convert()
+                    view.convert(false)
+                }
+                .setNeutralButton(R.string.button_convertAll) {dlg, button ->
+                    view.convert(true)
                 }
                 .create()
             return dialog

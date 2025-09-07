@@ -781,18 +781,27 @@ object DBUtils {
         return rowid
     }
 
-    fun loadGame(context: Context, rowid: Long): ByteArray? {
-        var result: ByteArray? = null
+    data class GameVals(val name: String, val group: Long,
+                        val bytes: ByteArray) {}
+
+    fun loadGame(context: Context, rowid: Long): GameVals? {
+        var result: GameVals? = null
         Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
-        val columns = arrayOf(DBHelper.SNAPSHOT)
+        val columns = arrayOf(DBHelper.SNAPSHOT, DBHelper.GAME_NAME,
+                              DBHelper.GROUPID)
         val selection = String.format(ROW_ID_FMT, rowid)
         initDB(context)
         synchronized(s_dbHelper!!) {
             val cursor = query(TABLE_NAMES.SUM, columns, selection)
             if (1 == cursor.count && cursor.moveToFirst()) {
-                result = cursor.getBlob(
+                val ba = cursor.getBlob(
                     cursor.getColumnIndex(DBHelper.SNAPSHOT)
                 )
+                val name = cursor.getString(
+                    cursor.getColumnIndex(DBHelper.GAME_NAME))
+                val group = cursor.getLong(
+                    cursor.getColumnIndex(DBHelper.GROUPID))
+                result = GameVals(name, group, ba)
             } else {
                 Log.e(TAG, "loadGame: none for rowid=%d", rowid)
                 Assert.failDbg()

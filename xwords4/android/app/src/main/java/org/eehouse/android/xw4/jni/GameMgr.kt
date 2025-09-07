@@ -90,7 +90,7 @@ object GameMgr {
 
         companion object {
             // Keep in sync with values in gamemgr.h
-            // val GROUP_DEFAULT = 0xFF
+            val GROUP_DEFAULT = GroupRef(0xFF)
             val GROUP_ARCHIVE = GroupRef(0xFE)
         }
     }
@@ -187,10 +187,11 @@ object GameMgr {
         return result
     }
 
-    suspend fun convertGame(bytes: ByteArray): GameRef? {
+    suspend fun convertGame(name: String, grp: GroupRef,
+                            bytes: ByteArray): GameRef? {
         val gr = Device.await {
             val jniState = XwJNI.getJNIState()
-            gmgr_convertGame(jniState, bytes)
+            gmgr_convertGame(jniState, name, grp.grp, bytes)
         } as Long
         return if (gr == 0L) null else GameRef(gr)
     }
@@ -280,7 +281,8 @@ object GameMgr {
     @JvmStatic
     private external fun gmgr_getGroup(jniState: Long, name: String): Int
     @JvmStatic
-    private external fun gmgr_convertGame(jniState: Long, bytes: ByteArray): Long
+    private external fun gmgr_convertGame(jniState: Long, name: String, grp: Int,
+                                          bytes: ByteArray): Long
     @JvmStatic
     private external fun gmgr_makeGroupDefault(jniState: Long, grp: Int)
     @JvmStatic
