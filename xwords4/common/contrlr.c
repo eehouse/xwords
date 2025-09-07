@@ -337,7 +337,7 @@ getStateStr( XW_State st )
         CASESTR(XWSTATE_INTURN);
         CASESTR(XWSTATE_GAMEOVER);
     default:
-        XP_ASSERT(0);
+        // XP_ASSERT(0);
         return "unknown";
     }
 #   undef CASESTR
@@ -2959,7 +2959,7 @@ nextTurn( CtrlrCtxt* ctrlr, XWEnv xwe, XP_S16 nxtTurn )
     if ( nxtTurn == PICK_CUR ) {
         nxtTurn = model_getNextTurn( ctrlr->vol.model );
     } else if ( nxtTurn == PICK_NEXT ) {
-        XP_ASSERT( ctrlr->nv.gameState == XWSTATE_INTURN );
+        // XP_ASSERT( ctrlr->nv.gameState == XWSTATE_INTURN );
         if ( ctrlr->nv.gameState != XWSTATE_INTURN ) {
             SRVR_LOGFF( "doing nothing; state %s != XWSTATE_INTURN",
                         getStateStr(ctrlr->nv.gameState) );

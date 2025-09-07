@@ -122,7 +122,7 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
 
 #define GR_HEADER_WITH(NL) {                                            \
     XP_ASSERT( gr );                                                    \
-    XP_LOGFF("(gr=" GR_FMT ")", gr);                                    \
+    /* XP_LOGFF("(gr=" GR_FMT ")", gr); */                              \
     XP_Bool loaded;                                                     \
     XP_Bool deleted;                                                    \
     GameData* gd = loadToLevel(duc, gr, xwe, NL, &loaded, &deleted);    \
@@ -136,7 +136,7 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
     } else {                                                        \
         XP_LOGFF( "%s() failed: deleted or can't load", __func__ ); \
     }                                                               \
-} LOG_RETURN_VOID()
+} /* LOG_RETURN_VOID() */
 
 #define GR_HEADER_END_SAVE()                    \
     setSaveTimer(duc, xwe, gd, gr);             \
@@ -1162,14 +1162,14 @@ gr_getThumbData( DUTIL_GR_XWE, XWStreamCtxt* stream )
 {
     XP_Bool result = XP_FALSE;
     GR_HEADER();
-    XP_LOGFF( "looking at gd->thumbData; gd: %p", gd );
+    // XP_LOGFF( "looking at gd->thumbData; gd: %p", gd );
     result = !!gd;
     if ( result ) {
         if ( !gd->thumbData ) {
-            XP_LOGFF( "no data; calling loadThumbData()");
+            // XP_LOGFF( "no data; calling loadThumbData()");
             loadThumbData( duc, xwe, gd );
         } else {
-            XP_LOGFF( "have data, so NOT calling loadThumbData()");
+            // XP_LOGFF( "have data, so NOT calling loadThumbData()");
         }
         result = !!gd->thumbData;
         if ( result ) {
@@ -1178,7 +1178,7 @@ gr_getThumbData( DUTIL_GR_XWE, XWStreamCtxt* stream )
         }
     }
     GR_HEADER_END();
-    LOG_RETURNF( "%s", boolToStr(result) );
+    // LOG_RETURNF( "%s", boolToStr(result) );
     return result;
 }
 
