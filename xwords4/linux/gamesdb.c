@@ -692,10 +692,10 @@ gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
 
 static XP_Bool
 loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid, 
-                const char* column )
+                DeviceRole* role, const char* column )
 {
     char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT %s from games WHERE rowid = %lld", 
+    snprintf( buf, sizeof(buf), "SELECT %s, role from games WHERE rowid = %lld", 
               column, rowid );
 
     sqlite3_stmt *ppStmt;
@@ -716,15 +716,19 @@ loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid,
             stream_putBytes( stream, ptr + sizeof(strVersion), 
                              size - sizeof(strVersion) );
         }
+        if ( !!role ) {
+            *role = sqlite3_column_int( ppStmt, 1 );
+        }
     }
     sqlite3_finalize( ppStmt );
     return success;
 }
 
 XP_Bool
-gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+gdb_loadGame( XWStreamCtxt* stream, sqlite3* pDb,
+              DeviceRole* role, sqlite3_int64 rowid )
 {
-    return loadBlobColumn( stream, pDb, rowid, "game" );
+    return loadBlobColumn( stream, pDb, rowid, role, "game" );
 }
 
 void

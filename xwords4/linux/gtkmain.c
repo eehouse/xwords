@@ -317,7 +317,6 @@ getSnapData( LaunchParams* params, GameRef gr )
 static void
 add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
 {
-    LOG_FUNC();
     XP_ASSERT( gr );
     GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
     GtkListStore* store = GTK_LIST_STORE( model );
@@ -393,7 +392,6 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         CONTYPES_ITEM, gi->conTypes,
                         NTOTAL_ITEM, gi->nPlayers,
                         -1 );
-    XP_LOGFF( "DONE adding" );
 }
 
 /* This is supposed to check that at least one of the selected games is not
@@ -460,39 +458,88 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 #ifdef XWFEATURE_GAMEREF_CONVERT
-static gint
-checkConvert( gpointer data )
+static GroupRef
+groupForRole(XW_DUtilCtxt* dutil, DeviceRole role)
 {
-    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    const char* name;
+    switch ( role ) {
+    case ROLE_STANDALONE:
+        name = "Solo";
+        break;
+    case ROLE_ISHOST:
+        name = "Host";
+        break;
+    case ROLE_ISGUEST:
+        name = "Guest";
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+    GroupRef grp = gmgr_getGroup( dutil, NULL_XWE, name );
+    if ( !grp ) {
+        grp = gmgr_addGroup( dutil, NULL_XWE, name );
+    }
+    return grp;
+}
 
+static void
+checkConvertImpl( GtkAppGlobals* apg, XP_Bool doAll )
+{
     LaunchParams* params = apg->cag.params;
     XW_DUtilCtxt* dutil = params->dutil;
 
+    bool done = false;
     GSList* games = gdb_listGames( params->pDb );
-    for ( GSList* iter = games; !!iter; iter = iter->next ) {
+    int count = 0;
+    for ( GSList* iter = games; !!iter && !done; iter = iter->next ) {
         sqlite3_int64* rowidp = (sqlite3_int64*)iter->data;
         sqlite3_int64 rowid = *rowidp;
 
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
                                                     params->vtMgr );
-        if ( gdb_loadGame( stream, params->pDb, rowid ) ) {
+        DeviceRole role;
+        if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
+            GroupRef grp = groupForRole(dutil, role);
             XP_UCHAR name[32];
             snprintf( name, sizeof(name), "Game %lld", rowid );
-            GameRef gr = gmgr_convertGame( dutil, NULL_XWE, GROUP_DEFAULT,
-                                           name, stream );
+            GameRef gr = gmgr_convertGame( dutil, NULL_XWE, grp, name, stream );
             XP_LOGFF( "got gr " GR_FMT, gr );
+            done = !doAll && !!gr;
+            if ( !!gr ) {
+                ++count;
+                XP_LOGFF( "finished %dth conversion", count );
+            }
         }
         stream_destroy( stream );
     }
     gdb_freeGamesList( games );
 
+}
+
+static int
+checkConvertOne( void* closure )
+{
+    checkConvertImpl( (GtkAppGlobals*)closure, XP_FALSE );
+    return 0;                   /* don't run again */
+}
+
+static int
+checkConvertAll( void* closure )
+{
+    checkConvertImpl( (GtkAppGlobals*)closure, XP_TRUE );
     return 0;                   /* don't run again */
 }
 
 static void
 handle_convert_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
-    (void)g_idle_add( checkConvert, closure );
+    (void)g_idle_add( checkConvertOne, closure );
+}
+
+static void
+handle_convertAll_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    (void)g_idle_add( checkConvertAll, closure );
 }
 #endif
 
@@ -1317,7 +1364,8 @@ makeGamesWindow( GtkAppGlobals* apg )
 
     (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
 #ifdef XWFEATURE_GAMEREF_CONVERT
-    (void)addButton( "Convert", hbox, G_CALLBACK(handle_convert_button), apg );
+    (void)addButton( "Convert one", hbox, G_CALLBACK(handle_convert_button), apg );
+    (void)addButton( "Convert all", hbox, G_CALLBACK(handle_convertAll_button), apg );
 #endif
     (void)addButton( "New group", hbox, G_CALLBACK(handle_newgroup_button), apg );
     apg->renameButton = addButton( "Rename", hbox,

@@ -2610,7 +2610,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     // cGlobals->rowid = rowid;
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
                                                 params->vtMgr );
-    XP_Bool loaded = gdb_loadGame( stream, pDb, rowid );
+    XP_Bool loaded = gdb_loadGame( stream, pDb, NULL, rowid );
     if ( loaded ) {
         XW_DUtilCtxt* dutil = params->dutil;
         cGlobals->gr = dvc_makeFromStream( dutil,

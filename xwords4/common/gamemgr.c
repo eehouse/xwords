@@ -713,7 +713,7 @@ gmgr_getNthItem( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 indx )
     GameMgrState* gs = duc->gameMgrState;
     GetNthState gns = { .sought = indx, };
     arr_map( gs->groups, xwe, getNthProc, &gns );
-    LOG_RETURNF( GR_FMT, gns.result );
+    // LOG_RETURNF( GR_FMT, gns.result );
     return gns.result;
 }
 

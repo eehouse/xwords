@@ -126,7 +126,7 @@ arr_insertAt( XWArray* array, void* node, XP_U32 loc )
 void*
 arr_getNth( XWArray* array, XP_U32 nn )
 {
-    XP_LOGFF( "nn=%d; nElems=%d", nn, array->nElems );
+    // XP_LOGFF( "nn=%d; nElems=%d", nn, array->nElems );
     XP_ASSERT( nn < array->nElems );
     return array->elems[nn];
 }
