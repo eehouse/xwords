@@ -150,10 +150,11 @@ void
 dmgr_put( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key,
           const DictionaryCtxt* dict )
 {
+#ifdef DEBUG
     DictMgrCtxt* dictMgr = dutil->dictMgr;
     DictPair dp = { .key = (XP_UCHAR*)key };
     XP_ASSERT( !arr_find( dictMgr->pairs, xwe, &dp, NULL ) );
-
+#endif
     WITH_MUTEX( &dictMgr->mutex );
     putImpl( dutil, xwe, key, dict );
     END_WITH_MUTEX();

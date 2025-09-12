@@ -404,7 +404,7 @@ init_relay( CommsCtxt* comms, XWEnv xwe, XP_U16 nPlayersHere, XP_U16 nPlayersTot
 #endif
 
 CommsCtxt* 
-comms_make( XWEnv xwe, XW_UtilCtxt** utilp, XP_Bool isServer,
+comms_make( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp, XP_Bool isServer,
             const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
 #ifdef XWFEATURE_RELAY
             XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
@@ -412,7 +412,9 @@ comms_make( XWEnv xwe, XW_UtilCtxt** utilp, XP_Bool isServer,
 #endif
             XP_U16 forceChannel )
 {
+#ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
+#endif
     CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
     MUTEX_INIT_CHECKED( &comms->mutex, XP_TRUE, 3 );
     comms->utilp = utilp;
@@ -712,7 +714,7 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
 /* Looking toward a time when we store only the first couple of bits of
    channelNo. Not possible yet, though. */
 static XP_U16
-readChannelNo( const CommsCtxt* comms, XWStreamCtxt* stream )
+readChannelNo( const CommsCtxt* XP_UNUSED_DBG(comms), XWStreamCtxt* stream )
 {
     XP_U16 tmp = stream_getU16( stream );
     CNO_FMT(buf, tmp);

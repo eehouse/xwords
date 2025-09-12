@@ -66,8 +66,8 @@ XP_Bool mpool_getStats( const MemPoolCtx* mpool, MPStatsBuf* io );
 #endif
 
 #else
-
 # define mpool_destroy(p)
 # define mpool_setTag(t)
+# define mempool_dbg_checkall()
 #endif /* MEM_DEBUG */
 #endif /* _MEMPOOL_H_ */

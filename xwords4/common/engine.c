@@ -188,7 +188,7 @@ engine_getScoreCache( EngineCtxt* engine, XP_U16 row )
  * turn it into a separate code module later.
  ****************************************************************************/ 
 EngineCtxt*
-engine_make( XWEnv xwe, XW_UtilCtxt** utilp )
+engine_make( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );

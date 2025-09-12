@@ -385,7 +385,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
 }
 
 void
-smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr )
+smsproto_freeMsgArray( SMSProto* XP_UNUSED_DBG(state), SMSMsgArray* arr )
 {
     WITH_MUTEX( &state->mutex );
 

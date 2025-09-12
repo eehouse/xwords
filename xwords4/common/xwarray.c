@@ -94,7 +94,7 @@ arr_remove( XWArray* array, XWEnv xwe, void* node )
 }
 
 void
-arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc )
+arr_removeAt( XWArray* array, XWEnv XP_UNUSED_DBG(xwe), XP_U32 loc )
 {
     assertSorted( array, xwe );
     moveDownOne( array, loc );

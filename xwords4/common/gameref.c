@@ -829,7 +829,10 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
         }
 
         XP_Bool loaded;
-        GameData* gd1 = loadToLevel( duc, gr, xwe, MODEL, &loaded, NULL );
+#ifdef DEBUG
+        GameData* gd1 =
+#endif
+            loadToLevel( duc, gr, xwe, MODEL, &loaded, NULL );
         XP_ASSERT( gd1 == gd );
         XP_ASSERT( loaded );
 
@@ -876,7 +879,10 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
         setGIImpl( duc, xwe, newGd, &newGI );
 
         XP_Bool loaded;
-        GameData* newGD2 = loadToLevel( duc, newGR, xwe, MODEL, &loaded, NULL );
+#ifdef DEBUG
+        GameData* newGD2 =
+#endif
+            loadToLevel( duc, newGR, xwe, MODEL, &loaded, NULL );
         XP_ASSERT( loaded );
         XP_ASSERT( newGD2 == newGd );
 
@@ -1430,7 +1436,7 @@ gr_missingDicts( DUTIL_GR_XWE, const XP_UCHAR* missingNames[], XP_U16* countP )
 }
 
 static XP_Bool
-tryReplOne( GameData* gd, XP_UCHAR** loc, const XP_UCHAR* oldName,
+tryReplOne( GameData* XP_UNUSED_DBG(gd), XP_UCHAR** loc, const XP_UCHAR* oldName,
             const XP_UCHAR* newName )
 {
     XP_Bool changed = 0 == XP_STRCMP( *loc, oldName );
@@ -1865,14 +1871,16 @@ gr_containsPt( DUTIL_GR_XWE, XP_U16 xx, XP_U16 yy )
 }
 #endif
 
+#ifdef DEBUG
 void
 gr_setAddrDisabled( DUTIL_GR_XWE, CommsConnType typ,
                     XP_Bool send, XP_Bool disabled )
 {
     GR_HEADER_WITH(COMMS);
-    comms_setAddrDisabled( gd->comms,  typ,  send, disabled );
+    comms_setAddrDisabled( gd->comms, typ, send, disabled );
     GR_HEADER_END();
 }
+#endif
  
 void
 gr_zoom( DUTIL_GR_XWE, XP_S16 zoomBy, XP_Bool* canInOut )
@@ -2206,6 +2214,7 @@ gr_canTogglePending( DUTIL_GR_XWE )
     return result;
 }
 
+#ifdef DEBUG
 XP_Bool
 gr_getAddrDisabled( DUTIL_GR_XWE,
                     CommsConnType typ, XP_Bool send )
@@ -2216,6 +2225,7 @@ gr_getAddrDisabled( DUTIL_GR_XWE,
     GR_HEADER_END();
     return result;
 }
+#endif
 
 XP_Bool
 gr_prefsChanged( DUTIL_GR_XWE, const CommonPrefs* cp )
@@ -2452,7 +2462,7 @@ makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd )
     /* super->vtable->m_util_informMove = dummyInformMove; */
     /* super->vtable->m_util_turnChanged = dummyTurnChanged; */
 
-    util_super_init( duc->mpool, super, &gd->gi, duc, gd->gr, dummyDestroy );
+    util_super_init( MPPARM(duc->mpool) super, &gd->gi, duc, gd->gr, dummyDestroy );
 
     return super;
 }

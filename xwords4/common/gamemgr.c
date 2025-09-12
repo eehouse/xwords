@@ -499,19 +499,23 @@ static void
 dispGroupStateProc( void* elem, void* closure )
 {
     GroupState* grps = (GroupState*)elem;
+#ifdef MEM_DEBUG
     DeleteData* dd = (DeleteData*)closure;
+    MemPoolCtx* mpool = dd->duc->mpool;
+#else
+    XP_USE(closure);
+#endif
     if ( !grps->collapsed ) {
         arr_destroy( grps->u.games );
         grps->u.games = NULL;
     }
-    XP_FREE( dd->duc->mpool, elem );
+    XP_FREE( mpool, elem );
 }
 
 static void
-freeEntryProc( void* elem, void* closure )
+freeEntryProc( void* elem, void* XP_UNUSED_DBG(closure) )
 {
-    XW_DUtilCtxt* duc = (XW_DUtilCtxt*)closure;
-    XP_FREE( duc->mpool, elem );
+    XP_FREE( ((XW_DUtilCtxt*)closure)->mpool, elem );
 }
 
 void
@@ -943,8 +947,10 @@ static void
 insertGr( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GameData* gd )
 {
     XP_ASSERT( gr );
+#ifdef DEBUG
     XP_U32 gameID = gameIDFromGR( gr );
     XP_LOGFF( "gr: " GR_FMT "; gid: %X", gr, gameID );
+#endif
     GameMgrState* gs = duc->gameMgrState;
     /* below leaking when game deleted */
     GameEntry* ge = XP_CALLOC( duc->mpool, sizeof(*ge) );

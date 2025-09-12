@@ -805,7 +805,7 @@ curses_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 
 static void
 curses_util_dictGone( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
-                      const XP_UCHAR* dictName )
+                      const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(dictName: %s)", dictName );
 }
@@ -844,8 +844,9 @@ curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 } /* curses_util_notifyIllegalWord */
 
 static void
-curses_util_countChanged( XW_UtilCtxt* uc, XWEnv xwe,
-                          XP_U16 count, XP_Bool quashed )
+curses_util_countChanged( XW_UtilCtxt* XP_UNUSED_DBG(uc), XWEnv xwe,
+                          XP_U16 XP_UNUSED_DBG(count),
+                          XP_Bool XP_UNUSED_DBG(quashed) )
 {
     XP_LOGFF( "(gr: %lX, count: %d, quashed: %s)", uc->gr, count,
               boolToStr(quashed) );

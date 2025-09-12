@@ -45,7 +45,7 @@ sortByTimestamp(const void* dl1, const void* dl2,
 }
 
 ChatState*
-cht_init( XWEnv xwe, XW_UtilCtxt** utilp )
+cht_init( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
@@ -71,10 +71,15 @@ addEntry( ChatState* chat, XWEnv xwe, const XP_UCHAR* msg,
 static void
 disposeEntry( void* elem, void* closure )
 {
+#ifdef MEM_DEBUG
     ChatState* state = (ChatState*)closure;
+    MemPoolCtx* mpool = state->mpool;
+#else
+    XP_USE(closure);
+#endif
     ChatEntry* entry = (ChatEntry*)elem;
-    XP_FREE( state->mpool, entry->msg );
-    XP_FREE( state->mpool, entry );
+    XP_FREE( mpool, entry->msg );
+    XP_FREE( mpool, entry );
 }
 
 void
