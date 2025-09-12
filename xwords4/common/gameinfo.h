@@ -73,8 +73,9 @@ typedef struct CurGameInfo {
 
 #define MIN_TRADE_TILES(GI) ((GI)->tradeSub7 ? 1 : (GI)->traySize)
 
+XP_Bool gi_isValid(const CurGameInfo* gi);
+
 #ifdef DEBUG
-    XP_Bool gi_isValid(const CurGameInfo* gi);
     void game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
                      const char* func, int line );
 # define LOG_GI( GIP, MSG ) {                                           \

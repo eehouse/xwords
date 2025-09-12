@@ -126,12 +126,14 @@ findFor( CursGameList* cgl, GameRef gr )
 }
 
 void
-cgl_refreshOne( CursGameList* cgl, GameRef gr, bool XP_UNUSED(select) )
+cgl_refreshOne( CursGameList* cgl, GameRef XP_UNUSED_DBG(gr),
+                bool XP_UNUSED(select) )
 {
     // This is a no-op unless we start storing stuff
-    
+#ifdef DEBUG
     GSList* elem = findFor( cgl, gr );
     XP_ASSERT( !!elem );
+#endif
     adjustCurSel( cgl );
 }
 

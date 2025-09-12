@@ -321,7 +321,8 @@ void _draw_unref( DrawCtx* dc, XWEnv xwe
 # define draw_ref(DC) _draw_ref((DC), __func__, __LINE__)
 # define draw_unref(DC, XWE) _draw_unref((DC), XWE, __func__, __LINE__)
 #else
-foo
+# define draw_ref(DC) _draw_ref((DC))
+# define draw_unref(DC, XWE) _draw_unref((DC), (XWE))
 #endif
 
 #endif

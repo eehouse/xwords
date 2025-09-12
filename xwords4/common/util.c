@@ -77,7 +77,7 @@ typedef struct _TimerClosure {
 } TimerClosure;
 
 static void
-timerProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
+timerProc( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, void* closure,
            TimerKey key, XP_Bool fired )
 {
     XP_ASSERT( key );
@@ -158,7 +158,9 @@ util_super_init( MPFORMAL XW_UtilCtxt* util, const CurGameInfo* gi,
 {
     XP_ASSERT( !!gi );
     MPASSIGN( util->_mpool, mpool );
+#ifdef MEM_DEBUG
     XP_USE( mpool );
+#endif
     util->vtable->m_util_destroy = dp;
     util->gi = gi;
     util->dutil = dutil;

@@ -245,6 +245,7 @@ dvc_onGameGoneReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
                         const CommsAddrRec* from )
 {
     XP_LOGFF( "(gameID=%X)", gameID );
+    XP_USE(gameID);
     XP_USE(dutil);
     XP_USE(xwe);
     XP_USE(from);
@@ -437,15 +438,18 @@ sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, SMS_CMD cmd,
         }
         smsproto_freeMsgArray( dutil->protoState, arr );
     } else if ( waitSecs > 0 ) {
-        XP_U32 inWhenMS = waitSecs * 1000;
-
         RetryClosure* rc = (RetryClosure*)XP_CALLOC( dutil->mpool, sizeof(*rc) );
         XP_STRCAT( rc->phone, phone );
         XP_STRCAT( rc->msgNo, msgNo );
         rc->port = port;
         rc->gameID = gameID;
         rc->cmd = cmd;
-        TimerKey key = tmr_set( dutil, xwe, inWhenMS, retryProc, rc );
+
+        XP_U32 inWhenMS = waitSecs * 1000;
+#ifdef DEBUG
+        TimerKey key =
+#endif
+            tmr_set( dutil, xwe, inWhenMS, retryProc, rc );
         XP_LOGFF( "got key %d", key );
     }
 }

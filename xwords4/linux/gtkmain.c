@@ -322,9 +322,10 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
     GtkListStore* store = GTK_LIST_STORE( model );
     GtkTreeIter iter;
     XP_Bool found = XP_FALSE;
-
+#ifdef DEBUG
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
     XP_ASSERT( !findFor( apg, gr, NULL, NULL ) );
+#endif
 
 #if 0
     if ( !isNew ) {
@@ -927,8 +928,8 @@ onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
 }
 
 void
-onGroupChangedGTK( LaunchParams* params, GroupRef grp,
-                   GroupChangeEvents gces )
+onGroupChangedGTK( LaunchParams* params, GroupRef XP_UNUSED_DBG(grp),
+                   GroupChangeEvents XP_UNUSED_DBG(gces) )
 {
     XP_LOGFF( "grp: %d, gces: %x", grp, gces );
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
@@ -951,8 +952,8 @@ buildGamesListIdle( gpointer data )
 }
 
 void
-onGTKMissingDictAdded( LaunchParams* params, GameRef gr,
-                       const XP_UCHAR* dictName )
+onGTKMissingDictAdded( LaunchParams* params, GameRef XP_UNUSED_DBG(gr),
+                       const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
@@ -960,7 +961,8 @@ onGTKMissingDictAdded( LaunchParams* params, GameRef gr,
 }
 
 void
-onGTKDictGone( LaunchParams* params, GameRef gr, const XP_UCHAR* dictName )
+onGTKDictGone( LaunchParams* params, GameRef XP_UNUSED_DBG(gr),
+               const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
@@ -1244,6 +1246,7 @@ buildGamesList( GtkAppGlobals* apg )
 
     LaunchParams* params = apg->cag.params;
     if ( params->skipGroups ) {
+#ifdef DEBUG
         XP_U16 count = gmgr_countGames( params->dutil, NULL_XWE );
         for ( XP_U16 ii = 0; ii < count; ++ii ) {
             GLItemRef ir = gmgr_getNthGame( params->dutil, NULL_XWE, ii );
@@ -1254,6 +1257,7 @@ buildGamesList( GtkAppGlobals* apg )
             gtk_widget_show( list );
             add_to_list( params, list, gmgr_toGame( ir ) );
         }
+#endif
     } else {
         XP_U16 count = gmgr_countItems( params->dutil, NULL_XWE );
         for ( XP_U16 ii = 0; ii < count; ++ii ) {
@@ -1739,6 +1743,7 @@ getForGameIDWrapper( void* closure, XP_U32 gameID )
     XP_ASSERT(0);
     XP_USE(closure);
     XP_USE(gameID);
+    return NULL;
 #else
     CommonGlobals* result = NULL;
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
@@ -1827,9 +1832,9 @@ gtkmain( LaunchParams* params )
         }
 
         if ( params->runSMSTest ) {
-            CommonGlobals cGlobals = {.params = params };
             XP_ASSERT(0);       /* fix this (rewrite entirely?) */
-            smsproto_runTests( params->mpool, NULL_XWE, cGlobals.params->dutil );
+            /* CommonGlobals cGlobals = {.params = params }; */
+            /* smsproto_runTests( params->mpool, NULL_XWE, cGlobals.params->dutil ); */
         }
 #endif
         makeGamesWindow( &apg );

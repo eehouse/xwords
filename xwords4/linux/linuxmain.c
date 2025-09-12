@@ -256,7 +256,9 @@ void
 cg_init(CommonGlobals* cGlobals, cg_destructor proc)
 {
     XP_ASSERT( 0 == cGlobals->refCount );
-    cGlobals-> creator = pthread_self();
+#ifdef DEBUG
+    cGlobals->creator = pthread_self();
+#endif
     cGlobals->refCount = 1;
     cGlobals->destructor = proc;
 }
@@ -273,7 +275,8 @@ cg_init(CommonGlobals* cGlobals, cg_destructor proc)
 /* } */
 
 void
-_cg_unref( CommonGlobals* cGlobals, const char* proc, int line )
+_cg_unref( CommonGlobals* cGlobals, const char* XP_UNUSED_DBG(proc),
+           int XP_UNUSED_DBG(line) )
 {
     LOG_FUNC();
     XP_LOGFF( "cg: %p: refCount %d", cGlobals, cGlobals->refCount );
@@ -356,8 +359,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
     }
 
     if ( opened ) {
-        DeviceRole deviceRole = cGlobals->gi->deviceRole;
-        XP_LOGF( "%s(): server role: %d", __func__, deviceRole );
+        XP_LOGFF( "server role: %d", cGlobals->gi->deviceRole );
         // linuxSaveGame( cGlobals );   /* again, to include address etc. */
     }
     LOG_RETURNF( "%s", boolToStr(opened) );
@@ -2221,12 +2223,14 @@ roFromStr(const char* rematchOrder )
 }
 
 void
-assertMainThread(const CommonGlobals* cGlobals )
+assertMainThread(const CommonGlobals* XP_UNUSED_DBG(cGlobals) )
 {
+#ifdef DEBUG
     if ( !!cGlobals && cGlobals->creator != pthread_self() ) {
         XP_LOGFF( "cGlobals: %p", cGlobals );
         XP_ASSERT( 0 );
     }
+#endif
 }
 
 static void

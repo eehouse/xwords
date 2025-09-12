@@ -168,10 +168,9 @@ newGuestFromArgs( CmdWrapper* wr, cJSON* args )
     tmp = cJSON_GetObjectItem( args, "dict" );
     if ( !!tmp ) {
         XP_STRCAT( nli.dict, tmp->valuestring );
-
-        XW_DUtilCtxt* dutil = wr->params->dutil;
-        DictionaryCtxt* dict = linux_dictionary_make( MPPARM(dutil->mpool)
-                                                      wr->params, tmp->valuestring,
+        LaunchParams* params = wr->params;
+        DictionaryCtxt* dict = linux_dictionary_make( MPPARM(params->dutil->mpool)
+                                                      params, tmp->valuestring,
                                                       XP_TRUE );
         const XP_UCHAR* iso = dict_getISOCode( dict );
         XP_STRCAT( nli.isoCodeStr, iso );

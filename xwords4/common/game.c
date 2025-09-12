@@ -629,7 +629,6 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     }
 } /* gi_copy */
 
-#ifdef DEBUG
 static XP_Bool
 strEq( const XP_UCHAR* str1, const XP_UCHAR* str2 )
 {
@@ -744,7 +743,6 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
 
     return equal;
 }
-#endif
 
 void
 gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi, 
@@ -1076,6 +1074,18 @@ gi_formatGR( const CurGameInfo* gi )
     return gr;
 }
 
+XP_Bool
+gi_isValid(const CurGameInfo* gi)
+{
+    XP_Bool result =
+        !!gi
+        && 0 < gi->nPlayers && gi->nPlayers <= MAX_NUM_PLAYERS
+        && gi->created
+        && gi->gameID
+        ;
+    return result;
+}
+
 #ifdef DEBUG
 void
 game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
@@ -1109,18 +1119,6 @@ game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
         offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "  iso: %s", gi->isoCodeStr );
         // offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "  tradSub7: %s", boolToStr(gi->tradeSub7) );
     }
-}
-
-XP_Bool
-gi_isValid(const CurGameInfo* gi)
-{
-    XP_Bool result =
-        !!gi
-        && 0 < gi->nPlayers && gi->nPlayers <= MAX_NUM_PLAYERS
-        && gi->created
-        && gi->gameID
-        ;
-    return result;
 }
 #endif
 

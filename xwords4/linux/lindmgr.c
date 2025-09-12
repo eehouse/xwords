@@ -55,7 +55,10 @@ const char*
 dirForFD( LinDictMgr* ldm, int fd )
 {
     FindData fda = { .soughtFD = fd, };
-    gpointer foundFD = g_hash_table_find( ldm->dirs, ghrFunc, &fda );
+#ifdef DEBUG
+    gpointer foundFD =
+#endif
+        g_hash_table_find( ldm->dirs, ghrFunc, &fda );
     XP_ASSERT( ((int)(long)foundFD) == fd );
     // XP_LOGFF( "(%d) => %s", fd, fda.foundDir );
     return fda.foundDir;
@@ -193,9 +196,14 @@ ldm_addDir( LinDictMgr* ldm, const char* path )
     XP_LOGFF( "(path=%s)", fullPath );
 
     if ( !g_hash_table_contains( ldm->dirs, fullPath ) ) {
-        int fd = addListener( ldm, fullPath );
+#ifdef DEBUG
+        int fd =
+#endif
+            addListener( ldm, fullPath );
+#ifdef DEBUG
         gboolean isNew = g_hash_table_insert( ldm->dirs, fullPath, (void*)(long)fd );
         XP_ASSERT( isNew );
+#endif
     } else {
         XP_LOGFF( "%s already there", fullPath );
         free( fullPath );

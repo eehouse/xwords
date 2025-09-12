@@ -160,8 +160,8 @@ static void clearCurHintRect( BoardCtxt* board );
  *
  ****************************************************************************/
 BoardCtxt*
-board_make( XWEnv xwe, ModelCtxt* model, CtrlrCtxt* ctrlr, DrawCtx* draw,
-            XW_UtilCtxt** utilp )
+board_make( XWEnv XP_UNUSED_DBG(xwe), ModelCtxt* model, CtrlrCtxt* ctrlr,
+            DrawCtx* draw, XW_UtilCtxt** utilp )
 {
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );

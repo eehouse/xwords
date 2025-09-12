@@ -717,7 +717,7 @@ tile_values_impl( GtkGameGlobals* globals, bool full )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     XWStreamCtxt* stream = 
-        mem_stream_make( cGlobals->params->mpool,
+        mem_stream_make( MPPARM(cGlobals->params->mpool)
                          cGlobals->params->vtMgr,
                          CHANNEL_NONE );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
@@ -1652,7 +1652,8 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 } /* gtk_util_yOffsetChange */
 
 static void
-gtk_util_dictGone( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), const XP_UCHAR* dictName )
+gtk_util_dictGone( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+                   const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(dictName: %s)", dictName );
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );

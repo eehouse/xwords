@@ -334,7 +334,8 @@ void _util_unref( XW_UtilCtxt* util, XWEnv xwe
 # define util_ref(UC) _util_ref((UC), __func__, __LINE__)
 # define util_unref(UC, XWE) _util_unref((UC), XWE, __func__, __LINE__)
 #else
-foo
+# define util_ref(UC) _util_ref((UC))
+# define util_unref(UC, XWE) _util_unref((UC), XWE)
 #endif
 
 # ifdef MEM_DEBUG
