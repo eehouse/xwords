@@ -29,7 +29,10 @@ struct XWArray {
 
     ArCompProc proc;
     void* procClosure;
-
+#ifdef DEBUG
+    const char* caller;
+    int line;
+#endif
     MPSLOT
 };
 
@@ -45,9 +48,21 @@ static void assertSorted( XWArray* array, XWEnv xwe );
 
 
 XWArray*
-arr_make(MPFORMAL ArCompProc sortProc, void* procClosure)
+arr_make_impl(
+#ifdef MEM_DEBUG
+               MemPoolCtx* mpool,
+#endif
+               ArCompProc sortProc, void* procClosure
+#ifdef DEBUG
+              ,const char* caller, int line
+#endif
+              )
 {
     XWArray* array = XP_CALLOC(mpool, sizeof(*array) );
+#ifdef DEBUG
+    array->caller = caller;
+    array->line = line;
+#endif
 #ifdef MEM_DEBUG
     array->mpool = mpool;
 #endif
@@ -210,7 +225,10 @@ assertSorted( XWArray* array, XWEnv xwe )
     if ( !!proc ) {
         for ( int ii = 1; ii < array->nElems; ++ii ) {
             int res = (*proc)( array->elems[ii-1], array->elems[ii], xwe, array->procClosure );
-            XP_ASSERT( res <= 0 );
+            if ( 0 < res ) {
+                XP_LOGFF( "ERROR: array from %s line %d out-of-order", array->caller, array->line );
+                XP_ASSERT( 0 );
+            }
         }
     }
 }

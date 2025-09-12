@@ -46,7 +46,7 @@ tmr_init( XW_DUtilCtxt* dutil )
     TimerMgrState* tms = XP_CALLOC( dutil->mpool, sizeof(*tms) );
     tms->dutil = dutil;
     dutil->timersState = tms;
-    tms->timers = arr_make( MPPARM(dutil->mpool) PtrCmpProc, NULL);
+    tms->timers = arr_make( dutil->mpool, PtrCmpProc, NULL);
     MUTEX_INIT( &tms->mutex, XP_TRUE );
 }
 

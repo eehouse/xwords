@@ -31,7 +31,22 @@ extern "C" {
 typedef struct XWArray XWArray;
 
 typedef int (*ArCompProc)(const void* dl1, const void* dl2, XWEnv xwe, void* closure);
-XWArray* arr_make(MPFORMAL ArCompProc proc, void* procClosure);
+
+/* Don't use arr_make_impl()! Use the macros arr_make() instead.*/
+XWArray* arr_make_impl(
+#ifdef MEM_DEBUG
+                       MemPoolCtx* mpool,
+#endif
+                       ArCompProc proc, void* procClosure
+#ifdef DEBUG
+                       ,const char* caller, int line
+#endif
+                       );
+#ifdef DEBUG
+# define arr_make(mpool, proc, closure) arr_make_impl(mpool, proc, closure, __func__, __LINE__ )
+#else
+# define arr_make(mpool, proc, closure) arr_make_impl(proc, closure )
+#endif
 void arr_destroy( XWArray* array );
 
 /* Set the sort order. Will result in a resort if there's data. Null is

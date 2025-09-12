@@ -55,7 +55,7 @@ dmgr_make( XW_DUtilCtxt* dutil )
     DictMgrCtxt* dictMgr = XP_CALLOC( dutil->mpool, sizeof(*dictMgr) );
     MUTEX_INIT( &dictMgr->mutex, XP_FALSE );
 
-    dictMgr->pairs = arr_make(MPPARM(dutil->mpool) sortByKeyProc, NULL);
+    dictMgr->pairs = arr_make(dutil->mpool, sortByKeyProc, NULL);
 
     dutil->dictMgr = dictMgr;
 }

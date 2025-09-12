@@ -2395,7 +2395,7 @@ testSort( LaunchParams* params )
 {
     XP_Bool success = !!params->sortDict;
     if ( success ) {
-        XWArray* array = arr_make( MPPARM(params->mpool) compLenAlpha, NULL );
+        XWArray* array = arr_make( params->mpool, compLenAlpha, NULL );
 #if 1
         addWord( array, "dd" );
         gchar* saveMe = addWord( array, "bb" );
