@@ -67,7 +67,7 @@ loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     KPState* state = (KPState*)dutil->kpCtxt;
     if ( NULL == state ) {
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
-        state->players = arr_make( MPPARM(dutil->mpool) PtrCmpProc, NULL );
+        state->players = arr_make( dutil->mpool, PtrCmpProc, NULL );
         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                     dutil_getVTManager(dutil) );
         dutil_loadStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );

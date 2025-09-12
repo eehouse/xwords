@@ -142,10 +142,10 @@ gmgr_init( XW_DUtilCtxt* duc )
     XP_ASSERT( !duc->gameMgrState );
     GameMgrState* gs = XP_CALLOC( duc->mpool, sizeof(*gs) );
     duc->gameMgrState = gs;
-    XWArray* list = arr_make( MPPARM(duc->mpool) sortByGR, NULL );
+    XWArray* list = arr_make( duc->mpool, sortByGR, NULL );
     gs->list = list;
-    gs->deletedList = arr_make( MPPARM(duc->mpool) sortByGR, NULL );
-    gs->pendingGroupEvents = arr_make( MPPARM(duc->mpool) NULL, NULL );
+    gs->deletedList = arr_make( duc->mpool, sortByGR, NULL );
+    gs->pendingGroupEvents = arr_make( duc->mpool, NULL, NULL );
 }
 
 XP_Bool
@@ -1155,7 +1155,7 @@ makeGroupGamesArray( XW_DUtilCtxt* duc, XWEnv xwe, GroupState* grps )
     GetGroupData ggd = {
         .duc = duc,
         .grps = grps,
-        .u.refs = arr_make( MPPARM(duc->mpool) sortOrderSort, grps ),
+        .u.refs = arr_make( duc->mpool, sortOrderSort, grps ),
     };
     dvc_getKeysLike( duc, xwe, keys, onGotGroupKey, &ggd );
     XP_LOGFF( "got %d refs", arr_length(ggd.u.refs) );
@@ -1198,7 +1198,7 @@ loadGroups( XW_DUtilCtxt* duc, XWEnv xwe, GameMgrState* gs )
 {
     LOG_FUNC();
     XP_ASSERT( !gs->groups );
-    gs->groups = arr_make(MPPARM(duc->mpool) NULL, NULL );
+    gs->groups = arr_make(duc->mpool, NULL, NULL );
 
     const XP_UCHAR* keys[] = { KEY_GROUPS, KEY_IDS, NULL };
     XWStreamCtxt* stream = dvc_loadStream( duc, xwe, keys );

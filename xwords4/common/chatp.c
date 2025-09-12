@@ -52,7 +52,7 @@ cht_init( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp )
 #endif
     ChatState* state = XP_CALLOC(mpool, sizeof(*state));
     state->utilp = utilp;
-    state->entries = arr_make(MPPARM(mpool) sortByTimestamp, NULL);
+    state->entries = arr_make(mpool, sortByTimestamp, NULL);
     MPASSIGN( state->mpool, mpool );
     return state;
 }
