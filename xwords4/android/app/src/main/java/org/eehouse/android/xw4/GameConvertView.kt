@@ -21,6 +21,8 @@ package org.eehouse.android.xw4
 import android.app.Dialog
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +35,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 private val TAG: String = GameConvertView::class.java.simpleName
 
 class GameConvertView(val mContext: Context, attrs: AttributeSet)
-    : LinearLayout( mContext, attrs ) {
+    : LinearLayout( mContext, attrs ), View.OnClickListener {
     private var mState: GameConvertState? = null
 
     class GameConvertState(val groupKeys: List<Long>,
@@ -42,10 +44,18 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        findViewById<TextView>(R.id.names)
-            .setText(mState!!.groupKeys.joinToString(separator=", "))
-        findViewById<TextView>(R.id.games)
-            .setText(mState!!.games.joinToString(separator=", "))
+        findViewById<Button>(R.id.convert_one).setOnClickListener(this)
+        findViewById<Button>(R.id.convert_all).setOnClickListener(this)
+        updateExpl()
+    }
+
+    override fun onClick(view: View?) {
+        view?.let { view ->
+            when (view.id) {
+                R.id.convert_all -> convert(true)
+                R.id.convert_one -> convert(false)
+            }
+        }
     }
 
     private fun configure(state: GameConvertState) {
@@ -53,7 +63,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     }
 
     private fun convert(doAll: Boolean) {
-        Utils.launch(Dispatchers.IO) {
+        launch() {
             val state = mState!!
 
             // create a groups mapping to use with games
@@ -89,6 +99,12 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             }
         }
     }
+
+    private fun updateExpl() {
+        val numGames = mState!!.games.size
+        val txt = LocUtils.getString(context, R.string.game_convert_expl, numGames )
+        findViewById<TextView>(R.id.convert_expl).text = txt
+    }
     
     companion object {
         suspend fun needed(context: Context): GameConvertState? {
@@ -119,17 +135,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             val view = LocUtils.inflate(context, R.layout.game_convert_view)
                 as GameConvertView
             view.configure(state)
-            val dialog = LocUtils.makeAlertBuilder(context)
+            return LocUtils.makeAlertBuilder(context)
                 .setView(view)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.button_convert) {dlg, button ->
-                    view.convert(false)
-                }
-                .setNeutralButton(R.string.button_convertAll) {dlg, button ->
-                    view.convert(true)
-                }
+                .setPositiveButton(R.string.button_done, null)
                 .create()
-            return dialog
         }
     }
 }
