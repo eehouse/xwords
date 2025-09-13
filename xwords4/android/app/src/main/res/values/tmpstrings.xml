@@ -41,10 +41,12 @@
 
   <string name="button_copyAddr">Copy address</string>
 
-  <string name="game_convert_expl">Explanation of game conversion
-  process</string>
-  <string name="button_convert">Convert one</string>
+  <string name="game_convert_expl">This version of CrossWords uses a
+  new format for storing games. You have %1$d games that need to be
+  converted from the old format before they can be displayed.</string>
+  <string name="button_convertOne">Convert one</string>
   <string name="button_convertAll">Convert all</string>
+  <string name="button_deleteOld">Delete old</string>
 
   <string name="games_menu_convert">Convert games</string>
 

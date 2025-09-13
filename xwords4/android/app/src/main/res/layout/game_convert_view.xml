@@ -8,22 +8,30 @@
     android:padding="8dp"
     >
 
-  <TextView android:layout_height="wrap_content"
+  <TextView android:id="@+id/convert_expl"
+            android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/game_convert_expl"
             />
 
-  <TextView android:id="@+id/names"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+  <LinearLayout android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+    <Button android:id="@+id/convert_one"
+            android:text="@string/button_convertOne"
+            style="@style/evenly_spaced_horizontal"
             />
-  <TextView android:id="@+id/games"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+    <Button android:id="@+id/convert_all"
+            android:text="@string/button_convertAll"
+            style="@style/evenly_spaced_horizontal"
             />
+    <Button android:id="@+id/delete_old"
+            android:text="@string/button_deleteOld"
+            style="@style/evenly_spaced_horizontal"
+            />
+  </LinearLayout>
+
 
 </org.eehouse.android.xw4.GameConvertView>
 
