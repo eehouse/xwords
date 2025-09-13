@@ -46,4 +46,6 @@
   <string name="button_convert">Convert one</string>
   <string name="button_convertAll">Convert all</string>
 
+  <string name="games_menu_convert">Convert games</string>
+
 </resources>

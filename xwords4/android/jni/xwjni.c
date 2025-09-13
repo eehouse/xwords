@@ -1431,25 +1431,17 @@ makeIndex( DictIterData* data )
     }
 } /* makeIndex */
 
-JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1countItems
+JNIEXPORT jlongArray JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getPositions
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
-    jint result;
+    jlongArray result = NULL;
     DVC_HEADER(jniGlobalPtr);
-    result = gmgr_countItems( globalState->dutil, env );
-    DVC_HEADER_END();
-    XP_LOGFF( "=> %d", result );
-    return result;
-}
-
-JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getNthItem
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint indx )
-{
-    jlong result;
-    DVC_HEADER(jniGlobalPtr);
-    result = gmgr_getNthItem( globalState->dutil, env, indx );
+    XWArray* positions = gmgr_getPositions( globalState->dutil, env );
+    int count = arr_length( positions );
+    XP_LOGFF( "positions array len: %d", count );
+    result = makeLongArray( env, count, arr_getData(positions) );
+    arr_destroy( positions );
     DVC_HEADER_END();
     return result;
 }
@@ -1651,8 +1643,10 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1convertGame
         streamFromJStream( MPPARM(globalState->dutil->mpool)
                            env, globalState->vtMgr, jstream );
     const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
-    result = gmgr_convertGame( globalState->dutil, env, jgrp, name,
-                               stream );
+    GroupRef grp = (GroupRef)jgrp;
+    GameRef gr;
+    gmgr_convertGames( globalState->dutil, env, 1, &grp, &name, &stream, &gr );
+    result = gr;
     (*env)->ReleaseStringUTFChars( env, jname, name );
     stream_destroy( stream );
     DVC_HEADER_END();
@@ -2519,7 +2513,6 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1onTimerFired
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jkey )
 {
-    LOG_FUNC();
     DVC_HEADER(jniGlobalPtr);
     dvc_onTimerFired( globalState->dutil, env, jkey );
     DVC_HEADER_END();

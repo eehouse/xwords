@@ -1253,27 +1253,28 @@ onCursesGameOpened( CommonAppGlobals* cag, GameRef gr )
 }
 
 void
-onGameChangedCurses( CommonAppGlobals* cag, GameRef gr, GameChangeEvents gces )
+onGameChangedCurses( CommonAppGlobals* cag, GameRef XP_UNUSED(gr),
+                     GameChangeEvents XP_UNUSED(gces) )
 {
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
     XP_Bool doRefresh = XP_FALSE;
 
-    if ( getAndClear( GCE_ADDED, &gces ) ) {
-        if ( cag->params->showGames ) {
-            CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
-            /* close any open game */
+    /* if ( getAndClear( GCE_ADDED, &gces ) ) { */
+    /*     if ( cag->params->showGames ) { */
+    /*         CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag; */
+    /*         /\* close any open game *\/ */
 
 
-            /* open the new game */
-            cb_dims dims;
-            figureDims( aGlobals, &dims );
-            cb_open( aGlobals->cbState, gr, &dims );
-        }
-    }
-    if ( getAndClear( GCE_DELETED, &gces ) ) {
-        doRefresh = XP_TRUE;
-    }
+    /*         /\* open the new game *\/ */
+    /*         cb_dims dims; */
+    /*         figureDims( aGlobals, &dims ); */
+    /*         cb_open( aGlobals->cbState, gr, &dims ); */
+    /*     } */
+    /* } */
+    /* if ( getAndClear( GCE_DELETED, &gces ) ) { */
+    /*     doRefresh = XP_TRUE; */
+    /* } */
     if ( doRefresh ) {
         cgl_refresh( aGlobals->gameList );
     }

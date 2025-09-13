@@ -23,6 +23,9 @@
           android:icon="@drawable/prefs__gen"
           android:showAsAction="ifRoom"
           />
+    <item android:id="@+id/games_menu_convert"
+          android:title="@string/games_menu_convert"
+          />
     <item android:id="@+id/games_menu_ksconfig"
           android:title="@string/movechecker_name"
           />

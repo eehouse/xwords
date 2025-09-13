@@ -327,20 +327,6 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
     XP_ASSERT( !findFor( apg, gr, NULL, NULL ) );
 #endif
 
-#if 0
-    if ( !isNew ) {
-        for ( gboolean valid = gtk_tree_model_get_iter_first( model, &iter );
-              valid;
-              valid = gtk_tree_model_iter_next( model, &iter ) ) {
-            sqlite3_int64 tmpid;
-            gtk_tree_model_get( model, &iter, ROW_ITEM, &tmpid, -1 );
-            if ( tmpid == rowid ) {
-                found = XP_TRUE;
-                break;
-            }
-        }
-    }
-#endif
     if ( !found ) {
         gtk_list_store_append( store, &iter );
     }
@@ -491,29 +477,58 @@ checkConvertImpl( GtkAppGlobals* apg, XP_Bool doAll )
 
     bool done = false;
     GSList* games = gdb_listGames( params->pDb );
-    int count = 0;
+    int nGames = g_slist_length(games);
+    XWStreamCtxt* streams[nGames];
+    GroupRef groups[nGames];
+    const XP_UCHAR* names[nGames];
+    GameRef grs[nGames];
+
+    int ii = 0;
     for ( GSList* iter = games; !!iter && !done; iter = iter->next ) {
         sqlite3_int64* rowidp = (sqlite3_int64*)iter->data;
         sqlite3_int64 rowid = *rowidp;
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                    params->vtMgr );
+        streams[ii] = mem_stream_make_raw( MPPARM(params->mpool)
+                                           params->vtMgr );
         DeviceRole role;
-        if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
-            GroupRef grp = groupForRole(dutil, role);
-            XP_UCHAR name[32];
-            snprintf( name, sizeof(name), "Game %lld", rowid );
-            GameRef gr = gmgr_convertGame( dutil, NULL_XWE, grp, name, stream );
-            XP_LOGFF( "got gr " GR_FMT, gr );
-            done = !doAll && !!gr;
-            if ( !!gr ) {
-                ++count;
-                XP_LOGFF( "finished %dth conversion", count );
-            }
+        if ( gdb_loadGame( streams[ii], params->pDb, &role, rowid ) ) {
+            groups[ii] = groupForRole(dutil, role);
+            names[ii] = g_strdup_printf("Game %lld", rowid );
         }
-        stream_destroy( stream );
+        ++ii;
     }
     gdb_freeGamesList( games );
+    XP_ASSERT( ii == nGames );
+
+    if ( doAll ) {
+        gmgr_convertGames( dutil, NULL_XWE, nGames, groups, names, streams, grs );
+    } else {
+        for ( int ii = 0; ii < nGames; ++ii ) {
+            XWStreamCtxt* stream = streams[ii];
+            const XP_UCHAR* name = names[ii];
+            GroupRef grp = groups[ii];
+            GameRef gr;
+            gmgr_convertGames( dutil, NULL_XWE, 1, &grp, &name, &stream, &gr );
+            if ( !!gr ) {
+                XP_LOGFF( "converted " GR_FMT, gr );
+                break;
+            }
+        }
+    }
+
+    for ( int ii = 0; ii < nGames; ++ii ) {
+        stream_destroy( streams[ii] );
+        g_free( (void*)names[ii] );
+    }
+
+    /* XP_LOGFF( "got gr " GR_FMT, gr ); */
+    /*         done = !doAll && !!gr; */
+    /*         if ( !!gr ) { */
+    /*             ++count; */
+    /*             XP_LOGFF( "finished %dth conversion", count ); */
+    /*         } */
+    /*     } */
+    /* } */
 
 }
 
@@ -717,7 +732,6 @@ delete_game( GtkAppGlobals* apg, GameRef gr )
 {
     LaunchParams* params = apg->cag.params;
     gmgr_deleteGame( params->dutil, NULL_XWE, gr );
-    buildGamesList( apg );
 }
 
 static void
@@ -862,69 +876,13 @@ saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key )
 }
 #undef COORDS_FORMAT
 
-typedef struct _ThumbChangeData {
-    GameRef gr;
-    GtkAppGlobals* apg;
-} ThumbChangeData;
-
-static gint
-thumbChangeIdle( gpointer data )
-{
-    ThumbChangeData* tcd = (ThumbChangeData*)data;
-    GtkTreeIter found;
-    GtkWidget* tree;
-    if ( findFor( tcd->apg, tcd->gr, &found, &tree ) ) {
-        XP_LOGFF( "ready to update!!" );
-        GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
-        GtkListStore* store = GTK_LIST_STORE( model );
-
-        GdkPixbuf* snap = getSnapData( tcd->apg->cag.params, tcd->gr );
-        gtk_list_store_set( store, &found,
-                            ROW_THUMB, snap,
-                            -1 );
-    }
-    g_free( data );
-    return 0;                   /* don't run again */
-}
-
-static void
-onThumbChangedGTK( GtkAppGlobals* apg, GameRef gr )
-{
-    ThumbChangeData tcd = { .gr = gr,
-                            .apg = apg,
-    };
-    (void)g_idle_add( thumbChangeIdle, g_memdup2(&tcd, sizeof(tcd)) );
-}
-
 void
 onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
 {
-    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
-    XP_Bool doBuild = XP_FALSE;
-    if ( getAndClear( GCE_ADDED, &gces ) ) {
-        doBuild = XP_TRUE;
-    }
-    if ( getAndClear( GCE_DELETED, &gces ) ) {
-        doBuild = XP_TRUE;
-    }
-    if ( getAndClear( GCE_CONFIG_CHANGED, &gces ) ) {
-        doBuild = XP_TRUE;
-    }
-    if ( getAndClear( GCE_PLAYER_JOINED, &gces ) ) {
-        doBuild = XP_TRUE;
-    }
-    if ( getAndClear( GCE_TURN_CHANGED, &gces ) ) {
-        doBuild = XP_TRUE;
-    }
-    if ( getAndClear( GCE_BOARD_CHANGED, &gces ) ) {
-        doBuild = XP_TRUE;
-        onThumbChangedGTK( apg, gr );
-    }
-    XP_ASSERT( !gces );         /* did we get them all? */
-
-    if ( doBuild ) {
-        buildGamesList( apg );
-    }
+    XP_LOGFF( "doing nothing" );
+    XP_USE( params );
+    XP_USE( gr );
+    XP_USE( gces );
 }
 
 void
@@ -932,13 +890,6 @@ onGroupChangedGTK( LaunchParams* params, GroupRef XP_UNUSED_DBG(grp),
                    GroupChangeEvents XP_UNUSED_DBG(gces) )
 {
     XP_LOGFF( "grp: %d, gces: %x", grp, gces );
-    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
-    buildGamesList( apg );
-}
-
-void
-onGTKGroupRemoved( LaunchParams* params, GroupRef XP_UNUSED(grp) )
-{
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
     buildGamesList( apg );
 }
@@ -956,8 +907,7 @@ onGTKMissingDictAdded( LaunchParams* params, GameRef XP_UNUSED_DBG(gr),
                        const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
-    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
-    (void)g_idle_add( buildGamesListIdle, apg );
+    XP_USE(params);
 }
 
 void
@@ -965,8 +915,7 @@ onGTKDictGone( LaunchParams* params, GameRef XP_UNUSED_DBG(gr),
                const XP_UCHAR* XP_UNUSED_DBG(dictName) )
 {
     XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
-    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
-    (void)g_idle_add( buildGamesListIdle, apg );
+    XP_USE(params);
 }
 
 void
@@ -1076,15 +1025,6 @@ showGamesToggle( GtkWidget* toggle, void* closure )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->cag.params;
     params->showGames = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
-}
-
-static void
-skipGroupsToggle( GtkWidget* toggle, void* closure )
-{
-    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LaunchParams* params = apg->cag.params;
-    params->skipGroups = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
-    buildGamesList( apg );
 }
 
 typedef struct _GroupState {
@@ -1231,11 +1171,41 @@ mkGroupHeader( GtkAppGlobals* apg, GroupRef grp )
     return hbox;
 }
 
+typedef struct _BuildListData {
+    GtkWidget* list;
+    GtkAppGlobals* apg;
+    GtkWidget* treesBox;
+} BuildListData;
+
+static ForEachAct
+addOneProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+{
+    BuildListData* bld = (BuildListData*)closure;
+    GLItemRef ir = (GLItemRef)elem;
+    /* XP_LOGFF( "(" GR_FMT ")", ir ); */
+
+    if ( gmgr_isGame( ir ) ) {
+        if ( !bld->list ) {
+            bld->list = init_games_list( bld->apg );
+            gtk_container_add( GTK_CONTAINER(bld->treesBox), bld->list );
+            gtk_widget_show( bld->list );
+        }
+        LaunchParams* params = bld->apg->cag.params;
+        add_to_list( params, bld->list, gmgr_toGame( ir ) );
+    } else {
+        bld->list = NULL;   /* clear so any additional games will get new list */
+        GtkWidget* header = mkGroupHeader( bld->apg, gmgr_toGroup(ir) );
+        gtk_container_add( GTK_CONTAINER(bld->treesBox), header );
+    }
+
+    return FEA_OK;
+}
+
 static void
 buildGamesList( GtkAppGlobals* apg )
 {
     GtkWidget* treesBox = apg->treesBox;
-    GtkWidget* list = NULL;
+    LaunchParams* params = apg->cag.params;
 
     /* remove all */
     GList* children = gtk_container_get_children(GTK_CONTAINER(treesBox));
@@ -1244,38 +1214,11 @@ buildGamesList( GtkAppGlobals* apg )
     }
     g_list_free(children);
 
-    LaunchParams* params = apg->cag.params;
-    if ( params->skipGroups ) {
-#ifdef DEBUG
-        XP_U16 count = gmgr_countGames( params->dutil, NULL_XWE );
-        for ( XP_U16 ii = 0; ii < count; ++ii ) {
-            GLItemRef ir = gmgr_getNthGame( params->dutil, NULL_XWE, ii );
-            if ( !list ) {
-                list = init_games_list( apg );
-            }
-            gtk_container_add( GTK_CONTAINER(treesBox), list );
-            gtk_widget_show( list );
-            add_to_list( params, list, gmgr_toGame( ir ) );
-        }
-#endif
-    } else {
-        XP_U16 count = gmgr_countItems( params->dutil, NULL_XWE );
-        for ( XP_U16 ii = 0; ii < count; ++ii ) {
-            GLItemRef ir = gmgr_getNthItem( params->dutil, NULL_XWE, ii );
-            if ( gmgr_isGame( ir ) ) {
-                if ( !list ) {
-                    list = init_games_list( apg );
-                    gtk_container_add( GTK_CONTAINER(treesBox), list );
-                    gtk_widget_show( list );
-                }
-                add_to_list( params, list, gmgr_toGame( ir ) );
-            } else {
-                list = NULL;   /* clear so any additional games will get new list */
-                GtkWidget* header = mkGroupHeader( apg, gmgr_toGroup(ir) );
-                gtk_container_add( GTK_CONTAINER(treesBox), header );
-            }
-        }
-    }
+    XWArray* positions = gmgr_getPositions( params->dutil, NULL_XWE );
+    BuildListData bld = { .apg = apg, .treesBox = treesBox,
+    };
+    arr_map( positions, NULL_XWE, addOneProc, &bld );
+    arr_destroyp( &positions );
 }
 
 static void
@@ -1329,15 +1272,6 @@ makeGamesWindow( GtkAppGlobals* apg )
             gtk_widget_show( showNewcheck );
             gtk_container_add( GTK_CONTAINER(hbox), showNewcheck );
         }
-        {
-            GtkWidget* skipGroupsCheck = gtk_check_button_new_with_label( "Skip Groups" );
-            gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(skipGroupsCheck),
-                                          params->skipGroups );
-            g_signal_connect( skipGroupsCheck, "toggled",
-                              G_CALLBACK(skipGroupsToggle), apg );
-            gtk_widget_show( skipGroupsCheck );
-            gtk_container_add( GTK_CONTAINER(hbox), skipGroupsCheck );
-        }
     }
 
     GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
@@ -1350,16 +1284,7 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_container_add( GTK_CONTAINER(swin), apg->treesBox );
 
     if ( !!params->pDb ) {
-#ifdef XWFEATURE_DEVICE_STORES
-        buildGamesList( apg );
-#else
-        /* GSList* games = gdb_listGames( params->pDb ); */
-        /* for ( GSList* iter = games; !!iter; iter = iter->next ) { */
-        /*     sqlite3_int64* rowid = (sqlite3_int64*)iter->data; */
-        /*     onNewData( apg, *rowid, XP_TRUE ); */
-        /* } */
-        /* gdb_freeGamesList( games ); */
-#endif
+        (void)g_idle_add( buildGamesListIdle, apg );
     }
 
     GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );

@@ -37,6 +37,12 @@ object GameMgr {
         fun toGroup(): GroupRef {
             return GroupRef(gmgr_toGroup(ir))
         }
+        override fun toString(): String {
+            val result =
+                if (isGame()) toGame().toString()
+                else toGroup().toString()
+            return result
+        }
     }
 
     class GroupRef(val grp: Int): Serializable {
@@ -95,24 +101,14 @@ object GameMgr {
         }
     }
 
-    suspend fun countItems(): Int {
-        val result = Device.await {
+    suspend fun getPositions(): Array<GLItemRef> {
+        val longs = Device.await {
             val jniState = XwJNI.getJNIState()
-            gmgr_countItems(jniState)
-        } as Int
-        return result
-    }
-
-    suspend fun getNthItem(indx: Int): GLItemRef {
-        Log.d(TAG, "getNthGame($indx)")
-        Assert.assertTrue( 0 <= indx )
-        val result = Device.await {
-            val jniState = XwJNI.getJNIState()
-            gmgr_getNthItem(jniState, indx)
-        } as Long
-
-        Log.d(TAG, "gmgr_getNthItem($indx) => $result")
-        return GLItemRef(result)
+            gmgr_getPositions(jniState)
+        } as LongArray
+        val refs = longs.map{ GameMgr.GLItemRef(it) }.toTypedArray()
+        // Log.d(TAG, "getPositions() => {len: ${refs.size}}")
+        return refs
     }
 
     fun deleteGame(gr: GameRef) {
@@ -257,9 +253,7 @@ object GameMgr {
     @JvmStatic
     private external fun gmgr_setGroupName(jniState: Long, grp: Int, name: String)
     @JvmStatic
-    private external fun gmgr_countItems(jniState: Long): Int
-    @JvmStatic
-    private external fun gmgr_getNthItem(jniState: Long, indx: Int): Long
+    private external fun gmgr_getPositions(jniState: Long): LongArray
     @JvmStatic
     private external fun gmgr_deleteGame(jniState: Long, gr: Long)
     @JvmStatic

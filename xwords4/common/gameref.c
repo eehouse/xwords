@@ -837,8 +837,6 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
         XP_ASSERT( loaded );
 
         util_unref( util, xwe );
-
-        postGameChangeEvent( duc, xwe, gd, GCE_ADDED );
     }
     LOG_RETURNF( GR_FMT, gr );
     return gr;
@@ -912,8 +910,6 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
             }
         }
         ctrl_disposeRematchInfo( gd->ctrlr, rip );
-
-        scheduleOnGameAdded( duc, xwe, newGR );
     } else {
         XP_ASSERT(0);
         gmgr_deleteGame( duc, xwe, newGR );
@@ -1777,9 +1773,9 @@ gr_requestHint( DUTIL_GR_XWE,
     GR_HEADER();
     result = board_requestHint( gd->board, xwe,
 #ifdef XWFEATURE_SEARCHLIMIT
-                               useTileLimits,
+                                useTileLimits,
 #endif
-                              usePrev, workRemainsP );
+                                usePrev, workRemainsP );
     if ( result ) {
         schedule_draw( duc, xwe, gd );
     }
@@ -1836,6 +1832,7 @@ gr_handlePenDown( DUTIL_GR_XWE, XP_U16 xx,
     GR_HEADER();
     if ( board_handlePenDown( gd->board, xwe, xx, yy, handled ) ) {
         schedule_draw( duc, xwe, gd );
+        thumbChanged( duc, xwe, gd );
     }
     GR_HEADER_END_SAVE();
 }
@@ -1856,6 +1853,7 @@ gr_handlePenUp( DUTIL_GR_XWE, XP_U16 x, XP_U16 y )
     GR_HEADER();
     if ( board_handlePenUp( gd->board, xwe, x, y ) ) {
         schedule_draw( duc, xwe, gd );
+        thumbChanged( duc, xwe, gd );
     }
     GR_HEADER_END_SAVE();
 }

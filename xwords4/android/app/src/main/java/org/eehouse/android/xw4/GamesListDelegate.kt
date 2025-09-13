@@ -107,7 +107,7 @@ class GamesListDelegate(delegator: Delegator) :
         var selGames: MutableSet<GameRef> = HashSet()
         var selGroupIDs: MutableSet<Int> = HashSet()
     }
-    private var mHaveKnowns = false;
+    private var mHaveKnowns = false
 
     private var m_mySIS: MySIS? = null
 
@@ -483,7 +483,6 @@ class GamesListDelegate(delegator: Delegator) :
     private var m_haveShownGetDict = false
     private var m_newGameParams: Array<Any?>? = null
     private var mCurScrollState = 0
-    private var mGamesList: RecyclerView? = null
     private var mAdapter: GamesViewAdapter? = null
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
@@ -928,27 +927,21 @@ class GamesListDelegate(delegator: Delegator) :
             // deleteGames(asArray, true)
         }
 
-        mGamesList = findViewById(R.id.games) as RecyclerView
-        initGamesView()
-
-        launch {
-            GameConvertView.needed(mActivity)?.let {
-                showDialogFragment(DlgID.CONVERT_GAMES, it)
-            }
+        (findViewById(R.id.games) as RecyclerView).let {
+            it.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
+            mAdapter = GamesViewAdapter()
+            it.setAdapter(mAdapter)
         }
+
+        updateGamesView()
     } // init
 
-    private fun initGamesView() {
-        Log.d(TAG, "initGamesView()")
-        onKnownPlayersChange();
-        if ( true ) {           // Disable this when data corrupted....
-            launch {
-                val nGames = GameMgr.countItems()
-                mGamesList!!.let {
-                    it.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
-                    mAdapter = GamesViewAdapter(nGames)
-                    it.setAdapter(mAdapter)
-                }
+    private fun updateGamesView() {
+        Log.d(TAG, "updateGamesView()")
+        launch {
+            GameMgr.getPositions().let {
+                onKnownPlayersChange()
+                mAdapter!!.update(it)
             }
         }
     }
@@ -1760,6 +1753,11 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_checkupdates -> UpdateCheckReceiver
                                                 .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
+            R.id.games_menu_convert -> launch {
+                GameConvertView.needed(mActivity)?.let {
+                    showDialogFragment(DlgID.CONVERT_GAMES, it)
+                }
+            }
             R.id.games_menu_ksconfig -> launchKAConfigOnce()
             R.id.games_menu_fromclip -> takeFromClip()
             R.id.games_menu_rateme -> {
@@ -1993,13 +1991,6 @@ class GamesListDelegate(delegator: Delegator) :
     override fun onGroupExpandedChanged(obj: Any, expanded: Boolean) {
         val glg = obj as GameListGroup
         glg.getGrp()!!.setGroupCollapsed(!expanded)
-        initGamesView()         // force redraw -- FIXME!!
-
-        // DbgUtils.logf( "onGroupExpandedChanged(expanded=%b); groupID = %d",
-        //                expanded , groupID );
-        // DBUtils.setGroupExpanded(mActivity, groupID, expanded)
-
-        // m_adapter!!.setExpanded(groupID, expanded)
 
         // Deselect any games that are being hidden.
         if (!expanded) {
@@ -2218,14 +2209,8 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     override fun onGameChanged(gr: GameRef, flags: Int) {
-        val needsInit = DUtilCtxt.GCE_ADDED or DUtilCtxt.GCE_DELETED
-        if ( 0 != (needsInit and flags) ) {
-            initGamesView()
-        } else {
-            runOnUiThread {
-                findViewFor(gr)?.forceReload()
-            }
-        }
+        Log.d(TAG, "onGameChanged($gr, %x)".format(flags))
+        findViewFor(gr)?.forceReload()
     }
 
     override fun missingDictAdded(gr: GameRef, name: String) {
@@ -2733,7 +2718,7 @@ class GamesListDelegate(delegator: Delegator) :
 
     private fun deleteGames(grs: Array<GameRef>, skipTell: Boolean) {
         for (gr in grs) {
-            GameMgr.deleteGame(gr);
+            GameMgr.deleteGame(gr)
             m_mySIS!!.selGames.remove(gr)
         }
         invalidateOptionsMenuIf()
@@ -3036,33 +3021,55 @@ class GamesListDelegate(delegator: Delegator) :
 
         private fun tryLoad() {
             if (0 <= mPosition) {
-                launch {
-                    val item = GameMgr.getNthItem(mPosition)
-                    if ( item.isGame() ) {
-                        mGR = item.toGame()
-                        val selected = m_mySIS!!.selGames.contains(mGR)
-                        mGameListElem.load(mGR!!, this@GamesListDelegate,
-                                           mHandler, selected)
-                    } else {
-                        item.toGroup().let { grp ->
-                            mGrp = grp
-                            mGameListElem.load(grp, this@GamesListDelegate)
-                        }
+                val item = mAdapter!!.mPositions!![mPosition]
+                if ( item.isGame() ) {
+                    mGR = item.toGame()
+                    val selected = m_mySIS!!.selGames.contains(mGR)
+                    Log.d(TAG, "calling load...")
+                    mGameListElem.load(mGR!!, this@GamesListDelegate,
+                                       mHandler, selected)
+                } else {
+                    item.toGroup().let { grp ->
+                        mGrp = grp
+                        mGameListElem.load(grp, this@GamesListDelegate)
                     }
                 }
             }
         }
     }
 
-    inner class GamesViewAdapter(val nGames: Int) :
+    inner class GamesViewAdapter() :
         RecyclerView.Adapter<GameViewHolder>() {
+
+        var mPositions: Array<GameMgr.GLItemRef>? = null
+
         init {
             Log.d(TAG, "GamesViewAdapter.init()")
+            setHasStableIds(true)
         }
-        override fun getItemCount(): Int { return nGames }
+
+        fun update(positions: Array<GameMgr.GLItemRef>) {
+            Log.d(TAG, "update($positions)")
+            mPositions = positions
+            notifyDataSetChanged()
+        }
+
+        override fun getItemId(position: Int): Long {
+            val ir = mPositions!![position]
+            // Log.d(TAG, "getItemId($position) => $ir")
+            return ir.ir
+        }
+
+        override fun getItemCount(): Int {
+            val count = mPositions?.size ?: 0
+            // Log.d(TAG, "getItemCount() => $count")
+            return count
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)
             : GameViewHolder
         {
+            // Log.d(TAG, "onCreateViewHolder()")
             val view = inflate(R.layout.game_list_elem)
             mActivity.registerForContextMenu(view)
             return GameViewHolder(view as GameListElem)
@@ -3071,10 +3078,11 @@ class GamesListDelegate(delegator: Delegator) :
         override fun onBindViewHolder(holder: GameViewHolder,
                                       position: Int)
         {
+            // Log.d(TAG, "onBindViewHolder($position)")
             holder.bind(position)
         }
 
-        private val mPositions = HashMap<GameViewHolder, Int>()
+        private val mHolders = HashMap<GameViewHolder, Int>()
 
         // note():
         // RecyclerViews report a size (# of children) based on what's
@@ -3083,11 +3091,11 @@ class GamesListDelegate(delegator: Delegator) :
         // support lookup (findHolderFor()) we need to keep track ourselves of
         // what GameViewHolders are in play.
         fun note(position: Int, holder: GameViewHolder) {
-            mPositions[holder] = position
+            mHolders[holder] = position
         }
 
         fun findHolderFor(gr: GameRef): GameViewHolder? {
-            val result = mPositions.keys.firstNotNullOfOrNull {
+            val result = mHolders.keys.firstNotNullOfOrNull {
                 if (it.mGR?.equals(gr)?:false) it else null
             }
             if (null == result) {
@@ -3097,7 +3105,7 @@ class GamesListDelegate(delegator: Delegator) :
         }
 
         fun findHolderFor(grp: GroupRef): GameViewHolder? {
-            val result = mPositions.keys.firstNotNullOfOrNull {
+            val result = mHolders.keys.firstNotNullOfOrNull {
                 if (it.mGrp?.equals(grp)?:false) it else null
             }
             if (null == result) {
@@ -3265,29 +3273,27 @@ class GamesListDelegate(delegator: Delegator) :
         fun onGroupChanged(context: Context, grp: GroupRef, flags: Int) {
             Log.d(TAG, "onGroupChanged(grp=$grp, flags=0x%x)".format(flags))
 
-            s_self?.get()?.let {
-                        if ( 0 != flags and
-                             (DUtilCtxt.GRCE_ADDED
-                              or DUtilCtxt.GRCE_DELETED
-                              or DUtilCtxt.GRCE_MOVED) ) {
-                            it.initGamesView()
-                        } else if ( 0 != flags and
-                                    (DUtilCtxt.GRCE_RENAMED
-                                     or DUtilCtxt.GRCE_COLLAPSED
-                                     or DUtilCtxt.GRCE_EXPANDED
-                                     or DUtilCtxt.GRCE_GAMES_REORDERED
-                                     or DUtilCtxt.GRCE_GAME_ADDED
-                                     or DUtilCtxt.GRCE_GAME_REMOVED ) ) {
-                            it.runOnUiThread {
-                                it.findViewFor(grp)?.reload()
-                            }
-                        }
-                    }
+            s_self!!.get()!!
+                .let { self ->
+                         var flags = flags
+                         var forReload =
+                             (DUtilCtxt.GRCE_RENAMED
+                              or DUtilCtxt.GRCE_COLLAPSED
+                              or DUtilCtxt.GRCE_EXPANDED)
+                         if (0 != (flags and forReload)) {
+                             self.findViewFor(grp)?.reload()
+                             flags = flags and DUtilCtxt.GRCE_RENAMED.inv()
+                             Log.d(TAG, "flags now 0x%x".format(flags))
+                         }
+
+                         if (0 != flags) {
+                             self.updateGamesView()
+                         }
+                     }
         }
 
         fun clearThumbnails() {
             GameMgr.clearThumbnails()
-            s_self?.get()?.initGamesView()
         }
     } // companion object
 }

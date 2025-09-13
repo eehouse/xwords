@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-void gmgr_init( XW_DUtilCtxt* duc );
+void gmgr_init( XW_DUtilCtxt* duc, XWEnv xwe );
 void gmgr_cleanup( XW_DUtilCtxt* duc, XWEnv xwe );
 
 void scheduleOnGameAdded( XW_DUtilCtxt* dutil, XWEnv xwe, GameRef gr );

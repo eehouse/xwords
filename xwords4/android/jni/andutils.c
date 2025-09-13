@@ -316,6 +316,20 @@ getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis
     }
 }
 
+jlongArray
+makeLongArray( JNIEnv* env, int count, const jlong* vals )
+{
+    jlongArray array = (*env)->NewLongArray( env, count );
+    XP_ASSERT( !!array );
+    jlong* elems = (*env)->GetLongArrayElements( env, array, NULL );
+    XP_ASSERT( !!elems );
+    for ( int ii = 0; ii < count; ++ii ) {
+        elems[ii] = vals[ii];
+    }
+    (*env)->ReleaseLongArrayElements( env, array, elems, 0 );
+    return array;
+}
+
 jintArray
 makeIntArray( JNIEnv* env, int count, const void* vals, size_t elemSize )
 {

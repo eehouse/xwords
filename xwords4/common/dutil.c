@@ -59,7 +59,7 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 void
-dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
+dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe )
 {
 #ifdef XWFEATURE_KNOWNPLAYERS
     MUTEX_INIT( &dutil->kpMutex, XP_FALSE );
@@ -74,7 +74,7 @@ dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil )
 
     dmgr_make( dutil );
     tmr_init( dutil );
-    gmgr_init( dutil );
+    gmgr_init( dutil, xwe );
     sts_init( dutil );
 }
 

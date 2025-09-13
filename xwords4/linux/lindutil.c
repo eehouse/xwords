@@ -435,7 +435,7 @@ static void
 linux_dutil_onKnownPlayersChange( XW_DUtilCtxt* XP_UNUSED(duc),
                                   XWEnv XP_UNUSED(xwe) )
 {
-    LOG_FUNC();
+    // LOG_FUNC();
 }
 
 static void
@@ -535,10 +535,9 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey ke
     lduc->timers = g_slist_append( lduc->timers, tc );
     END_WITH_MUTEX();
 
-    XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS );
+    /* XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS ); */
     tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
-
-    XP_LOGFF( "after setting, length %d", g_slist_length(lduc->timers) );
+    /* XP_LOGFF( "after setting, length %d", g_slist_length(lduc->timers) ); */
 }
 
 XW_DUtilCtxt*
@@ -608,7 +607,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
 # undef SET_PROC
 
-    dutil_super_init( MPPARM(mpool) super );
+    dutil_super_init( MPPARM(mpool) super, NULL_XWE );
 
     assertTableFull( &super->vtable, sizeof(super->vtable), "lindutil" );
 

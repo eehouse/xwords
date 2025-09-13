@@ -84,8 +84,8 @@ timerProc( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, void* closure,
     TimerClosure* tc = (TimerClosure*)closure;
     XWTimerReason why = tc->why;
     UtilTimerState* uts = tc->uts;
-    XP_LOGFF("(key:%d, fired: %s); why: %s", key, boolToStr(fired),
-             whyToStr(why) );
+    /* XP_LOGFF("(key:%d, fired: %s); why: %s", key, boolToStr(fired), */
+    /*          whyToStr(why) ); */
     if ( uts->keys[why] ) {
         if ( key == uts->keys[why] ) {
             uts->keys[why] = 0;
@@ -118,8 +118,8 @@ util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why,
         XP_LOGFF( "keys[%s] already set; am I leaking", whyToStr(why) );
     }
     uts->keys[why] = key;
-    XP_LOGFF( "set timer why=%s for %d s with key %d", whyToStr(why),
-              inSecs, key );
+    /* XP_LOGFF( "set timer why=%s for %d s with key %d", whyToStr(why), */
+    /*           inSecs, key ); */
 }
 
 void
