@@ -48,6 +48,7 @@ XWArray* arr_make_impl(
 # define arr_make(mpool, proc, closure) arr_make_impl(proc, closure )
 #endif
 void arr_destroy( XWArray* array );
+void arr_destroyp( XWArray** array );
 
 /* Set the sort order. Will result in a resort if there's data. Null is
    allowed, but then an insert is just an append. */
@@ -64,6 +65,7 @@ XP_Bool arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp );
 void arr_remove( XWArray* array, XWEnv xwe, void* node );
 void arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc );
 XP_U32 arr_length( const XWArray* array );
+const void* arr_getData(const XWArray* array);
 
 typedef ForEachAct (*ArMapProc)( void* elem, void* closure, XWEnv xwe );
 void arr_map( XWArray* array, XWEnv xwe, ArMapProc mapProc, void* closure );

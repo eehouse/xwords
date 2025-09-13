@@ -74,8 +74,6 @@ void gmgr_setSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, SORT_ORDER* sos );
 
 void gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 
-XP_U16 gmgr_countItems(XW_DUtilCtxt* duc, XWEnv xwe);
-GLItemRef gmgr_getNthItem(XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 indx);
 XP_U16 gmgr_countGroups(XW_DUtilCtxt* duc, XWEnv xwe);
 GroupRef gmgr_getNthGroup(XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 indx);
 #ifdef DEBUG
@@ -83,12 +81,14 @@ XP_U16 gmgr_countGames(XW_DUtilCtxt* duc, XWEnv xwe);
 GameRef gmgr_getNthGame(XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 indx);
 #endif
 
+XWArray* gmgr_getPositions(XW_DUtilCtxt* duc, XWEnv xwe);
+
 XP_Bool gmgr_isGame(GLItemRef ir);
 GameRef gmgr_toGame(GLItemRef ir);
 GroupRef gmgr_toGroup(GLItemRef ir);
 
 XP_Bool gmgr_getGroupCollapsed( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
-XP_U32 gmgr_getGroupGamesCount(XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
+XP_U32 gmgr_getGroupGamesCount(XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp);
 void gmgr_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              const CommsAddrRec* from, XP_U8* msgBuf,
                              XP_U16 msgLen, const MsgCountState* mcs );
@@ -98,8 +98,10 @@ void gmgr_clearThumbnails( XW_DUtilCtxt* duc, XWEnv xwe );
 GroupRef gmgr_addGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name );
 #ifdef XWFEATURE_GAMEREF_CONVERT
 GroupRef gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name );
-GameRef gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
-                          const XP_UCHAR* name, XWStreamCtxt* stream );
+void gmgr_convertGames( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 nGames,
+                        GroupRef grps[], const XP_UCHAR* names[],
+                        XWStreamCtxt* streams[],
+                        GameRef grs[]);
 #endif
 void gmgr_deleteGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
 void gmgr_raiseGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );

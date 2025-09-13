@@ -123,36 +123,38 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
         if (null == mGI) {
             mGR?.let { gr ->
                 launch {
-                    mGI = gr.getGI()
-                    mNewOrder = Array<Int>(mGI!!.nPlayers, {it})
-                    
-                    mSep = LocUtils.getString( mContext, R.string.vs_join )
-                    val group = findViewById<RadioGroup>( R.id.group )
-                    group.setOnCheckedChangeListener( this@RematchConfigView )
-                    mEWC = findViewById( R.id.name )
+                    gr.getGI()!!.let { gi ->
+                        mGI = gi
+                        mNewOrder = Array<Int>(gi.nPlayers, {it})
 
-                    val results = gr.canOfferRematch()
-                    if ( results[0] && results[1] ) {
-                        val ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO,
-                                                         RematchOrder.RO_SAME.ordinal )
-                        val lastSel = RematchOrder.entries[ordinal]
+                        mSep = LocUtils.getString( mContext, R.string.vs_join )
+                        val group = findViewById<RadioGroup>( R.id.group )
+                        group.setOnCheckedChangeListener( this@RematchConfigView )
+                        mEWC = findViewById( R.id.name )
 
-                        for ( ro in RematchOrder.entries ) {
-                            val strId = ro.strID
-                            if ( 0 != strId ) {
-                                val button = RadioButton( mContext )
-                                button.setText( LocUtils.getString( mContext, strId ) )
-                                group.addView( button )
-                                mRos.put( button.getId(), ro )
-                                if ( lastSel == ro ) {
-                                    button.setChecked( true )
+                        val results = gr.canOfferRematch()
+                        if ( results[0] && results[1] ) {
+                            val ordinal = DBUtils.getIntFor( mContext, KEY_LAST_RO,
+                                                             RematchOrder.RO_SAME.ordinal )
+                            val lastSel = RematchOrder.entries[ordinal]
+
+                            for ( ro in RematchOrder.entries ) {
+                                val strId = ro.strID
+                                if ( 0 != strId ) {
+                                    val button = RadioButton( mContext )
+                                    button.setText( LocUtils.getString( mContext, strId ) )
+                                    group.addView( button )
+                                    mRos.put( button.getId(), ro )
+                                    if ( lastSel == ro ) {
+                                        button.setChecked( true )
+                                    }
                                 }
                             }
+                        } else {
+				            // not sure why I have to cast this....
+                            (findViewById( R.id.ro_stuff) as View).setVisibility( View.GONE )
+                            setName()
                         }
-                    } else {
-				        // not sure why I have to cast this....
-                        (findViewById( R.id.ro_stuff) as View).setVisibility( View.GONE )
-                        setName()
                     }
                 }
             }

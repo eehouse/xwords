@@ -31,6 +31,7 @@
 #include "cJSON.h"
 #include "gameinfo.h"
 #include "smsprotop.h"
+#include "xwarray.h"
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* keys[]);
 typedef void (*OnGotKey)( const XP_UCHAR* key, void* closure, XWEnv xwe );
@@ -43,8 +44,8 @@ typedef struct _Md5SumBuf {
 
 /* Keep these in sync with consts in DUtilCtxt.kt */
 typedef enum {
-    GCE_ADDED = 0x01,
-    GCE_DELETED = 0x02,
+    /* GCE_ADDED = 0x01, */
+    /* GCE_DELETED = 0x02, */
     GCE_PLAYER_JOINED = 0x04,
     GCE_CONFIG_CHANGED = 0x08,
     GCE_SUMMARY_CHANGED = 0x10,
@@ -142,7 +143,6 @@ typedef struct _DUtilVtable {
                                        XP_U32 oldVal, XP_U32 newVal );
     void (*m_dutil_onGameChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                                    GameChangeEvents gces );
-    /* 19 */
     void (*m_dutil_onGroupChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                                     GroupChangeEvents grces );
 #ifndef XWFEATURE_DEVICE_STORES
@@ -201,7 +201,7 @@ struct XW_DUtilCtxt {
     MPSLOT
 };
 
-void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil );
+void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe );
 void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 /* This one cheats: direct access */

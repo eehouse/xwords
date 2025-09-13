@@ -35,6 +35,7 @@ void gameGoneGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID );
 void resizeFromSaved( GtkWidget* window, sqlite3* pDb, const gchar* key );
 void saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key );
 void onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces);
+void onPositionsChangedGTK( LaunchParams* params, XWArray* positions);
 void onGroupChangedGTK( LaunchParams* params, GroupRef grp,
                         GroupChangeEvents gces );
 void onGTKMissingDictAdded( LaunchParams* params, GameRef gr,

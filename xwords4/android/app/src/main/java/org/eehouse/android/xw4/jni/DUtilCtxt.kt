@@ -173,8 +173,8 @@ class DUtilCtxt() {
             delay(inMS.toLong())
             if (BuildConfig.DEBUG) {
                 val wakeMS = System.currentTimeMillis()
-                Log.d(TAG, "setTimer(): firing; set for $inMS, "
-                      + "took ${wakeMS - startMS}")
+                // Log.d(TAG, "setTimer(): firing; set for $inMS, "
+                //       + "took ${wakeMS - startMS}")
             }
 
             if (synchronized(sCleared) {sCleared.remove(key)}) {
@@ -402,7 +402,9 @@ class DUtilCtxt() {
     }
 
     fun onGameChanged(grVal: Long, flags: Int) {
-        pruned().map{ it.onGameChanged(GameRef(grVal), flags) }
+        val gr = GameRef(grVal)
+        // Log.d(TAG, "onGameChanged($gr, 0x%x)".format(flags))
+        pruned().map{ it.onGameChanged(gr, flags) }
     }
 
     fun getCommonPrefs(): CommonPrefs {

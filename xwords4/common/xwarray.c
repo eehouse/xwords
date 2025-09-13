@@ -71,6 +71,15 @@ arr_make_impl(
 }
 
 void
+arr_destroyp( XWArray** array )
+{
+    if ( !!*array ) {
+        arr_destroy( *array );
+        *array = NULL;
+    }
+}
+
+void
 arr_destroy( XWArray* array )
 {
 #ifdef MEM_DEBUG
@@ -84,6 +93,12 @@ XP_U32
 arr_length( const XWArray* array )
 {
     return array->nElems;
+}
+
+const void*
+arr_getData(const XWArray* array)
+{
+    return array->elems;
 }
 
 XP_Bool

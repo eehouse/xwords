@@ -25,6 +25,7 @@ import android.view.View.OnLongClickListener
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.doOnAttach
 
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
 import org.eehouse.android.xw4.jni.GameMgr
@@ -39,7 +40,7 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
 {
     private var mGrp: GroupRef? = null
     private var mName: String? = null
-    private var m_expanded = false
+    private var mExpanded = false
     private var m_cb: SelectableItem? = null
     private var mGsl: GroupStateListener? = null
     private var m_etv: TextView? = null
@@ -49,11 +50,17 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     private var mExpandButton: ImageButton? = null
     private var m_check: ImageView? = null
 
+    init {
+        doOnAttach {
+            reload();
+        }
+    }
+
     override fun onFinishInflate() {
         super.onFinishInflate()
-        m_etv = findViewById<View>(R.id.game_name) as TextView
-        mExpandButton = findViewById<View>(R.id.expander) as ImageButton
-        m_check = findViewById<View>(R.id.group_check) as ImageView
+        m_etv = findViewById<TextView>(R.id.game_name)
+        mExpandButton = findViewById<ImageButton>(R.id.expander)
+        m_check = findViewById<ImageView>(R.id.group_check)
         m_check!!.setOnClickListener(this)
 
         // click on me OR the button expands/contracts...
@@ -82,7 +89,7 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     fun reload() {
         mGrp?.let { grp ->
             launch {
-                m_expanded = !grp.getGroupCollapsed()
+                mExpanded = !grp.getGroupCollapsed()
                 m_nGames = grp.getGroupGamesCount()
                 mName = grp.getGroupName()
                 setButton()
@@ -128,8 +135,8 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         when (view.id) {
             R.id.group_check -> toggleSelected()
             R.id.expander, this.id -> {
-                Log.d(TAG, "onClick(): $m_expanded")
-                mGsl!!.onGroupExpandedChanged(this, !m_expanded)
+                // Log.d(TAG, "onClick(): mExpanded=$mExpanded")
+                mGsl!!.onGroupExpandedChanged(this, !mExpanded)
             }
             else -> Assert.failDbg()
         }
@@ -140,7 +147,7 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         mExpandButton?.let { button ->
             button.visibility = if (0 == m_nGames) GONE else VISIBLE
             val rsrc =
-                if (m_expanded) R.drawable.expander_ic_maximized
+                if (mExpanded) R.drawable.expander_ic_maximized
                 else R.drawable.expander_ic_minimized
             button.setImageResource(rsrc)
         }

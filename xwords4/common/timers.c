@@ -43,11 +43,11 @@ tmr_init( XW_DUtilCtxt* dutil )
 {
     LOG_FUNC();
     XP_ASSERT( !dutil->timersState );
-    TimerMgrState* tms = XP_CALLOC( dutil->mpool, sizeof(*tms) );
-    tms->dutil = dutil;
-    dutil->timersState = tms;
-    tms->timers = arr_make( dutil->mpool, PtrCmpProc, NULL);
-    MUTEX_INIT( &tms->mutex, XP_TRUE );
+    TimerMgrState* timersState = XP_CALLOC( dutil->mpool, sizeof(*timersState) );
+    timersState->dutil = dutil;
+    dutil->timersState = timersState;
+    timersState->timers = arr_make( dutil->mpool, PtrCmpProc, NULL); /* getting trashed */
+    MUTEX_INIT( &timersState->mutex, XP_TRUE );
 }
 
 void

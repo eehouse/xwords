@@ -796,7 +796,7 @@ and_dutil_md5sum( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr, XP_U32 len,
 static void
 and_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 when, TimerKey key )
 {
-    XP_LOGFF( "(key=%d)", key );
+    // XP_LOGFF( "(key=%d)", key );
     DUTIL_CBK_HEADER( "setTimer", "(II)V" );
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, when, key );
     DUTIL_CBK_TAIL();
@@ -1189,7 +1189,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
     XW_DUtilCtxt* super = &dutil->dutil;
-    dutil_super_init( MPPARM(mpool) super );
+
 #ifdef MAP_THREAD_TO_ENV
     dutil->ti = ti;
 #endif
@@ -1248,6 +1248,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
 
 #undef SET_DPROC
 
+    /* This must happen after the vtable is inited!!! */
+    dutil_super_init( MPPARM(mpool) super, env );
     assertTableFull( vtable, sizeof(*vtable), "dutil" );
 
     dvc_init( super, env );

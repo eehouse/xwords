@@ -148,13 +148,13 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         while (!handled && ii >= 0) {
             val child = m_root!!.getChildAt(ii)
             val frag = findFragment(child)
-            if (null != frag) {
-                handled = frag.getDelegate()!!.canHandleNewIntent(intent)
+            frag?.getDelegate()?.let { delegate ->
+                handled = delegate.canHandleNewIntent(intent)
                 if (handled) {
                     popIntoView(frag)
-                    frag.getDelegate()!!.handleNewIntent(intent)
+                    delegate.handleNewIntent(intent)
                 }
-            } else {
+            } ?: run {
                 Log.d(
                     TAG, "no fragment for child %s indx %d",
                     child.javaClass.getSimpleName(), ii

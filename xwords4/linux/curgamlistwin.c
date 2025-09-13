@@ -74,14 +74,17 @@ cgl_resized( CursGameList* cgl, int width, int height )
     cgl_draw( cgl );
 }
 
-#ifdef XWFEATURE_DEVICE_STORES
-/* static void */
-/* onGameProc( GameRef gr, XWEnv XP_UNUSED(xwe), void* closure ) */
-/* { */
-/*     CursGameList* cgl  = (CursGameList*)closure; */
-/*     cgl->games = g_slist_append( cgl->games, (void*)gr ); */
-/* } */
-#endif
+static ForEachAct
+onGameProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+{
+    GLItemRef ir = (GLItemRef)elem;
+    if ( gmgr_isGame(ir) ) {
+        CursGameList* cgl  = (CursGameList*)closure;
+        GameRef gr = gmgr_toGame(ir);
+        cgl->games = g_slist_append( cgl->games, (void*)gr );
+    }
+    return FEA_OK;
+}
 
 /* Load from the DB */
 void
@@ -90,25 +93,9 @@ cgl_refresh( CursGameList* cgl )
     g_slist_free( cgl->games );
     cgl->games = NULL;
 
-#ifdef XWFEATURE_DEVICE_STORES
-    XP_LOGFF( "item count: %d", gmgr_countItems( cgl->params->dutil, NULL_XWE ) );
-    // gmgr_getGames( cgl->params->dutil, NULL_XWE, onGameProc, cgl );
-    XP_U16 count = gmgr_countItems( cgl->params->dutil, NULL_XWE );
-    for ( XP_U16 ii = 0; ii < count; ++ii ) {
-        GLItemRef ir = gmgr_getNthItem(cgl->params->dutil, NULL_XWE, ii );
-        if ( gmgr_isGame(ir) ) {
-            GameRef gr = gmgr_toGame(ir);
-            cgl->games = g_slist_append( cgl->games, (void*)gr );
-        }
-    }
-#else
-    sqlite3* pDb = cgl->params->pDb;
-    GSList* games = gdb_listGames( pDb );
-    for ( GSList* iter = games; !!iter; iter = iter->next ) {
-        sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
-        addOne( cgl, *rowid );
-    }
-#endif
+    XWArray* positions = gmgr_getPositions(cgl->params->dutil, NULL_XWE );
+    arr_map( positions, NULL_XWE, onGameProc, cgl );
+    arr_destroy( positions );
     cgl_draw( cgl );
 }
 

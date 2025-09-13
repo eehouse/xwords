@@ -79,6 +79,7 @@ void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
 void gameGoneCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID );
 void onCursesGameOpened( CommonAppGlobals* cag, GameRef gr );
 void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr, GameChangeEvents gces );
+void onPositionsChangedCurses( CommonAppGlobals* cag, XWArray* positions );
 void informMoveCurses( LaunchParams* params, XWStreamCtxt* expl );
 void informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter );
 void cursesShowFinalScores( CursesBoardGlobals* bGlobals );

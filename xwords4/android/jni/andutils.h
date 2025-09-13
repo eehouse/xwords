@@ -66,6 +66,7 @@ void setObjectField( JNIEnv* env, jobject container, const char* fieldName,
                      const char* fieldSig, jobject val );
 jobject getObjectField( JNIEnv* env, jobject obj, const char* fieldName,
                         const char* fieldClassSig );
+jlongArray makeLongArray( JNIEnv* env, int size, const jlong* vals );
 jintArray makeIntArray( JNIEnv* env, int size, const void* vals, size_t elemSize );
 void setIntArray( JNIEnv* env, jobject jowner, const char* ownerField,
                   int count, const void* vals, size_t elemSize );

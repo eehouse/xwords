@@ -29,6 +29,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.doOnAttach
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -98,16 +99,19 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     fun forceReload() {
         setLoaded(false)
 
-        launch {
-            findViewsOnce()
-            mGi = mGR!!.getGI()
-            mGR!!.getSummary()?.let { summary ->
-                mSummary = summary
-                makeThumbnailIf(summary)
-                summary.setGI(mGi!!)
-                Log.d(TAG, "got summary: $summary")
-                setData(summary)
-                setLoaded(true)
+        mGR?.let { gr ->
+            launch {
+                findViewsOnce()
+                mGi = gr.getGI()
+                // Log.d(TAG, "forceReload(): gi: $mGi")
+                gr.getSummary()?.let { summary ->
+                    mSummary = summary
+                    makeThumbnailIf(summary)
+                    summary.setGI(mGi!!)
+                    // Log.d(TAG, "got summary: $summary")
+                    setData(summary)
+                    setLoaded(true)
+                }
             }
         }
     }
@@ -264,7 +268,8 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
             }
 
             m_name!!.text = value
-        }
+        } ?: run {Log.d(TAG, "setName(): summary not set")}
+        // Log.d(TAG, "setName() => $state")
         return state
     }
 
@@ -382,7 +387,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
     private suspend fun makeThumbnailIf(summary: GameSummary)
     {
-        // Log.d(TAG, "makeThumbnailIf($expanded)")
+        // Log.d(TAG, "makeThumbnailIf()")
         if (!summary.collapsed && XWPrefs.getThumbEnabled(mContext)) {
             Log.d(TAG, "makeThumbnailIf(): calling getThumbData()")
             mGR!!.getThumbData()?.let {
@@ -406,6 +411,9 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         m_loaded = false
         m_lastMoveTime = 0
         m_dsdel = DrawSelDelegate(this)
+        this.doOnAttach {
+            forceReload();
+        }
     }
 
     companion object {
