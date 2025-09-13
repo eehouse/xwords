@@ -60,7 +60,7 @@ class DUtilCtxt() {
 
     interface Listeners {
         fun onKnownPlayersChange() {}
-        fun onGameChanged(gr: GameRef, flags: Int) {}
+        fun onGameChanged(gr: GameRef, flags: GameChangeEvents) {}
         fun onDictRemoved(gr: GameRef, name: String) {}
         fun missingDictAdded(gr: GameRef, name: String) {}
     }
@@ -375,7 +375,8 @@ class DUtilCtxt() {
 
     fun onGroupChanged(grpval: Int, flags: Int) {
         val grp = GroupRef(grpval)
-        GamesListDelegate.onGroupChanged(mContext, grp, flags)
+        val events = GroupChangeEvents(flags)
+        GamesListDelegate.onGroupChanged(mContext, grp, events)
     }
 
     fun onCtrlReceived(msg: ByteArray) {
@@ -401,14 +402,56 @@ class DUtilCtxt() {
         pruned().map{ it.onKnownPlayersChange() }
     }
 
-    fun onGameChanged(grVal: Long, flags: Int) {
+    fun onGameChanged(grVal: Long, bits: Int) {
         val gr = GameRef(grVal)
+        val flags = GameChangeEvents(bits)
         // Log.d(TAG, "onGameChanged($gr, 0x%x)".format(flags))
         pruned().map{ it.onGameChanged(gr, flags) }
     }
 
     fun getCommonPrefs(): CommonPrefs {
         return CommonPrefs.get(mContext)
+    }
+
+    // must match enum GameChangeEvent in dutil.h
+    enum class GameChangeEvent(val bit: Int) {
+        GCE_ADDED(0x01),
+        GCE_DELETED(0x02),
+        GCE_PLAYER_JOINED(0x04),
+        GCE_CONFIG_CHANGED(0x08),
+        GCE_SUMMARY_CHANGED(0x10),
+        GCE_TURN_CHANGED(0x20),
+        GCE_BOARD_CHANGED(0x40),
+        ;
+    }
+    class GameChangeEvents(flags: Int): HashSet<GameChangeEvent>() {
+        init {
+            GameChangeEvent.entries.map {
+                if (0 != (it.bit and flags)) add(it)
+            }
+        }
+    }
+
+    // must match enum GroupChangeEvent in dutil.h
+    enum class GroupChangeEvent(val bit: Int) {
+        GRCE_ADDED(0x01),
+        GRCE_DELETED(0x02),
+        GRCE_MOVED(0x04),
+        GRCE_RENAMED(0x08),
+        GRCE_COLLAPSED(0x10),
+        GRCE_EXPANDED(0x20),
+        GRCE_GAMES_REORDERED(0x40),
+        GRCE_GAME_ADDED(0x80),
+        GRCE_GAME_REMOVED(0x100),
+        ;
+    }
+
+    class GroupChangeEvents(flags: Int): HashSet<GroupChangeEvent>() {
+        init {
+            GroupChangeEvent.entries.map {
+                if (0 != (it.bit and flags)) add(it)
+            }
+        }
     }
 
     companion object {
@@ -452,27 +495,6 @@ class DUtilCtxt() {
         const val UNPAUSED = 0
         const val PAUSED = 1
         const val AUTOPAUSED = 2
-
-        // must match enum GameChangeEvent
-        const val GCE_ADDED = 0x01
-        const val GCE_DELETED = 0x02
-        const val GCE_PLAYER_JOINED = 0x04
-        const val GCE_CONFIG_CHANGED = 0x08
-        const val GCE_SUMMARY_CHANGED = 0x10
-        const val GCE_TURN_CHANGED = 0x20
-        const val GCE_BOARD_CHANGED = 0x40
-
-        // must match enum GroupChangeEvent
-        const val GRCE_ADDED = 0x01
-        const val GRCE_DELETED = 0x02
-        const val GRCE_MOVED = 0x04
-        const val GRCE_RENAMED = 0x08
-        const val GRCE_COLLAPSED = 0x10
-        const val GRCE_EXPANDED = 0x20
-        const val GRCE_GAMES_REORDERED = 0x40
-        const val GRCE_GAME_ADDED = 0x80
-        const val GRCE_GAME_REMOVED = 0x100
-
 
         val sListeners: MutableSet<WeakReference<Listeners>> =
             HashSet<WeakReference<Listeners>>()

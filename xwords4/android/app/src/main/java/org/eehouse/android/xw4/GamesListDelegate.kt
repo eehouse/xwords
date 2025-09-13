@@ -86,6 +86,9 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.DUtilCtxt
+import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvents
+import org.eehouse.android.xw4.jni.DUtilCtxt.GroupChangeEvent
+import org.eehouse.android.xw4.jni.DUtilCtxt.GroupChangeEvents
 import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
@@ -2208,8 +2211,8 @@ class GamesListDelegate(delegator: Delegator) :
         return mAdapter?.findHolderFor(grp)?.mGameListElem?.getGLG()
     }
 
-    override fun onGameChanged(gr: GameRef, flags: Int) {
-        Log.d(TAG, "onGameChanged($gr, %x)".format(flags))
+    override fun onGameChanged(gr: GameRef, flags: GameChangeEvents) {
+        Log.d(TAG, "onGameChanged($gr, $flags)")
         findViewFor(gr)?.forceReload()
     }
 
@@ -3270,25 +3273,25 @@ class GamesListDelegate(delegator: Delegator) :
             context.startActivity(intent)
         }
 
-        fun onGroupChanged(context: Context, grp: GroupRef, flags: Int) {
-            Log.d(TAG, "onGroupChanged(grp=$grp, flags=0x%x)".format(flags))
-
-            s_self!!.get()!!
-                .let { self ->
-                         var flags = flags
-                         var forReload =
-                             (DUtilCtxt.GRCE_RENAMED
-                              or DUtilCtxt.GRCE_COLLAPSED
-                              or DUtilCtxt.GRCE_EXPANDED)
-                         if (0 != (flags and forReload)) {
-                             self.findViewFor(grp)?.reload()
-                             flags = flags and DUtilCtxt.GRCE_RENAMED.inv()
-                             Log.d(TAG, "flags now 0x%x".format(flags))
+        fun onGroupChanged(context: Context, grp: GroupRef,
+                           flags: GroupChangeEvents) {
+            // Log.d(TAG, "onGroupChanged(grp=$grp, flags=$flags)")
+            s_self!!.get()!!.let { self ->
+                         var doReload = false
+                         var doUpdate = false
+                         for (flag in flags) {
+                             when (flag) {
+                                 GroupChangeEvent.GRCE_RENAMED -> doReload = true
+                                 GroupChangeEvent.GRCE_COLLAPSED,
+                                 GroupChangeEvent.GRCE_EXPANDED -> {
+                                     doReload = true
+                                     doUpdate = true
+                                 }
+                                 else -> doUpdate = true
+                             }
                          }
-
-                         if (0 != flags) {
-                             self.updateGamesView()
-                         }
+                         if (doReload) self.findViewFor(grp)?.reload()
+                         if (doUpdate) self.updateGamesView()
                      }
         }
 
