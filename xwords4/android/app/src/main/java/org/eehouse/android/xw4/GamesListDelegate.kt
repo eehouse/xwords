@@ -770,8 +770,7 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             DlgID.CONVERT_GAMES -> {
-                val state = params[0] as GameConvertView.GameConvertState
-                dialog = GameConvertView.makeDialog(mActivity, state)
+                dialog = GameConvertView.makeDialog(mActivity)
             }
 
             else -> dialog = super.makeDialog(alert, *params)
@@ -1756,11 +1755,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_checkupdates -> UpdateCheckReceiver
                                                 .checkVersions(mActivity, true)
             R.id.games_menu_prefs -> PrefsDelegate.launch(mActivity)
-            R.id.games_menu_convert -> launch {
-                GameConvertView.needed(mActivity)?.let {
-                    showDialogFragment(DlgID.CONVERT_GAMES, it)
-                }
-            }
+            R.id.games_menu_convert -> showDialogFragment(DlgID.CONVERT_GAMES)
             R.id.games_menu_ksconfig -> launchKAConfigOnce()
             R.id.games_menu_fromclip -> takeFromClip()
             R.id.games_menu_rateme -> {

@@ -46,7 +46,6 @@ static void assertSorted( XWArray* array, XWEnv xwe );
 # define assertSorted(X, xwe)
 #endif
 
-
 XWArray*
 arr_make_impl(
 #ifdef MEM_DEBUG

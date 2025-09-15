@@ -679,7 +679,9 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
     gi_copy( MPPARM(duc->mpool) &gi, gip );
     /* Game coming from an invitation received will have a gameID already */
     gi.gameID = makeGameID( duc, xwe, gi.gameID );
-    gi.created = dutil_getCurSeconds( duc, xwe );
+    if ( !gi.created ) {
+        gi.created = dutil_getCurSeconds( duc, xwe );
+    }
 
     if ( !gi.isoCodeStr[0] ) {
         const DictionaryCtxt* dict = dmgr_get( duc, xwe, gi.dictName );
@@ -710,6 +712,7 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
         }
 
         gmgr_addGame( duc, xwe, gd, gr );
+        gmgr_addToGroup( duc, xwe, gr, gd->grp );
     }
 
     gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
@@ -748,6 +751,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
     
     if ( !!gr ) {
         GameData* gd = gmgr_getForRef( duc, xwe, gr, NULL );
+        XP_ASSERT( !!gd );
         const CurGameInfo* gi = &gd->gi;
         XW_UtilCtxt* util = makeDummyUtil( duc, gd );
 
@@ -859,7 +863,6 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
     }
     GroupRef grp = gd->grp;
     newGR = gr_makeForGI( duc, xwe, &grp, &tmpGI, NULL );
-    gmgr_addToGroup( duc, xwe, newGR, grp );
 
     gi_disposePlayerInfo( MPPARM(duc->mpool) &tmpGI );
     XP_LOGFF( "made new gr: " GR_FMT, newGR );
@@ -2591,15 +2594,4 @@ gr_checkGoneDict( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
             dutil_dictGone( duc, xwe, gd->gr, dictName );
         }
     }
-}
-
-GameRef
-formatGR( XP_U32 gameID, DeviceRole role )
-{
-    XP_ASSERT( gameID );
-    GameRef gr = role;
-    gr <<= 32;
-    gr |= gameID;
-    XP_LOGFF( "(gameID: %X; role: %d) => " GR_FMT, gameID, role, gr );
-    return gr;
 }

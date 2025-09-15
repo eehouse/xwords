@@ -345,6 +345,9 @@ typedef struct _GtkAppGlobals {
     GtkWidget* moveToGroupButton;
     GtkWidget* archiveButton;
     GtkWidget* treesBox;
+#ifdef XWFEATURE_GAMEREF_CONVERT
+    GtkWidget* convertBox;
+#endif
     /* save window position */
     GdkEventConfigure lastConfigure;
 } GtkAppGlobals;

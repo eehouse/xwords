@@ -30,17 +30,14 @@ import kotlinx.coroutines.Dispatchers
 import java.io.Serializable
 
 import org.eehouse.android.xw4.jni.GameMgr
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = GameConvertView::class.java.simpleName
 
 class GameConvertView(val mContext: Context, attrs: AttributeSet)
     : LinearLayout( mContext, attrs ), View.OnClickListener {
-    private var mState: GameConvertState? = null
-
-    class GameConvertState(val groupKeys: List<Long>,
-                           val games: ArrayList<Long>): Serializable {
-    }
+    private var mMap: Map<GameRef, Long>? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -58,83 +55,81 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
     }
 
-    private fun configure(state: GameConvertState) {
-        mState = state
-    }
-
     private fun convert(doAll: Boolean) {
         launch() {
-            val state = mState!!
+            val map = mMap!!
 
             // create a groups mapping to use with games
             val gmap = HashMap<Long, GameMgr.GroupRef>()
             val groupID = XWPrefs.getDefaultNewGameGroup(context)
             DBUtils.getGroups(context).map { entry ->
-                if (entry.key in state.groupKeys) {
-                    val ggi = entry.value!!
-                    val grp = GameMgr.addGroup(ggi.m_name)
-                    grp.setGroupCollapsed(!ggi.m_expanded)
-                    if (entry.key == groupID) {
-                        GameMgr.makeGroupDefault(grp)
-                    }
+                val ggi = entry.value!!
+                var grp = GameMgr.getGroup(ggi.m_name)
+                if (null == grp) {
+                    Log.d(TAG, "converting group ${ggi.m_name}")
+                    grp = GameMgr.addGroup(ggi.m_name)
                 } else {
-                    Log.d(TAG, "already done")
+                    Log.d(TAG, "group ${ggi.m_name} already exists")
                 }
-                val grp = GameMgr.getGroup(entry.value!!.m_name)!!
                 gmap.put(entry.key, grp)
             }
 
             // games...
-            Log.d(TAG, "converting games")
             var done = false
-            for (rowid in state.games) {
+            for (gr in map.keys) {
+                val rowid = map[gr]!!
                 if (! done) {
                     DBUtils.loadGame(context, rowid)?.let { gv ->
                         val group = gmap.get(gv.group)!!
-                        // val group = GameMgr.GroupRef.GROUP_DEFAULT
-                        val gr = GameMgr.convertGame(gv.name, group, gv.bytes)
-                        done = gr != null && !doAll
+                        Log.d(TAG, "converting to $gr")
+                        val newGr = GameMgr.convertGame(gv.name, group, gv.bytes)
+                        done = newGr != null && !doAll
+                        Assert.assertTrueNR(null == newGr || newGr!!.equals(gr))
                     }
                 }
             }
         }
+        updateExpl()
     }
 
     private fun updateExpl() {
-        val numGames = mState!!.games.size
-        val txt = LocUtils.getString(context, R.string.game_convert_expl, numGames )
-        findViewById<TextView>(R.id.convert_expl).text = txt
+        launch {
+            mMap = updateState()
+            val numGames = mMap!!.size
+            val txt = LocUtils.getString(context, R.string.game_convert_expl, numGames )
+            findViewById<TextView>(R.id.convert_expl).text = txt
+        }
     }
-    
-    companion object {
-        suspend fun needed(context: Context): GameConvertState? {
-            val groups = DBUtils.getGroups(context)
-            val groupKeys = ArrayList<Long>()
-            groups.keys.map { id ->
-                groups[id]?.let {
-                    val grp = GameMgr.getGroup(it.m_name)
-                    if (null == grp) {
-                        groupKeys.add(id)
-                    }
+
+    // PENDING: should cache this state and modify the map as the conversion
+    // progresses. We'll see if my 500-game archive requires something more
+    // effecient.
+    private suspend fun updateState(): Map<GameRef, Long> {
+        // Run all old-format games through to generate a GameRef for them
+        val rowids = DBUtils.getGroups(context).map { groupID ->
+            DBUtils.getGroupGames(context, groupID.key).map { rowid ->
+                rowid
+            }
+        }.flatten()
+
+        val needsConvert = HashMap<GameRef, Long>()
+        rowids.mapNotNull { rowid ->
+            DBUtils.loadGame(context, rowid)?.let { gv ->
+                val gr = GameMgr.figureGR(gv.bytes)
+                val exists = GameMgr.gameExists(gr)
+                Log.d(TAG, "got gr: $gr; exists: $exists")
+                if ( !exists ) {
+                    needsConvert[gr] = rowid
                 }
             }
-
-            val allGames: ArrayList<Long> = ArrayList<Long>()
-            for (groupID in groups.keys) {
-                DBUtils.getGroupGames(context, groupID)
-                    .map{ allGames.add(it) }
-            }
-
-            val result =
-                if (0 < groupKeys.size || 0 < allGames.size) GameConvertState(groupKeys, allGames)
-                else null
-            return result
         }
+        Log.d(TAG, "got ${needsConvert.keys} of len ${needsConvert.size}")
+        return needsConvert
+    }
 
-        fun makeDialog(context: Context, state: GameConvertState): Dialog? {
+    companion object {
+        fun makeDialog(context: Context): Dialog? {
             val view = LocUtils.inflate(context, R.layout.game_convert_view)
-                as GameConvertView
-            view.configure(state)
             return LocUtils.makeAlertBuilder(context)
                 .setView(view)
                 .setPositiveButton(R.string.button_done, null)

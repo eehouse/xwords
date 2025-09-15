@@ -21,8 +21,6 @@
 
 #include "gameref.h"
 
-GameRef formatGR( XP_U32 gameID, DeviceRole role );
-
 void gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
                       XWStreamCtxt* stream, XP_U16 saveToken );
 

@@ -134,6 +134,21 @@ object GameMgr {
         return if (gr == 0L) null else GameRef(gr)
     }
 
+    suspend fun figureGR(bytes: ByteArray): GameRef {
+        val grval = Device.await {
+            val jniState = XwJNI.getJNIState()
+            gmgr_figureGR(jniState, bytes)
+        } as Long
+        return GameRef(grval)
+    }
+
+    suspend fun gameExists(gr: GameRef): Boolean {
+        return Device.await {
+            val jniState = XwJNI.getJNIState()
+            gmgr_gameExists(jniState, gr.gr)
+        } as Boolean
+    }
+
     suspend fun addForInvite(nli: NetLaunchInfo): GameRef? {
         val gr = Device.await {
             val jniState = XwJNI.getJNIState()
@@ -265,6 +280,10 @@ object GameMgr {
                                      invitee: CommsAddrRec?): Long
     @JvmStatic
     private external fun gmgr_getFor(jniState: Long, gameID: Int): Long
+    @JvmStatic
+    private external fun gmgr_figureGR(jniState: Long, bytes: ByteArray): Long
+    @JvmStatic
+    private external fun gmgr_gameExists(jniState: Long, gr: Long): Boolean
     @JvmStatic
     private external fun gmgr_addForInvite(jniState: Long, nli: NetLaunchInfo): Long
     @JvmStatic
