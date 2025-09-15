@@ -445,6 +445,8 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 #ifdef XWFEATURE_GAMEREF_CONVERT
+static void updateForConvert( GtkAppGlobals* apg );
+
 static GroupRef
 groupForRole(XW_DUtilCtxt* dutil, DeviceRole role)
 {
@@ -477,59 +479,28 @@ checkConvertImpl( GtkAppGlobals* apg, XP_Bool doAll )
 
     bool done = false;
     GSList* games = gdb_listGames( params->pDb );
-    int nGames = g_slist_length(games);
-    XWStreamCtxt* streams[nGames];
-    GroupRef groups[nGames];
-    const XP_UCHAR* names[nGames];
-    GameRef grs[nGames];
-
-    int ii = 0;
     for ( GSList* iter = games; !!iter && !done; iter = iter->next ) {
-        sqlite3_int64* rowidp = (sqlite3_int64*)iter->data;
-        sqlite3_int64 rowid = *rowidp;
+        sqlite3_int64 rowid = *(sqlite3_int64*)iter->data;
 
-        streams[ii] = mem_stream_make_raw( MPPARM(params->mpool)
-                                           params->vtMgr );
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                    params->vtMgr );
         DeviceRole role;
-        if ( gdb_loadGame( streams[ii], params->pDb, &role, rowid ) ) {
-            groups[ii] = groupForRole(dutil, role);
-            names[ii] = g_strdup_printf("Game %lld", rowid );
+        GameRef gr = 0;
+        if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
+            GroupRef grp = groupForRole(dutil, role);
+            XP_UCHAR* name = g_strdup_printf("Game %lld", rowid );
+
+            gr = gmgr_convertGame( dutil, NULL_XWE, grp, name, stream );
         }
-        ++ii;
+        stream_destroy( stream );
+        /* exit after first success */
+        if ( !doAll && !!gr ) {
+            break;
+        }
     }
     gdb_freeGamesList( games );
-    XP_ASSERT( ii == nGames );
 
-    if ( doAll ) {
-        gmgr_convertGames( dutil, NULL_XWE, nGames, groups, names, streams, grs );
-    } else {
-        for ( int ii = 0; ii < nGames; ++ii ) {
-            XWStreamCtxt* stream = streams[ii];
-            const XP_UCHAR* name = names[ii];
-            GroupRef grp = groups[ii];
-            GameRef gr;
-            gmgr_convertGames( dutil, NULL_XWE, 1, &grp, &name, &stream, &gr );
-            if ( !!gr ) {
-                XP_LOGFF( "converted " GR_FMT, gr );
-                break;
-            }
-        }
-    }
-
-    for ( int ii = 0; ii < nGames; ++ii ) {
-        stream_destroy( streams[ii] );
-        g_free( (void*)names[ii] );
-    }
-
-    /* XP_LOGFF( "got gr " GR_FMT, gr ); */
-    /*         done = !doAll && !!gr; */
-    /*         if ( !!gr ) { */
-    /*             ++count; */
-    /*             XP_LOGFF( "finished %dth conversion", count ); */
-    /*         } */
-    /*     } */
-    /* } */
-
+    updateForConvert( apg );
 }
 
 static int
@@ -556,6 +527,14 @@ static void
 handle_convertAll_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     (void)g_idle_add( checkConvertAll, closure );
+}
+
+static void
+handle_deleteOld_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    LOG_FUNC();
+    XP_USE(closure);
+    updateForConvert( (GtkAppGlobals*)closure );
 }
 #endif
 
@@ -813,6 +792,98 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
     gtk_widget_show( button );
     return button;
 }
+
+static void
+removeAllFrom( GtkWidget* container )
+{
+    GList* children = gtk_container_get_children(GTK_CONTAINER(container));
+    for( GList* iter = children; iter != NULL; iter = g_list_next(iter)) {
+        gtk_container_remove( GTK_CONTAINER(container), GTK_WIDGET(iter->data) );
+    }
+    g_list_free(children);
+}
+
+#ifdef XWFEATURE_GAMEREF_CONVERT
+static void
+getCounts( GtkAppGlobals* apg, int* nToConvert, int* nToDelete )
+{
+    LaunchParams* params = apg->cag.params;
+    *nToDelete = *nToConvert = 0;
+    GSList* games = gdb_listGames( params->pDb );
+    for ( GSList* iter = games; !!iter; iter = iter->next ) {
+        sqlite3_int64 rowid = *(sqlite3_int64*)iter->data;
+
+        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                    params->vtMgr );
+        DeviceRole role;
+        if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
+            GameRef gr = gmgr_figureGR( params->dutil, NULL_XWE, stream );
+            XP_LOGFF( "row %llx => " GR_FMT, rowid, gr );
+            if ( gmgr_gameExists( params->dutil, NULL_XWE, gr ) ) {
+                XP_LOGFF( GR_FMT " exists", gr );
+                ++*nToDelete;
+            } else {
+                XP_LOGFF( GR_FMT " needs converting", gr );
+                ++*nToConvert;
+            }
+        }
+        stream_destroy( stream );
+    }
+    gdb_freeGamesList( games );
+}
+
+static void
+updateForConvert( GtkAppGlobals* apg )
+{
+    GtkWidget* hbox = apg->convertBox;
+
+    removeAllFrom( hbox );
+
+    int needsConvert = 0;
+    int needsDelete = 0;
+    getCounts( apg, &needsConvert, &needsDelete );
+
+    if ( needsConvert || needsDelete ) {
+        if ( needsConvert ) {
+            gchar msg[128];
+            sprintf( msg, "There are %d old-format games to convert", needsConvert );
+            XP_LOGFF( "%s", msg );
+            GtkWidget* label = gtk_label_new( msg );
+            gtk_container_add( GTK_CONTAINER(hbox), label );
+
+            (void)addButton( "Convert one", hbox, G_CALLBACK(handle_convert_button), apg );
+            (void)addButton( "Convert all", hbox, G_CALLBACK(handle_convertAll_button), apg );
+        }
+        if ( needsDelete ) {
+            gchar msg[128];
+            sprintf( msg, "There are %d converted old-format games to delete", needsDelete );
+            XP_LOGFF( "%s", msg );
+            GtkWidget* label = gtk_label_new( msg );
+            gtk_container_add( GTK_CONTAINER(hbox), label );
+
+            (void)addButton( "Delete old", hbox, G_CALLBACK(handle_deleteOld_button), apg );
+        }
+    }
+    gtk_widget_show_all( hbox );
+}
+
+static gint
+updateConvertIdle( gpointer closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    updateForConvert( apg );
+    return 0;
+}
+
+static void
+addForConvert( GtkAppGlobals* apg, GtkWidget* parent )
+{
+    apg->convertBox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    gtk_container_add( GTK_CONTAINER(parent), apg->convertBox );
+
+    (void)g_idle_add( updateConvertIdle, apg );
+}
+#endif
 
 static void
 setWindowTitle( GtkAppGlobals* apg )
@@ -1207,12 +1278,7 @@ buildGamesList( GtkAppGlobals* apg )
     GtkWidget* treesBox = apg->treesBox;
     LaunchParams* params = apg->cag.params;
 
-    /* remove all */
-    GList* children = gtk_container_get_children(GTK_CONTAINER(treesBox));
-    for( GList* iter = children; iter != NULL; iter = g_list_next(iter)) {
-        gtk_container_remove( GTK_CONTAINER(treesBox), GTK_WIDGET(iter->data) );
-    }
-    g_list_free(children);
+    removeAllFrom( treesBox );
 
     XWArray* positions = gmgr_getPositions( params->dutil, NULL_XWE );
     BuildListData bld = { .apg = apg, .treesBox = treesBox,
@@ -1292,10 +1358,6 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 
     (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
-#ifdef XWFEATURE_GAMEREF_CONVERT
-    (void)addButton( "Convert one", hbox, G_CALLBACK(handle_convert_button), apg );
-    (void)addButton( "Convert all", hbox, G_CALLBACK(handle_convertAll_button), apg );
-#endif
     (void)addButton( "New group", hbox, G_CALLBACK(handle_newgroup_button), apg );
     apg->renameButton = addButton( "Rename", hbox,
                                    G_CALLBACK(handle_rename_button), apg );
@@ -1311,6 +1373,10 @@ makeGamesWindow( GtkAppGlobals* apg )
                                    G_CALLBACK(handle_delete_button), apg );
     (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
     updateButtons( apg );
+
+#ifdef XWFEATURE_GAMEREF_CONVERT
+    addForConvert( apg, vbox );
+#endif
 
     gtk_widget_show( window );
 }

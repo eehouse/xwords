@@ -107,6 +107,10 @@ static void onCollapsedChange( XW_DUtilCtxt* duc, XWEnv xwe,
                                GroupState* grps, XP_Bool newVal );
 
 static XP_Bool indexAll( XW_DUtilCtxt* duc, XWEnv xwe, XWArray* positions );
+static GameEntry* findFor( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                           XP_Bool tryDeleted, XP_Bool* deletedP );
+static void addToGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                        GroupRef grp );
 
 struct GameMgrState {
     XWArray* list;
@@ -224,17 +228,34 @@ gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
     return fgs.result;
 }
 
-void
-gmgr_convertGames( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 nGames,
-                   GroupRef grps[], const XP_UCHAR* names[],
-                   XWStreamCtxt* streams[], GameRef grs[] )
+GameRef
+gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                  const XP_UCHAR* name, XWStreamCtxt* stream )
 {
-    for ( int ii = 0; ii < nGames; ++ii ) {
-        grs[ii] = gr_convertGame( duc, xwe, &grps[ii], names[ii], streams[ii] );
-        if ( !!grs[ii] ) {
-            postOnGroupChanged( duc, xwe, grps[ii], GRCE_GAME_ADDED );
-        }
+    GameRef gr = gr_convertGame( duc, xwe, &grp, name, stream );
+    if ( !!gr ) {
+        postOnGroupChanged( duc, xwe, grp, GRCE_GAME_ADDED );
     }
+    return gr;
+}
+
+XP_Bool
+gmgr_gameExists( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    GameEntry* ge = findFor( duc, xwe, gr, XP_TRUE, NULL );
+    return !!ge;
+}
+
+GameRef
+gmgr_figureGR( XW_DUtilCtxt* XP_UNUSED_DBG(duc), XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
+{
+    XP_U8 strVersion = stream_getU8( stream );
+    stream_setVersion( stream, strVersion );
+    CurGameInfo gi = {};
+    gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
+    GameRef gr = formatGR( gi.gameID, gi.deviceRole );
+    gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
+    return gr;
 }
 #endif
 
@@ -245,6 +266,7 @@ addToGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
     gr_setGroup( duc, xwe, gr, grp ); /* should this call storeGroupRef */
     if ( !grps->collapsed ) {
+        XP_ASSERT( !arr_find(grps->u.games, xwe, (void*)gr, NULL) );
         arr_insert( grps->u.games, xwe, (void*)gr );
     } else {
         ++grps->u.nGames;
@@ -435,7 +457,8 @@ XP_Bool
 gmgr_getGroupCollapsed( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
 {
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
-    return grps->collapsed;
+    /* If it's been deleted, don't draw its children? */
+    return !!grps? grps->collapsed : XP_TRUE;
 }
 
 XP_U32
@@ -1259,7 +1282,6 @@ gmgr_newFor( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const CurGameInfo* gip,
     XP_ASSERT( !gip->gameID );
     checkDefault( duc, &grp );
     GameRef gr = gr_makeForGI( duc, xwe, &grp, gip, NULL );
-    addToGroup( duc, xwe, gr, grp );
     if ( !!invitee ) {
         NetLaunchInfo nli = {};
         const CurGameInfo* gi = gr_getGI(duc, gr, xwe);
@@ -1287,8 +1309,6 @@ gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
 
         checkDefault( duc, &grp );
         gr = gr_makeForGI( duc, xwe, &grp, &gi, &hostAddr );
-
-        addToGroup( duc, xwe, gr, grp );
 
         gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
     }
@@ -1390,6 +1410,14 @@ typedef struct _IndexState {
     XP_Bool changed;
 } IndexState;
 
+static void
+upOneIndex( IndexState* is, XWEnv xwe, XP_U16* index, GLItemRef item )
+{
+    is->changed = is->changed || *index != is->nextIndex;
+    *index = is->nextIndex++;
+    arr_insert( is->positions, xwe, (void*)item );
+}
+
 static ForEachAct
 indexGamesProc( void* elem, void* closure, XWEnv xwe )
 {
@@ -1397,9 +1425,7 @@ indexGamesProc( void* elem, void* closure, XWEnv xwe )
     GameRef gr = (GameRef)elem;
     GameEntry* ge = findFor( is->duc, xwe, gr, XP_FALSE, NULL );
     XP_ASSERT( !!ge );
-    is->changed = is->changed || ge->index != is->nextIndex;
-    ge->index = is->nextIndex++;
-    arr_insert( is->positions, xwe, (void*)gr );
+    upOneIndex( is, xwe, &ge->index, gr );
     return FEA_OK;
 }
 
@@ -1409,22 +1435,13 @@ indexGroupsProc( void* elem, void* closure, XWEnv xwe )
 {
     IndexState* is = (IndexState*)closure;
     GroupState* grps = (GroupState*)elem;
-    is->changed = is->changed || grps->index != is->nextIndex;
-    grps->index = is->nextIndex++;
     GLItemRef item = grps->grp | GROUP_BIT;
-    arr_insert( is->positions, xwe, (void*)item );
+    upOneIndex( is, xwe, &grps->index, item );
     if ( !grps->collapsed ) {
         arr_map( grps->u.games, xwe, indexGamesProc, is );
     }
     return FEA_OK;
 }
-
-/* static void */
-/* invalIndex( XW_DUtilCtxt* duc ) */
-/* { */
-/*     GameMgrState* gs = duc->gameMgrState; */
-/*     gs->indexValid = XP_FALSE; */
-/* } */
 
 static XP_Bool
 indexAll( XW_DUtilCtxt* duc, XWEnv xwe, XWArray* positions )
@@ -1434,25 +1451,11 @@ indexAll( XW_DUtilCtxt* duc, XWEnv xwe, XWArray* positions )
     IndexState is = {.duc = duc, .positions = positions,};
     XP_LOGFF( "groups: %p", gs->groups );
     arr_map( gs->groups, xwe, indexGroupsProc, &is );
-    XP_LOGFF( "done with %d items (changed: %s)", is.nextIndex + 1,
+    XP_LOGFF( "done with %d items (changed: %s)", is.nextIndex,
               boolToStr(is.changed) );
     // gs->indexValid = XP_TRUE;
     return is.changed;
 }
-
-/* static void */
-/* onFinalExit(XW_DUtilCtxt* duc, XWEnv xwe) */
-/* { */
-/*     GameMgrState* gs = duc->gameMgrState; */
-/*     if ( !gs->indexValid ) { */
-/*         XWArray* positions = arr_make(MPPARM(duc->mpool) NULL, NULL ); */
-/*         XP_Bool changed = indexAll(duc, xwe, positions); */
-/*         if ( changed ) { */
-/*             dutil_onPositionsChanged(duc, xwe, positions); */
-/*         } */
-/*         arr_destroy(positions); */
-/*     } */
-/* } */
 
 void
 gmgr_setGD( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GameData* gd )

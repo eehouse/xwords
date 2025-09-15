@@ -1619,6 +1619,32 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroupName
 }
 
 #ifdef XWFEATURE_GAMEREF_CONVERT
+JNIEXPORT jlong JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1figureGR
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jbyteArray jstream )
+{
+    jlong result = 0;
+    DVC_HEADER(jniGlobalPtr);
+    XWStreamCtxt* stream =
+        streamFromJStream( MPPARM(globalState->dutil->mpool)
+                           env, globalState->vtMgr, jstream );
+    result = gmgr_figureGR( globalState->dutil, env, stream );
+    stream_destroy( stream );
+    DVC_HEADER_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1gameExists
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr )
+{
+    jboolean result;
+    DVC_HEADER(jniGlobalPtr);
+    result = gmgr_gameExists(globalState->dutil, env, (GameRef)jgr );
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroup
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname )
@@ -1644,8 +1670,7 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1convertGame
                            env, globalState->vtMgr, jstream );
     const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
     GroupRef grp = (GroupRef)jgrp;
-    GameRef gr;
-    gmgr_convertGames( globalState->dutil, env, 1, &grp, &name, &stream, &gr );
+    GameRef gr = gmgr_convertGame( globalState->dutil, env, grp, name, stream );
     result = gr;
     (*env)->ReleaseStringUTFChars( env, jname, name );
     stream_destroy( stream );
