@@ -66,7 +66,6 @@ LOCAL_SRC_FILES +=         \
 	xwjni.c                \
 	utilwrapper.c          \
 	drawwrapper.c          \
-	xportwrapper.c         \
 	anddict.c              \
 	andutils.c             \
 	jniutlswrapper.c       \

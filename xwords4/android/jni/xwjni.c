@@ -38,7 +38,6 @@
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
-#include "xportwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
 #include "andglobals.h"
