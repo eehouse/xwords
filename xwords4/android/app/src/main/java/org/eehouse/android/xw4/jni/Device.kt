@@ -18,8 +18,6 @@
  */
 package org.eehouse.android.xw4.jni
 
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 import kotlinx.coroutines.CompletableDeferred
@@ -29,12 +27,42 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
+
 import org.eehouse.android.xw4.Assert
+import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.Utils
 
 object Device {
     private val TAG: String = Device::class.java.simpleName
+
+    private var m_ptrGlobals: Long
+    fun ptrGlobals(): Long { return m_ptrGlobals }
+
+    init {
+        System.loadLibrary(BuildConfig.JNI_LIB_NAME)
+
+        var seed = Utils.nextRandomInt().toLong()
+        seed = seed shl 32
+        seed = seed or Utils.nextRandomInt().toLong()
+        seed = seed xor System.currentTimeMillis()
+        m_ptrGlobals = initJNIState(DUtilCtxt(), JNIUtilsImpl.get(), seed)
+    }
+
+    fun cleanGlobalsEmu() {
+        cleanGlobals()
+    }
+
+    private fun cleanGlobals() {
+        synchronized(Device::class.java) {
+            // let's be safe here
+            cleanupJNIState(m_ptrGlobals) // tests for 0
+            m_ptrGlobals = 0
+        }
+    }
 
     enum class Priority(val singleton: Boolean = false) {
         BLOCKING,
@@ -163,64 +191,68 @@ object Device {
         return we.result
     }
 
+    suspend fun getUUID(): UUID {
+        return await {
+            UUID.fromString(dvc_getUUID())
+        } as UUID
+    }
+
     fun parseMQTTPacket(topic: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
-            val jniState = XwJNI.getJNIState()
-            dvc_parseMQTTPacket(jniState, topic, packet)
+            dvc_parseMQTTPacket(m_ptrGlobals, topic, packet)
         }
     }
 
     fun parseSMSPacket(fromPhone: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
-            val jniState = XwJNI.getJNIState()
-            dvc_parseSMSPacket(jniState, fromPhone, packet)
+            dvc_parseSMSPacket(m_ptrGlobals, fromPhone, packet)
         }
     }
 
     fun onTimerFired(key: Int) {
         post {
-            val jniState = XwJNI.getJNIState()
-            dvc_onTimerFired(jniState, key);
+            dvc_onTimerFired(m_ptrGlobals, key);
         }
     }
 
     fun onWebSendResult(resultKey: Int, succeeded: Boolean, result: String?) {
         post {
-            val jniState = XwJNI.getJNIState()
-            dvc_onWebSendResult(jniState, resultKey, succeeded, result);
+            dvc_onWebSendResult(m_ptrGlobals, resultKey, succeeded, result);
         }
     }
 
     suspend fun setMQTTDevID(newID: String): Boolean {
         return await {
-            val jniState = XwJNI.getJNIState()
-            dvc_setMQTTDevID(jniState, newID)
+            dvc_setMQTTDevID(m_ptrGlobals, newID)
         } as Boolean
     }
 
     fun onDictAdded(dictName: String) {
         Log.d(TAG, "onDictAdded($dictName)")
         post {
-            val jniState = XwJNI.getJNIState()
-            dvc_onDictAdded(jniState, dictName )
+            dvc_onDictAdded(m_ptrGlobals, dictName )
         }
     }
 
     fun onDictRemoved(dictName: String) {
         Log.d(TAG, "onDictRemoved($dictName)")
         post {
-            val jniState = XwJNI.getJNIState()
-            dvc_onDictRemoved(jniState, dictName )
+            dvc_onDictRemoved(m_ptrGlobals, dictName )
         }
     }
 
     fun lcToLocale(lc: Int): String? {
         return blockFor {
-            val jniState = XwJNI.getJNIState()
-            dvc_lcToLocale(jniState, lc)
+            dvc_lcToLocale(m_ptrGlobals, lc)
         } as String?
     }
 
+	@JvmStatic
+    private external fun initJNIState(dutil: DUtilCtxt, jniu: JNIUtils, seed: Long): Long
+	@JvmStatic
+    private external fun cleanupJNIState(jniState: Long)
+	@JvmStatic
+    private external fun dvc_getUUID(): String
     @JvmStatic
     private external fun dvc_parseMQTTPacket(jniState: Long, topic: String, packet: ByteArray)
     @JvmStatic

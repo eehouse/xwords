@@ -26,6 +26,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
+import org.eehouse.android.xw4.jni.Device
 
 import java.util.UUID
 
@@ -56,7 +57,7 @@ class XWApp : Application(), LifecycleObserver {
         WiDirWrapper.init(this)
         DupeModeTimer.init()
         MQTTUtils.init(this)
-        BTUtils.init(this, appName, appUUID)
+        BTUtils.init(this, appName)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_ANY)
@@ -80,7 +81,7 @@ class XWApp : Application(), LifecycleObserver {
     // by forcing JNI cleanup
     override fun onTerminate() {
         Log.d(TAG, "onTerminate() called")
-        XwJNI.cleanGlobalsEmu()
+        Device.cleanGlobalsEmu()
         super.onTerminate()
     }
 
@@ -95,16 +96,7 @@ class XWApp : Application(), LifecycleObserver {
         val SEL_COLOR = Color.argb(0xFF, 0x09, 0x70, 0x93)
         const val GREEN = -0xff5100
         const val RED = -0x510000
-        private var sUUID: UUID? = null
         private var sContext: Context? = null
-        val appUUID: UUID?
-            get() {
-                if (null == sUUID) {
-                    sUUID = UUID.fromString(XwJNI.comms_getUUID())
-                    Log.d(TAG, "sUUID (for BT): %s", sUUID)
-                }
-                return sUUID
-            }
         val appName: String
             get() {
                 return getContext().getString(R.string.app_name)

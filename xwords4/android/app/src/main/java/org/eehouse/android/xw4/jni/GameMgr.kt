@@ -61,35 +61,35 @@ object GameMgr {
 
         suspend fun getGroupCollapsed(): Boolean {
             return Device.await {
-                val jniState = XwJNI.getJNIState()
+                val jniState = Device.ptrGlobals()
                 gmgr_getGroupCollapsed(jniState, grp)
             } as Boolean
         }
 
         fun setGroupCollapsed(collapsed: Boolean) {
             Device.post {
-                val jniState = XwJNI.getJNIState()
+                val jniState = Device.ptrGlobals()
                 gmgr_setGroupCollapsed( jniState, grp, collapsed)
             }
         }
 
         suspend fun getGroupGamesCount(): Int {
             return Device.await {
-                val jniState = XwJNI.getJNIState()
+                val jniState = Device.ptrGlobals()
                 gmgr_getGroupGamesCount(jniState, grp)
             } as Int
         }
 
         suspend fun getGroupName(): String {
             return Device.await {
-                val jniState = XwJNI.getJNIState()
+                val jniState = Device.ptrGlobals()
                 gmgr_getGroupName(jniState, grp)
             } as String
         }
 
         fun setGroupName(name: String) {
             Device.post {
-                val jniState = XwJNI.getJNIState()
+                val jniState = Device.ptrGlobals()
                 gmgr_setGroupName(jniState, grp, name)
             }
         }
@@ -103,7 +103,7 @@ object GameMgr {
 
     suspend fun getPositions(): Array<GLItemRef> {
         val longs = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_getPositions(jniState)
         } as LongArray
         val refs = longs.map{ GameMgr.GLItemRef(it) }.toTypedArray()
@@ -113,14 +113,14 @@ object GameMgr {
 
     fun deleteGame(gr: GameRef) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_deleteGame(jniState, gr.gr)
         }
     }
 
     suspend fun newFor(gi: CurGameInfo, invitee: CommsAddrRec? = null): GameRef {
         val gr = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_newFor(jniState, gi, invitee)
         } as Long
         return GameRef(gr)
@@ -128,7 +128,7 @@ object GameMgr {
 
     suspend fun getFor(gameID: Int): GameRef? {
         val gr = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_getFor(jniState, gameID)
         } as Long
         return if (gr == 0L) null else GameRef(gr)
@@ -136,7 +136,7 @@ object GameMgr {
 
     suspend fun figureGR(bytes: ByteArray): GameRef {
         val grval = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_figureGR(jniState, bytes)
         } as Long
         return GameRef(grval)
@@ -144,14 +144,14 @@ object GameMgr {
 
     suspend fun gameExists(gr: GameRef): Boolean {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_gameExists(jniState, gr.gr)
         } as Boolean
     }
 
     suspend fun addForInvite(nli: NetLaunchInfo): GameRef? {
         val gr = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_addForInvite(jniState, nli)
         } as Long
         return if (gr == 0L) null else GameRef(gr)
@@ -159,14 +159,14 @@ object GameMgr {
 
     fun clearThumbnails() {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_clearThumbnails(jniState)
         }
     }
 
     suspend fun addGroup(name: String): GroupRef {
         val grp = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_addGroup(jniState, name)
         } as Int
         return GroupRef(grp)
@@ -174,14 +174,14 @@ object GameMgr {
 
     fun deleteGroup(grp: GroupRef) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_deleteGroup(jniState, grp.grp)
         }
     }
 
     suspend fun getDefaultGroup() : GroupRef {
         val grp = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_getDefaultGroup(jniState)
         } as Int
         return GroupRef(grp)
@@ -189,7 +189,7 @@ object GameMgr {
 
     suspend fun getGroup(name: String): GroupRef? {
         val grp = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_getGroup(jniState, name)
         } as Int
         val result =
@@ -201,7 +201,7 @@ object GameMgr {
     suspend fun convertGame(name: String, grp: GroupRef,
                             bytes: ByteArray): GameRef? {
         val gr = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_convertGame(jniState, name, grp.grp, bytes)
         } as Long
         return if (gr == 0L) null else GameRef(gr)
@@ -209,7 +209,7 @@ object GameMgr {
 
     fun makeGroupDefault(grp: GroupRef) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_makeGroupDefault(jniState, grp.grp)
         }
     }
@@ -221,7 +221,7 @@ object GameMgr {
         val refs: Array<IntArray?> = Array<IntArray?>(1, {null})
         val names: Array<Array<String>?> = Array<Array<String>?>(1, {null})
         Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_getGroupsMap(jniState, refs, names)
         }
         return GroupsNames(refs[0]!!, names[0]!!)
@@ -229,7 +229,7 @@ object GameMgr {
 
     fun moveGames(grp: GroupRef, games: Array<GameRef>) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             val vals: LongArray = games.map{it.gr}.toLongArray()
             gmgr_moveGames(jniState, grp.grp, vals)
         }
@@ -241,14 +241,14 @@ object GameMgr {
 
     fun raiseGroup(grp: GroupRef) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_raiseGroup(jniState, grp.grp)
         }
     }
 
     fun lowerGroup(grp: GroupRef) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             gmgr_lowerGroup(jniState, grp.grp)
         }
     }

@@ -388,7 +388,7 @@ getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
 #endif
 
 JNIEXPORT jlong JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_00024Companion_globalsInit
+Java_org_eehouse_android_xw4_jni_Device_initJNIState
 ( JNIEnv* env, jclass C, jobject jdutil, jobject jniu, jlong jseed )
 {
 #ifdef MEM_DEBUG
@@ -414,7 +414,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_00024Companion_globalsInit
 }
 
 JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
+Java_org_eehouse_android_xw4_jni_Device_cleanupJNIState
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     // XP_LOGFF( "(jniGlobalPtr: %p)", jniGlobalPtr );
@@ -843,13 +843,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     releaseMPool( globalState );
     DVC_HEADER_END();
     return jnli;
-}
-
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
-( JNIEnv* env, jclass C )
-{
-    return (*env)->NewStringUTF( env, XW_BT_UUID );
 }
 
 JNIEXPORT jboolean JNICALL
@@ -2495,6 +2488,13 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1setOpenCount
     DVC_HEADER(jniGlobalPtr);
     XP_LOGFF( "not using value %d", newval);
     DVC_HEADER_END();
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1getUUID
+(JNIEnv* env, jclass C)
+{
+    return (*env)->NewStringUTF( env, XW_BT_UUID );
 }
 
 JNIEXPORT void JNICALL

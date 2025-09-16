@@ -46,6 +46,9 @@ class GameLock private constructor(
     private var m_owner: Owner,
     val rowid: Long
 ) : AutoCloseable {
+
+    init {Assert.failDbg()}
+
     private class Owner {
         var mThread: Thread = Thread.currentThread()
         var mTrace: String? = null

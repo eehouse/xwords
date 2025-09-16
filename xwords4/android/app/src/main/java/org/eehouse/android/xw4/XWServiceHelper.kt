@@ -32,6 +32,8 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
         OK, GAME_GONE, UNCONSUMED
     }
 
+    init { Assert.failDbg() }
+
     open fun getSink(rowid: Long): MultiMsgSink {
         return MultiMsgSink(mContext, rowid)
     }

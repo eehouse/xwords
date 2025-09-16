@@ -31,82 +31,25 @@ import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
-// import org.eehouse.android.xw4.jni.JNIThread.GameStateInfo
 
 // Collection of native methods and a bit of state
 class XwJNI private constructor() {
+
+    // This class is dead. For now it just asserts if anybody tries to use
+    // it. Remove when convenient.
     class GamePtr(ptr: Long, rowid: Long) : AutoCloseable {
-        private var m_ptrGame: Long = 0
-        private var m_refCount = 1
         val rowid: Long
-        private val mStack: String
 
         init {
-            m_ptrGame = ptr
+            Assert.failDbg()
             this.rowid = rowid
-            mStack = android.util.Log.getStackTraceString(Exception())
-            // Quarantine.recordOpened(rowid)
-        }
-
-        @Synchronized
-        fun ptr(): Long {
-            Assert.assertTrue(0L != m_ptrGame)
-            // Log.d( TAG, "ptr(): m_rowid: %d", m_rowid );
-            return m_ptrGame
-        }
-
-        @Synchronized
-        fun retain(): GamePtr {
-            Assert.assertTrueNR(0 < m_refCount)
-            ++m_refCount
-            Log.d(TAG, "retain(this=%H, rowid=%d): refCount now %d",
-                  this, rowid, m_refCount)
-            return this
-        }
-
-        val isRetained: Boolean
-            get() = 0 < m_refCount
-
-        // Force (via an assert in finalize() below) that this is called. It's
-        // better if jni stuff isn't being done on the finalizer thread
-        @Synchronized
-        fun release() {
-            --m_refCount
-            // Log.d( TAG, "%s.release(this=%H, rowid=%d): refCount now %d",
-            //        getClass().getName(), this, m_rowid, m_refCount );
-            if (0 == m_refCount) {
-                if (0L != m_ptrGame) {
-                    // Quarantine.recordClosed(rowid)
-                    if (haveEnv(jNI.m_ptrGlobals)) {
-                        game_dispose(this) // will crash if haveEnv fails
-                    } else {
-                        Log.d(TAG, "release(): no ENV!!! (this=%H, rowid=%d)",
-                              this, rowid)
-                        Assert.failDbg() // seen on Play Store console; and now!!
-                    }
-                    m_ptrGame = 0
-                }
-            } else {
-                Assert.assertTrue(m_refCount > 0 || !BuildConfig.DEBUG)
-            }
         }
 
         override fun close() {
-            release()
-        }
-
-        @Throws(Throwable::class)
-        fun finalize() {
-            if (BuildConfig.NON_RELEASE && (0 != m_refCount || 0L != m_ptrGame)) {
-                org.eehouse.android.xw4.Log.e(
-                    TAG, "finalize(): called prematurely: refCount: %d"
-                            + "; ptr: %d; creator: %s", m_refCount, m_ptrGame, mStack
-                )
-            }
+            Assert.failDbg()
         }
     }
 
-    private var m_ptrGlobals: Long
 
     // Ok, so for now I can't figure out how to call the real constructor from
     // jni (javac -h and kotlin files are beyond me still) so I'm putting back
@@ -161,99 +104,48 @@ class XwJNI private constructor() {
         // }
     }
 
-    @Throws(Throwable::class)
-    fun finalize() {
-        cleanGlobals(m_ptrGlobals)
-    }
+    // enum class XP_Key {
+    //     XP_KEY_NONE,
+    //     XP_CURSOR_KEY_DOWN,
+    //     XP_CURSOR_KEY_ALTDOWN,
+    //     XP_CURSOR_KEY_RIGHT,
+    //     XP_CURSOR_KEY_ALTRIGHT,
+    //     XP_CURSOR_KEY_UP,
+    //     XP_CURSOR_KEY_ALTUP,
+    //     XP_CURSOR_KEY_LEFT,
+    //     XP_CURSOR_KEY_ALTLEFT,
+    //     XP_CURSOR_KEY_DEL,
+    //     XP_RAISEFOCUS_KEY,
+    //     XP_RETURN_KEY,
+    //     XP_KEY_LAST
+    // }
 
-    enum class XP_Key {
-        XP_KEY_NONE,
-        XP_CURSOR_KEY_DOWN,
-        XP_CURSOR_KEY_ALTDOWN,
-        XP_CURSOR_KEY_RIGHT,
-        XP_CURSOR_KEY_ALTRIGHT,
-        XP_CURSOR_KEY_UP,
-        XP_CURSOR_KEY_ALTUP,
-        XP_CURSOR_KEY_LEFT,
-        XP_CURSOR_KEY_ALTLEFT,
-        XP_CURSOR_KEY_DEL,
-        XP_RAISEFOCUS_KEY,
-        XP_RETURN_KEY,
-        XP_KEY_LAST
-    }
-
-    enum class SMS_CMD {
-        NONE,
-        INVITE,
-        DATA,
-        DEATH,
-        ACK_INVITE
-    }
-
-    init {
-        var seed = Utils.nextRandomInt().toLong()
-        seed = seed shl 32
-        seed = seed or Utils.nextRandomInt().toLong()
-        seed = seed xor System.currentTimeMillis()
-        m_ptrGlobals = globalsInit(DUtilCtxt(), JNIUtilsImpl.get(), seed)
-    }
+    // enum class SMS_CMD {
+    //     NONE,
+    //     INVITE,
+    //     DATA,
+    //     DEATH,
+    //     ACK_INVITE
+    // }
 
     companion object {
         private val TAG = XwJNI::class.java.getSimpleName()
         private var s_JNI: XwJNI? = null
 
-        @get:Synchronized
-        private val jNI: XwJNI
-            private get() {
-                if (null == s_JNI) {
-                    s_JNI = XwJNI()
-                }
-                return s_JNI!!
-            }
-
-        fun cleanGlobalsEmu() {
-            cleanGlobals()
-        }
-
-        fun getJNIState(): Long { return jNI.m_ptrGlobals }
-
-        // fun dvc_getMQTTDevID(): String {
-        //     return dvc_getMQTTDevID(jNI.m_ptrGlobals)
-        // }
-
-        // fun dvc_setMQTTDevID(newID: String): Boolean {
-        //     return dvc_setMQTTDevID(jNI.m_ptrGlobals, newID)
-        // }
-
-        // fun dvc_resetMQTTDevID() {
-        //     dvc_resetMQTTDevID(jNI.m_ptrGlobals)
-        // }
-
         fun dvc_makeMQTTNukeInvite(nli: NetLaunchInfo): TopicsAndPackets {
-            return dvc_makeMQTTNukeInvite(jNI.m_ptrGlobals, nli)
+            return dvc_makeMQTTNukeInvite(Device.ptrGlobals(), nli)
         }
 
         fun dvc_makeMQTTNoSuchGames(addressee: String, gameID: Int): TopicsAndPackets {
             Log.d(TAG, "dvc_makeMQTTNoSuchGames(to: %s, gameID: %X)",
                   addressee, gameID)
             // DbgUtils.printStack( TAG );
-            return dvc_makeMQTTNoSuchGames(jNI.m_ptrGlobals, addressee, gameID)
+            return dvc_makeMQTTNoSuchGames(Device.ptrGlobals(), addressee, gameID)
         }
-
-        // fun dvc_parseMQTTPacket(topic: String, buf: ByteArray) {
-        //     dvc_parseMQTTPacket(jNI.m_ptrGlobals, topic, buf)
-        // }
-
-        // fun dvc_onWebSendResult(
-        //     resultKey: Int, succeeded: Boolean,
-        //     result: String?
-        // ) {
-        //     dvc_onWebSendResult(jNI.m_ptrGlobals, resultKey, succeeded, result)
-        // }
 
         fun dvc_getLegalPhonyCodes(): Array<ISOCode> {
             val codes = ArrayList<String>()
-            dvc_getLegalPhonyCodes(jNI.m_ptrGlobals, codes)
+            dvc_getLegalPhonyCodes(Device.ptrGlobals(), codes)
 
 			val result = ArrayList<ISOCode>()
 			for ( code in codes ) {
@@ -264,67 +156,19 @@ class XwJNI private constructor() {
 
         fun dvc_getLegalPhoniesFor(code: ISOCode): Array<String> {
             val list = ArrayList<String>()
-            dvc_getLegalPhoniesFor(jNI.m_ptrGlobals, code.toString(), list)
+            dvc_getLegalPhoniesFor(Device.ptrGlobals(), code.toString(), list)
             return list.toTypedArray<String>()
         }
 
         fun dvc_clearLegalPhony(code: ISOCode, phony: String) {
-            dvc_clearLegalPhony(jNI.m_ptrGlobals, code.toString(), phony)
-        }
-
-        // fun hasKnownPlayers(): Boolean {
-        //     val players = kplr_getPlayers()
-        //     return null != players && 0 < players.size
-        // }
-
-        // @JvmOverloads
-        // fun kplr_getPlayers(byDate: Boolean = false): Array<String>? {
-        //     var result: Array<String>? = null
-        //     if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-        //         result = kplr_getPlayers(jNI.m_ptrGlobals, byDate)
-        //     }
-        //     return result
-        // }
-
-        // fun kplr_renamePlayer(oldName: String, newName: String): Boolean {
-        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_renamePlayer(
-        //         jNI.m_ptrGlobals, oldName, newName
-        //     ) else true
-        // }
-
-        // fun kplr_deletePlayer(player: String) {
-        //     if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-        //         kplr_deletePlayer(jNI.m_ptrGlobals, player)
-        //     }
-        // }
-
-        // @JvmOverloads
-        // fun kplr_getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
-        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_getAddr(
-        //         jNI.m_ptrGlobals, name, lastMod
-        //     ) else null
-        // }
-
-        // fun kplr_nameForMqttDev(mqttID: String?): String? {
-        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_nameForMqttDev(
-        //         jNI.m_ptrGlobals, mqttID
-        //     ) else null
-        // }
-
-        private fun cleanGlobals() {
-            synchronized(XwJNI::class.java) {
-                // let's be safe here
-                val jni = jNI
-                cleanGlobals(jni!!.m_ptrGlobals) // tests for 0
-                jni.m_ptrGlobals = 0
-            }
+            dvc_clearLegalPhony(Device.ptrGlobals(), code.toString(), phony)
         }
 
         // This needs to be called before the first attempt to use the
         // jni.
-        init {
-            System.loadLibrary(BuildConfig.JNI_LIB_NAME)
-        }
+        // init {
+        //     System.loadLibrary(BuildConfig.JNI_LIB_NAME)
+        // }
 
         /* XW_TrayVisState enum */
         const val TRAY_HIDDEN = 0
@@ -333,28 +177,29 @@ class XwJNI private constructor() {
 
         fun giFromStream(gi: CurGameInfo, stream: ByteArray) {
             Assert.assertNotNull(stream)
-            gi_from_stream(jNI.m_ptrGlobals, gi, stream) // called here
+            gi_from_stream(Device.ptrGlobals(), gi, stream) // called here
         }
 
         fun nliFromStream(stream: ByteArray): NetLaunchInfo? {
-            return nli_from_stream(jNI.m_ptrGlobals, stream)
+            return nli_from_stream(Device.ptrGlobals(), stream)
         }
 
         fun haveLocaleToLc(isoCode: ISOCode, lc: IntArray?): Boolean {
             return haveLocaleToLc(isoCode.toString(), lc)
         }
 
-        @JvmStatic
-        external fun comms_getUUID(): String
+        // @JvmStatic
+        // external fun comms_getUUID(): String
+
         @JvmStatic
         external fun haveLocaleToLc(isoCodeStr: String?, lc: IntArray?): Boolean
 
         // Game methods
-        private fun initGameJNI(rowid: Long): GamePtr? {
-            val ptr = gameJNIInit(jNI.m_ptrGlobals)
-            Assert.assertTrueNR(0L != ptr) // should be impossible
-            return if (0L == ptr) null else GamePtr(ptr, rowid)
-        }
+        // private fun initGameJNI(rowid: Long): GamePtr? {
+        //     val ptr = gameJNIInit(Device.ptrGlobals())
+        //     Assert.assertTrueNR(0L != ptr) // should be impossible
+        //     return if (0L == ptr) null else GamePtr(ptr, rowid)
+        // }
 
         @Synchronized
         fun initFromStream(
@@ -362,16 +207,18 @@ class XwJNI private constructor() {
             util: UtilCtxt?, draw: DrawCtx?,
             cp: CommonPrefs, procs: TransportProcs?
         ): GamePtr? {
-            var gamePtr = initGameJNI(rowid)
-            if (!game_makeFromStream(
-                    gamePtr, stream, gi, util, draw,
-                    cp, procs
-                )
-            ) {
-                gamePtr!!.release()
-                gamePtr = null
-            }
-            return gamePtr
+            Assert.failDbg()
+            return null
+            // var gamePtr = initGameJNI(rowid)
+            // if (!game_makeFromStream(
+            //         gamePtr, stream, gi, util, draw,
+            //         cp, procs
+            //     )
+            // ) {
+            //     // gamePtr!!.release()
+            //     gamePtr = null
+            // }
+            // return gamePtr
         }
 
         @Synchronized
@@ -379,13 +226,15 @@ class XwJNI private constructor() {
             gi: CurGameInfo, selfAddr: CommsAddrRec?, hostAddr: CommsAddrRec?,
             util: UtilCtxt?, draw: DrawCtx?, cp: CommonPrefs, procs: TransportProcs?
         ): GamePtr? {
+            Assert.failDbg()
+            return null
             // Only standalone doesn't provide self address
-            Assert.assertTrueNR(null != selfAddr || gi.deviceRole == DeviceRole.ROLE_STANDALONE)
+            // Assert.assertTrueNR(null != selfAddr || gi.deviceRole == DeviceRole.ROLE_STANDALONE)
             // Only client should be providing host addr
-            Assert.assertTrueNR(null == hostAddr || gi.deviceRole == DeviceRole.ROLE_ISGUEST)
-            val gamePtr = initGameJNI(0)
-            game_makeNewGame(gamePtr, gi, selfAddr, hostAddr, util, draw, cp, procs)
-            return gamePtr
+            // Assert.assertTrueNR(null == hostAddr || gi.deviceRole == DeviceRole.ROLE_ISGUEST)
+            // val gamePtr = initGameJNI(0)
+            // game_makeNewGame(gamePtr, gi, selfAddr, hostAddr, util, draw, cp, procs)
+            // return gamePtr
         }
 
         fun game_makeRematch(
@@ -397,12 +246,13 @@ class XwJNI private constructor() {
             for (ii in newOrder.indices) {
                 noInts[ii] = newOrder[ii]
             }
-            var gamePtrNew = initGameJNI(0)
-            if (!game_makeRematch(gamePtr, gamePtrNew, util, cp, gameName, noInts)) {
-                gamePtrNew!!.release()
-                gamePtrNew = null
-            }
-            return gamePtrNew
+            Assert.failDbg()
+            // var gamePtrNew = initGameJNI(0)
+            // if (!game_makeRematch(gamePtr, gamePtrNew, util, cp, gameName, noInts)) {
+            //     // gamePtrNew!!.release()
+            //     gamePtrNew = null
+            // }
+            return null
         }
 
         fun game_makeFromInvite(
@@ -410,17 +260,19 @@ class XwJNI private constructor() {
             selfAddr: CommsAddrRec,
             cp: CommonPrefs, procs: TransportProcs
         ): GamePtr? {
-            var gamePtrNew = initGameJNI(0)
-            if (!game_makeFromInvite(gamePtrNew, nli, util, selfAddr, cp, procs)) {
-                gamePtrNew!!.release()
-                gamePtrNew = null
-            }
-            return gamePtrNew
+            Assert.failDbg()
+            // var gamePtrNew = initGameJNI(0)
+            // if (!game_makeFromInvite(gamePtrNew, nli, util, selfAddr, cp, procs)) {
+            //     // gamePtrNew!!.release()
+            //     gamePtrNew = null
+            // }
+            // return gamePtrNew
+            return null
         }
 
         // hack to allow cleanup of env owned by thread that doesn't open game
         fun threadDone() {
-            envDone(jNI.m_ptrGlobals)
+            envDone(Device.ptrGlobals())
         }
 
         @JvmStatic
