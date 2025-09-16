@@ -42,7 +42,6 @@ import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.TransportProcs.TPMsgHandler
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
-import org.eehouse.android.xw4.jni.XwJNI.XP_Key
 
 class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable {
     private var m_lock: GameLock? = lockIn.retain()
@@ -322,25 +321,25 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
             .sendToTarget()
     }
 
-    private fun nextSame(cmd: JNICmd): Boolean {
-        val nextElem = m_queue.peek()
-        return null != nextElem && nextElem.m_cmd == cmd
-    }
+    // private fun nextSame(cmd: JNICmd): Boolean {
+    //     val nextElem = m_queue.peek()
+    //     return null != nextElem && nextElem.m_cmd == cmd
+    // }
 
-    private fun processKeyEvent(
-        cmd: JNICmd, xpKey: XP_Key,
-        barr: BooleanArray
-    ): Boolean {
-        val draw = false
-        return draw
-    } // processKeyEvent
+    // private fun processKeyEvent(
+    //     cmd: JNICmd, xpKey: XP_Key,
+    //     barr: BooleanArray
+    // ): Boolean {
+    //     val draw = false
+    //     return draw
+    // } // processKeyEvent
 
-    private fun checkButtons() {
-        // synchronized(mGsi) {
-        //     XwJNI.game_getState(mJNIGamePtr!!, mGsi)
-        // }
-        // Message.obtain(mHandler, TOOLBAR_STATES).sendToTarget()
-    }
+    // private fun checkButtons() {
+    // synchronized(mGsi) {
+    //     XwJNI.game_getState(mJNIGamePtr!!, mGsi)
+    // }
+    // Message.obtain(mHandler, TOOLBAR_STATES).sendToTarget()
+    //     }
 
     // private fun save_jni() {
     //     // If server has any work to do, e.g. clean up after showing a

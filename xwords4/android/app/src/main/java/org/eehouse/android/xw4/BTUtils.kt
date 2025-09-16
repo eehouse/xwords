@@ -53,8 +53,8 @@ import org.eehouse.android.xw4.XWServiceHelper.ReceiveResult
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.Stats
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.Stats.STAT
 
 object BTUtils {
@@ -173,12 +173,14 @@ object BTUtils {
         return result
     }
 
-    fun init(context: Context, appName: String?, uuid: UUID?) {
-        Log.d(TAG, "init()")
-        sAppName = appName
-        sUUID = uuid
-        loadOwnMac(context)
-        onResume(context)
+    fun init(context: Context, appName: String?) {
+        Utils.launch {
+            Log.d(TAG, "init()")
+            sAppName = appName
+            sUUID = Device.getUUID()
+            loadOwnMac(context)
+            onResume(context)
+        }
     }
 
     private fun timerFired(context: Context) {
@@ -189,8 +191,10 @@ object BTUtils {
         Log.d(TAG, "onResume()")
         // Should only run this in the background if we have BT games
         // going. In the foreground we want to
-        SecureListenThread.getOrStart()
-        InsecureListenThread.getOrStart()
+        sUUID?.let {
+            SecureListenThread.getOrStart()
+            InsecureListenThread.getOrStart()
+        }
     }
 
     fun onStop(context: Context) {

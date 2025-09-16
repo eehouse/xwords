@@ -84,14 +84,9 @@ import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.GameRef.GameStateInfo
 import org.eehouse.android.xw4.jni.GameSummary
-import org.eehouse.android.xw4.jni.JNIThread
-import org.eehouse.android.xw4.jni.JNIThread.JNICmd
 import org.eehouse.android.xw4.jni.TransportProcs.TPMsgHandler
 import org.eehouse.android.xw4.jni.UtilCtxt
 import org.eehouse.android.xw4.jni.UtilCtxtImpl
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
-import org.eehouse.android.xw4.jni.XwJNI.XP_Key
 import org.eehouse.android.xw4.loc.LocUtils
 
 class BoardDelegate(delegator: Delegator) :
@@ -800,7 +795,6 @@ class BoardDelegate(delegator: Delegator) :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         var handled = true
-        var cmd = JNICmd.CMD_NONE
         val id = item.itemId
         when (id) {
             R.id.board_menu_done -> {

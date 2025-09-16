@@ -193,11 +193,12 @@ object GameUtils {
     fun summarize(context: Context, lock: GameLock): GameSummary? {
         var result: GameSummary? = null
         val gi = CurGameInfo(context)
-        loadMakeGame(context, gi, lock).use { gamePtr ->
-            if (null != gamePtr) {
-                result = summarize(context, lock, gamePtr, gi)
-            }
-        }
+        Assert.failDbg()
+        // loadMakeGame(context, gi, lock).use { gamePtr ->
+        // if (null != gamePtr) {
+        // result = summarize(context, lock, gamePtr, gi)
+        // }
+        // }
         return result
     }
 
@@ -205,6 +206,7 @@ object GameUtils {
         context: Context, rowid: Long,
         maxMillis: Long
     ): GameSummary? {
+        Assert.failDbg()
         var result: GameSummary? = null
         JNIThread.getRetained(rowid).use { thread ->
             if (null != thread) {
@@ -618,14 +620,14 @@ object GameUtils {
                 val cp = CommonPrefs.get(context)
                 XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp,
                                        gameName, newOrder)
-                    .use { gamePtrNew ->
-                        if (null != gamePtrNew) {
-                            rowid = saveNewGame1(
-                                context, gamePtrNew,
-                                groupID, gameName
-                            )
-                        }
-                    }
+                    // .use { gamePtrNew ->
+                // if (null != gamePtrNew) {
+                // rowid = saveNewGame1(
+                // context, gamePtrNew,
+                // groupID, gameName
+                // )
+            // }
+            // }
             }
         }
         Log.d(TAG, "makeRematch() => %d", rowid)
@@ -1620,6 +1622,7 @@ object GameUtils {
         private var jthread: JNIThread? = null
 
         init {
+            Assert.failDbg()
             // There's a race condition here!!!!
             if (JNIThread.gameIsOpen(mRowid)) {
                 jthread = JNIThread.getRetained(mRowid)
@@ -1687,6 +1690,8 @@ object GameUtils {
         var m_gotChat: Boolean = false
         var m_chatFrom: String? = null
         var m_gameOver: Boolean = false
+
+        init { Assert.failDbg() }
 
         override fun showChat(msg: String, fromIndx: Int, tsSeconds: Int) {
             DBUtils.appendChatHistory(m_context, m_rowid, msg, fromIndx, tsSeconds.toLong())

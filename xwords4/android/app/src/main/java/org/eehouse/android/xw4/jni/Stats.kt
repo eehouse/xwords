@@ -48,21 +48,21 @@ object Stats {
 
     fun increment(stat: STAT) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             sts_increment( jniState, stat );
         }
     }
 
     fun clearAll() {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             sts_clearAll( jniState );
         }
     }
 
     suspend fun export(): JSONObject {
         val str = Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             sts_export(jniState)
         } as String
         return JSONObject(str)

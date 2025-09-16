@@ -33,7 +33,7 @@ class GameRef(val gr: Long): Parcelable, Serializable {
     private val jniState: Long
 
     init {
-        jniState = XwJNI.getJNIState()
+        jniState = Device.ptrGlobals()
     }
 
     override fun equals(other: Any?): Boolean {

@@ -3271,7 +3271,7 @@ class GamesListDelegate(delegator: Delegator) :
         fun onGroupChanged(context: Context, grp: GroupRef,
                            flags: GroupChangeEvents) {
             // Log.d(TAG, "onGroupChanged(grp=$grp, flags=$flags)")
-            s_self!!.get()!!.let { self ->
+            s_self?.get()?.let { self ->
                          var doReload = false
                          var doUpdate = false
                          for (flag in flags) {

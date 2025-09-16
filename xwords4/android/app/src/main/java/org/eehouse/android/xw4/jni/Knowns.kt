@@ -26,42 +26,42 @@ object Knowns {
 
     suspend fun hasKnownPlayers(): Boolean {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_havePlayers(jniState)
         } as Boolean
     }
 
     suspend fun getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_getAddr(jniState, name, lastMod)
         } as CommsAddrRec?
     }
 
     suspend fun getPlayers(byDate: Boolean = false): Array<String>? {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_getPlayers(jniState, byDate)
         } as Array<String>?
     }
 
     suspend fun nameForMqttDev(mqttID: String): String? {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_nameForMqttDev(jniState, mqttID)
         } as String?
     }
 
     fun deletePlayer(name: String) {
         Device.post {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_deletePlayer(jniState, name)
         }
     }
 
     suspend fun renamePlayer(oldName: String, newName: String): Boolean {
         return Device.await {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             kplr_renamePlayer(jniState, oldName, newName)
         } as Boolean
     }

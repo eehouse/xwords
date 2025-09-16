@@ -62,12 +62,12 @@ object TmpDict {
         }
 
         fun getInfo(check: Boolean): DictInfo {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             return dict_getInfo(jniState, dictPtr, check)
         }
 
         fun getTilesInfo(): String {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             return dict_getTilesInfo(jniState, dictPtr)
         }
 
@@ -86,7 +86,7 @@ object TmpDict {
         suspend fun makeDI(pats: Array<PatDesc>,
                            minLen: Int, maxLen: Int
         ): IterWrapper? {
-            val jniState = XwJNI.getJNIState()
+            val jniState = Device.ptrGlobals()
             val iterPtr = Device.await {
                 di_init(jniState, dictPtr, pats, minLen, maxLen)
             } as Long
@@ -171,7 +171,7 @@ object TmpDict {
     fun makeDict(
         bytes: ByteArray?, name: String?, path: String?
     ) : DictWrapper {
-        val jniState = XwJNI.getJNIState()
+        val jniState = Device.ptrGlobals()
         val dict = dict_make(jniState, bytes, name, path)
         return DictWrapper(dict)
     }

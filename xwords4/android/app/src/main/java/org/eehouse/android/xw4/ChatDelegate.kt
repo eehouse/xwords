@@ -40,7 +40,6 @@ import java.text.DateFormat
 
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.jni.GameRef
-import org.eehouse.android.xw4.jni.JNIThread
 
 class ChatDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.chat, R.menu.chat_menu) {
