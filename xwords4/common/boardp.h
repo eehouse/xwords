@@ -23,7 +23,7 @@
 #include "comtypes.h"
 #include "model.h"
 #include "board.h"
-#include "engine.h"
+#include "enginep.h"
 #include "mempool.h" /* debug only */
 #include "util.h"
 

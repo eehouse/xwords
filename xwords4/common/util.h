@@ -122,8 +122,9 @@ typedef struct UtilVtable {
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
 #endif
-
-    XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc, XWEnv xwe );
+#ifdef XWFEATURE_STOP_ENGINE
+    XP_Bool (*m_util_stopEngineProgress)( XW_UtilCtxt* uc, XWEnv xwe );
+#endif
 
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc, XWEnv xwe );
 
@@ -251,8 +252,12 @@ XW_UtilCtxt* check_uc(XW_UtilCtxt* uc);
     (uc)->vtable->m_util_hiliteCell((uc), __VA_ARGS__)
 #endif
 
-#define util_engineProgressCallback( uc, ... ) \
-    (uc)->vtable->m_util_engineProgressCallback((uc), __VA_ARGS__)
+#ifdef XWFEATURE_STOP_ENGINE
+# define util_stopEngineProgress( uc, ... ) \
+    (uc)->vtable->m_util_stopEngineProgress((uc), __VA_ARGS__)
+#else
+# define util_stopEngineProgress( uc, ... ) XP_FALSE
+#endif
 
 #define util_altKeyDown( uc, ... )                 \
     (uc)->vtable->m_util_altKeyDown((uc), __VA_ARGS__)

@@ -51,8 +51,10 @@ void engine_destroy( EngineCtxt* ctxt );
 XP_Bool engine_findMove( EngineCtxt* ctxt, XWEnv xwe, const ModelCtxt* model, XP_S16 turn,
                          /* includePending: include pending tiles as part of words */
                          XP_Bool includePending,
+#ifdef XWFEATURE_STOP_ENGINE
                          /* skipCallback: skip the callback that lets client cancel */
                          XP_Bool skipCallback,
+#endif
                          const TrayTileSet* tiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                          XP_U16 allTilesBonus, 

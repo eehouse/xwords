@@ -37,7 +37,8 @@ interface UtilCtxt {
 
     fun informNeedPassword(player: Int, name: String?) {}
     fun turnChanged(newTurn: Int) {}
-    fun engineProgressCallback(): Boolean = true
+    // Not called unless XWFEATURE_STOP_ENGINE is #defined in Android.mk
+    fun stopEngineProgress(): Boolean = false
     fun remSelected() {}
     fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
     fun informWordsBlocked(nWords: Int, words: String, dict: String) {}

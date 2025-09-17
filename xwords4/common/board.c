@@ -55,7 +55,7 @@
 #include "dictnry.h"
 #include "draw.h"
 #include "device.h"
-#include "engine.h"
+#include "enginep.h"
 #include "util.h"
 #include "mempool.h" /* debug only */
 #include "memstream.h"
@@ -2227,8 +2227,11 @@ board_requestHint( BoardCtxt* board, XWEnv xwe,
 # endif
 #endif
             searchComplete = 
-                engine_findMove( engine, xwe, model, selPlayer,
-                                 XP_FALSE, XP_FALSE, &tileSet, usePrev,
+                engine_findMove( engine, xwe, model, selPlayer, XP_FALSE,
+#ifdef XWFEATURE_STOP_ENGINE
+                                 XP_FALSE,
+#endif
+                                 &tileSet, usePrev,
 #ifdef XWFEATURE_BONUSALL
                                  allTilesBonus, 
 #endif

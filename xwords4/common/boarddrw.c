@@ -53,7 +53,7 @@
 #include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"
-#include "engine.h"
+#include "enginep.h"
 #include "util.h"
 #include "mempool.h" /* debug only */
 #include "memstream.h"
