@@ -53,7 +53,6 @@
 #include "model.h"
 #include "draw.h"
 #include "board.h"
-#include "engine.h"
 #include "xwstream.h"
 #include "xwstate.h"
 #include "strutils.h"

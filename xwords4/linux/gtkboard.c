@@ -1798,11 +1798,12 @@ gtk_util_altKeyDown( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
     return globals->altKeyDown;
 }
 
+#ifdef XWFEATURE_STOP_ENGINE
 static XP_Bool
-gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
+gtk_util_stopEngineProgress( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 {
 #ifdef DONT_ABORT_ENGINE
-    return XP_TRUE;		/* keep going */
+    return XP_FALSE;		/* don't abort; keep going */
 #else
     gboolean pending = gdk_events_pending();
 
@@ -1810,7 +1811,8 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe
 
     return !pending;
 #endif
-} /* gtk_util_engineProgressCallback */
+} /* gtk_util_stopEngineProgress */
+#endif
 
 typedef struct _BadWordsData {
     GtkGameGlobals* globals;
@@ -2233,7 +2235,9 @@ setupGtkUtilCallbacks( XW_UtilCtxt* util )
     SET_PROC(hiliteCell);
 #endif
     SET_PROC(altKeyDown);
-    SET_PROC(engineProgressCallback);
+#ifdef XWFEATURE_STOP_ENGINE
+    SET_PROC(stopEngineProgress);
+#endif
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);
     SET_PROC(timerSelected);

@@ -18,7 +18,7 @@
  */
 
 #include "comtypes.h"
-#include "engine.h"
+#include "enginep.h"
 #include "dictnry.h"
 #include "util.h"
 #include "dbgutil.h"
@@ -99,7 +99,9 @@ struct EngineCtxt {
     XP_U16 nMovesToSave;
     XP_U16 star_row;
     XP_Bool returnNOW;
+#ifdef XWFEATURE_STOP_ENGINE
     XP_Bool skipProgressCallback;
+#endif
     XP_Bool isRobot;
     XP_Bool includePending;
     MoveIterationData miData;
@@ -391,7 +393,10 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
  */
 XP_Bool
 engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
-                 XP_S16 turn, XP_Bool includePending, XP_Bool skipCallback,
+                 XP_S16 turn, XP_Bool includePending,
+#ifdef XWFEATURE_STOP_ENGINE
+                 XP_Bool skipCallback,
+#endif
                  const TrayTileSet* tts, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                  XP_U16 allTilesBonus,
@@ -455,7 +460,9 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
     engine->usePrev = usePrev;
     engine->blankTile = dict_getBlankTile( engine->dict );
     engine->returnNOW = XP_FALSE;
+#ifdef XWFEATURE_STOP_ENGINE
     engine->skipProgressCallback = skipCallback;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     engine->searchLimits = searchLimits;
 #endif
@@ -1088,9 +1095,12 @@ static void
 considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_S16 tileLength,
               XP_S16 firstCol, XP_S16 lastRow )
 {
-    if ( !engine->skipProgressCallback
-         && !util_engineProgressCallback( *engine->utilp, xwe ) ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_STOP_ENGINE
+    } else if ( !engine->skipProgressCallback
+                && util_stopEngineProgress( *engine->utilp, xwe ) ) {
         engine->returnNOW = XP_TRUE;
+#endif
     } else {
 
         /* if this never gets hit then the top-level caller of leftPart should

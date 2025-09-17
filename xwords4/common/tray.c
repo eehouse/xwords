@@ -19,7 +19,7 @@
 
 #include "boardp.h"
 #include "dragdrpp.h"
-#include "engine.h"
+#include "enginep.h"
 #include "draw.h"
 #include "strutils.h"
 

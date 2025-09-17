@@ -1079,11 +1079,13 @@ curses_util_hiliteCell( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 } /* curses_util_hiliteCell */
 #endif
 
+#ifdef XWFEATURE_STOP_ENGINE
 static XP_Bool
-curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
+curses_util_stopEngineProgress( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 {
-    return XP_TRUE;
+    return XP_FALSE;
 } /* curses_util_engineProgressCallback */
+#endif
 
 static XP_Bool
 curses_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
@@ -1209,7 +1211,9 @@ cb_setupUtilCallbacks( XW_UtilCtxt* util )
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
 #endif
-    SET_PROC(engineProgressCallback);
+#ifdef XWFEATURE_STOP_ENGINE
+    SET_PROC(stopEngineProgress);
+#endif
     SET_PROC(altKeyDown);       /* ?? */
     SET_PROC(notifyIllegalWords);
     SET_PROC(remSelected);

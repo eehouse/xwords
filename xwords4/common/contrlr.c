@@ -27,7 +27,7 @@
 #include "states.h"
 #include "util.h"
 #include "pool.h"
-#include "engine.h"
+#include "enginep.h"
 #include "device.h"
 #include "strutils.h"
 #include "dbgutil.h"
@@ -1755,7 +1755,10 @@ makeRobotMove( CtrlrCtxt* ctrlr, XWEnv xwe )
 #endif
         XP_ASSERT( !!ctrl_getEngineFor( ctrlr, xwe, turn ) );
         searchComplete = engine_findMove( ctrl_getEngineFor( ctrlr, xwe, turn ),
-                                          xwe, model, turn, XP_FALSE, XP_FALSE,
+                                          xwe, model, turn, XP_FALSE,
+#ifdef XWFEATURE_STOP_ENGINE
+                                          XP_TRUE,
+#endif
                                           tileSet, XP_FALSE,
 #ifdef XWFEATURE_BONUSALL
                                           allTilesBonus, 
@@ -2772,7 +2775,10 @@ trayAllowsMoves( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 turn,
     MoveInfo newMove = {};
     XP_U16 score = 0;
     XP_Bool result = engine_findMove( engine, xwe, ctrlr->vol.model, turn,
-                                      XP_TRUE, XP_TRUE,
+                                      XP_TRUE,
+#ifdef XWFEATURE_STOP_ENGINE
+                                      XP_TRUE,
+#endif
                                       &tts, XP_FALSE, 0,
 #ifdef XWFEATURE_SEARCHLIMIT
                                       NULL, XP_FALSE,

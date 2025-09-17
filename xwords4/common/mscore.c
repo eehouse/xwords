@@ -20,7 +20,7 @@
 #include "modelp.h"
 #include "util.h"
 #include "device.h"
-#include "engine.h"
+#include "enginep.h"
 #include "game.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"

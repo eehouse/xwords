@@ -278,15 +278,17 @@ and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 }
 #endif
 
+#ifdef XWFEATURE_STOP_ENGINE
 static XP_Bool
-and_util_engineProgressCallback( XW_UtilCtxt* uc, XWEnv xwe )
+and_util_stopEngineProgress( XW_UtilCtxt* uc, XWEnv xwe )
 {
     XP_Bool result = XP_FALSE;
-    UTIL_CBK_HEADER("engineProgressCallback","()Z" );
+    UTIL_CBK_HEADER("stopEngineProgress","()Z" );
     result = (*env)->CallBooleanMethod( env, util->jutil, mid );
     UTIL_CBK_TAIL();
     return result;
 }
+#endif
 
 static XP_Bool
 and_util_altKeyDown( XW_UtilCtxt* uc, XWEnv xwe )
@@ -1141,7 +1143,9 @@ makeUtil( MPFORMAL JNIEnv* env, jobject jutil, const CurGameInfo* gi,
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
 #endif
-    SET_PROC(engineProgressCallback);
+#ifdef XWFEATURE_STOP_ENGINE
+    SET_PROC(stopEngineProgress);
+#endif
     SET_PROC(altKeyDown);
     SET_PROC(notifyIllegalWords);
 #ifdef XWFEATURE_CHAT
