@@ -173,7 +173,14 @@ cb_open( CursesBoardState* cbState, GameRef gr, const cb_dims* dims )
     /* } */
     DrawCtx* draw = cGlobals->draw;
     XP_ASSERT( !!draw );
-    gr_setDraw( params->dutil, cGlobals->gr, NULL_XWE, draw,
+    XP_ASSERT( !cGlobals->util );
+
+    XW_DUtilCtxt* dutil = params->dutil;
+    const CurGameInfo* gi = gr_getGI( dutil, cGlobals->gr, NULL_XWE );
+    cGlobals->util = linux_util_make( dutil, gi, cGlobals->gr );
+    setupLinuxUtilCallbacks( cGlobals->util, XP_TRUE );
+
+    gr_setDraw( dutil, cGlobals->gr, NULL_XWE, draw,
                 cGlobals->util );
 }
 
@@ -210,6 +217,8 @@ closeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
         CommonAppGlobals* cag = cbState->params->cag;
         forgetGameGlobals( cag, &bGlobals->cGlobals );
     }
+
+    util_unref( cGlobals->util, NULL_XWE );
 }
 
 void
