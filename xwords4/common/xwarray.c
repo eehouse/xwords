@@ -241,6 +241,7 @@ assertSorted( XWArray* array, XWEnv xwe )
             int res = (*proc)( array->elems[ii-1], array->elems[ii], xwe, array->procClosure );
             if ( 0 < res ) {
                 XP_LOGFF( "ERROR: array from %s line %d out-of-order", array->caller, array->line );
+                XP_LOGFF( "bad elems are #%d,#%d of %d", ii-1, ii, array->nElems );
                 XP_ASSERT( 0 );
             }
         }
