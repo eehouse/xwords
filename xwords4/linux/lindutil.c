@@ -422,6 +422,16 @@ linux_dutil_sendViaMQTT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static XP_S16
+linux_dutil_sendViaBT( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+                       const XP_U8* XP_UNUSED(buf), XP_U16 len,
+                       const XP_UCHAR* hostName,
+                       const XP_BtAddrStr* XP_UNUSED(btAddr) )
+{
+    XP_LOGFF( "sending %d bytes to %s", len, hostName );
+    return -1;
+}
+
+static XP_S16
 linux_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                         const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* phone, XP_U16 port )
@@ -596,6 +606,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(dictGone);
     SET_PROC(startMQTTListener);
     SET_PROC(sendViaMQTT);
+    SET_PROC(sendViaBT);
     SET_PROC(sendViaNBS);
     SET_PROC(onKnownPlayersChange);
     SET_PROC(onGameChanged);

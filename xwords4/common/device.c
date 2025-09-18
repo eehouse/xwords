@@ -484,6 +484,53 @@ sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     stream_destroy( stream );
 }
 
+typedef enum {
+    BTCMD_BAD_PROTO,
+    BTCMD_PING,
+    BTCMD_PONG,
+    BTCMD_SCAN,
+    BTCMD_INVITE,
+    BTCMD_INVITE_ACCPT,
+    BTCMD__INVITE_DECL,  // unused
+    BTCMD_INVITE_DUPID,
+    BTCMD__INVITE_FAILED,  // generic error, and unused
+    BTCMD_MESG_SEND,
+    BTCMD_MESG_ACCPT,
+    BTCMD__MESG_DECL,  // unused
+    BTCMD_MESG_GAMEGONE,
+    BTCMD__REMOVE_FOR,  // unused
+    BTCMD_INVITE_DUP_INVITE,
+    BTCMD_MAC_ASK,  // ask peer what my mac address is
+    BTCMD_MAC_REPLY,  // reply to above
+} BTCmd;
+
+#define BT_PROTO_BATCH 2
+#define BT_PROTO BT_PROTO_BATCH
+
+static void
+sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
+                 const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
+{
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    stream_putU8( stream, BT_PROTO );
+    stream_putU8( stream, 1 );  /* one message in this packet */
+
+    /* tmp stream lets us put message together then get length */
+    XWStreamCtxt* tmpStream = dvc_makeStream( dutil );
+    stream_putU8( tmpStream, BTCMD_INVITE );
+    nli_saveToStream( nli, tmpStream );
+    XP_U16 size = stream_getSize(tmpStream);
+    stream_putU16( stream, size );
+    stream_getFromStream( stream, tmpStream, size );
+    stream_destroy( tmpStream );
+
+    const XP_U8* ptr = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+    dutil_sendViaBT( dutil, xwe, ptr, len, hostName, btAddr );
+
+    stream_destroy( stream );
+}
+
 XP_S16
 dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                 XP_U32 XP_UNUSED(createdStamp), const CommsAddrRec* addr,
@@ -495,7 +542,12 @@ dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
         sendInviteViaMQTT( dutil, xwe, nli, &addr->u.mqtt.devID );
         break;
     case COMMS_CONN_SMS:
-        sendInviteViaNBS( dutil, xwe, nli, addr->u.sms.phone, addr->u.sms.port );
+        sendInviteViaNBS( dutil, xwe, nli, addr->u.sms.phone,
+                          addr->u.sms.port );
+        break;
+    case COMMS_CONN_BT:
+        sendInviteViaBT( dutil, xwe, nli, addr->u.bt.hostName,
+                         &addr->u.bt.btAddr );
         break;
     case COMMS_CONN_NFC:
         break;
