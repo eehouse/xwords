@@ -172,6 +172,10 @@ typedef struct _DUtilVtable {
     XP_S16 (*m_dutil_sendViaNBS)( XW_DUtilCtxt* duc, XWEnv xwe,
                                   const XP_U8* buf, XP_U16 len,
                                   const XP_UCHAR* phone, XP_U16 port );
+    XP_S16 (*m_dutil_sendViaBT)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                 const XP_U8* buf, XP_U16 len,
+                                 const XP_UCHAR* hostName,
+                                 const XP_BtAddrStr* btAddr );
 
     void (*m_dutil_onKnownPlayersChange)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_getCommonPrefs)( XW_DUtilCtxt* duc, XWEnv xwe, CommonPrefs* cp );
@@ -283,6 +287,8 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_sendViaMQTT((duc), __VA_ARGS__)
 #define dutil_sendViaNBS(duc, ...)                          \
     (duc)->vtable.m_dutil_sendViaNBS((duc), __VA_ARGS__)
+#define dutil_sendViaBT(duc, ...)                       \
+    (duc)->vtable.m_dutil_sendViaBT((duc), __VA_ARGS__)
 #define dutil_onKnownPlayersChange(duc, ...)                        \
     (duc)->vtable.m_dutil_onKnownPlayersChange((duc), __VA_ARGS__)
 #define dutil_getCommonPrefs(duc, ...)          \

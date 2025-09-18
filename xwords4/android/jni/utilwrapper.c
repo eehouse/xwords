@@ -1068,6 +1068,29 @@ and_dutil_sendViaMQTT( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 static XP_S16
+and_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv xwe,
+                     const XP_U8* buf, XP_U16 len,
+                     const XP_UCHAR* hostName,
+                     const XP_BtAddrStr* btAddr )
+{
+    XP_LOGFF( "sending %d bytes to %s", len, hostName );
+    DUTIL_CBK_HEADER( "sendViaBT", "("
+                      "[B"
+                      "Ljava/lang/String;"
+                      "Ljava/lang/String;"
+                      ")V" );
+    jbyteArray jmsg = makeByteArray( env, len, (jbyte*)buf );
+    jstring jname = (*env)->NewStringUTF( env, hostName );
+    jstring jaddr = (*env)->NewStringUTF( env, btAddr->chars );
+
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jmsg, jname, jaddr );
+
+    deleteLocalRefs( env, jmsg, jname, jaddr, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+    return -1;
+}
+
+static XP_S16
 and_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf,
                       XP_U16 len, const XP_UCHAR* phone, XP_U16 port )
 {
@@ -1245,6 +1268,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(dictGone);
     SET_DPROC(startMQTTListener);
     SET_DPROC(sendViaMQTT);
+    SET_DPROC(sendViaBT);
     SET_DPROC(sendViaNBS);
     SET_DPROC(onKnownPlayersChange);
     SET_DPROC(onGameChanged);

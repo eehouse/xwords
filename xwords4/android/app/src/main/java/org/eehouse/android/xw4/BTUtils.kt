@@ -288,6 +288,29 @@ object BTUtils {
         getPA(btName, btAddr).addPing(gameID)
     }
 
+    // This might be the new way, but doesn't work yet. I'm punting in favor
+    // of more important stuff.
+    fun sendMessage(context: Context, msg: ByteArray,
+                    hostName: String, hostAddr: String?) {
+        Log.d(TAG, "sendMessage($hostName, len=${msg.size})")
+        try {
+            getDefaultAdapter()!!.bondedDevices!!.forEach { device ->
+                if (device.name.equals(hostName)) {
+                    device.createRfcommSocketToServiceRecord(sUUID)?.let { socket ->
+                        Log.d(TAG, "sendMessage(): connect($hostName) => socket: $socket", hostName, socket)
+                        val dos = DataOutputStream(socket.outputStream)
+                        Log.d(TAG, "sendMessage(): dos: $dos")
+                        dos.write(msg, 0, msg.size)
+                        Log.d(TAG, "sendMessage(): wrote ${msg.size} bytes to $hostName")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            Log.ex( TAG, ex )
+        }
+        Log.d(TAG, "sendMessage() done")
+    }
+
     fun sendInvite(
         context: Context, btName: String,
         btAddr: String?, nli: NetLaunchInfo
