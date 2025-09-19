@@ -916,8 +916,6 @@ class GamesListDelegate(delegator: Delegator) :
             }
         })
 
-        updateField()
-
         if (false) {
             // val dupModeGames = DBUtils.getDupModeGames(mActivity).keys
             // val asArray = Array<GameRef>(dupModeGames.size)
@@ -1056,12 +1054,6 @@ class GamesListDelegate(delegator: Delegator) :
             val enabled = (0 == m_mySIS!!.selGames.size
                                && 1 >= m_mySIS!!.selGroupIDs.size)
             m_newGameButtons!!.map{it.isEnabled = enabled}
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        if (hasFocus) {
-            updateField()
         }
     }
 
@@ -2652,15 +2644,6 @@ class GamesListDelegate(delegator: Delegator) :
         }
     }
 
-    private fun updateField() {
-        // val newField = CommonPrefs.getSummaryFieldId(mActivity)
-        // if (m_adapter!!.setField(newField)) {
-        //     // The adapter should be able to decide whether full
-        //     // content change is required.  PENDING
-        //     mkListAdapter()
-        // }
-    }
-
     private fun buildRenamer(name: String?, labelID: Int): Renamer {
         val renamer = (inflate(R.layout.renamer) as Renamer)
             .setName(name)
@@ -3019,13 +3002,14 @@ class GamesListDelegate(delegator: Delegator) :
 
         private fun tryLoad() {
             if (0 <= mPosition) {
-                val item = mAdapter!!.mPositions!![mPosition]
+                val adapter = mAdapter!!
+                val item = adapter.mPositions!![mPosition]
                 if ( item.isGame() ) {
                     mGR = item.toGame()
                     val selected = m_mySIS!!.selGames.contains(mGR)
                     Log.d(TAG, "calling load...")
                     mGameListElem.load(mGR!!, this@GamesListDelegate,
-                                       mHandler, selected)
+                                       adapter.mFieldId, mHandler, selected)
                 } else {
                     item.toGroup().let { grp ->
                         mGrp = grp
@@ -3034,16 +3018,19 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
         }
-    }
+    } // inner class GameViewHolder
 
-    inner class GamesViewAdapter() :
+    inner class GamesViewAdapter():
         RecyclerView.Adapter<GameViewHolder>() {
 
+        private val mHolders = HashMap<GameViewHolder, Int>()
         var mPositions: Array<GameMgr.GLItemRef>? = null
+        var mFieldId: Int
 
         init {
             Log.d(TAG, "GamesViewAdapter.init()")
             setHasStableIds(true)
+            mFieldId = CommonPrefs.getSummaryFieldId(mActivity)
         }
 
         fun update(positions: Array<GameMgr.GLItemRef>) {
@@ -3080,8 +3067,6 @@ class GamesListDelegate(delegator: Delegator) :
             holder.bind(position)
         }
 
-        private val mHolders = HashMap<GameViewHolder, Int>()
-
         // note():
         // RecyclerViews report a size (# of children) based on what's
         // visible, so a child can be excluded even if the view is still valid
@@ -3111,7 +3096,14 @@ class GamesListDelegate(delegator: Delegator) :
             }
             return result
         }
-    }
+
+        fun updateField() {
+            mFieldId = CommonPrefs.getSummaryFieldId(mActivity)
+            mHolders.keys.map { holder ->
+                holder.mGameListElem.getGLI()?.setField(mFieldId)
+            }
+        }
+    } // inner class GamesViewAdapter()
 
     companion object {
         private val TAG: String = GamesListDelegate::class.java.simpleName
@@ -3292,6 +3284,10 @@ class GamesListDelegate(delegator: Delegator) :
 
         fun clearThumbnails() {
             GameMgr.clearThumbnails()
+        }
+
+        fun onSummaryFieldChanged() {
+            s_self?.get()?.mAdapter?.updateField()
         }
     } // companion object
 }

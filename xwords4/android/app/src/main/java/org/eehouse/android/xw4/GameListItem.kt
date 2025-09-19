@@ -73,13 +73,13 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     private var mGi: CurGameInfo? = null
 
     private var mCb: SelectableItem? = null
-    private var m_fieldID = 0
+    private var mFieldID = 0
     private var mSelected = false
     private val m_dsdel: DrawSelDelegate
 
     fun getSummary(): GameSummary?
     {
-        return mSummary;
+        return mSummary
     }
 
     fun getGI(): CurGameInfo { return mGi!! }
@@ -88,9 +88,16 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         return mGR!!
     }
 
-    fun load(gr: GameRef, cb: SelectableItem, handler: Handler, selected: Boolean) {
+    fun setField(fieldID: Int) {
+        mFieldID = fieldID
+        setName()
+    }
+
+    fun load(gr: GameRef, cb: SelectableItem, field: Int,
+             handler: Handler, selected: Boolean) {
         mGR = gr
         mCb = cb
+        mFieldID = field
         mHandler = handler
         setSelected(selected)
         forceReload()
@@ -237,7 +244,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         var state: String? = null // hack to avoid calling summarizeState twice
         mSummary?.let { summary ->
             state = summary.summarizeState(mContext)
-            var value = when (m_fieldID) {
+            var value = when (mFieldID) {
                 R.string.game_summary_field_empty -> null
                 R.string.game_summary_field_gameid ->
                     String.format("ID:%X", summary.gameID)
@@ -252,7 +259,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
                 R.string.game_summary_field_created ->
                     sDF.format(Date(summary.created))
                 else -> {
-                    // Log.d(TAG, "unexpected fieldID $m_fieldID)")
+                    // Log.d(TAG, "unexpected fieldID $mFieldID)")
                     // Assert.failDbg();
                     null
                 } // here
@@ -275,15 +282,13 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
     private val dictLang: String
         get() {
-            var langName = DictLangCache
-                .getLangNameForISOCode(mContext, mSummary!!.isoCode!!)
-            if (null == langName) {
-                langName = LocUtils.getString(
-                    mContext, R.string.langUnknownFmt,
-                    mSummary!!.isoCode
+            val isoCode = mGi!!.isoCode()!!
+            val langName = DictLangCache
+                .getLangNameForISOCode(mContext, isoCode)
+                ?: LocUtils.getString(
+                    mContext, R.string.langUnknownFmt, isoCode
                 )
-            }
-            return langName!!
+            return langName
         }
 
     private suspend fun setData(summary: GameSummary) {
@@ -412,7 +417,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         m_lastMoveTime = 0
         m_dsdel = DrawSelDelegate(this)
         this.doOnAttach {
-            forceReload();
+            forceReload()
         }
     }
 

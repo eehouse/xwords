@@ -181,6 +181,9 @@ class PrefsDelegate(private val mActivity: XWActivity,
                     }
                 }
 
+                R.string.key_summary_field ->
+                    GamesListDelegate.onSummaryFieldChanged()
+
                 R.string.key_download_path -> {
                     val value = sp.getString(key, null)
                     if (null != value) {
@@ -284,6 +287,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
             R.string.key_mqtt_port,
             R.string.key_mqtt_qos,
             R.string.key_enable_kaservice,
+            R.string.key_summary_field,
         )
         private var s_keysHash: MutableMap<String, Int>? = null
 
