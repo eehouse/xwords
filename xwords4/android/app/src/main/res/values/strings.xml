@@ -2078,7 +2078,7 @@
     <string name="dict_info_fmt">Number of words: %1$d\nDownload size:
     %2$dK</string>
     <string name="dict_info_note_fmt">Note: %1$s</string>
-    <string name="note_none">(None)</string>
+    <string name="note_none">None</string>
     <string name="dict_on_server">Tap for details</string>
     <!-- One of these three is shown in Wordlists list beside name of
          each language, depending on whether wordlists in that

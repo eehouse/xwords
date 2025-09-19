@@ -47,7 +47,7 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
     }
 
     fun load(gr: GameRef, delegate: GamesListDelegate,
-             handler: Handler, selected: Boolean) {
+             field: Int, handler: Handler, selected: Boolean) {
         isGame = true
         findViewById<View>(R.id.group).visibility = GONE
         mGLG = null
@@ -55,7 +55,7 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
         findViewById<GameListItem>(R.id.game)!!.let {
             mGLI = it
             it.visibility = VISIBLE
-            it.load(gr, delegate, handler, selected)
+            it.load(gr, delegate, field, handler, selected)
         }
     }
 

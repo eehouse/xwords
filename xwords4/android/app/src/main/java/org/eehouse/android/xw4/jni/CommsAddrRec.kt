@@ -111,21 +111,17 @@ class CommsAddrRec : Serializable {
         }
 
         fun toString(context: Context, longVersion: Boolean): String {
-            val result: String
-            val types = types
-            result = if (0 == types.size) {
-                LocUtils.getString(context, R.string.note_none)
-            } else {
-                val strs: MutableList<String?> = ArrayList()
-                for (typ in types) {
-                    if (typ.isSelectable) {
-                        val str = if (longVersion) typ.longName(context) else typ.shortName()
-                        strs.add(str)
-                    }
+            val result =
+                if (0 == types.size) {
+                    LocUtils.getString(context, R.string.note_none)
+                } else {
+                    val sep = if (longVersion) " + " else ","
+                    types.mapNotNull { typ ->
+                        if (typ.isSelectable) {
+                            if (longVersion) typ.longName(context) else typ.shortName()
+                        } else null
+                    }.joinToString(separator = sep)
                 }
-                val sep = if (longVersion) " + " else ","
-                TextUtils.join(sep, strs)
-            }
             return result
         }
 
