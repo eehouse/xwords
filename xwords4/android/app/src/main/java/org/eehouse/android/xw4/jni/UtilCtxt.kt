@@ -70,7 +70,8 @@ open class UtilCtxt(val gr: GameRef) {
         dict: String, words: Array<String>, turn: Int,
         turnLost: Boolean, badWordsKey: Int
     ) {}
-    open fun showChat(msg: String, fromPlayer: Int, tsSeconds: Int) {}
+    open fun showChat(msg: String, fromPlayer: Int,
+                      tsSeconds: Int): Boolean = false
     open fun formatPauseHistory(
         pauseTyp: Int, player: Int, whenPrev: Int,
         whenCur: Int, msg: String?

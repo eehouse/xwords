@@ -1167,7 +1167,7 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe)
     XP_LOGFF( "(nBadWords=%d, dict=%s)", nBadWords, dictName );
 }
 
-static void
+static XP_Bool
 curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                       const XP_UCHAR* const XP_UNUSED_DBG(msg),
                       XP_S16 XP_UNUSED_DBG(from),
@@ -1180,10 +1180,12 @@ curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     WINDOW* win = bGlobals->boardWin;
-    if ( !!win ) {
+    XP_Bool shown = !!win;
+    if ( shown ) {
         XW_DUtilCtxt* dutil = cGlobals->params->dutil;
         curses_openChat( win, dutil, cGlobals->gr );
     }
+    return shown;
 }
 
 void

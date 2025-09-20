@@ -1693,14 +1693,6 @@ object GameUtils {
 
         init { Assert.failDbg() }
 
-        override fun showChat(msg: String, fromIndx: Int, tsSeconds: Int) {
-            DBUtils.appendChatHistory(m_context, m_rowid, msg, fromIndx, tsSeconds.toLong())
-            m_gotChat = true
-            m_chatFrom = m_gi.playerName(fromIndx)
-            m_chat = msg
-            m_ts = tsSeconds.toLong()
-        }
-
         override fun turnChanged(newTurn: Int) {
             m_gotMsg = true
         }

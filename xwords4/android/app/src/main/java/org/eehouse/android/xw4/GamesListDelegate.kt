@@ -86,6 +86,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.DUtilCtxt
+import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvent
 import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvents
 import org.eehouse.android.xw4.jni.DUtilCtxt.GroupChangeEvent
 import org.eehouse.android.xw4.jni.DUtilCtxt.GroupChangeEvents
@@ -2200,7 +2201,24 @@ class GamesListDelegate(delegator: Delegator) :
 
     override fun onGameChanged(gr: GameRef, flags: GameChangeEvents) {
         Log.d(TAG, "onGameChanged($gr, $flags)")
-        findViewFor(gr)?.forceReload()
+
+        findViewFor(gr)?.let { view ->
+            var reloadNeeded = false
+            for (flag in flags) {
+                when (flag) {
+                    GameChangeEvent.GCE_CHAT_ARRIVED -> {
+                        runOnUiThread { view.showHaveChat() }
+                    }
+                    else -> {
+                        Log.d(TAG, "not handling $flag")
+                        reloadNeeded = true
+                    }
+                }
+                if ( reloadNeeded ) {
+                    view.forceReload()
+                }
+            }
+        }
     }
 
     override fun missingDictAdded(gr: GameRef, name: String) {

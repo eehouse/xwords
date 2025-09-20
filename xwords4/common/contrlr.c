@@ -1119,7 +1119,8 @@ ctrl_sendChat( CtrlrCtxt* ctrlr, XWEnv xwe, const XP_UCHAR* msg,
 }
 
 static XP_Bool
-receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
+receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
+             XP_Bool* needsChatNotifyP )
 {
     XP_UCHAR* msg = stringFromStream( ctrlr->mpool, incoming );
     XP_S16 from = -1;
@@ -1139,7 +1140,9 @@ receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
     }
 
     model_chatReceived( ctrlr->vol.model, xwe, msg, from, timestamp );
-    util_showChat( *ctrlr->vol.utilp, xwe, msg, from, timestamp );
+    if ( !util_showChat( *ctrlr->vol.utilp, xwe, msg, from, timestamp ) ) {
+        *needsChatNotifyP = XP_TRUE;
+    }
     XP_FREE( ctrlr->mpool, msg );
     return XP_TRUE;
 }
@@ -5139,7 +5142,8 @@ readProto( CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
 }
 
 XP_Bool
-ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
+ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
+                     XP_Bool* needsChatNotifyP )
 {
     LOG_FUNC();
     XP_Bool accepted = XP_FALSE;
@@ -5166,7 +5170,7 @@ ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
             && client_readInitialMessage( ctrlr, xwe, incoming );
         break;
     case XWPROTO_CHAT:
-        accepted = receiveChat( ctrlr, xwe, incoming );
+        accepted = receiveChat( ctrlr, xwe, incoming, needsChatNotifyP );
         break;
     case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
         if ( XWSTATE_INTURN == ctrlr->nv.gameState ) {

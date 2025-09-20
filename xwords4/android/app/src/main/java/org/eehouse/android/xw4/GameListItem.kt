@@ -168,6 +168,13 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         }
     }
 
+    fun showHaveChat() {
+        Log.d(TAG, "showHaveChat()")
+        val iv = findViewById<ImageView>(R.id.has_chat_marker)
+        val resID = R.drawable.green_chat__gen
+        iv.setImageResource(resID)
+    }
+
     // ExpandImageButton.ExpandChangeListener
     override fun expandedChanged(nowExpanded: Boolean) {
         // Log.d(TAG, "expandedChanged(nowExpanded: $nowExpanded)")
@@ -341,8 +348,8 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
             resID = android.R.drawable.stat_sys_warning
         }
         // Setting to 0 clears, which we want
-        val iv = findViewById<View>(R.id.has_chat_marker) as ImageView
-        iv.setImageResource(resID)
+        // val iv = findViewById<View>(R.id.has_chat_marker) as ImageView
+        // iv.setImageResource(resID)
         if (BuildConfig.NON_RELEASE) {
             val quarCount = mGR!!.failedOpenCount()
             findViewById<TextView>(R.id.corrupt_count_marker).text =

@@ -120,7 +120,8 @@ void ctrl_inviteeName( const CtrlrCtxt* ctrlr,
                          XP_UCHAR* buf, XP_U16* bufLen );
 
 /* called when running as either client or server */
-XP_Bool ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming );
+XP_Bool ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
+                             XP_Bool* needsChatNotifyP );
 
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */
