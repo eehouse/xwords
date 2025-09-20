@@ -1732,12 +1732,14 @@ class BoardDelegate(delegator: Delegator) :
 //         // we don't block the jni thread will continue processing messages
 //         // and may stack dialogs on top of this one.  Including later
 //         // chat-messages.
-        override fun showChat(msg: String, fromIndx: Int, tsSeconds: Int) {
+        override fun showChat(msg: String, fromIndx: Int,
+                              tsSeconds: Int): Boolean {
             runOnUiThread {
                 if (!ChatDelegate.reload()) {
                     startChatActivity()
                 }
             }
+            return true
         }
 
 //         override fun formatPauseHistory(

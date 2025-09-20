@@ -1920,15 +1920,17 @@ gtk_util_timerSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_Bool inDuplica
     }
 }
 
-static void
+static XP_Bool
 gtk_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                    const XP_UCHAR* const XP_UNUSED(msg),
                    XP_S16 XP_UNUSED(from), XP_U32 XP_UNUSED(tsSecs) )
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
-    if ( !!cGlobals ) {
+    XP_Bool shown = !!cGlobals;
+    if ( shown ) {
         launchChat( (GtkGameGlobals*)cGlobals );
     }
+    return shown;
 }
 
 #ifdef XWFEATURE_SEARCHLIMIT

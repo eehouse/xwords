@@ -159,8 +159,9 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, XWEnv xwe, 
                                           XP_U16* min, XP_U16* max );
 #endif
-    void (*m_util_showChat)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg, 
-                             XP_S16 from, XP_U32 timestamp );
+    XP_Bool (*m_util_showChat)( XW_UtilCtxt* uc, XWEnv xwe,
+                                const XP_UCHAR* const msg,
+                                XP_S16 from, XP_U32 timestamp );
 #ifdef SHOW_PROGRESS
     void (*m_util_engineStarting)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBlanks );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc, XWEnv xwe );

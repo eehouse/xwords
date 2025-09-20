@@ -44,13 +44,12 @@ typedef struct _Md5SumBuf {
 
 /* Keep these in sync with consts in DUtilCtxt.kt */
 typedef enum {
-    /* GCE_ADDED = 0x01, */
-    /* GCE_DELETED = 0x02, */
-    GCE_PLAYER_JOINED = 0x04,
-    GCE_CONFIG_CHANGED = 0x08,
-    GCE_SUMMARY_CHANGED = 0x10,
-    GCE_TURN_CHANGED = 0x20,
-    GCE_BOARD_CHANGED = 0x40,
+    GCE_PLAYER_JOINED = 0x01,
+    GCE_CONFIG_CHANGED = 0x02,
+    GCE_SUMMARY_CHANGED = 0x04,
+    GCE_TURN_CHANGED = 0x08,
+    GCE_BOARD_CHANGED = 0x10,
+    GCE_CHAT_ARRIVED = 0x20,
 } GameChangeEvent;
 typedef XP_U32 GameChangeEvents; /* bit vector of above */
 typedef enum {

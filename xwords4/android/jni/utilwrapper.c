@@ -518,17 +518,20 @@ and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe,
     UTIL_CBK_TAIL();
 }
 
-static void
+static XP_Bool
 and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg,
                    XP_S16 fromIndx, XP_U32 timestamp )
 {
-    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;II)V" );
+    XP_Bool result;
+    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;II)Z" );
 
     jstring jmsg = (*env)->NewStringUTF( env, msg );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, fromIndx, timestamp );
+    result = (*env)->CallBooleanMethod( env, util->jutil, mid, jmsg, fromIndx,
+                                        timestamp );
     deleteLocalRef( env, jmsg );
 
     UTIL_CBK_TAIL();
+    return result;
 }
 
 static void

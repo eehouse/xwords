@@ -1091,7 +1091,12 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
             loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
         }
         if ( haveCtrlr ) {
-            result = ctrl_receiveMessage( gd->ctrlr, xwe, stream );
+            XP_Bool needsChatNotify;
+            result = ctrl_receiveMessage( gd->ctrlr, xwe, stream,
+                                          &needsChatNotify );
+            if ( needsChatNotify ) {
+                postGameChangeEvent( duc, xwe, gd, GCE_CHAT_ARRIVED );
+            }
         }
     }
     comms_msgProcessed( gd->comms, xwe, &commsState, !result );

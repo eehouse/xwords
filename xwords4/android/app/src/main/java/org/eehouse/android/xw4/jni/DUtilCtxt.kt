@@ -415,13 +415,12 @@ class DUtilCtxt() {
 
     // must match enum GameChangeEvent in dutil.h
     enum class GameChangeEvent(val bit: Int) {
-        GCE_ADDED(0x01),
-        GCE_DELETED(0x02),
-        GCE_PLAYER_JOINED(0x04),
-        GCE_CONFIG_CHANGED(0x08),
-        GCE_SUMMARY_CHANGED(0x10),
-        GCE_TURN_CHANGED(0x20),
-        GCE_BOARD_CHANGED(0x40),
+        GCE_PLAYER_JOINED(0x01),
+        GCE_CONFIG_CHANGED(0x02),
+        GCE_SUMMARY_CHANGED(0x04),
+        GCE_TURN_CHANGED(0x08),
+        GCE_BOARD_CHANGED(0x10),
+        GCE_CHAT_ARRIVED(0x20),
         ;
     }
     class GameChangeEvents(flags: Int): HashSet<GameChangeEvent>() {
