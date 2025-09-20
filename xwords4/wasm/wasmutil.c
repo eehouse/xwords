@@ -572,7 +572,6 @@ wasm_util_getTraySearchLimits( XW_UtilCtxt* uc, XWEnv xwe,
 }
 #endif
 
-#ifdef XWFEATURE_CHAT
 static void
 wasm_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg, 
                     XP_S16 from, XP_U32 timestamp )
@@ -581,7 +580,6 @@ wasm_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg,
     GameState* gs = wuctxt->closure;
     main_chatReceived( gs, msg );
 }
-#endif
 
 static XW_DUtilCtxt*
 wasm_util_getDevUtilCtxt( XW_UtilCtxt* uc, XWEnv xwe )
@@ -644,9 +642,7 @@ wasm_util_make( MPFORMAL CurGameInfo* gi, XW_DUtilCtxt* dctxt, GameState* closur
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informMissing, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_informWordsBlocked, wasm );
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getInviteeName, wasm );
-#ifdef XWFEATURE_CHAT
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_showChat, wasm );
-#endif
     SET_VTABLE_ENTRY( wuctxt->super.vtable, util_getDevUtilCtxt, wasm );
 
     size_t sizeInBytes = sizeof(*wuctxt->super.vtable);

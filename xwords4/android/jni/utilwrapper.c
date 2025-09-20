@@ -518,7 +518,6 @@ and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe,
     UTIL_CBK_TAIL();
 }
 
-#ifdef XWFEATURE_CHAT
 static void
 and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg,
                    XP_S16 fromIndx, XP_U32 timestamp )
@@ -531,7 +530,6 @@ and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg,
 
     UTIL_CBK_TAIL();
 }
-#endif
 
 static void
 and_util_remSelected( XW_UtilCtxt* uc, XWEnv xwe )
@@ -1171,9 +1169,7 @@ makeUtil( MPFORMAL JNIEnv* env, jobject jutil, const CurGameInfo* gi,
 #endif
     SET_PROC(altKeyDown);
     SET_PROC(notifyIllegalWords);
-#ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
-#endif
     SET_PROC(remSelected);
     SET_PROC(timerSelected);
     SET_PROC(formatPauseHistory);

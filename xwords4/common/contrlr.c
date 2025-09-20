@@ -1070,7 +1070,6 @@ ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe )
     return result;
 } /* ctrl_initClientConnection */
 
-#ifdef XWFEATURE_CHAT
 static void
 sendChatTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, const XP_UCHAR* msg,
             XP_S8 from, XP_U32 timestamp )
@@ -1144,7 +1143,6 @@ receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
     XP_FREE( ctrlr->mpool, msg );
     return XP_TRUE;
 }
-#endif
 
 static void
 callTurnChangeListener( const CtrlrCtxt* ctrlr, XWEnv xwe )
@@ -5167,11 +5165,9 @@ ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
             && XWSTATE_NONE == ctrlr->nv.gameState
             && client_readInitialMessage( ctrlr, xwe, incoming );
         break;
-#ifdef XWFEATURE_CHAT
     case XWPROTO_CHAT:
         accepted = receiveChat( ctrlr, xwe, incoming );
         break;
-#endif
     case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
         if ( XWSTATE_INTURN == ctrlr->nv.gameState ) {
             accepted = reflectMoveAndInform( ctrlr, xwe, incoming );

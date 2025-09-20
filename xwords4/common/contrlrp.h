@@ -126,10 +126,8 @@ XP_Bool ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming
  * to the server, and passes it in. */
 XP_Bool ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe );
 
-#ifdef XWFEATURE_CHAT
 void ctrl_sendChat( CtrlrCtxt* ctrlr, XWEnv xwe,
                       const XP_UCHAR* msg, XP_S16 from );
-#endif
 
 void ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
                               XP_U16 nCols, XP_Bool allFaces );
