@@ -2162,7 +2162,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getChatCount
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1getNthChat
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jint indx,
-  jintArray jfrom, jintArray jts )
+  jintArray jfrom, jintArray jts, jboolean markShown )
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
@@ -2170,7 +2170,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getNthChat
     XP_U32 timestamp;
     XP_UCHAR buf[256];
     XP_U16 bufLen = VSIZE(buf);
-    gr_getNthChat(DUTIL_GR_ENV, indx, buf, &bufLen, &from, &timestamp );
+    gr_getNthChat(DUTIL_GR_ENV, indx, buf, &bufLen, &from, &timestamp, markShown );
     result = (*env)->NewStringUTF( env, buf );
     setIntInArray( env, jfrom, 0, from );
     setIntInArray( env, jts, 0, timestamp );
@@ -2191,7 +2191,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1sendChat
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1deleteChats
-( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jstring jmsg )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr )
 {
     DVC_HEADER(jniGlobalPtr);
     gr_deleteChats( DUTIL_GR_ENV );

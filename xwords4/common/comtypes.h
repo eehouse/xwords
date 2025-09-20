@@ -211,6 +211,7 @@ typedef struct _GameSummary {
     XP_Bool collapsed;          /* for the game list's view of game (if present) */
     XP_Bool canRematch;
     XP_Bool canOfferRO;
+    XP_Bool hasChat;
     XP_S8 turn;
     XP_U32 lastMoveTime;
     XP_S32 dupTimerExpires;

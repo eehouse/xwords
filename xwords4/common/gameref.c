@@ -87,6 +87,8 @@ static void setSaveTimer(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
 static void thumbChanged( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
 static void unrefDicts( XWEnv xwe, GameData* gd );
 static void summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
+static void updateSummary( XW_DUtilCtxt* duc, XWEnv xwe,
+                           GameData* gd, const GameSummary* newSum );
 static void saveSummary( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
 static void sumToStream( XWStreamCtxt* stream, const GameSummary* sum,
                          XP_U16 nPlayers );
@@ -1096,6 +1098,11 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
                                           &needsChatNotify );
             if ( needsChatNotify ) {
                 postGameChangeEvent( duc, xwe, gd, GCE_CHAT_ARRIVED );
+                if ( !gd->sum.hasChat ) {
+                    GameSummary newSum = gd->sum;
+                    newSum.hasChat = XP_TRUE;
+                    updateSummary( duc, xwe, gd, &newSum );
+                }
             }
         }
     }
@@ -1548,10 +1555,16 @@ gr_getChatCount( DUTIL_GR_XWE )
 
 void
 gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn,
-               XP_UCHAR* buf, XP_U16* bufLen, XP_S16* from, XP_U32* timestamp )
+               XP_UCHAR* buf, XP_U16* bufLen, XP_S16* from,
+               XP_U32* timestamp, XP_Bool markShown )
 {
     GR_HEADER();
     model_getChat( gd->model, nn, buf, bufLen, from, timestamp );
+    if ( markShown && gd->sum.hasChat ) {
+        gd->sum.hasChat = XP_FALSE;
+        saveSummary( duc, xwe, gd );
+        postGameChangeEvent( duc, xwe, gd, GCE_SUMMARY_CHANGED );
+    }
     GR_HEADER_END();
 }
 
@@ -2087,6 +2100,18 @@ saveSummary( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 }
 
 static void
+updateSummary( XW_DUtilCtxt* duc, XWEnv xwe,
+               GameData* gd, const GameSummary* newSum )
+{
+    if ( 0 != XP_MEMCMP( &gd->sum, newSum, sizeof(*newSum) ) ) {
+        GroupRef grp = gd->grp;
+        gmgr_rmFromGroup( duc, xwe, gd->gr, grp );
+        gd->sum = *newSum;
+        gmgr_addToGroup( duc, xwe, gd->gr, grp );
+    }
+}
+
+static void
 summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     const CurGameInfo* gi = &gd->gi;
@@ -2102,6 +2127,7 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 
     /* Copied from our storage, for now */
     sum.collapsed = gd->sum.collapsed;
+    sum.hasChat = gd->sum.hasChat;
 
     model_getCurScores( gd->model, &sum.scores, XP_TRUE );
 
@@ -2124,12 +2150,7 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         ctrl_setReMissing( ctrlr, &sum );
     }
 
-    if ( 0 != XP_MEMCMP( &gd->sum, &sum, sizeof(sum) ) ) {
-        GroupRef grp = gd->grp;
-        gmgr_rmFromGroup( duc, xwe, gd->gr, grp );
-        gd->sum = sum;
-        gmgr_addToGroup( duc, xwe, gd->gr, grp );
-    }
+    updateSummary( duc, xwe, gd, &sum );
     gd->sumLoaded = XP_TRUE;
 }
 
@@ -2151,6 +2172,7 @@ sumToStream( XWStreamCtxt* stream, const GameSummary* sum, XP_U16 nPlayers )
     stream_putBits( stream, 2, sum->nMissing );
     stream_putBits( stream, 2, sum->nInvited );
     stream_putBits( stream, 1, sum->collapsed );
+    stream_putBits( stream, 1, sum->hasChat );
 
     stream_putU32VL( stream, sum->nPacketsPending );
     stream_putU32( stream, sum->lastMoveTime );
@@ -2184,6 +2206,7 @@ gotSumFromStream( GameSummary* sump, XWStreamCtxt* stream )
     sum.nMissing = stream_getBits( stream, 2 );
     sum.nInvited = stream_getBits( stream, 2 );
     sum.collapsed = stream_getBits( stream, 1 );
+    sum.hasChat = stream_getBits( stream, 1 );
 
     sum.nPacketsPending = stream_getU32VL( stream );
     sum.lastMoveTime = stream_getU32( stream );

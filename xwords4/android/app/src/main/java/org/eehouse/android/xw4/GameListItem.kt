@@ -168,11 +168,12 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         }
     }
 
-    fun showHaveChat() {
-        Log.d(TAG, "showHaveChat()")
-        val iv = findViewById<ImageView>(R.id.has_chat_marker)
-        val resID = R.drawable.green_chat__gen
-        iv.setImageResource(resID)
+    fun showHaveChat(haveChat: Boolean = true) {
+        val resID =
+            if ( haveChat) R.drawable.green_chat__gen
+            else 0
+        findViewById<ImageView>(R.id.has_chat_marker)
+            .setImageResource(resID)
     }
 
     // ExpandImageButton.ExpandChangeListener
@@ -336,20 +337,15 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         // quarantined. Not ready for non-debug use though, as it shows up
         // periodically as a false positive. Chat icon wins if both should
         // be displayed, mostly because of the false positives.
-        var resID = 0
-        if (summary.isMultiGame) {
-            // val flags = DBUtils.getMsgFlags(mContext, rowID)
-            // if (0 != (flags and GameSummary.MSG_FLAGS_CHAT)) {
-            //     resID = R.drawable.green_chat__gen
-            // }
-        }
-        if (0 == resID && BuildConfig.NON_RELEASE && !mGR!!.safeToOpen()
-        ) {
-            resID = android.R.drawable.stat_sys_warning
-        }
-        // Setting to 0 clears, which we want
-        // val iv = findViewById<View>(R.id.has_chat_marker) as ImageView
-        // iv.setImageResource(resID)
+        // val resID =
+        //     if (summary.hasChat) {
+        //         R.drawable.green_chat__gen
+        //     } else if (BuildConfig.NON_RELEASE && !mGR!!.safeToOpen()) {
+        //         android.R.drawable.stat_sys_warning
+        //     } else 0
+        // findViewById<ImageView>(R.id.has_chat_marker).setImageResource(resID)
+        showHaveChat(summary.hasChat)
+
         if (BuildConfig.NON_RELEASE) {
             val quarCount = mGR!!.failedOpenCount()
             findViewById<TextView>(R.id.corrupt_count_marker).text =
