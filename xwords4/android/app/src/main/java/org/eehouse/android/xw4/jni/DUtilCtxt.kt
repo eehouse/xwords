@@ -388,11 +388,6 @@ class DUtilCtxt() {
         MQTTUtils.handleCtrlReceived(mContext, msg)
     }
 
-    fun makeUtil(): UtilCtxt {
-        Log.d(TAG, "makeUtil()")
-        return UtilCtxtImpl()
-    }
-
     fun removeStored(key: String) {
         Log.d(TAG, "removeStored($key) called")
         DBUtils.delKVPair(mContext, key)

@@ -19,13 +19,13 @@
 package org.eehouse.android.xw4
 
 import android.content.Context
+
 import org.eehouse.android.xw4.DBUtils.getRowIDsFor
 import org.eehouse.android.xw4.jni.CommsAddrRec
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.UtilCtxt
-import org.eehouse.android.xw4.jni.UtilCtxtImpl
 import org.eehouse.android.xw4.loc.LocUtils
-
 
 internal abstract class XWServiceHelper(private val mContext: Context) {
     enum class ReceiveResult {
@@ -128,8 +128,9 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
     val utilCtxt: UtilCtxt
         get() {
             if (null == m_utilCtxt) {
-                m_utilCtxt = UtilCtxtImpl()
+                m_utilCtxt = UtilCtxt(GameRef(0))
             }
+            Assert.failDbg()
             return m_utilCtxt!!
         }
 

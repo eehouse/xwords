@@ -86,7 +86,6 @@ import org.eehouse.android.xw4.jni.GameRef.GameStateInfo
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.jni.TransportProcs.TPMsgHandler
 import org.eehouse.android.xw4.jni.UtilCtxt
-import org.eehouse.android.xw4.jni.UtilCtxtImpl
 import org.eehouse.android.xw4.loc.LocUtils
 
 class BoardDelegate(delegator: Delegator) :
@@ -425,12 +424,12 @@ class BoardDelegate(delegator: Delegator) :
         val devID = getNFCDevID(mActivity)
         mNFCWrapper = Wrapper.init(mActivity, this, devID)
         mView = findViewById(R.id.board_view) as BoardView
-        mView!!.setUtils(BoardUtilCtxt())
 
         val args = arguments!!
         //         mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
         mGR = GameRef(args.getLong(GameUtils.INTENT_KEY_GAMEREF, 0))
         mGR!!.let { gr ->
+            mView!!.setUtils(BoardUtilCtxt(gr))
             Log.d(TAG, "gameRef: %X", gr.gr)
             noteOpened(mActivity, gr, this)
         }
@@ -1462,7 +1461,7 @@ class BoardDelegate(delegator: Delegator) :
          }
      }
 
-     private inner class BoardUtilCtxt : UtilCtxtImpl() {
+     private inner class BoardUtilCtxt(gr: GameRef) : UtilCtxt(gr) {
 
          override fun remSelected() {
              launch {
@@ -1733,7 +1732,7 @@ class BoardDelegate(delegator: Delegator) :
 //         // we don't block the jni thread will continue processing messages
 //         // and may stack dialogs on top of this one.  Including later
 //         // chat-messages.
-        override fun showChat(msg: String, fromIndx: Int,tsSeconds: Int) {
+        override fun showChat(msg: String, fromIndx: Int, tsSeconds: Int) {
             runOnUiThread {
                 if (!ChatDelegate.reload()) {
                     startChatActivity()
