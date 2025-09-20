@@ -1977,10 +1977,10 @@ class BoardDelegate(delegator: Delegator) :
             }
             initToolbar()
             adjustTradeVisibility()
-            // val flags = 0 // DBUtils.getMsgFlags(mActivity, mRowid)
-            // if (0 != GameSummary.MSG_FLAGS_CHAT and flags) {
-            //     // post { startChatActivity() }
-            // }
+
+            mSummary?.let {
+                if (it.hasChat ) post { startChatActivity() }
+            }
             if (mOverNotShown) {
                 var auto = false
                 if (mGR!!.getGameIsOver()) {

@@ -51,7 +51,8 @@ addChats( ChatState* cs )
         XP_UCHAR msg[1024];
         XP_U16 len = VSIZE(msg);
         XP_S16 from;
-        gr_getNthChat( cs->dutil, cs->gr, NULL_XWE, ii, msg, &len, &from, NULL );
+        gr_getNthChat( cs->dutil, cs->gr, NULL_XWE, ii, msg,
+                       &len, &from, NULL, XP_TRUE );
 
         XP_UCHAR name[64];
         XP_U16 nameLen = VSIZE(name);

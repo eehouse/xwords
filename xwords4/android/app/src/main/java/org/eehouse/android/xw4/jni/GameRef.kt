@@ -346,9 +346,10 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         } as Int
     }
 
-    suspend fun getNthChat(indx: Int, from: IntArray, ts: IntArray): String {
+    suspend fun getNthChat(indx: Int, from: IntArray, ts: IntArray,
+                           markShown: Boolean = true): String {
         return Device.await {
-            gr_getNthChat(jniState, gr, indx, from, ts)
+            gr_getNthChat(jniState, gr, indx, from, ts, markShown)
         } as String
     }
 
@@ -629,7 +630,8 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         private external fun gr_getChatCount(jniState: Long, gr: Long): Int
         @JvmStatic
         private external fun gr_getNthChat(jniState: Long, gr: Long, indx: Int,
-                                           from: IntArray, ts: IntArray): String
+                                           from: IntArray, ts: IntArray,
+                                           markShown: Boolean): String
         @JvmStatic
         private external fun gr_sendChat(jniState: Long, gr: Long, msg: String)
         @JvmStatic

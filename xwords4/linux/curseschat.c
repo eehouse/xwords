@@ -61,12 +61,13 @@ drawChats( State* state )
         XP_U16 len = VSIZE(buf);
         XP_S16 from;
         XP_U32 timestamp;
-        gr_getNthChat( state->dutil, state->gr, NULL_XWE, ii, buf, &len, &from, &timestamp );
-
-        gchar header[128];
+        gr_getNthChat( state->dutil, state->gr, NULL_XWE, ii, buf,
+                       &len, &from, &timestamp, XP_TRUE );
 
         const CurGameInfo* gi = util_getGI(util);
-        snprintf( header, VSIZE(header), "from: %s; ts: %d", gi->players[from].name, timestamp );
+        gchar header[128];
+        snprintf( header, VSIZE(header), "from: %s; ts: %d",
+                  gi->players[from].name, timestamp );
         mvwaddstr( state->win, line++, 1, header );
 
         mvwaddstr( state->win, line++, 2, buf );

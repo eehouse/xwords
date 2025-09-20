@@ -571,6 +571,7 @@ makeJSummaryRec( JNIEnv* env, jobject jsummary, const GameSummary* gs,
     setInt( env, jsummary, "turn", gs->turn );
     setBool( env, jsummary, "turnIsLocal", gs->turnIsLocal );
     setBool( env, jsummary, "canRematch", gs->canRematch );
+    setBool( env, jsummary, "hasChat", gs->hasChat );
     setInt( env, jsummary, "lastMoveTime", gs->lastMoveTime );
     setInt( env, jsummary, "dupTimerExpires", gs->dupTimerExpires );
 

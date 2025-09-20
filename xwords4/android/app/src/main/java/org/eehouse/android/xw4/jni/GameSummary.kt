@@ -81,6 +81,8 @@ class GameSummary : Serializable {
     var nPacketsPending: Int = 0
     @JvmField
     var canRematch: Boolean = false
+    @JvmField
+    var hasChat: Boolean = true
 
     @JvmField
     var nMissing = -1

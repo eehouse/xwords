@@ -66,9 +66,11 @@ void gr_figureLayout( DUTIL_GR_XWE,
 void gr_applyLayout( DUTIL_GR_XWE, const BoardDims* dimsp );
 void gr_sendChat( DUTIL_GR_XWE, const XP_UCHAR* msg );
 XP_U16 gr_getChatCount( DUTIL_GR_XWE );
-void gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn,
-                    XP_UCHAR* buf, XP_U16* bufLen, XP_S16* from, XP_U32* timestamp );
+void gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn, XP_UCHAR* buf, XP_U16* bufLen,
+                    XP_S16* from, XP_U32* timestamp,
+                    XP_Bool markShown );
 void gr_deleteChats( DUTIL_GR_XWE );
+
 void gr_getPlayerName( DUTIL_GR_XWE, XP_U16 nn,
                        XP_UCHAR* buf, XP_U16* bufLen );
 void gr_commitTurn( DUTIL_GR_XWE, const PhoniesConf* pc,
