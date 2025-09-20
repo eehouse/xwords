@@ -153,32 +153,18 @@ typedef struct UtilVtable {
 #ifdef XWFEATURE_BOARDWORDS
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words );
 #endif
-
-    /* void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isHost, */
-    /*                               const CommsAddrRec* hostAddr, */
-    /*                               const CommsAddrRec* selfAddr, XP_U16 nDevs, */
-    /*                               XP_U16 nMissing, XP_U16 nInvited, */
-    /*                               XP_Bool fromRematch ); */
-
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, XWEnv xwe, 
                                           XP_U16* min, XP_U16* max );
 #endif
-
-#ifdef XWFEATURE_CHAT
     void (*m_util_showChat)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* const msg, 
                              XP_S16 from, XP_U32 timestamp );
-#endif
-
 #ifdef SHOW_PROGRESS
     void (*m_util_engineStarting)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBlanks );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc, XWEnv xwe );
 #endif
-
-    // XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc, XWEnv xwe );
-
 } UtilVtable;
 
 typedef struct UtilTimerState UtilTimerState;
@@ -295,9 +281,7 @@ XW_UtilCtxt* check_uc(XW_UtilCtxt* uc);
     (uc)->vtable->m_util_getTraySearchLimits((uc), __VA_ARGS__)
 #endif
 
-#ifdef XWFEATURE_CHAT
 # define util_showChat( uc, ... ) (uc)->vtable->m_util_showChat((uc), __VA_ARGS__)
-#endif
 
 # ifdef SHOW_PROGRESS
 # define util_engineStarting( uc, ... ) \

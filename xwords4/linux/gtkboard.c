@@ -1082,9 +1082,7 @@ disenable_buttons( GtkGameGlobals* globals )
     }
     gtk_widget_set_sensitive( globals->commit_button, gsi.curTurnSelected );
 
-#ifdef XWFEATURE_CHAT
     gtk_widget_set_sensitive( globals->chat_button, gsi.canChat );
-#endif
 
     gtk_widget_set_sensitive( globals->pause_button, gsi.canPause );
     gtk_widget_set_sensitive( globals->unpause_button, gsi.canUnpause );
@@ -2170,10 +2168,8 @@ makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
     globals->zoomout_button
         = addVBarButton( globals, "../done.xpm", "-", G_CALLBACK(handle_zoomout_button), vbox );
 
-#ifdef XWFEATURE_CHAT
     globals->chat_button = addVBarButton( globals, "", "Chat",
                                           G_CALLBACK(handle_chat_button), vbox );
-#endif
 
     globals->pause_button = addVBarButton( globals, "", "Pause",
                                            G_CALLBACK(handle_pause_button), vbox );

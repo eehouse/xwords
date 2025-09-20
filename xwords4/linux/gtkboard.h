@@ -73,9 +73,7 @@ typedef struct GtkGameGlobals {
 #ifdef DEBUG
     GtkWidget* drop_checks_vbox;
 #endif
-#ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
-#endif
     GtkWidget* pause_button;
     GtkWidget* unpause_button;
     GtkWidget* countLabel;

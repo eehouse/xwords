@@ -899,13 +899,11 @@ board_canHint( const BoardCtxt* board )
     return canHint;
 }
 
-#ifdef XWFEATURE_CHAT
 void
 board_sendChat( const BoardCtxt* board, XWEnv xwe, const XP_UCHAR* msg )
 {
     ctrl_sendChat( board->ctrlr, xwe, msg, board->selPlayer );
 }
-#endif
 
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
