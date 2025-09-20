@@ -28,57 +28,57 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
 import org.eehouse.android.xw4.jni.DrawCtx.Companion.DT_THUMB
 
-interface UtilCtxt {
-    fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String>) {}
-    fun informNeedPickTiles(
+open class UtilCtxt(val gr: GameRef) {
+    open fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String>) {}
+    open fun informNeedPickTiles(
         isInitial: Boolean, playerNum: Int, nToPick: Int,
         texts: Array<String>, counts: IntArray
     ) {}
 
-    fun informNeedPassword(player: Int, name: String?) {}
-    fun turnChanged(newTurn: Int) {}
+    open fun informNeedPassword(player: Int, name: String?) {}
+    open fun turnChanged(newTurn: Int) {}
     // Not called unless XWFEATURE_STOP_ENGINE is #defined in Android.mk
-    fun stopEngineProgress(): Boolean = false
-    fun remSelected() {}
-    fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
-    fun informWordsBlocked(nWords: Int, words: String, dict: String) {}
-    fun bonusSquareHeld(bonus: Int) {}
-    fun playerScoreHeld(player: Int) {}
-    fun cellSquareHeld(words: String) {}
-    fun notifyMove(query: String) {}
-    fun notifyTrade(tiles: Array<String>) {}
-    fun notifyDupStatus(amHost: Boolean, msg: String) {}
-    fun userError(id: Int) {}
-    fun countChanged( count: Int, quashed: Boolean ) {
-        Log.d("UtilCtxt", "countChanged($count); doing nothing")
+    open fun stopEngineProgress(): Boolean = false
+    open fun remSelected() {}
+    open fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
+    open fun informWordsBlocked(nWords: Int, words: String, dict: String) {}
+    open fun bonusSquareHeld(bonus: Int) {}
+    open fun playerScoreHeld(player: Int) {}
+    open fun cellSquareHeld(words: String) {}
+    open fun notifyMove(query: String) {}
+    open fun notifyTrade(tiles: Array<String>) {}
+    open fun notifyDupStatus(amHost: Boolean, msg: String) {}
+    open fun userError(id: Int) {}
+    open fun countChanged( count: Int, quashed: Boolean ) {
+        Log.d(TAG, "countChanged($count); doing nothing")
     }
-    fun informUndo() {}
-    fun informNetDict(
+    open fun informUndo() {}
+    open fun informNetDict(
         isoCodeStr: String, oldName: String, newName: String,
         newSum: String, phonies: XWPhoniesChoice
     ) {}
 
-    // fun informMissing(
+    // open fun informMissing(
     //     isServer: Boolean, hostAddr: CommsAddrRec?,
     //     connTypes: CommsConnTypeSet?, nDevs: Int,
     //     nMissingPlayers: Int, nInvited: Int, fromRematch: Boolean
-    // ) { Log.d("UtilCtxt", "informMissing()") }
+    // ) { Log.d(TAG, "informMissing()") }
 
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
-    fun notifyIllegalWords(
+    open fun notifyIllegalWords(
         dict: String, words: Array<String>, turn: Int,
         turnLost: Boolean, badWordsKey: Int
     ) {}
-
-    fun showChat(msg: String, fromPlayer: Int, tsSeconds: Int) {}
-    fun formatPauseHistory(
+    open fun showChat(msg: String, fromPlayer: Int, tsSeconds: Int) {}
+    open fun formatPauseHistory(
         pauseTyp: Int, player: Int, whenPrev: Int,
         whenCur: Int, msg: String?
     ): String? = null
-    fun dictGone(dictName: String) {}
+    open fun dictGone(dictName: String) {}
 
     companion object {
+        private val TAG: String = UtilCtxt::class.java.simpleName
         const val BONUS_NONE = 0
         const val BONUS_DOUBLE_LETTER = 1
         const val BONUS_DOUBLE_WORD = 2

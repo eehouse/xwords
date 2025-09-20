@@ -55,7 +55,6 @@ import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.LastMoveInfo
 import org.eehouse.android.xw4.jni.TransportProcs
 import org.eehouse.android.xw4.jni.UtilCtxt
-import org.eehouse.android.xw4.jni.UtilCtxtImpl
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 import org.eehouse.android.xw4.loc.LocUtils
@@ -613,10 +612,11 @@ object GameUtils {
         groupID: Long, gameName: String?,
         newOrder: Array<Int>
     ): Long {
+        Assert.failDbg()
         var rowid = DBUtils.ROWID_NOTFOUND
         GameWrapper.make(context, srcRowid).use { gw ->
             if (null != gw) {
-                val util: UtilCtxt = UtilCtxtImpl()
+                val util: UtilCtxt = UtilCtxt(GameRef(0))
                 val cp = CommonPrefs.get(context)
                 XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp,
                                        gameName, newOrder)
@@ -665,12 +665,12 @@ object GameUtils {
         procs: TransportProcs?
     ) {
         Log.d(TAG, "handleInvitation(%s)", nli)
-
+        Assert.failDbg()
         if (DBUtils.ROWID_NOTFOUND != getGameWithChannel(context, nli)) {
             Log.d(TAG, "dropping duplicate invite for gameID %X",
                   nli.gameID())
         } else {
-            val util: UtilCtxt = UtilCtxtImpl()
+            val util: UtilCtxt = UtilCtxt(GameRef(0))
             val cp = CommonPrefs.get(context)
             val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
             XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use {
@@ -1683,7 +1683,7 @@ object GameUtils {
         private val m_context: Context,
         private val m_rowid: Long,
         private val m_gi: CurGameInfo
-    ) : UtilCtxtImpl() {
+    ) : UtilCtxt(GameRef(0)) {
         var m_chat: String? = null
         var m_ts: Long = 0
         var m_gotMsg: Boolean = false
