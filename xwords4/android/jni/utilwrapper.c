@@ -93,6 +93,7 @@ and_util_destroy( XW_UtilCtxt* uc, XWEnv xwe )
 #define UTIL_CBK_TAIL()                                                 \
     } else {                                                            \
         XP_LOGFF( "skipping call into java because jutil==NULL" );      \
+        XP_ASSERT(0); /* no longer happens? */                          \
     }
 
 #define DUTIL_CBK_HEADER(nam,sig)                                       \
