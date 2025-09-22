@@ -1454,7 +1454,7 @@ class BoardDelegate(delegator: Delegator) :
 
      fun notifyGameOver() {
          mGameOver = true
-         launch(Dispatchers.IO) {
+         launch {
              val titleID = R.string.summary_gameover
              val text = mGR!!.writeFinalScores()
              handleGameOver(titleID, text)
@@ -1606,7 +1606,7 @@ class BoardDelegate(delegator: Delegator) :
                 }
 
                 UtilCtxt.ERR_TOO_MANY_TRADE -> {
-                    launch(Dispatchers.IO) {
+                    launch {
                         val nLeft = mGR!!.countTilesInPool()
                         withContext(Dispatchers.Main) {
                             val msg = getQuantityString(
@@ -2179,7 +2179,7 @@ class BoardDelegate(delegator: Delegator) :
 //     }
 
     private fun startChatActivity() {
-        launch(Dispatchers.IO) {
+        launch {
             val curPlayer = mGR!!.getLikelyChatter()
             val names = mGi!!.playerNames()
             val locs = mGi!!.playersLocal() // to convert old histories
