@@ -1352,7 +1352,9 @@ freeWSState( XW_DUtilCtxt* dutil, DevCtxt* dc )
 }
 
 typedef struct _PhoniesMapState {
+#ifdef MEM_DEBUG
     XW_DUtilCtxt* dutil;
+#endif
     const XP_UCHAR* isoCode;
     const XP_UCHAR* phony;
     const void* found;
@@ -1454,7 +1456,6 @@ storePhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 
         XWArray* pdc = dc->pd;
         XP_U16 numIsos = arr_length( pdc );
-        XP_ASSERT( 0 < numIsos );
         stream_putU8( stream, numIsos );
 
         arr_map( pdc, xwe, storeIso, stream );
@@ -1527,7 +1528,7 @@ freeOnePhony( void* elem, void* XP_UNUSED_DBG(closure) )
 }
 
 static void
-freeOneCode( void* elem, void* closure)
+freeOneCode( void* elem, void* closure )
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
 
@@ -1544,7 +1545,11 @@ freeOneCode( void* elem, void* closure)
 static DevCtxt*
 freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    PhoniesMapState ms = { .dutil = dutil, };
+    PhoniesMapState ms = {
+#ifdef MEM_DEBUG
+        .dutil = dutil,
+#endif
+    };
     DevCtxt* dc = load( dutil, xwe );
     arr_removeAll( dc->pd, freeOneCode, &ms );
     XP_ASSERT( !dvc_haveLegalPhonies( dutil, xwe ) );
@@ -1573,7 +1578,13 @@ dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
     DevCtxt* dc = load( dutil, xwe );
     PhoniesDataCodes* pdc = findForIso( dutil, xwe, dc, isoCode );
 
-    PhoniesMapState ms = { .dutil = dutil, .phony = phony, };
+    PhoniesMapState ms = {
+
+#ifdef MEM_DEBUG
+        .dutil = dutil,
+#endif
+        .phony = phony, };
+    /* FIXME: should be using arr_find() here */
     arr_map( pdc->phonies, xwe, clearPhonyProc, &ms );
     if ( 0 == arr_length(pdc->phonies) ) {
         arr_remove( dc->pd, xwe, pdc );
