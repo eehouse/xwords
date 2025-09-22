@@ -1557,19 +1557,6 @@ freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe )
     return dc;
 }
 
-static ForEachAct
-clearPhonyProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
-{
-    ForEachAct result = FEA_OK;
-    XP_UCHAR* phony = (XP_UCHAR*)elem;
-    PhoniesMapState* ms = (PhoniesMapState*)closure;
-    if ( 0 == XP_STRCMP( ms->phony, phony ) ) {
-        XP_FREE( ms->dutil->mpool, phony );
-        result = FEA_EXIT | FEA_REMOVE;
-    }
-    return result;
-}
-
 void
 dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
                      const XP_UCHAR* isoCode,
@@ -1584,8 +1571,8 @@ dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
         .dutil = dutil,
 #endif
         .phony = phony, };
-    /* FIXME: should be using arr_find() here */
-    arr_map( pdc->phonies, xwe, clearPhonyProc, &ms );
+    void* removed = arr_remove( pdc->phonies, xwe, (void*)phony );
+    XP_FREE( dutil->mpool, removed );
     if ( 0 == arr_length(pdc->phonies) ) {
         arr_remove( dc->pd, xwe, pdc );
         freeOneCode( pdc, &ms );
