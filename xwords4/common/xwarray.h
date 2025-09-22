@@ -62,8 +62,8 @@ void arr_insert( XWArray* array, XWEnv xwe, void* node );
 void arr_insertAt( XWArray* array, void* node, XP_U32 locp );
 void* arr_getNth( XWArray* array, XP_U32 nn );
 XP_Bool arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp );
-void arr_remove( XWArray* array, XWEnv xwe, void* node );
-void arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc );
+void* arr_remove( XWArray* array, XWEnv xwe, void* node );
+void* arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc );
 XP_U32 arr_length( const XWArray* array );
 const void* arr_getData(const XWArray* array);
 

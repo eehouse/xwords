@@ -112,23 +112,26 @@ arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp )
     return found;
 }
 
-void
+void*
 arr_remove( XWArray* array, XWEnv xwe, void* node )
 {
     assertSorted( array, xwe );
     int loc = findFit( array, xwe, node );
     XP_ASSERT( 0 <= loc );
-    arr_removeAt( array, xwe, loc );
+    void* found = arr_removeAt( array, xwe, loc );
     assertSorted( array, xwe );
+    return found;
 }
 
-void
+void*
 arr_removeAt( XWArray* array, XWEnv XP_UNUSED_DBG(xwe), XP_U32 loc )
 {
     assertSorted( array, xwe );
+    void* removed = array->elems[loc];
     moveDownOne( array, loc );
     --array->nElems;
     assertSorted( array, xwe );
+    return removed;
 }
 
 void
