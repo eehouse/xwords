@@ -109,7 +109,10 @@ fun Intent?.orEmpty(): Intent {
 }
 
 fun View.launch(block: suspend CoroutineScope.() -> Unit) {
-    findViewTreeLifecycleOwner()?.lifecycleScope?.launch{block()}
+    findViewTreeLifecycleOwner()
+        ?.lifecycleScope
+        ?.launch{block()}
+        ?: run {Log.d("Extensions", "*** UNABLE TO RUN $block ***")}
 }
 
 fun View.launchWhenStarted(block: suspend CoroutineScope.() -> Unit) {

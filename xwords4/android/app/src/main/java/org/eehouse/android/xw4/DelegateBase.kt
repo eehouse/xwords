@@ -771,9 +771,8 @@ abstract class DelegateBase @JvmOverloads constructor(
         Log.d(TAG, "inviteChoiceMade($action) not implemented")
     }
 
-    fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
-        block: suspend CoroutineScope.() -> Unit) {
-        Utils.launch(disp, block)
+    fun launch(block: suspend CoroutineScope.() -> Unit) {
+        m_rootView!!.launch(block)
     }
 
     companion object {
