@@ -117,6 +117,7 @@ struct GameMgrState {
     XWArray* deletedList;
     XWArray* pendingGroupEvents;
     XP_U16 nextSaveToken;
+    XP_U16 nextGroupID;
 
     XWArray* groups;
     XP_U8 defaultGrp;    /* the GroupRef of the current default */
@@ -188,7 +189,13 @@ GroupRef
 gmgr_addGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name )
 {
     GroupRef grp;
-    for ( grp = 1; ; ++grp ) {
+    /* reusing group IDs is a problem with recycler views, which expect them
+       to be refer always to the same object. Right now if I delete a game
+       named "Fred" and then create a new one, if the id's the same the View
+       won't be updated and "Fred" stays. */
+    GameMgrState* gs = duc->gameMgrState;
+    for ( ; ; ) {
+        grp = ++gs->nextGroupID;
         if ( !findGroupByRef( duc, xwe, grp, NULL ) ) {
             GroupState* grps = addGroup( duc, xwe, grp, name );
             onCollapsedChange( duc, xwe, grps, XP_FALSE );
