@@ -21,7 +21,7 @@ package org.eehouse.android.xw4
 import android.content.Context
 import android.os.Bundle
 import org.eehouse.android.xw4.Utils.ISOCode
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.Device
 
 class LegalPhoniesDelegate(delegator: Delegator) :
 	IsoWordsBase(delegator, "CHECKED_KEY_LP")
@@ -37,29 +37,30 @@ class LegalPhoniesDelegate(delegator: Delegator) :
 			= delegator.addFragment( LegalPhoniesFrag.newInstance( delegator ),
 									 mkBundle(isoCode) )
 
-		public fun haveLegalPhonies(context: Context): Boolean
+		public suspend fun haveLegalPhonies(context: Context): Boolean
 			= !getDataPrv(context).isEmpty()
 
-		private fun getDataPrv( context: Context ): HashMap<ISOCode, ArrayList<String>> {
+		private suspend fun getDataPrv( context: Context ):
+            HashMap<ISOCode, ArrayList<String>> {
 			val result = HashMap<ISOCode, ArrayList<String>>()
 
-			for ( code in XwJNI.dvc_getLegalPhonyCodes() ) {
-				val strings = XwJNI.dvc_getLegalPhoniesFor( code )
+			Device.getLegalPhonyCodes().map { code ->
+				val strings = Device.getLegalPhoniesFor( code )
 				val al = ArrayList<String>()
-					al.addAll(strings)
+				al.addAll(strings)
 				result.put(code, al)
 			}
 			return result
 		}
     }
 
-	override fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>>
+	override suspend fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>>
 		= getDataPrv(context)
 
 	override fun clearWords( isoCode: ISOCode, words: Array<String> )
 	{
 		for ( word in words ) {
-			XwJNI.dvc_clearLegalPhony(isoCode, word)
+			Device.clearLegalPhony(isoCode, word)
 		}
 	}
 

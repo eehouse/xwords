@@ -1610,69 +1610,69 @@ class GamesListDelegate(delegator: Delegator) :
                 )
                 launch {
                     val dflt = GameMgr.getDefaultGroup().grp
-                    val enable = (1 == nGroupsSelected) && !m_mySIS!!.selGroupIDs
+                    var enable = (1 == nGroupsSelected) && !m_mySIS!!.selGroupIDs
                         .contains(dflt)
                     Utils.setItemVisible(menu, R.id.games_group_default, enable)
+
+                    // Move up/down enabled for groups if not the top-most or bottommost
+                    // selected
+                    // enable = 1 == nGroupsSelected
+                    // enableGroupUpDown(menu, selGroupPos, enable)
+
+                    // New game available when nothing selected or one group
+                    Utils.setItemVisible(
+                        menu, R.id.games_menu_newgame_solo,
+                        nothingSelected || 1 == nGroupsSelected
+                    )
+                    Utils.setItemVisible(
+                        menu, R.id.games_menu_newgame_net,
+                        nothingSelected || 1 == nGroupsSelected
+                    )
+
+                    // Multiples can be deleted, but disable if any selected game is
+                    // currently open
+                    enable = 0 < nGamesSelected
+                    for (row in m_mySIS!!.selGames) {
+                        enable = enable && !BoardDelegate.gameIsOpen(row)
+                    }
+                    Utils.setItemVisible(menu, R.id.games_game_delete, enable)
+                    Utils.setItemVisible(menu, R.id.games_game_reset, enable)
+
+                    Utils.setItemVisible(
+                        menu, R.id.games_game_hide,
+                        enable && BuildConfig.NON_RELEASE
+                    )
+
+                    // multiple games can be regrouped/reset.
+                    Utils.setItemVisible(
+                        menu, R.id.games_game_move,
+                        0 < nGamesSelected
+                    )
+
+                    enable = false // singleSummary?.let{!it.isMultiGame} ?: false
+                    Utils.setItemVisible(menu, R.id.games_game_copy, enable)
+
+                    // Hide rate-me if not a google play app
+                    enable = nothingSelected && Utils.isGooglePlayApp(mActivity)
+                    Utils.setItemVisible(menu, R.id.games_menu_rateme, enable)
+
+                    enable = LegalPhoniesDelegate.haveLegalPhonies(mActivity)
+                    Utils.setItemVisible(menu, R.id.games_menu_legalPhonies, enable)
+
+                    enable = (nothingSelected && XWPrefs.getStudyEnabled(mActivity)
+                            && !DBUtils.studyListLangs(mActivity).isEmpty())
+                    Utils.setItemVisible(menu, R.id.games_menu_study, enable)
+
+                    enable = nothingSelected && mHaveKnowns
+                    Utils.setItemVisible(menu, R.id.games_menu_knownplyrs, enable)
+
+                    enable = Log.storeLogs
+                    Utils.setItemVisible(menu, R.id.games_menu_enableLogStorage, !enable)
+                    Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
+                    Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
+
+                    Assert.assertTrue(m_menuPrepared)
                 }
-
-                // Move up/down enabled for groups if not the top-most or bottommost
-                // selected
-                // enable = 1 == nGroupsSelected
-                // enableGroupUpDown(menu, selGroupPos, enable)
-
-                // New game available when nothing selected or one group
-                Utils.setItemVisible(
-                    menu, R.id.games_menu_newgame_solo,
-                    nothingSelected || 1 == nGroupsSelected
-                )
-                Utils.setItemVisible(
-                    menu, R.id.games_menu_newgame_net,
-                    nothingSelected || 1 == nGroupsSelected
-                )
-
-                // Multiples can be deleted, but disable if any selected game is
-                // currently open
-                enable = 0 < nGamesSelected
-                for (row in m_mySIS!!.selGames) {
-                    enable = enable && !BoardDelegate.gameIsOpen(row)
-                }
-                Utils.setItemVisible(menu, R.id.games_game_delete, enable)
-                Utils.setItemVisible(menu, R.id.games_game_reset, enable)
-
-                Utils.setItemVisible(
-                    menu, R.id.games_game_hide,
-                    enable && BuildConfig.NON_RELEASE
-                )
-
-                // multiple games can be regrouped/reset.
-                Utils.setItemVisible(
-                    menu, R.id.games_game_move,
-                    0 < nGamesSelected
-                )
-
-                enable = false // singleSummary?.let{!it.isMultiGame} ?: false
-                Utils.setItemVisible(menu, R.id.games_game_copy, enable)
-
-                // Hide rate-me if not a google play app
-                enable = nothingSelected && Utils.isGooglePlayApp(mActivity)
-                Utils.setItemVisible(menu, R.id.games_menu_rateme, enable)
-
-                enable = LegalPhoniesDelegate.haveLegalPhonies(mActivity)
-                Utils.setItemVisible(menu, R.id.games_menu_legalPhonies, enable)
-
-                enable = (nothingSelected && XWPrefs.getStudyEnabled(mActivity)
-                        && !DBUtils.studyListLangs(mActivity).isEmpty())
-                Utils.setItemVisible(menu, R.id.games_menu_study, enable)
-
-                enable = nothingSelected && mHaveKnowns
-                Utils.setItemVisible(menu, R.id.games_menu_knownplyrs, enable)
-
-                enable = Log.storeLogs
-                Utils.setItemVisible(menu, R.id.games_menu_enableLogStorage, !enable)
-                Utils.setItemVisible(menu, R.id.games_menu_disableLogStorage, enable)
-                Utils.setItemVisible(menu, R.id.games_menu_emailLogs, enable)
-
-                Assert.assertTrue(m_menuPrepared)
             }
         }
 

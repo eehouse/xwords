@@ -77,7 +77,7 @@ class StudyListDelegate(delegator: Delegator) :
     //////////////////////////////////////////////////
     // Abstract methods from superclass
     //////////////////////////////////////////////////
-	override fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>> {
+	override suspend fun getData( context: Context ): HashMap<ISOCode, ArrayList<String>> {
 		val result = HashMap<ISOCode, ArrayList<String>>()
 		for ( code in DBUtils.studyListLangs( m_activity ) ) {
 			val words = DBUtils.studyListWords( m_activity, code )

@@ -34,7 +34,9 @@ import java.util.concurrent.locks.ReentrantLock
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
+import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.Utils
+import org.eehouse.android.xw4.Utils.ISOCode
 
 object Device {
     private val TAG: String = Device::class.java.simpleName
@@ -241,10 +243,39 @@ object Device {
         }
     }
 
+    suspend fun getLegalPhonyCodes(): Array<ISOCode> {
+        val codes = ArrayList<String>()
+        await {
+            dvc_getLegalPhonyCodes(m_ptrGlobals, codes)
+        }
+        val result = codes.map{ISOCode(it)}
+        return result.toTypedArray()
+    }
+
+    suspend fun getLegalPhoniesFor(code: ISOCode): Array<String> {
+        val list = ArrayList<String>()
+        await {
+            dvc_getLegalPhoniesFor(m_ptrGlobals, code.toString(), list)
+        }
+        return list.toTypedArray<String>()
+    }
+
+    fun clearLegalPhony(isoCode: Utils.ISOCode, phony: String) {
+        post {
+            dvc_clearLegalPhony(m_ptrGlobals, isoCode.toString(), phony)
+        }
+    }
+
     fun lcToLocale(lc: Int): String? {
         return blockFor {
             dvc_lcToLocale(m_ptrGlobals, lc)
         } as String?
+    }
+
+    fun haveLocaleToLc(isoCodeStr: String?, lang: IntArray): Boolean {
+        // This just calls C code that doesn't interact/depend on anything
+        // else, so doesn't need to be on the Device thread.
+        return dvc_haveLocaleToLc(isoCodeStr, lang)
     }
 
 	@JvmStatic
@@ -264,10 +295,22 @@ object Device {
                                              succeeded: Boolean, result: String?)
     @JvmStatic
     private external fun dvc_setMQTTDevID(jniState: Long, newID: String): Boolean
+	@JvmStatic
+    private external fun dvc_getLegalPhonyCodes(
+        jniState: Long, list: ArrayList<String>
+    )
+    @JvmStatic
+    private external fun dvc_getLegalPhoniesFor(
+        jniState: Long, code: String, list: ArrayList<String>
+    )
+	@JvmStatic
+    private external fun dvc_clearLegalPhony(jniState: Long, code: String, phony: String)
     @JvmStatic
     private external fun dvc_onDictAdded(jniState: Long, dictName: String )
     @JvmStatic
     private external fun dvc_onDictRemoved(jniState: Long, dictName: String )
     @JvmStatic
     external fun dvc_lcToLocale(jniState: Long, lc: Int): String?
+    @JvmStatic
+    external fun dvc_haveLocaleToLc(isoCodeStr: String?, lc: IntArray): Boolean
 }

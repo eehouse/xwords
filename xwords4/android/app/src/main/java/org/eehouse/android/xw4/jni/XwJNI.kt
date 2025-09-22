@@ -143,33 +143,6 @@ class XwJNI private constructor() {
             return dvc_makeMQTTNoSuchGames(Device.ptrGlobals(), addressee, gameID)
         }
 
-        fun dvc_getLegalPhonyCodes(): Array<ISOCode> {
-            val codes = ArrayList<String>()
-            dvc_getLegalPhonyCodes(Device.ptrGlobals(), codes)
-
-			val result = ArrayList<ISOCode>()
-			for ( code in codes ) {
-				result.add( ISOCode(code) )
-			}
-            return result.toTypedArray()
-        }
-
-        fun dvc_getLegalPhoniesFor(code: ISOCode): Array<String> {
-            val list = ArrayList<String>()
-            dvc_getLegalPhoniesFor(Device.ptrGlobals(), code.toString(), list)
-            return list.toTypedArray<String>()
-        }
-
-        fun dvc_clearLegalPhony(code: ISOCode, phony: String) {
-            dvc_clearLegalPhony(Device.ptrGlobals(), code.toString(), phony)
-        }
-
-        // This needs to be called before the first attempt to use the
-        // jni.
-        // init {
-        //     System.loadLibrary(BuildConfig.JNI_LIB_NAME)
-        // }
-
         /* XW_TrayVisState enum */
         const val TRAY_HIDDEN = 0
         const val TRAY_REVERSED = 1
@@ -184,15 +157,11 @@ class XwJNI private constructor() {
             return nli_from_stream(Device.ptrGlobals(), stream)
         }
 
-        fun haveLocaleToLc(isoCode: ISOCode, lc: IntArray?): Boolean {
-            return haveLocaleToLc(isoCode.toString(), lc)
-        }
-
         // @JvmStatic
         // external fun comms_getUUID(): String
 
-        @JvmStatic
-        external fun haveLocaleToLc(isoCodeStr: String?, lc: IntArray?): Boolean
+        // @JvmStatic
+        // external fun haveLocaleToLc(isoCodeStr: String?, lc: IntArray?): Boolean
 
         // Game methods
         // private fun initGameJNI(rowid: Long): GamePtr? {
@@ -651,20 +620,6 @@ class XwJNI private constructor() {
         //     result: String?
         // )
 
-		@JvmStatic
-        private external fun dvc_getLegalPhonyCodes(
-            jniState: Long,
-            list: ArrayList<String>
-        )
-
-		@JvmStatic
-        private external fun dvc_getLegalPhoniesFor(
-            jniState: Long, code: String,
-            list: ArrayList<String>
-        )
-
-		@JvmStatic
-        private external fun dvc_clearLegalPhony(jniState: Long, code: String, phony: String)
 		// @JvmStatic
         // private external fun kplr_getPlayers(jniState: Long, byDate: Boolean): Array<String>?
 		// @JvmStatic

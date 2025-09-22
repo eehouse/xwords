@@ -368,24 +368,6 @@ tilesArrayToTileSet( JNIEnv* env, jintArray jtiles, TrayTileSet* tset )
     return result;
 }
 
-#ifdef GAMEPTR_IS_OBJECT
-static JNIState*
-getState( JNIEnv* env, GamePtrType gamePtr, const char* func )
-{
-#ifdef DEBUG
-    if ( NULL == gamePtr ) {
-        XP_LOGFF( "ERROR: getState() called from %s() with null gamePtr",
-                  func );
-    }
-#endif
-    jmethodID mid = getMethodID( env, gamePtr, "ptr", "()J" );
-    XP_ASSERT( !!mid );
-    return (JNIState*)(*env)->CallLongMethod( env, gamePtr, mid );
-}
-#else
-# define getState( env, gamePtr, func ) ((JNIState*)(gamePtr))
-#endif
-
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_Device_initJNIState
 ( JNIEnv* env, jclass C, jobject jdutil, jobject jniu, jlong jseed )
@@ -691,62 +673,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1makeMQTTNoSuchGames
     return result;
 }
 
-typedef struct _CollectState {
-    JNIEnv* env;
-    jobject list;
-} CollectState;
-
-static void
-wordCollector( const XP_UCHAR* str, void* closure )
-{
-    CollectState* cs = (CollectState*)closure;
-    addStrToList( cs->env, cs->list, str );
-}
-
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getLegalPhonyCodes
-(JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject list)
-{
-    DVC_HEADER(jniGlobalPtr);
-    CollectState cs = {
-        .env = env,
-        .list = list,
-    };
-    dvc_getIsoCodes( globalState->dutil, env, wordCollector, &cs );
-
-    DVC_HEADER_END();
-}
-
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1getLegalPhoniesFor
-(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jobject list)
-{
-    DVC_HEADER(jniGlobalPtr);
-
-    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
-
-    CollectState cs = {
-        .env = env,
-        .list = list,
-    };
-    dvc_getPhoniesFor( globalState->dutil, env, code, wordCollector, &cs );
-    (*env)->ReleaseStringUTFChars( env, jcode, code );
-    DVC_HEADER_END();
-}
-
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_dvc_1clearLegalPhony
-(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jstring jphony)
-{
-    DVC_HEADER(jniGlobalPtr);
-    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
-    const char* phony = (*env)->GetStringUTFChars( env, jphony, NULL );
-    dvc_clearLegalPhony( globalState->dutil, env, code, phony );
-    (*env)->ReleaseStringUTFChars( env, jcode, code );
-    (*env)->ReleaseStringUTFChars( env, jphony, phony );
-    DVC_HEADER_END();
-}
-
 /* # ifdef XWFEATURE_KNOWNPLAYERS */
 /* JNIEXPORT jstring JNICALL */
 /* Java_org_eehouse_android_xw4_jni_XwJNI_kplr_1 nameForMqttDev */
@@ -844,20 +770,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     return jnli;
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_haveLocaleToLc
-( JNIEnv* env, jclass C, jstring jIsoCode, jintArray jOutArray )
-{
-    XP_ASSERT( !!jIsoCode );
-    XP_LangCode lc;
-    const char* isoCode = (*env)->GetStringUTFChars( env, jIsoCode, NULL );
-    jboolean result = haveLocaleToLc( isoCode, &lc );
-    if ( result ) {
-        setIntInArray( env, jOutArray, 0, lc );
-    }
-    (*env)->ReleaseStringUTFChars( env, jIsoCode, isoCode );
-    return result;
-}
 
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_TmpDict_dict_1make
@@ -1071,27 +983,6 @@ struct _JNIState {
 # define LOG_FUNC_IF()
 # define LOG_RETURN_VOID_IF()
 #endif
-
-#define XWJNI_START(GP) {                                   \
-    XP_ASSERT(0);                                           \
-    XP_ASSERT( NULL != (GP) );                              \
-    JNIState* state = getState( env, (GP), __func__ );      \
-    LOG_FUNC_IF();                                          \
-    XP_ASSERT( state->guard == GAME_GUARD );                \
-    MPSLOT;                                                 \
-    MPASSIGN( mpool, state->mpool );                        \
-    XP_ASSERT( !!state->globalJNI );                        \
-    MAP_THREAD( &state->globalJNI->ti, env );               \
-
-#define XWJNI_START_GLOBALS(GP)                         \
-    XP_ASSERT(0);                                       \
-    XWJNI_START(GP);                                    \
-    AndGameGlobals* globals = &state->globals;          \
-    XP_USE(globals); /*no warnings */                   \
-
-#define XWJNI_END()                                          \
-    LOG_RETURN_VOID_IF();                                    \
-    }                                                        \
 
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gameJNIInit
@@ -2654,6 +2545,62 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1setMQTTDevID
     return result;
 }
 
+typedef struct _CollectState {
+    JNIEnv* env;
+    jobject list;
+} CollectState;
+
+static void
+wordCollector( const XP_UCHAR* str, void* closure )
+{
+    CollectState* cs = (CollectState*)closure;
+    addStrToList( cs->env, cs->list, str );
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1getLegalPhonyCodes
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject list)
+{
+    DVC_HEADER(jniGlobalPtr);
+    CollectState cs = {
+        .env = env,
+        .list = list,
+    };
+    dvc_getIsoCodes( globalState->dutil, env, wordCollector, &cs );
+
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1getLegalPhoniesFor
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jobject list)
+{
+    DVC_HEADER(jniGlobalPtr);
+
+    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
+
+    CollectState cs = {
+        .env = env,
+        .list = list,
+    };
+    dvc_getPhoniesFor( globalState->dutil, env, code, wordCollector, &cs );
+    (*env)->ReleaseStringUTFChars( env, jcode, code );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1clearLegalPhony
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jcode, jstring jphony)
+{
+    DVC_HEADER(jniGlobalPtr);
+    const char* code = (*env)->GetStringUTFChars( env, jcode, NULL );
+    const char* phony = (*env)->GetStringUTFChars( env, jphony, NULL );
+    dvc_clearLegalPhony( globalState->dutil, env, code, phony );
+    (*env)->ReleaseStringUTFChars( env, jcode, code );
+    (*env)->ReleaseStringUTFChars( env, jphony, phony );
+    DVC_HEADER_END();
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1onDictAdded
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jName)
@@ -2685,6 +2632,21 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1lcToLocale
     if ( !!locale ) {
         result = (*env)->NewStringUTF( env, locale );
     }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1haveLocaleToLc
+( JNIEnv* env, jclass C, jstring jIsoCode, jintArray jOutArray )
+{
+    XP_ASSERT( !!jIsoCode );
+    XP_LangCode lc;
+    const char* isoCode = (*env)->GetStringUTFChars( env, jIsoCode, NULL );
+    jboolean result = haveLocaleToLc( isoCode, &lc );
+    if ( result ) {
+        setIntInArray( env, jOutArray, 0, lc );
+    }
+    (*env)->ReleaseStringUTFChars( env, jIsoCode, isoCode );
     return result;
 }
 
