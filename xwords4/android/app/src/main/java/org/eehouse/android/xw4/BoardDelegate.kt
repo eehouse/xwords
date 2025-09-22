@@ -728,21 +728,22 @@ class BoardDelegate(delegator: Delegator) :
                 val summary = mGR!!.getSummary()!!
                 if (!inTrade) {
                     enable = gsi.curTurnSelected
-                    val item = menu.findItem(R.id.board_menu_done)
-                    item.setVisible(enable)
-                    if (enable) {
-                        val strId =
-                            if (0 >= mView!!.curPending()) {
-                                R.string.board_menu_pass
-                            } else {
-                                R.string.board_menu_done
-                            }
-                        item.setTitle(getString(strId))
+                    menu.findItem(R.id.board_menu_done)?.let { item ->
+                        item.setVisible(enable)
+                        if (enable) {
+                            val strId =
+                                if (0 >= mView!!.curPending()) {
+                                    R.string.board_menu_pass
+                                } else {
+                                    R.string.board_menu_done
+                                }
+                            item.setTitle(getString(strId))
+                        }
                     }
                     if (mGameOver || summary.gameOver) {
                         mGameOver = true
-                        val item = menu.findItem(R.id.board_menu_game_resign)
-                        item.setTitle(getString(R.string.board_menu_game_final))
+                        menu.findItem(R.id.board_menu_game_resign)
+                            .setTitle(getString(R.string.board_menu_game_final))
                     }
                 }
                 enable = summary.canRematch ?: false
