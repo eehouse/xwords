@@ -278,6 +278,46 @@ object Device {
         return dvc_haveLocaleToLc(isoCodeStr, lang)
     }
 
+        // Ok, so for now I can't figure out how to call the real constructor from
+    // jni (javac -h and kotlin files are beyond me still) so I'm putting back
+    // the nullable fields and an empty constructor. PENDING()...
+    class TopicsAndPackets(val topics: Array<String>?,
+                           val packets: Array<ByteArray>?,
+                           val qos: Int)
+    {
+        constructor(topic: String, packet: ByteArray, qos: Int):
+            this(arrayOf(topic), arrayOf(packet), qos)
+        constructor(): this(null, null, 0) // PENDING Remove me later
+
+        fun iterator(): Iterator<Pair<String, ByteArray>>
+        {
+            val lst = ArrayList<Pair<String, ByteArray>>()
+            for (ii in 0 ..< topics!!.size) {
+                lst.add(Pair<String, ByteArray>(topics[ii], packets!![ii]))
+            }
+            return lst.iterator()
+        }
+
+        fun qosInt(): Int { return this.qos }
+
+        override fun hashCode(): Int {
+            val topCode = topics.contentDeepHashCode()
+            // Log.d(TAG, "hashCode(): topic: ${topics!!.get(0)}, code: $topCode")
+            val packCode = packets.contentDeepHashCode()
+            // Log.d(TAG, "hashCode(): buffer: ${packets!!.get(0).size}, code: $packCode")
+            return topCode xor packCode
+        }
+
+        override fun equals(other: Any?): Boolean {
+            val tmp = other as? TopicsAndPackets
+            val result = this === tmp
+                || (tmp?.packets.contentDeepEquals(packets)
+                        && tmp?.topics.contentDeepEquals(topics))
+            // Log.d(TAG, "equals($this, $tmp) => $result")
+            return result
+        }
+    }
+
 	@JvmStatic
     private external fun initJNIState(dutil: DUtilCtxt, jniu: JNIUtils, seed: Long): Long
 	@JvmStatic

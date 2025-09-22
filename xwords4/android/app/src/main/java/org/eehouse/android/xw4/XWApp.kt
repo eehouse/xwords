@@ -30,8 +30,6 @@ import org.eehouse.android.xw4.jni.Device
 
 import java.util.UUID
 
-import org.eehouse.android.xw4.jni.XwJNI
-
 class XWApp : Application(), LifecycleObserver {
     override fun onCreate() {
         sContext = this

@@ -47,10 +47,9 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
 import org.eehouse.android.xw4.jni.Device
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.Stats
 import org.eehouse.android.xw4.jni.Stats.STAT
-import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
+import org.eehouse.android.xw4.jni.Device.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
 
 private const val PONG_PREFIX = "xw4/pong/"
@@ -196,11 +195,12 @@ object MQTTUtils {
         }
 
         fun handleInvitation(nli: NetLaunchInfo) {
-            handleInvitation(nli, null, MultiService.DictFetchOwner.OWNER_MQTT)
+            Assert.failDbg()
+            // handleInvitation(nli, null, MultiService.DictFetchOwner.OWNER_MQTT)
             // Now nuke the invitation so we don't keep getting it, e.g. if
             // the sender deletes the game
-            val tap = XwJNI.dvc_makeMQTTNukeInvite(nli)
-            send(mContext, tap)
+            // val tap = Device.makeMQTTNukeInvite(nli)
+            // send(mContext, tap)
         }
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
@@ -213,8 +213,9 @@ object MQTTUtils {
 
     private fun notifyNotHere(context: Context, addressee: String, gameID: Int)
     {
-        val tap = XwJNI.dvc_makeMQTTNoSuchGames(addressee, gameID)
-        send(context, tap)
+        Assert.failDbg()
+        // val tap = Device.makeMQTTNoSuchGames(addressee, gameID)
+        // send(context, tap)
     }
 
     private val sWrapper: Array<Conn?> = arrayOf(null)

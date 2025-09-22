@@ -41,7 +41,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameSummary
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 class NetLaunchInfo : Serializable {

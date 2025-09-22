@@ -273,16 +273,16 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         mNewDict = newDict
     }
 
-    private fun toggleTray(): Boolean {
-        val draw: Boolean
-        val state = XwJNI.board_getTrayVisState(mJNIGamePtr)
-        draw = if (state == XwJNI.TRAY_REVEALED) {
-            XwJNI.board_hideTray(mJNIGamePtr)
-        } else {
-            XwJNI.board_showTray(mJNIGamePtr)
-        }
-        return draw
-    }
+    // private fun toggleTray(): Boolean {
+    //     val draw: Boolean
+    //     val state = XwJNI.board_getTrayVisState(mJNIGamePtr)
+    //     draw = if (state == XwJNI.TRAY_REVEALED) {
+    //         XwJNI.board_hideTray(mJNIGamePtr)
+    //     } else {
+    //         XwJNI.board_showTray(mJNIGamePtr)
+    //     }
+    //     return draw
+    // }
 
     private fun sendForDialog(titleArg: Int, text: String?) {
         Message.obtain(mHandler, DIALOG, titleArg, 0, text).sendToTarget()
@@ -292,33 +292,34 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         width: Int, height: Int, fontWidth: Int,
         fontHeight: Int
     ) {
-        val dims = BoardDims()
+        Assert.failDbg()
+        // val dims = BoardDims()
 
-        val squareTiles = XWPrefs.getSquareTiles(mContext!!)
-        XwJNI.board_figureLayout(
-            mJNIGamePtr, mGi, 0, 0, width, height,
-            150,  /*scorePct*/200,  /*trayPct*/
-            width, fontWidth, fontHeight, squareTiles,
-            dims /* out param */
-        )
+        // val squareTiles = XWPrefs.getSquareTiles(mContext!!)
+        // XwJNI.board_figureLayout(
+        //     mJNIGamePtr, mGi, 0, 0, width, height,
+        //     150,  /*scorePct*/200,  /*trayPct*/
+        //     width, fontWidth, fontHeight, squareTiles,
+        //     dims /* out param */
+        // )
 
-        // Make space for net status icon if appropriate
-        if (mGi!!.deviceRole != DeviceRole.ROLE_STANDALONE) {
-            val statusWidth = dims.boardWidth / 15
-            dims.scoreWidth -= statusWidth
-            val left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth
-            ConnStatusHandler.setRect(
-                left, dims.top, left + statusWidth,
-                dims.top + dims.scoreHt
-            )
-        } else {
-            ConnStatusHandler.clearRect()
-        }
+        // // Make space for net status icon if appropriate
+        // if (mGi!!.deviceRole != DeviceRole.ROLE_STANDALONE) {
+        //     val statusWidth = dims.boardWidth / 15
+        //     dims.scoreWidth -= statusWidth
+        //     val left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth
+        //     ConnStatusHandler.setRect(
+        //         left, dims.top, left + statusWidth,
+        //         dims.top + dims.scoreHt
+        //     )
+        // } else {
+        //     ConnStatusHandler.clearRect()
+        // }
 
-        XwJNI.board_applyLayout(mJNIGamePtr, dims)
+        // XwJNI.board_applyLayout(mJNIGamePtr, dims)
 
-        Message.obtain(mHandler, DIMMS_CHANGED, dims)
-            .sendToTarget()
+        // Message.obtain(mHandler, DIMMS_CHANGED, dims)
+        //     .sendToTarget()
     }
 
     // private fun nextSame(cmd: JNICmd): Boolean {

@@ -182,11 +182,12 @@ object GameUtils {
     private fun summarize( context: Context, lock: GameLock?,
                            gamePtr: GamePtr, gi: CurGameInfo): GameSummary
     {
-        val summary = GameSummary(gi)
-        XwJNI.game_summarize(gamePtr, summary)
+        Assert.failDbg()
+        // val summary = GameSummary(gi)
+        // XwJNI.game_summarize(gamePtr, summary)
 
-        DBUtils.saveSummary(context, lock!!, summary)
-        return summary
+        // DBUtils.saveSummary(context, lock!!, summary)
+        return null as GameSummary
     }
 
     fun summarize(context: Context, lock: GameLock): GameSummary? {
@@ -399,10 +400,11 @@ object GameUtils {
 
     private fun giFromStream(context: Context, stream: ByteArray?): CurGameInfo? {
         var gi: CurGameInfo? = null
-        if (null != stream) {
-            gi = CurGameInfo(context)
-            XwJNI.giFromStream(gi, stream)
-        }
+        Assert.failDbg()
+        // if (null != stream) {
+        //     gi = CurGameInfo(context)
+        //     XwJNI.giFromStream(gi, stream)
+        // }
         return gi
     }
 
@@ -412,42 +414,43 @@ object GameUtils {
         stream: ByteArray?, rowid: Long
     ): GamePtr? {
         var gamePtr: GamePtr? = null
+        Assert.failDbg()
 
-        stream?.let {
-            XwJNI.giFromStream(gi, stream)
-            val dictNames = gi.dictNames()
-            val pairs = DictUtils.openDicts(context, dictNames)
-            if (pairs.anyMissing(dictNames)) {
-                postMoveDroppedForDictNotification(
-                    context, rowid, gi.gameID,
-                    gi.isoCode()!!
-                )
-            } else {
-                gamePtr = XwJNI.initFromStream(
-                    rowid, stream, gi, util, null,
-                    CommonPrefs.get(context), tp
-                )
-                if (null == gamePtr) {
-                    // Assert.assertTrueNR( gi.deviceRole != DeviceRole.ROLE_ISGUEST ); // firing
-                    if (DeviceRole.ROLE_ISGUEST == gi.deviceRole) {
-                        Log.e(
-                            TAG, "bad game? ISCLIENT, but has no host address"
-                                    + " and won't open"
-                        )
-                    } else {
-                        val selfAddr = CommsAddrRec.getSelfAddr(context, gi)
-                        gamePtr = XwJNI.initNew(
-                            gi, selfAddr, null as CommsAddrRec?,
-                            null as UtilCtxt?, null as DrawCtx?,
-                            CommonPrefs.get(context),
-                            null as TransportProcs?
-                        )
-                    }
-                }
-            }
-        } ?: run {
-            Log.w(TAG, "loadMakeGame(): no saved game!")
-        }
+        // stream?.let {
+        //     XwJNI.giFromStream(gi, stream)
+        //     val dictNames = gi.dictNames()
+        //     val pairs = DictUtils.openDicts(context, dictNames)
+        //     if (pairs.anyMissing(dictNames)) {
+        //         postMoveDroppedForDictNotification(
+        //             context, rowid, gi.gameID,
+        //             gi.isoCode()!!
+        //         )
+        //     } else {
+        //         gamePtr = XwJNI.initFromStream(
+        //             rowid, stream, gi, util, null,
+        //             CommonPrefs.get(context), tp
+        //         )
+        //         if (null == gamePtr) {
+        //             // Assert.assertTrueNR( gi.deviceRole != DeviceRole.ROLE_ISGUEST ); // firing
+        //             if (DeviceRole.ROLE_ISGUEST == gi.deviceRole) {
+        //                 Log.e(
+        //                     TAG, "bad game? ISCLIENT, but has no host address"
+        //                             + " and won't open"
+        //                 )
+        //             } else {
+        //                 val selfAddr = CommsAddrRec.getSelfAddr(context, gi)
+        //                 gamePtr = XwJNI.initNew(
+        //                     gi, selfAddr, null as CommsAddrRec?,
+        //                     null as UtilCtxt?, null as DrawCtx?,
+        //                     CommonPrefs.get(context),
+        //                     null as TransportProcs?
+        //                 )
+        //             }
+        //         }
+        //     }
+        // } ?: run {
+        //     Log.w(TAG, "loadMakeGame(): no saved game!")
+        // }
         return gamePtr
     }
 
@@ -589,21 +592,22 @@ object GameUtils {
         context: Context, gamePtr: GamePtr,
         groupID: Long, gameName: String?
     ): Long {
-        var groupID = groupID
+        Assert.failDbg()
         var rowid = DBUtils.ROWID_NOTFOUND
-        if (DBUtils.GROUPID_UNSPEC == groupID) {
-            groupID = 0 // XWPrefs.getDefaultNewGameGroup(context)
-            Assert.failDbg()
-        }
-        val gi = CurGameInfo(context)
-        XwJNI.game_getGi(gamePtr, gi)
-        Log.d(TAG, "saveNewGame1() (post-rematch): gi: %s", gi)
-        val stream = XwJNI.game_saveToStream(gamePtr, gi)
+        // var groupID = groupID
+        // if (DBUtils.GROUPID_UNSPEC == groupID) {
+        //     groupID = 0 // XWPrefs.getDefaultNewGameGroup(context)
+        //     Assert.failDbg()
+        // }
+        // val gi = CurGameInfo(context)
+        // XwJNI.game_getGi(gamePtr, gi)
+        // Log.d(TAG, "saveNewGame1() (post-rematch): gi: %s", gi)
+        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
 
-        DBUtils.saveNewGame(context, stream, groupID, gameName).use { lock ->
-            summarize(context, lock, gamePtr, gi)
-            rowid = lock.rowid
-        }
+        // DBUtils.saveNewGame(context, stream, groupID, gameName).use { lock ->
+        //     summarize(context, lock, gamePtr, gi)
+        //     rowid = lock.rowid
+        // }
         return rowid
     }
 
@@ -614,23 +618,23 @@ object GameUtils {
     ): Long {
         Assert.failDbg()
         var rowid = DBUtils.ROWID_NOTFOUND
-        GameWrapper.make(context, srcRowid).use { gw ->
-            if (null != gw) {
-                val util: UtilCtxt = UtilCtxt(GameRef(0))
-                val cp = CommonPrefs.get(context)
-                XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp,
-                                       gameName, newOrder)
-                    // .use { gamePtrNew ->
-                // if (null != gamePtrNew) {
-                // rowid = saveNewGame1(
-                // context, gamePtrNew,
-                // groupID, gameName
-                // )
-            // }
-            // }
-            }
-        }
-        Log.d(TAG, "makeRematch() => %d", rowid)
+        // GameWrapper.make(context, srcRowid).use { gw ->
+        //     if (null != gw) {
+        //         val util: UtilCtxt = UtilCtxt(GameRef(0))
+        //         val cp = CommonPrefs.get(context)
+        //         XwJNI.game_makeRematch(gw.gamePtr()!!, util, cp,
+        //                                gameName, newOrder)
+        //             // .use { gamePtrNew ->
+        //         // if (null != gamePtrNew) {
+        //         // rowid = saveNewGame1(
+        //         // context, gamePtrNew,
+        //         // groupID, gameName
+        //         // )
+        //     // }
+        //     // }
+        //     }
+        // }
+        // Log.d(TAG, "makeRematch() => %d", rowid)
         return rowid
     }
 
@@ -666,20 +670,20 @@ object GameUtils {
     ) {
         Log.d(TAG, "handleInvitation(%s)", nli)
         Assert.failDbg()
-        if (DBUtils.ROWID_NOTFOUND != getGameWithChannel(context, nli)) {
-            Log.d(TAG, "dropping duplicate invite for gameID %X",
-                  nli.gameID())
-        } else {
-            val util: UtilCtxt = UtilCtxt(GameRef(0))
-            val cp = CommonPrefs.get(context)
-            val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
-            XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use {
-                gamePtr ->
-                gamePtr?.let {
-                    saveNewGame1(context, it, -1, nli.gameName)
-                }
-            }
-        }
+        // if (DBUtils.ROWID_NOTFOUND != getGameWithChannel(context, nli)) {
+        //     Log.d(TAG, "dropping duplicate invite for gameID %X",
+        //           nli.gameID())
+        // } else {
+        //     val util: UtilCtxt = UtilCtxt(GameRef(0))
+        //     val cp = CommonPrefs.get(context)
+        //     val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
+        //     XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use {
+        //         gamePtr ->
+        //         gamePtr?.let {
+        //             saveNewGame1(context, it, -1, nli.gameName)
+        //         }
+        //     }
+        // }
     }
 
     fun saveGame(
@@ -687,24 +691,26 @@ object GameUtils {
         gi: CurGameInfo?, lock: GameLock?,
         setCreate: Boolean
     ): Long {
-        val stream = XwJNI.game_saveToStream(gamePtr, gi)
-        val rowid = saveGame(context, stream, lock, setCreate)
-        if (DBUtils.ROWID_NOTFOUND != rowid) {
-            XwJNI.game_saveSucceeded(gamePtr)
-        }
-        return rowid
+        Assert.failDbg()
+        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
+        // val rowid = saveGame(context, stream, lock, setCreate)
+        // if (DBUtils.ROWID_NOTFOUND != rowid) {
+        //     XwJNI.game_saveSucceeded(gamePtr)
+        // }
+        return 0L
     }
 
     fun saveNewGame(
         context: Context, gamePtr: GamePtr?,
         gi: CurGameInfo?, groupID: Long
     ): Long {
-        val stream = XwJNI.game_saveToStream(gamePtr, gi)
-        var rowid: Long
-        DBUtils.saveNewGame(context, stream, groupID, null).use { lock ->
-            rowid = lock.rowid
-        }
-        return rowid
+        Assert.failDbg()
+        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
+        // var rowid: Long
+        // DBUtils.saveNewGame(context, stream, groupID, null).use { lock ->
+        //     rowid = lock.rowid
+        // }
+        return 0
     }
 
     fun saveGame(
@@ -736,33 +742,34 @@ object GameUtils {
         groupID: Long, gameName: String?,
         invitee: CommsAddrRec?
     ): Long {
-        var groupID = groupID
-        if (DBUtils.GROUPID_UNSPEC == groupID) {
-            groupID = 0 // XWPrefs.getDefaultNewGameGroup(context)
-            Assert.failDbg()
-        }
+        Assert.failDbg()
+        // var groupID = groupID
+        // if (DBUtils.GROUPID_UNSPEC == groupID) {
+        //     groupID = 0 // XWPrefs.getDefaultNewGameGroup(context)
+        //     Assert.failDbg()
+        // }
 
-        val gamePtr = XwJNI.initNew(
-        gi, selfAddr, hostAddr,
-        null as UtilCtxt?, null as DrawCtx?,
-        CommonPrefs.get(context), null as TransportProcs?)
+        // val gamePtr = XwJNI.initNew(
+        // gi, selfAddr, hostAddr,
+        // null as UtilCtxt?, null as DrawCtx?,
+        // CommonPrefs.get(context), null as TransportProcs?)
 
-        invitee?.let {
-            val summary = GameSummary(gi)
-            XwJNI.game_summarize(gamePtr, summary)
-            val nli = NetLaunchInfo(context, summary, gi)
-            Log.d(TAG, "passing %s to comms_invite()", nli)
-            // XwJNI.comms_invite(gamePtr, nli, it, false)
-        }
+        // invitee?.let {
+        //     val summary = GameSummary(gi)
+        //     XwJNI.game_summarize(gamePtr, summary)
+        //     val nli = NetLaunchInfo(context, summary, gi)
+        //     Log.d(TAG, "passing %s to comms_invite()", nli)
+        //     // XwJNI.comms_invite(gamePtr, nli, it, false)
+        // }
 
-        var rowid = DBUtils.ROWID_NOTFOUND
-        val bytes = XwJNI.game_saveToStream(gamePtr, gi)
-        bytes?.let {
-            DBUtils.saveNewGame(context, it, groupID, gameName).use { lock ->
-                rowid = lock!!.rowid
-            }
-        }
-        return rowid
+        // var rowid = DBUtils.ROWID_NOTFOUND
+        // val bytes = XwJNI.game_saveToStream(gamePtr, gi)
+        // bytes?.let {
+        //     DBUtils.saveNewGame(context, it, groupID, gameName).use { lock ->
+        //         rowid = lock!!.rowid
+        //     }
+        // }
+        return 0
     }
 
     fun makeNewMultiGame1(context: Context, nli: NetLaunchInfo): GameRef? {
@@ -1288,38 +1295,38 @@ object GameUtils {
         oldDict: String?, newDict: String?
     ): Boolean {
         Assert.failDbg()
-        var success: Boolean
-        GameLock.lock(rowid, 300).use { lock ->
-            success = null != lock
-            if (!success) {
-                DbgUtils.toastNoLock(
-                    TAG, context, rowid,
-                    "replaceDicts(): rowid %d",
-                    rowid
-                )
-            } else {
-                val stream = savedGame(context, lock!!)
-                val gi = giFromStream(context, stream)
-                success = null != gi
-                if (!success) {
-                    Log.e(TAG, "replaceDicts(): unable to load rowid %d", rowid)
-                } else {
-                    // first time required so dictNames() will work
-                    gi!!.replaceDicts(context, newDict)
+        var success = false
+        // GameLock.lock(rowid, 300).use { lock ->
+        //     success = null != lock
+        //     if (!success) {
+        //         DbgUtils.toastNoLock(
+        //             TAG, context, rowid,
+        //             "replaceDicts(): rowid %d",
+        //             rowid
+        //         )
+        //     } else {
+        //         val stream = savedGame(context, lock!!)
+        //         val gi = giFromStream(context, stream)
+        //         success = null != gi
+        //         if (!success) {
+        //             Log.e(TAG, "replaceDicts(): unable to load rowid %d", rowid)
+        //         } else {
+        //             // first time required so dictNames() will work
+        //             gi!!.replaceDicts(context, newDict)
 
-                    XwJNI.initFromStream(
-                        rowid, stream!!, gi, null, null,
-                        CommonPrefs.get(context), null
-                    ).use { gamePtr ->
-                        // second time required as game_makeFromStream can overwrite
-                        gi.replaceDicts(context, newDict)
+        //             // XwJNI.initFromStream(
+        //             //     rowid, stream!!, gi, null, null,
+        //             //     CommonPrefs.get(context), null
+        //             // ).use { gamePtr ->
+        //             //     // second time required as game_makeFromStream can overwrite
+        //             //     gi.replaceDicts(context, newDict)
 
-                        saveGame(context, gamePtr, gi, lock, false)
-                        summarize(context, lock, gamePtr!!, gi)
-                    }
-                }
-            }
-        }
+        //             //     saveGame(context, gamePtr, gi, lock, false)
+        //             //     summarize(context, lock, gamePtr!!, gi)
+        //             // }
+        //         }
+        //     }
+        // }
         return success
     } // replaceDicts
 
@@ -1342,41 +1349,42 @@ object GameUtils {
         disab: Map<CommsConnType, BooleanArray>?,
         lock: GameLock, forceNew: Boolean
     ) {
+        Assert.failDbg()
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
         // that don't reset the game, e.g. player name for standalone
         // games?
-        var madeGame = false
-        val cp = CommonPrefs.get(context)
+        // var madeGame = false
+        // val cp = CommonPrefs.get(context)
 
-        if (forceNew) {
-            Assert.failDbg()
-            // tellDied(context, lock, true)
-        } else {
-            val stream = savedGame(context, lock)
-            XwJNI.initFromStream(
-                lock.rowid, stream!!,
-                CurGameInfo(context),
-                null, null, cp, null
-            ).use { gamePtr ->
-                if (null != gamePtr) {
-                    applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
-                    madeGame = true
-                }
-            }
-        }
+        // if (forceNew) {
+        //     Assert.failDbg()
+        //     // tellDied(context, lock, true)
+        // } else {
+        //     val stream = savedGame(context, lock)
+        //     XwJNI.initFromStream(
+        //         lock.rowid, stream!!,
+        //         CurGameInfo(context),
+        //         null, null, cp, null
+        //     ).use { gamePtr ->
+        //         if (null != gamePtr) {
+        //             applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
+        //             madeGame = true
+        //         }
+        //     }
+        // }
 
-        if (forceNew || !madeGame) {
-            val hostAddr: CommsAddrRec? = null
-            XwJNI.initNew(
-                gi, selfAddr, hostAddr,
-                util, null as DrawCtx?, cp, sink
-            ).use { gamePtr ->
-                if (null != gamePtr) {
-                    applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
-                }
-            }
-        }
+        // if (forceNew || !madeGame) {
+        //     val hostAddr: CommsAddrRec? = null
+        //     XwJNI.initNew(
+        //         gi, selfAddr, hostAddr,
+        //         util, null as DrawCtx?, cp, sink
+        //     ).use { gamePtr ->
+        //         if (null != gamePtr) {
+        //             applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
+        //         }
+        //     }
+        // }
     }
 
     private fun applyChangesImpl(
@@ -1386,23 +1394,23 @@ object GameUtils {
         lock: GameLock, gamePtr: GamePtr
     ) {
         Assert.failDbg()
-        if (BuildConfig.DEBUG && null != disab) {
-            for (typ in disab.keys) {
-                val bools = disab[typ]
-                // XwJNI.comms_setAddrDisabled(gamePtr, typ, false, bools!![0])
-                // XwJNI.comms_setAddrDisabled(gamePtr, typ, true, bools[1])
-            }
-        }
+        // if (BuildConfig.DEBUG && null != disab) {
+        //     for (typ in disab.keys) {
+        //         val bools = disab[typ]
+        //         // XwJNI.comms_setAddrDisabled(gamePtr, typ, false, bools!![0])
+        //         // XwJNI.comms_setAddrDisabled(gamePtr, typ, true, bools[1])
+        //     }
+        // }
 
-        if (null != sink) {
-            JNIThread.tryConnect(gamePtr, gi)
-        }
+        // if (null != sink) {
+        //     JNIThread.tryConnect(gamePtr, gi)
+        // }
 
-        saveGame(context, gamePtr, gi, lock, false)
+        // saveGame(context, gamePtr, gi, lock, false)
 
-        val summary = GameSummary(gi)
-        XwJNI.game_summarize(gamePtr, summary)
-        DBUtils.saveSummary(context, lock, summary)
+        // val summary = GameSummary(gi)
+        // XwJNI.game_summarize(gamePtr, summary)
+        // DBUtils.saveSummary(context, lock, summary)
     } // applyChanges
 
     fun formatGameID(gameID: Int): String {

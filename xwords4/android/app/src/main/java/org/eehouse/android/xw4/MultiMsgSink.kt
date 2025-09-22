@@ -25,8 +25,8 @@ import org.eehouse.android.xw4.MultiMsgSink
 import org.eehouse.android.xw4.NFCUtils.addMsgFor
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.TransportProcs
-import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
 
 open class MultiMsgSink @JvmOverloads constructor(
     private val m_context: Context, // rowID is used as token to identify game on relay.  Anything that
@@ -109,7 +109,7 @@ open class MultiMsgSink @JvmOverloads constructor(
         return nSent
     }
 
-    override fun transportSendMQTT(tap: TopicsAndPackets): Int {
+    override fun transportSendMQTT(tap: Device.TopicsAndPackets): Int {
         // return MQTTUtils.send(m_context, tap)
         Assert.failDbg()
         return -1
