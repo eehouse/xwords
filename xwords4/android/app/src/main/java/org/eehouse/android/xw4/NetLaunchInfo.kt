@@ -309,7 +309,7 @@ class NetLaunchInfo : Serializable {
     fun putSelf(bundle: Bundle) {
         bundle.putString(MultiService.INVITEID, inviteID)
         val lang = intArrayOf(0)
-        if (XwJNI.haveLocaleToLc(isoCodeStr, lang)) {
+        if (Device.haveLocaleToLc(isoCodeStr, lang)) {
             bundle.putInt(MultiService.LANG, lang[0])
         }
         bundle.putString(MultiService.ISO, isoCodeStr)
@@ -376,7 +376,7 @@ class NetLaunchInfo : Serializable {
                 .put(MultiService.FORCECHANNEL, forceChannel)
 
             val lang = intArrayOf(0)
-            if (XwJNI.haveLocaleToLc(isoCodeStr, lang)) {
+            if (Device.haveLocaleToLc(isoCodeStr, lang)) {
                 obj.put(MultiService.LANG, lang[0])
             }
             obj.put(MultiService.ISO, isoCodeStr)
@@ -534,7 +534,7 @@ class NetLaunchInfo : Serializable {
         // We'll use lang rather than ISO IFF we have it.
         val lang = intArrayOf(0)
         Assert.assertTrueNR(null != isoCodeStr)
-        if (XwJNI.haveLocaleToLc(isoCodeStr, lang)) {
+        if (Device.haveLocaleToLc(isoCodeStr, lang)) {
             appendInt(ub, LANG_KEY, lang[0])
         }
         ub.appendQueryParameter(ISO_KEY, isoCodeStr)

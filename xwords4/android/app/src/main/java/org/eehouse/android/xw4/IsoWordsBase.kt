@@ -50,7 +50,7 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
     private var m_origTitle: String? = null
 
 	// Subclasses must override these
-	abstract fun getData(context: Context): HashMap<Utils.ISOCode, ArrayList<String>>
+	abstract suspend fun getData(context: Context): HashMap<Utils.ISOCode, ArrayList<String>>
 	abstract fun clearWords(isoCode: Utils.ISOCode, words: Array<String> )
 	abstract fun getTitleID(): Int
 
@@ -225,44 +225,54 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 
 	private fun initOrFinish( args: Bundle? = null )
     {
-		val data = getData(m_activity)
-        m_langCodes = data.keys.toTypedArray()
-		when ( m_langCodes!!.size ) {
-			0 -> finish()
-			1 -> {
-				m_pickView!!.setVisibility( View.GONE )
-				m_langPosition = 0
-				loadList()
-			}
-			else -> {
-				var startLang: String? = null
-				var startIndex = -1
-				if ( null != args ) {
-					startLang = args.getString( START_LANG )
-				}
+        launch {
+            val data = getData(m_activity)
+            m_langCodes = data.keys.toTypedArray()
+            when (m_langCodes!!.size) {
+                0 -> finish()
+                1 -> {
+                    m_pickView!!.setVisibility(View.GONE)
+                    m_langPosition = 0
+                    loadList()
+                }
 
-				val siz = m_langCodes!!.size
-				val myNames = ArrayList<String>()
-				for ( ii in 0 ..< siz ) {
-					val isoCode = m_langCodes!![ii]
-					myNames.add( DictLangCache.getLangNameForISOCode( m_activity,
-																	  isoCode )!!)
-					if ( isoCode.equals( startLang ) ) {
-						startIndex = ii
-					}
-				}
+                else -> {
+                    var startLang: String? = null
+                    var startIndex = -1
+                    if (null != args) {
+                        startLang = args.getString(START_LANG)
+                    }
 
-				val adapter = ArrayAdapter<String>( m_activity,
-													android.R.layout.simple_spinner_item,
-													myNames )
-				adapter.setDropDownViewResource( android.R.layout.
-													 simple_spinner_dropdown_item )
-				m_spinner!!.setAdapter( adapter )
-				m_spinner!!.setOnItemSelectedListener( this )
-				if ( -1 != startIndex ) {
-					m_spinner!!.setSelection( startIndex )
-				}
-			}
+                    val siz = m_langCodes!!.size
+                    val myNames = ArrayList<String>()
+                    for (ii in 0..<siz) {
+                        val isoCode = m_langCodes!![ii]
+                        myNames.add(
+                            DictLangCache.getLangNameForISOCode(
+                                m_activity,
+                                isoCode
+                            )!!
+                        )
+                        if (isoCode.equals(startLang)) {
+                            startIndex = ii
+                        }
+                    }
+
+                    val adapter = ArrayAdapter<String>(
+                        m_activity,
+                        android.R.layout.simple_spinner_item,
+                        myNames
+                    )
+                    adapter.setDropDownViewResource(
+                        android.R.layout.simple_spinner_dropdown_item
+                    )
+                    m_spinner!!.setAdapter(adapter)
+                    m_spinner!!.setOnItemSelectedListener(this@IsoWordsBase)
+                    if (-1 != startIndex) {
+                        m_spinner!!.setSelection(startIndex)
+                    }
+                }
+            }
         }
     }
 
@@ -308,16 +318,18 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
 
 	protected fun loadList()
     {
-        val isoCode = m_langCodes!![m_langPosition]
-		val data = getData( m_activity )
-		val al = data.get( isoCode )
-        m_words =  al?.toTypedArray()
+        launch {
+            val isoCode = m_langCodes!![m_langPosition]
+            val data = getData(m_activity)
+            val al = data.get(isoCode)
+            m_words = al?.toTypedArray()
 
-        makeAdapter()
+            makeAdapter()
 
-        val langName = DictLangCache.getLangNameForISOCode( m_activity, isoCode )
-        m_origTitle = getString( getTitleID(), langName )
-        setTitleBar()
+            val langName = DictLangCache.getLangNameForISOCode(m_activity, isoCode)
+            m_origTitle = getString(getTitleID(), langName)
+            setTitleBar()
+        }
     }
 
 	private fun makeAdapter()
