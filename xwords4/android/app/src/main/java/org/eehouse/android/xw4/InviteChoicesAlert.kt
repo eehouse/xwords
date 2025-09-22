@@ -31,7 +31,6 @@ import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.InviteView.ItemClicked
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
 import org.eehouse.android.xw4.jni.Knowns
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {

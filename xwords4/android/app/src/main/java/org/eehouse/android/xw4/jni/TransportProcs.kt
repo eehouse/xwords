@@ -20,7 +20,7 @@ package org.eehouse.android.xw4.jni
 
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
+import org.eehouse.android.xw4.jni.Device.TopicsAndPackets
 
 interface TransportProcs {
     val flags: Int

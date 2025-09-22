@@ -30,8 +30,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 
-import org.eehouse.android.xw4.jni.XwJNI
-
 object DictUtils {
     private val TAG: String = DictUtils::class.java.simpleName
 

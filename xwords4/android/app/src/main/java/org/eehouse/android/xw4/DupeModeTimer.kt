@@ -32,8 +32,6 @@ import org.eehouse.android.xw4.DBUtils.DBChangeListener
 import org.eehouse.android.xw4.DBUtils.GameChangeType
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.GameRef
-import org.eehouse.android.xw4.jni.JNIThread
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 /**

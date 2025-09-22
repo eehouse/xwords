@@ -25,7 +25,6 @@ import androidx.preference.ListPreference
 import com.hivemq.client.mqtt.datatypes.MqttQos
 
 import org.eehouse.android.xw4.loc.LocUtils
-import org.eehouse.android.xw4.jni.XwJNI
 
 class QOSListPreference(private val mContext: Context,
                         attrs: AttributeSet?) :

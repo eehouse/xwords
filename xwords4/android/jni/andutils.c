@@ -979,7 +979,7 @@ wrapResults( MTPData* mtp )
 {
     JNIEnv* env = mtp->env;
     jobject result =
-        makeObjectEmptyConstr( env, PKG_PATH("jni/XwJNI$TopicsAndPackets"));
+        makeObjectEmptyConstr( env, PKG_PATH("jni/Device$TopicsAndPackets"));
 
     setInt( env, result, "qos", mtp->qos );
 

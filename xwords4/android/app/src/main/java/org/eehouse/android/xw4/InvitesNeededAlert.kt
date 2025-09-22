@@ -28,7 +28,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.Knowns
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = InvitesNeededAlert::class.java.simpleName
