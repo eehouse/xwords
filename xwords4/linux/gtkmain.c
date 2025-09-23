@@ -278,7 +278,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT,     /* CHANNEL_ITEM */
                                               G_TYPE_INT,     /* ROLE_ITEM */
 #ifdef XWFEATURE_DEVICE_STORES
-                                              G_TYPE_INT,     /* CONTYPES_ITEM */
+                                              G_TYPE_STRING,  /* CONTYPES_ITEM */
 #endif
                                               G_TYPE_INT     /* NTOTAL_ITEM */
                                               );
@@ -362,6 +362,9 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
     gmgr_getGroupName( params->dutil, NULL_XWE, grp,
                        groupName, VSIZE(groupName) );
 
+    gchar conTypesBuf[32];
+    snprintf( conTypesBuf, sizeof(conTypesBuf), "0X%X", gi->conTypes );
+
     gtk_list_store_set( store, &iter, 
                         ROW_THUMB, snap,
                         GAMENAME_ITEM, gi->gameName,
@@ -376,7 +379,7 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         LANG_ITEM, gi->isoCodeStr,
                         CHANNEL_ITEM, gi->forceChannel,
                         ROLE_ITEM, gi->deviceRole,
-                        CONTYPES_ITEM, gi->conTypes,
+                        CONTYPES_ITEM, conTypesBuf,
                         NTOTAL_ITEM, gi->nPlayers,
                         -1 );
 }
@@ -909,8 +912,9 @@ setWindowTitle( GtkAppGlobals* apg )
     MQTTDevID devID;
     dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
     XP_UCHAR didBuf[32];
-    snprintf( &title[len], VSIZE(title) - len, " (mqtt: %s)",
-              formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ) );
+    snprintf( &title[len], VSIZE(title) - len, " (mqtt: %s, host: %s)",
+              formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
+              params->connInfo.mqtt.hostName);
 
     gtk_window_set_title( GTK_WINDOW(window), title );
 }
