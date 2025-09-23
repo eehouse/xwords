@@ -278,8 +278,10 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
                 XWStreamCtxt* stream = gmgr_loadData( duc, xwe, gr );
                 if ( !stream ) {
                     makeData( duc, xwe, gd );
-                    summarize( duc, xwe, gd );
-                    setSaveTimer( duc, xwe, gd, gr );
+                    if ( !!gd->model ) {
+                        summarize( duc, xwe, gd );
+                        setSaveTimer( duc, xwe, gd, gr );
+                    }
                 } else {
                     loadData( duc, xwe, gd, &stream );
                 }
