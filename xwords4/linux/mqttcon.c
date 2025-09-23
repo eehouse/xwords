@@ -150,8 +150,8 @@ enqueue( MQTTConStorage* storage, const char* topic,
         XP_LOGFF( "added elem with sum %s; len now %d", elem->sum,
                   g_slist_length(storage->queue) );
 
-        tickleQueue( storage );
     }
+    tickleQueue( storage );
 } /* enqueue */
 
 typedef struct _RemoveState {
