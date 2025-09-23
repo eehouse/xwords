@@ -5,7 +5,7 @@ import argparse, datetime, glob, json, os, random, shutil, signal, \
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 g_INVITE_HOWS = (('OutOfApp', 1), ('Internal', 1), ('KnownPlayer', 1))
-g_REMATCH_PCTS = (('Neither', 80), ('Host', 10), ('Guest', 10))
+g_REMATCH_PCTS = (('Standalone', 10), ('Host', 10), ('Guest', 10))
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
 gDone = False
@@ -641,7 +641,17 @@ class Device():
                 game = self.gameFor(obj.get('gid'))
                 game.state = obj
 
-                if game.gameOver() and 0 < game.rematchLevel and self._rematchAllowed(game) :
+                # if game.gameOver() and 0 < game.rematchLevel and self._rematchAllowed(game) :
+                if not game.gameOver():
+                    # self._log("game not over")
+                    pass
+                elif 0 >= game.rematchLevel:
+                    # self._log("rematch level 0")
+                    pass
+                elif not self._rematchAllowed(game):
+                    # self._log("rematch not allowed")
+                    pass
+                else:
                     self.rematch(game)
                     anyRematched = True
                     game.rematchLevel = 0 # so won't be used again
@@ -667,16 +677,16 @@ class Device():
             assert not self.endTime
 
     def _rematchAllowed(self, game):
-        pick = pickFromRatios(g_REMATCH_PCTS, self.args.REMATCH_PCTS)
+        pcts = [int(val) for val in self.args.REMATCH_PCTS.split(':')]
+        if isinstance(game, HostGameInfo):
+            pct = pcts[1]
+        elif isinstance(game, GuestGameInfo):
+            pct = pcts[2]
+        else:
+            pct = pcts[0]
 
-        if pick == 'Neither':
-            result = False
-        elif pick == 'Host':
-            result = isinstance(game, HostGameInfo)
-        elif pick == 'Guest':
-            result = isinstance(game, GuestGameInfo)
-        else: assert False
-        # print('_rematchAllowed({}) => {}'.format(game, result))
+        result = random.randint(0, 100) < pct
+        # print('_rematchAllowed({}) => {} (pct={})'.format(game, result, pct))
         return result
 
     def _addStats(self, stats):
@@ -1038,7 +1048,7 @@ def mkParser():
     parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
                         help = 'order rematched games one of these ways: {}'.format(g_ROS))
     dflt = ':'.join([str(tpl[1]) for tpl in g_REMATCH_PCTS])
-    vals = ':'.join([tpl[0] for tpl in g_REMATCH_PCTS])
+    vals = ':'.join(['<{}>'.format(tpl[0]) for tpl in g_REMATCH_PCTS])
     parser.add_argument('--rematch-pcts', dest = 'REMATCH_PCTS', default = dflt,
                         help = 'what percent of games will rematch at game end (fmt {})'.format(vals))
 
