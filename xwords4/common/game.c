@@ -576,7 +576,6 @@ disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 void
 gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 {
-    LOG_FUNC();
     disposePlayerInfoInt( MPPARM(mpool) gi );
 
     XP_FREEP( mpool, &gi->dictName );
