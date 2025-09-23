@@ -227,8 +227,8 @@ class TimerReceiver : BroadcastReceiver() {
             context: Context, cback: TimerCallback,
             backoffMS: Long
         ) {
-            Log.d(TAG, "setBackoff(client=%s, backoff=%ds)",
-                  className(cback), backoffMS / 1000)
+            // Log.d(TAG, "setBackoff(client=%s, backoff=%ds)",
+            // className(cback), backoffMS / 1000)
             load(context, object : WithData {
                 override fun withData(data: Data) {
                     data.setFor(cback, KEY_BACKOFF, backoffMS)

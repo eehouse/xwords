@@ -62,7 +62,7 @@ typedef enum {
     ,XWPROTO_CHAT      /* broadcast text message for display */
     ,XWPROTO_DEVICE_REGISTRATION /* client's first message to ctrlr */
     ,XWPROTO_CLIENT_SETUP /* ctrlr's first message to client */
-    ,XWPROTO_MOVEMADE_INFO_CLIENT /* client reports a move it made */
+    ,XWPROTO_MOVEMADE_INFO_GUEST /* client reports a move it made */
     ,XWPROTO_MOVEMADE_INFO_HOST /* host tells all clients about a move
                                      made by it or another client */
     ,XWPROTO_UNDO_INFO_CLIENT    /* client reports undo[s] on the device */
@@ -2548,7 +2548,7 @@ codeToStr( XW_Proto code )
         caseStr( XWPROTO_CHAT );
         caseStr( XWPROTO_DEVICE_REGISTRATION );
         caseStr( XWPROTO_CLIENT_SETUP );
-        caseStr( XWPROTO_MOVEMADE_INFO_CLIENT );
+        caseStr( XWPROTO_MOVEMADE_INFO_GUEST );
         caseStr( XWPROTO_MOVEMADE_INFO_HOST );
         caseStr( XWPROTO_UNDO_INFO_CLIENT );
         caseStr( XWPROTO_UNDO_INFO_CTRLR );
@@ -3100,7 +3100,7 @@ sendMoveTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
     XP_Bool isTrade = !!tradedTiles;
     const CurGameInfo* gi = ctrlr->vol.gi;
     XW_Proto code = gi->deviceRole == ROLE_ISGUEST?
-        XWPROTO_MOVEMADE_INFO_CLIENT : XWPROTO_MOVEMADE_INFO_HOST;
+        XWPROTO_MOVEMADE_INFO_GUEST : XWPROTO_MOVEMADE_INFO_HOST;
     ModelCtxt* model = ctrlr->vol.model;
 
     XWStreamCtxt* stream = messageStreamWithHeader( ctrlr, devIndex, code );
@@ -5172,7 +5172,7 @@ ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
     case XWPROTO_CHAT:
         accepted = receiveChat( ctrlr, xwe, incoming, needsChatNotifyP );
         break;
-    case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
+    case XWPROTO_MOVEMADE_INFO_GUEST: /* client is reporting a move */
         if ( XWSTATE_INTURN == ctrlr->nv.gameState ) {
             accepted = reflectMoveAndInform( ctrlr, xwe, incoming );
         } else {

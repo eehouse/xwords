@@ -59,7 +59,7 @@ class TimerJobReceiver : JobService() {
             val scheduler = context
                 .getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
             scheduler.schedule(job)
-            Log.d(TAG, "setTimer(delayMS=%d, id=%d): SET", delayMS, timerID)
+            // Log.d(TAG, "setTimer(delayMS=%d, id=%d): SET", delayMS, timerID)
         }
     }
 }

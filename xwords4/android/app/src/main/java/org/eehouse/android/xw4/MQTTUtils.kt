@@ -274,10 +274,10 @@ object MQTTUtils {
         private val mStats = MQTTStats()
 
         init {
-            Log.d(TAG, "initing conn() %H", this)
             mHost = XWPrefs.getPrefsString(mContext, R.string.key_mqtt_host)!!
                 .trim { it <= ' ' } // in case some idiot adds whitespace. Ahem.
             val port = XWPrefs.getPrefsInt(mContext, R.string.key_mqtt_port, 1883)
+            Log.d(TAG, "initing conn() %H; host: $mHost, port: $port", this)
 
             val payload = JSONObject()
                 .putAnd("devid", mDevID)

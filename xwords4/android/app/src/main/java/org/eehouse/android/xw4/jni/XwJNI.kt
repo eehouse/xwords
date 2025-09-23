@@ -18,19 +18,10 @@
  */
 package org.eehouse.android.xw4.jni
 
-import java.io.Serializable
-import org.json.JSONObject
-import kotlin.concurrent.thread
-
 import org.eehouse.android.xw4.Assert
-import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.R
-import org.eehouse.android.xw4.Utils
-import org.eehouse.android.xw4.Utils.ISOCode
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 
 // Collection of native methods and a bit of state
 class XwJNI private constructor() {
@@ -49,7 +40,6 @@ class XwJNI private constructor() {
             Assert.failDbg()
         }
     }
-
 
     companion object {
         private val TAG = XwJNI::class.java.getSimpleName()

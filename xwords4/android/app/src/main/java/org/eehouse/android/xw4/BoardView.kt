@@ -44,8 +44,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.UtilCtxt
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
 class BoardView(private val mContext: Context, attrs: AttributeSet?) :
     View(mContext, attrs), BoardHandler, DrawProgress
