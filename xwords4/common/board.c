@@ -2741,7 +2741,8 @@ askRevealTray( BoardCtxt* board, XWEnv xwe )
         revealed = !player_hasPasswd( lp );
 
         if ( !revealed ) {
-            util_informNeedPassword( *board->utilp, xwe, selPlayer, lp->name );
+            util_informNeedPassword( *board->utilp, xwe, selPlayer,
+                                     lp->name );
         }
     }
 

@@ -106,17 +106,6 @@ getMPoolImpl( JNIGlobalState* globalState, const char* user )
 
 #define GETMPOOL(gs) getMPoolImpl( (gs), __func__ )
 
-static void
-releaseMPool( JNIGlobalState* globalState )
-{
-    // XP_ASSERT( globalState->mpoolInUse ); /* fired again!!! */
-    if ( !globalState->mpoolInUse ) {
-        XP_LOGFF( "line %d; ERROR ERROR ERROR mpoolInUse not set", __LINE__ );
-    }
-    globalState->mpoolInUse = XP_FALSE;
-}
-#else
-# define releaseMPool(s)
 #endif
 
 
@@ -454,12 +443,9 @@ makeGI( JNIEnv* env, XW_DUtilCtxt* dutil, CurGameInfo* gi, jobject jgi )
         jenumFieldToInt( env, jgi, "deviceRole",
                          PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
-    getString( env, jgi, "gameName", AANDS(buf) );
-    gi->gameName = copyString( dutil->mpool, buf );
-    getString( env, jgi, "dictName", AANDS(buf) );
-    gi->dictName = copyString( dutil->mpool, buf );
-    getString( env, jgi, "isoCodeStr", AANDS(buf) );
-    XP_STRNCPY( gi->isoCodeStr, buf, VSIZE(gi->isoCodeStr) );
+    getString( env, jgi, "gameName", AANDS(gi->gameName) );
+    getString( env, jgi, "dictName", AANDS(gi->dictName) );
+    getString( env, jgi, "isoCodeStr", AANDS(gi->isoCodeStr) );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
@@ -486,12 +472,9 @@ makeGI( JNIEnv* env, XW_DUtilCtxt* dutil, CurGameInfo* gi, jobject jgi )
 
         lp->isLocal = getBool( env, jlp, "isLocal" );
 
-        getString( env, jlp, "name", AANDS(buf) );
-        lp->name = copyString( dutil->mpool, buf );
-        getString( env, jlp, "password", AANDS(buf) );
-        lp->password = copyString( dutil->mpool, buf );
-        getString( env, jlp, "dictName", AANDS(buf) );
-        lp->dictName = copyString( dutil->mpool, buf );
+        getString( env, jlp, "name", AANDS(lp->name) );
+        getString( env, jlp, "password", AANDS(lp->password) );
+        getString( env, jlp, "dictName", AANDS(lp->dictName) );
 
         deleteLocalRef( env, jlp );
     }
@@ -1174,7 +1157,6 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1newFor
     }
 
     result = gmgr_newFor( dutil, env, GROUP_DEFAULT, &gi, addrp );
-    gi_disposePlayerInfo( MPPARM(dutil->mpool) &gi );
     DVC_HEADER_END();
     return result;
 }
@@ -1329,7 +1311,7 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1figureGR
     XWStreamCtxt* stream =
         streamFromJStream( MPPARM(globalState->dutil->mpool)
                            env, globalState->vtMgr, jstream );
-    result = gmgr_figureGR( globalState->dutil, env, stream );
+    result = gmgr_figureGR( stream );
     stream_destroy( stream );
     DVC_HEADER_END();
     return result;

@@ -101,7 +101,7 @@ GroupRef gmgr_getGroup( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* name );
 GameRef gmgr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                           const XP_UCHAR* name, XWStreamCtxt* stream );
 XP_Bool gmgr_gameExists( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
-GameRef gmgr_figureGR( XW_DUtilCtxt* duc, XWEnv xwe, XWStreamCtxt* stream );
+GameRef gmgr_figureGR( XWStreamCtxt* stream );
 #endif
 void gmgr_deleteGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
 void gmgr_raiseGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );

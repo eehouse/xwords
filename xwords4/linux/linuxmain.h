@@ -104,7 +104,6 @@ void makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params );
 
 unsigned int makeRandomInt();
 bool linuxOpenGame( CommonGlobals* cGlobals );
-void ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi );
 void cancelTimers( CommonGlobals* cGlobals );
 CommonAppGlobals* getCag( const XW_UtilCtxt* util );
 CommonGlobals* globalsForGameRef( CommonAppGlobals* cag, GameRef gr,

@@ -75,11 +75,10 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 }
 
 void
-nliToGI( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
+nliToGI( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
          CurGameInfo* gi )
 {
-    gi_setNPlayers( MPPARM(mpool) dutil, xwe, gi,
-                    nli->nPlayersT, nli->nPlayersH );
+    gi_setNPlayers( dutil, xwe, gi, nli->nPlayersT, nli->nPlayersH );
     gi->gameID = nli->gameID;
     XP_STRNCPY( &gi->isoCodeStr[0], nli->isoCodeStr, VSIZE(gi->isoCodeStr)-1 );
 
@@ -91,11 +90,9 @@ nliToGI( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
             if ( nli->remotesAreRobots ) {
                 lp->robotIQ = 1;
             }
-            XP_UCHAR buf[64];
-            XP_U16 len = VSIZE(buf);
+            XP_U16 len = VSIZE(lp->name);
             dutil_getUsername( dutil, xwe, nLocals++, XP_TRUE,
-                               remotesAreRobots, buf, &len );
-            replaceStringIfDifferent( mpool, &lp->name, buf );
+                               remotesAreRobots, lp->name, &len );
         }
     }
 
@@ -108,8 +105,8 @@ nliToGI( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     gi->forceChannel = nli->forceChannel;
     gi->inDuplicateMode = nli->inDuplicateMode;
     gi->deviceRole = ROLE_ISGUEST; /* recipient of invitation is client */
-    replaceStringIfDifferent( mpool, &gi->dictName, nli->dict );
-    replaceStringIfDifferent( mpool, &gi->gameName, nli->gameName );
+    str2ChrArray( gi->dictName, nli->dict );
+    str2ChrArray( gi->gameName, nli->gameName );
 
     gi->conTypes = nli->_conTypes;
 }

@@ -562,70 +562,10 @@ game_dispose( XWGame* game, XWEnv xwe )
 /*     } */
 } /* game_dispose */
 
-static void
-disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
-{
-    for ( int ii = 0; ii < VSIZE(gi->players); ++ii ) {
-        LocalPlayer* lp = &gi->players[ii];
-        XP_FREEP( mpool, &lp->name );
-        XP_FREEP( mpool, &lp->password );
-        XP_FREEP( mpool, &lp->dictName );
-    }
-} /* disposePlayerInfoInt */
-
 void
-gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
+gi_copy( CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
-    disposePlayerInfoInt( MPPARM(mpool) gi );
-
-    XP_FREEP( mpool, &gi->dictName );
-    XP_FREEP( mpool, &gi->gameName );
-#ifdef DEBUG
-    gi->freed = XP_TRUE;
-#endif
-} /* gi_disposePlayerInfo */
-
-void
-gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
-{
-    replaceStringIfDifferent( mpool, &destGI->gameName, srcGI->gameName );
-    replaceStringIfDifferent( mpool, &destGI->dictName, srcGI->dictName );
-    XP_STRNCPY( destGI->isoCodeStr, srcGI->isoCodeStr, VSIZE(destGI->isoCodeStr)-1 );
-    destGI->gameID = srcGI->gameID;
-    destGI->gameSeconds = srcGI->gameSeconds;
-    destGI->created = srcGI->created;
-    destGI->conTypes = srcGI->conTypes;
-    destGI->nPlayers = (XP_U8)srcGI->nPlayers;
-    XP_U16 nPlayers = srcGI->nPlayers;
-    destGI->boardSize = (XP_U8)srcGI->boardSize;
-    destGI->traySize = srcGI->traySize;
-    destGI->bingoMin = srcGI->bingoMin;
-    destGI->deviceRole = srcGI->deviceRole;
-
-    destGI->hintsNotAllowed = srcGI->hintsNotAllowed;
-    destGI->timerEnabled = srcGI->timerEnabled;
-    destGI->phoniesAction = srcGI->phoniesAction;
-    destGI->allowPickTiles = srcGI->allowPickTiles;
-    destGI->forceChannel = srcGI->forceChannel;
-    destGI->inDuplicateMode = srcGI->inDuplicateMode;
-    XP_LOGFF( "copied forceChannel: %d; inDuplicateMode: %d",
-             destGI->forceChannel, destGI->inDuplicateMode );
-    destGI->tradeSub7 = srcGI->tradeSub7;
-
-    const LocalPlayer* srcPl;
-    LocalPlayer* destPl;
-    int ii;
-    for ( srcPl = srcGI->players, destPl = destGI->players, ii = 0; 
-          ii < nPlayers; ++srcPl, ++destPl, ++ii ) {
-
-        replaceStringIfDifferent( mpool, &destPl->name, srcPl->name );
-        replaceStringIfDifferent( mpool, &destPl->password, 
-                                  srcPl->password );
-        replaceStringIfDifferent( mpool, &destPl->dictName,
-                                  srcPl->dictName );
-        destPl->robotIQ = srcPl->robotIQ;
-        destPl->isLocal = srcPl->isLocal;
-    }
+    *destGI = *srcGI;
 } /* gi_copy */
 
 static XP_Bool
@@ -744,7 +684,7 @@ gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 )
 }
 
 void
-gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi, 
+gi_setNPlayers( XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi,
                 XP_U16 nTotal, XP_U16 nHere )
 {
     LOG_GI( gi, "before" );
@@ -779,12 +719,10 @@ gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi,
 
     for ( XP_U16 ii = 0; ii < nTotal; ++ii ) {
         LocalPlayer* lp = &gi->players[ii];
-        if ( !lp->name || !lp->name[0] ) {
-            XP_UCHAR name[32];
-            XP_U16 len = VSIZE(name);
+        if ( !lp->name[0] ) {
+            XP_U16 len = VSIZE(lp->name);
             dutil_getUsername( dutil, xwe, ii, LP_IS_LOCAL(lp),
-                               LP_IS_ROBOT(lp), name, &len );
-            replaceStringIfDifferent( mpool, &lp->name, name );
+                               LP_IS_ROBOT(lp), lp->name, &len );
         }
     }
 
@@ -830,7 +768,7 @@ gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint )
 }
 
 void
-gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
+gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi )
 {
     XP_U16 strVersion = stream_getVersion( stream );
     XP_U16 nColsNBits;
@@ -843,18 +781,10 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 #endif
 
     if ( STREAM_VERS_BIGGERGI <= strVersion ) {
-        XP_UCHAR* str = stringFromStream( mpool, stream );
-        if ( !str ) {
-            /* Let's have no-name be empty string, not null */
-            str = XP_CALLOC( mpool, 1 );
-        }
-        replaceStringIfDifferent( mpool, &gi->gameName, str );
-        XP_FREEP( mpool, &str );
+        stringFromStreamHere( stream, gi->gameName, VSIZE(gi->gameName) );
     }
 
-    XP_UCHAR str[64];
-    stringFromStreamHere( stream, str, VSIZE(str) );
-    replaceStringIfDifferent( mpool, &gi->dictName, str );
+    stringFromStreamHere( stream, gi->dictName, VSIZE(gi->dictName) );
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
@@ -932,15 +862,12 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* pl = &gi->players[ii];
-        stringFromStreamHere( stream, str, VSIZE(str) );
-        replaceStringIfDifferent( mpool, &pl->name, str );
+        stringFromStreamHere( stream, pl->name, VSIZE(pl->name) );
 
-        stringFromStreamHere( stream, str, VSIZE(str) );
-        replaceStringIfDifferent( mpool, &pl->password, str );
+        stringFromStreamHere( stream, pl->password, VSIZE(pl->password) );
 
         if ( strVersion >= STREAM_VERS_PLAYERDICTS ) {
-            stringFromStreamHere( stream, str, VSIZE(str) );
-            replaceStringIfDifferent( mpool, &pl->dictName, str );
+            stringFromStreamHere( stream, pl->dictName, VSIZE(pl->dictName) );
         }
 
         if ( STREAM_VERS_BIGGERGI > strVersion ) {
@@ -1053,9 +980,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 XP_Bool
 player_hasPasswd( const LocalPlayer* player )
 {
-    XP_UCHAR* password = player->password;
-    /*     XP_ASSERT( player->isLocal ); */
-    return !!password && *password != '\0';
+    return !!player->password[0];
 } /* player_hasPasswd */
 
 XP_Bool

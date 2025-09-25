@@ -193,17 +193,20 @@ cpToLP( NGValue value, const void* cbClosure )
 {
     NGCopyClosure* cpcl = (NGCopyClosure*)cbClosure;
     LocalPlayer* lp = cpcl->lp;
-    XP_UCHAR** strAddr = NULL;
+    XP_UCHAR* strAddr = NULL;
+    XP_U16 len = 0;
     
     switch ( cpcl->col ) {
     case NG_COL_REMOTE:
         lp->isLocal = !value.ng_bool;
         break;
     case NG_COL_NAME:
-        strAddr = &lp->name;
+        strAddr = lp->name;
+        len = VSIZE(lp->name);
         break;
     case NG_COL_PASSWD:
-        strAddr = &lp->password;
+        strAddr = lp->password;
+        len = VSIZE(lp->password);
         break;
     case NG_COL_ROBOT:
         lp->robotIQ = value.ng_bool ? 1 : 0;
@@ -213,8 +216,7 @@ cpToLP( NGValue value, const void* cbClosure )
     if ( !!strAddr ) {
         /* This is leaking!!!  But doesn't leak if am playing via IR, at least
            in the simulator.  */
-        replaceStringIfDifferent( cpcl->ngc->mpool, strAddr,
-                                  value.ng_cp );
+        XP_SNPRINTF( strAddr, len, "%s", value.ng_cp );
     }
 } /* cpToLP */
 
@@ -349,11 +351,6 @@ newg_juggle( NewGameCtx* ngc )
                     XP_U16 dest = pos[player];
 
                     loadPlayer( ngc, dest, lp );
-
-                    XP_FREEP( ngc->mpool, &lp->name );
-                    XP_FREEP( ngc->mpool, &lp->password );
-                    XP_FREEP( ngc->mpool, &lp->dictName );
-
                     adjustOneRow( ngc, dest, XP_FALSE );
                 }
             }

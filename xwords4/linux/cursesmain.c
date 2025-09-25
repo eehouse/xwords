@@ -299,13 +299,13 @@ canMakeFromGI( const CurGameInfo* gi )
     bool result = 0 < gi->nPlayers
         && !!gi->isoCodeStr[0]
         ;
-    bool haveDict = !!gi->dictName;
+    bool haveDict = !!gi->dictName[0];
     bool allHaveDicts = true;
     for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) {
         const LocalPlayer* lp = &gi->players[ii];
-        result = !lp->isLocal || (!!lp->name && '\0' != lp->name[0]);
+        result = !lp->isLocal || '\0' != lp->name[0];
         if ( allHaveDicts ) {
-            allHaveDicts = !!lp->dictName;
+            allHaveDicts = !!lp->dictName[0];
         }
     }
 

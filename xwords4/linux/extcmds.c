@@ -368,7 +368,7 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
 {
     LaunchParams* params = wr->params;
     CurGameInfo gi = {};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+    gi_copy( &gi, &params->pgi );
     gi.boardSize = 15;
     gi.traySize = 7;
 
@@ -403,8 +403,8 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
     tmp = cJSON_GetObjectItem( args, "hostPosn" );
     XP_ASSERT( !!tmp );
     int hostPosn = tmp->valueint;
-    replaceStringIfDifferent( params->mpool, &gi.players[hostPosn].name,
-                              params->localName );
+    XP_SNPRINTF( gi.players[hostPosn].name, VSIZE(gi.players[hostPosn].name),
+                 "%s", params->localName );
     for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
         LocalPlayer* lp = &gi.players[ii];
         lp->isLocal = isSolo || ii == hostPosn;
@@ -417,7 +417,7 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
 
     tmp = cJSON_GetObjectItem( args, "dict" );
     XP_ASSERT( tmp );
-    replaceStringIfDifferent( params->mpool, &gi.dictName, tmp->valuestring );
+    str2ChrArray( gi.dictName, tmp->valuestring );
 
     /* cb_dims dims; */
     /* figureDims( aGlobals, &dims ); */
@@ -429,7 +429,6 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
         (*wr->procs.newGame)( wr->closure, &gi, &newGameID );
     XP_ASSERT( success );
 
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
     return newGameID;
 }
 

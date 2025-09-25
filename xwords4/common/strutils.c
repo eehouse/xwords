@@ -496,8 +496,8 @@ lcToLocale( XP_LangCode lc )
 /* 
  * A wrapper for printing etc. potentially null strings.
  */
-XP_UCHAR* 
-emptyStringIfNull( XP_UCHAR* str )
+const XP_UCHAR*
+emptyStringIfNull( const XP_UCHAR* str )
 {
     return !!str? str : (XP_UCHAR*)"";
 } /* emptyStringIfNull */

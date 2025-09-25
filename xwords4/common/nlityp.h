@@ -24,16 +24,13 @@
 #include "comtypes.h"
 #include "xwrelay.h"
 
-#define MAX_GAME_NAME_LEN 64
-#define MAX_DICT_NAME_LEN 32
-
 typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 
 typedef struct _NetLaunchInfo {
     ConnTypeSetBits _conTypes;
 
-    XP_UCHAR gameName[MAX_GAME_NAME_LEN+1];
-    XP_UCHAR dict[MAX_DICT_NAME_LEN+1];
+    XP_UCHAR gameName[MAX_GAMENAME_LEN+1];
+    XP_UCHAR dict[MAX_DICTNAME_LEN+1];
     XP_UCHAR isoCodeStr[MAX_ISO_CODE_LEN+1];
     XP_U8 forceChannel;
     XP_U8 nPlayersT;

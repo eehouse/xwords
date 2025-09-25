@@ -254,14 +254,13 @@ gmgr_gameExists( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
 }
 
 GameRef
-gmgr_figureGR( XW_DUtilCtxt* XP_UNUSED_DBG(duc), XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
+gmgr_figureGR( XWStreamCtxt* stream )
 {
     XP_U8 strVersion = stream_getU8( stream );
     stream_setVersion( stream, strVersion );
     CurGameInfo gi = {};
-    gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
+    gi_readFromStream( stream, &gi );
     GameRef gr = formatGR( gi.gameID, gi.deviceRole );
-    gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
     return gr;
 }
 #endif
@@ -988,11 +987,11 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
     for ( int ii = 0; result == 0 && ii < grps->nSOs; ++ii ) {
         switch ( sos[ii] ) {
         case SO_GAMENAME:
-            if ( !gi1->gameName && !gi2->gameName ) {
+            if ( !gi1->gameName[0] && !gi2->gameName[0] ) {
                 /* they're equal */
-            } else if ( !gi1->gameName ) {
+            } else if ( !gi1->gameName[0] ) {
                 result = -1;
-            } else if ( !gi2->gameName ) {
+            } else if ( !gi2->gameName[0] ) {
                 result = 1;
             } else {
                 result = XP_STRCMP( gi1->gameName, gi2->gameName );
@@ -1306,7 +1305,7 @@ gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
     GameRef gr = 0;
     if ( !gmgr_haveGame( duc, xwe, nli->gameID, ROLE_ISGUEST ) ) {
         CurGameInfo gi = {};
-        nliToGI( MPPARM(duc->mpool) duc, xwe, nli, &gi );
+        nliToGI( duc, xwe, nli, &gi );
         if ( !gi.created ) {
             gi.created = dutil_getCurSeconds( duc, xwe );
         }
@@ -1316,8 +1315,6 @@ gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
 
         checkDefault( duc, &grp );
         gr = gr_makeForGI( duc, xwe, &grp, &gi, &hostAddr );
-
-        gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
     }
     return gr;
 }

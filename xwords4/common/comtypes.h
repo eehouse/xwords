@@ -194,6 +194,10 @@ typedef enum { UNPAUSED,
 } DupPauseType;
 
 #define MAX_ISO_CODE_LEN 8
+#define MAX_GAMENAME_LEN 31
+#define MAX_DICTNAME_LEN 31
+#define MAX_PLAYERNAME_LEN 31
+#define MAX_PASSWORD_LEN 15
 
 #define MAX_NUM_PLAYERS 4
 #define MIN_TRAY_TILES 7

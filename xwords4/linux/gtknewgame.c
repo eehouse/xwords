@@ -402,7 +402,7 @@ addDictsRow( GtkNewGameState* state, GtkWidget* parent )
     for ( int ii = 0; !!iter; iter = iter->next, ++ii ) {
         const gchar* name = iter->data;
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(dictCombo), name );
-        if ( !!state->gi->dictName ) {
+        if ( !!state->gi->dictName[0] ) {
             if ( !strcmp( name, state->gi->dictName ) ) {
                 gtk_combo_box_set_active( GTK_COMBO_BOX(dictCombo), ii );
             }
@@ -815,12 +815,10 @@ gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi, CommsAddrRec* addr,
                 gi->traySize = state.nTrayTiles;
                 gi->bingoMin = state.bingoMin;
                 gi->conTypes = state.addr._conTypes;
-                replaceStringIfDifferent( params->mpool,
-                                          &gi->dictName, state.dict );
+                str2ChrArray( gi->dictName, state.dict );
                 const gchar* gameName =
                     gtk_entry_get_text( GTK_ENTRY(state.nameEdit) );
-                replaceStringIfDifferent( params->mpool,
-                                          &gi->gameName, gameName );
+                str2ChrArray( gi->gameName, gameName );
                 gi->phoniesAction = state.phoniesAction;
             } else {
                 /* Do it again if we warned user of inconsistency. */
