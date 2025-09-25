@@ -27,9 +27,9 @@ extern "C" {
 #endif
 
 typedef struct LocalPlayer {
-    XP_UCHAR* name;
-    XP_UCHAR* password;
-    XP_UCHAR* dictName;
+    XP_UCHAR name[MAX_PLAYERNAME_LEN+1];
+    XP_UCHAR password[MAX_PASSWORD_LEN+1];
+    XP_UCHAR dictName[MAX_DICTNAME_LEN+1];
     XP_Bool isLocal;
     XP_U8 robotIQ;              /* 0 means not a robot; 1-100 means how
                                    dumb is it with 1 meaning very smart */
@@ -43,8 +43,8 @@ typedef struct LocalPlayer {
 
 typedef struct CurGameInfo {
     XP_U32 created;             /* creation timestamp */
-    XP_UCHAR* gameName;
-    XP_UCHAR* dictName;
+    XP_UCHAR gameName[MAX_GAMENAME_LEN+1];
+    XP_UCHAR dictName[MAX_DICTNAME_LEN+1];
     LocalPlayer players[MAX_NUM_PLAYERS];
     XP_U32 gameID;      /* uniquely identifies game */
     XP_U16 gameSeconds; /* for timer */

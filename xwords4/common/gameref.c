@@ -187,7 +187,7 @@ loadDictsOnce( XW_DUtilCtxt* dutil, XWEnv xwe, GameData* gd )
         if ( !!gd->dict ) {
             for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
                 const LocalPlayer* lp = &gi->players[ii];
-                if ( lp->isLocal && !!lp->dictName && lp->dictName[0] ) {
+                if ( lp->isLocal && !!lp->dictName[0] ) {
                     gd->playerDicts.dicts[ii] = dmgr_get( dutil, xwe, lp->dictName );
                 }
             }
@@ -233,7 +233,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
                 XP_LOGFF( "strVersion: 0x%X", strVersion );
                 stream_setVersion( stream, strVersion );
 
-                gi_readFromStream( MPPARM(gd->mpool) stream, gi );
+                gi_readFromStream( stream, gi );
                 XP_ASSERT( gi_isValid(gi) );
                 XP_ASSERT( gi->gameID == (gr & 0xFFFFFFFF) );
                 XP_ASSERT( gi->created );
@@ -450,7 +450,6 @@ destroyData( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe,
         MemPoolCtx* mpool = gd->mpool;
         gd->mpool = NULL;
 #endif
-        gi_disposePlayerInfo( MPPARM(mpool) &gd->gi );
         XP_FREE( mpool, gd );
         if ( !!util ) {
             XP_ASSERT( 1 == util->refCount );
@@ -532,7 +531,7 @@ makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     XP_ASSERT( gd->util );
     XW_UtilCtxt** utilp = &gd->util;
     const CurGameInfo* gi = &gd->gi;
-    XP_ASSERT( !!gi->dictName );
+    XP_ASSERT( !!gi->dictName[0] );
     XP_ASSERT( gi_isValid( gi ) );
     LOG_GI(gi, __func__);
     XP_ASSERT( gi->gameID );
@@ -543,11 +542,10 @@ makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         const XP_UCHAR* iso = dict_getISOCode( gd->dict );
         if ( !!iso ) {
             CurGameInfo tmp = {};
-            gi_copy( MPPARM(gd->mpool) &tmp, gi );
+            gi_copy( &tmp, gi );
             XP_STRNCPY( tmp.isoCodeStr, iso, VSIZE(tmp.isoCodeStr) );
             XP_ASSERT( !!gi->isoCodeStr[0] );
             setGIImpl( duc, xwe, gd, &tmp );
-            gi_disposePlayerInfo( MPPARM(gd->mpool) &tmp );
         }
         gd->model = model_make( xwe, (DictionaryCtxt*)NULL, NULL, utilp,
                                 gi->boardSize );
@@ -680,7 +678,7 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
               const CurGameInfo* gip, const CommsAddrRec* hostAddr )
 {
     CurGameInfo gi = {};
-    gi_copy( MPPARM(duc->mpool) &gi, gip );
+    gi_copy( &gi, gip );
     /* Game coming from an invitation received will have a gameID already */
     gi.gameID = makeGameID( duc, xwe, gi.gameID );
     if ( !gi.created ) {
@@ -706,7 +704,7 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
             *grp = gmgr_getDefaultGroup(duc);
         }
         gd->grp = *grp;
-        gi_copy( MPPARM(gd->mpool) &gd->gi, &gi );
+        gi_copy( &gd->gi, &gi );
 
         gd->util = makeDummyUtil( duc, gd );
         XP_LOGFF( "created game with id %X", gd->gi.gameID );
@@ -718,8 +716,6 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
         gmgr_addGame( duc, xwe, gd, gr );
         gmgr_addToGroup( duc, xwe, gr, gd->grp );
     }
-
-    gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
     return gr;
 }
 
@@ -735,7 +731,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
     GameRef gr;
     {
         CurGameInfo gi = {};
-        gi_readFromStream( MPPARM(duc->mpool) stream, &gi );
+        gi_readFromStream( stream, &gi );
         LOG_GI( &gi, __func__ );
 
         XP_U32 created = strVersion < STREAM_VERS_GICREATED
@@ -745,12 +741,11 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
         }
         
         if ( STREAM_VERS_BIGGERGI > strVersion ) {
-            gi.gameName = copyString( duc->mpool, gameName );
+            str2ChrArray( gi.gameName, gameName );
         }
         LOG_GI( &gi, __func__ );
 
         gr = gr_makeForGI( duc, xwe, grpp, &gi, NULL );
-        gi_disposePlayerInfo( MPPARM(duc->mpool) &gi );
     }
     
     if ( !!gr ) {
@@ -794,11 +789,10 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
 
             /* Now add it to gi */
             CurGameInfo tmpGI = {};
-            gi_copy( MPPARM(duc->mpool) &tmpGI, gi );
+            gi_copy( &tmpGI, gi );
             tmpGI.conTypes = conTypes;
             LOG_GI( &tmpGI, __func__ );
             setGIImpl( duc, xwe, gd, &tmpGI );
-            gi_disposePlayerInfo( MPPARM(duc->mpool) &tmpGI );
         }
 
         /* Now let's write the rest of the stream out so we can save it in the
@@ -858,17 +852,15 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
     GameRef newGR = 0;
     GR_HEADER();
 
-    CurGameInfo tmpGI = {};
-    gi_copy( MPPARM(duc->mpool) &tmpGI, &gd->gi );
+    CurGameInfo tmpGI = gd->gi;
     tmpGI.gameID = 0;
-    replaceStringIfDifferent( duc->mpool, &tmpGI.gameName, newName );
+    str2ChrArray( tmpGI.gameName, newName );
     if ( ROLE_ISGUEST == tmpGI.deviceRole ) {
         tmpGI.deviceRole = ROLE_ISHOST;
     }
     GroupRef grp = gd->grp;
     newGR = gr_makeForGI( duc, xwe, &grp, &tmpGI, NULL );
 
-    gi_disposePlayerInfo( MPPARM(duc->mpool) &tmpGI );
     XP_LOGFF( "made new gr: " GR_FMT, newGR );
     XP_Bool deleted;
     GameData* newGd = gmgr_getForRef( duc, xwe, newGR, &deleted );
@@ -876,8 +868,7 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
 
     /* Now create a new gi to be modified but whose mempool is the new
        game's */
-    CurGameInfo newGI = {};
-    gi_copy( MPPARM(duc->mpool) &newGI, &newGd->gi );
+    CurGameInfo newGI = newGd->gi;
 
     RematchInfo* rip;
     if ( ctrl_getRematchInfo( gd->ctrlr, xwe, ro, &newGI, &rip ) ) {
@@ -922,8 +913,6 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
         gmgr_deleteGame( duc, xwe, newGR );
         newGR = 0;
     }
-
-    gi_disposePlayerInfo( MPPARM(duc->mpool) &newGI );
 
     GR_HEADER_END();
 
@@ -1030,8 +1019,7 @@ setGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
         GroupRef grp = gd->grp;
         gmgr_rmFromGroup( duc, xwe, gd->gr, grp );
 
-        gi_disposePlayerInfo( MPPARM(gd->mpool) &gd->gi );
-        gi_copy( MPPARM(gd->mpool) &gd->gi, gip );
+        gd->gi = *gip;
         gmgr_saveGI( duc, xwe, gd->gr );
 
         gmgr_addToGroup( duc, xwe, gd->gr, grp );
@@ -1057,11 +1045,9 @@ gr_setGameName( DUTIL_GR_XWE, const XP_UCHAR* newName )
     GR_HEADER_WITH(GI);
     XP_ASSERT( !!gd );
     const CurGameInfo* gip = &gd->gi;
-    CurGameInfo gi = {};
-    gi_copy( MPPARM(gd->mpool) &gi, gip );
-    replaceStringIfDifferent( gd->mpool, &gi.gameName, newName );
+    CurGameInfo gi = *gip;
+    str2ChrArray( gi.gameName, newName );
     setGIImpl( duc, xwe, gd, &gi );
-    gi_disposePlayerInfo( MPPARM(gd->mpool) &gi );
     GR_HEADER_END();
 }
 
@@ -1425,14 +1411,14 @@ missingDictsImpl( const GameData* gd, const XP_UCHAR* missingNames[], XP_U16* co
 {
     const CurGameInfo* gi = &gd->gi;
     XP_U16 count = 0;
-    if ( !!gi->dictName && !gd->dict ) {
+    if ( !!gi->dictName[0] && !gd->dict ) {
         addOnce( missingNames, &count, gi->dictName );
     }
 
     const PlayerDicts* playerDicts = &gd->playerDicts;
     for ( int ii = 0; ii < gi->nPlayers && count < *countP; ++ii ) {
         const LocalPlayer* lp = &gi->players[ii];
-        if ( !!lp->dictName && !playerDicts->dicts[ii] ) {
+        if ( !!lp->dictName[0] && !playerDicts->dicts[ii] ) {
             addOnce( missingNames, &count, lp->dictName );
         }
     }
@@ -1449,12 +1435,12 @@ gr_missingDicts( DUTIL_GR_XWE, const XP_UCHAR* missingNames[], XP_U16* countP )
 }
 
 static XP_Bool
-tryReplOne( GameData* XP_UNUSED_DBG(gd), XP_UCHAR** loc, const XP_UCHAR* oldName,
-            const XP_UCHAR* newName )
+tryReplOne( GameData* XP_UNUSED(gd), XP_UCHAR* loc, XP_U16 len,
+            const XP_UCHAR* oldName, const XP_UCHAR* newName )
 {
-    XP_Bool changed = 0 == XP_STRCMP( *loc, oldName );
+    XP_Bool changed = 0 == XP_STRCMP( loc, oldName );
     if ( changed ) {
-        replaceStringIfDifferent( gd->mpool, loc, newName );
+        XP_SNPRINTF( loc, len, "%s", newName );
     }
     return changed;
 }
@@ -1473,10 +1459,12 @@ gr_replaceDicts( DUTIL_GR_XWE, const XP_UCHAR* oldName, const XP_UCHAR* newName 
     gd->dictsSought = XP_FALSE; /* so we'll load again */
     
     CurGameInfo* gi = &gd->gi;
-    XP_Bool changed = tryReplOne( gd, &gi->dictName, oldName, newName );
+    XP_Bool changed = tryReplOne( gd, gi->dictName, VSIZE(gi->dictName),
+                                  oldName, newName );
     for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
         LocalPlayer* lp = &gi->players[ii];
-        changed = tryReplOne( gd, &lp->dictName, oldName, newName ) || changed;
+        changed = tryReplOne( gd, lp->dictName, VSIZE(lp->dictName),
+                              oldName, newName ) || changed;
     }
 
     if ( changed ) {
@@ -1954,14 +1942,14 @@ gr_writeToTextStream( DUTIL_GR_XWE, XWStreamCtxt* stream )
 
 #ifdef XWFEATURE_CHANGEDICT
 static void
-setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict )
+setDict( CurGameInfo* gi, const DictionaryCtxt* dict )
 {
     XP_U16 ii;
     const XP_UCHAR* name = dict_getName( dict );
-    replaceStringIfDifferent( mpool, &gi->dictName, name );
+    str2ChrArray( gi->dictName, name );
     for ( ii = 0; ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* pl = &gi->players[ii];
-        XP_FREEP( mpool, &pl->dictName );
+        LocalPlayer* pl = &gi->players[ii];
+        pl->dictName[0] = '\0';
     }    
 }
 
@@ -1971,7 +1959,7 @@ gr_changeDict( DUTIL_GR_XWE,
 {
     GR_HEADER();
     model_setDictionary( gd->model, xwe, dict );
-    setDict( MPPARM(gd->mpool) &gd->gi, dict );
+    setDict( &gd->gi, dict );
     ctrl_resetEngines( gd->ctrlr );
     GR_HEADER_END();
 }
@@ -2139,8 +2127,8 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
             if ( '\0' != sum.opponents[0] ) {
                 XP_STRCAT( sum.opponents, ", " );
             }
-            XP_UCHAR* name = lp->name;
-            if ( !!name ) {
+            const XP_UCHAR* name = lp->name;
+            if ( !!name[0] ) {
                 XP_STRCAT( sum.opponents, name );
             }
         }

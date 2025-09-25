@@ -93,6 +93,11 @@ XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr
 # define copyString( p, in ) p_copyString( in )
 #endif
 
+#define str2ChrArray( BUF, STR ) {              \
+    size_t len = VSIZE(BUF);                    \
+    XP_SNPRINTF( BUF, len, "%s", (STR) );       \
+}
+
 void insetRect( XP_Rect* rect, XP_S16 byWidth, XP_S16 byHeight );
 
 XP_U32 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len );
@@ -119,7 +124,7 @@ void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc,
 #endif
 
 
-XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
+const XP_UCHAR* emptyStringIfNull( const XP_UCHAR* str );
 
 /* Produce an array of ints 0..count-1, juggled */
 XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );

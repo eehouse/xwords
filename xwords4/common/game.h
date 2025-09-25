@@ -76,12 +76,11 @@ void game_dispose( XWGame* game, XWEnv xwe );
 void game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsHost( const XWGame* game );
-void gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe,
-                     CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
-void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
+void gi_setNPlayers( XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi,
+                     XP_U16 nTotal, XP_U16 nHere );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
-void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
-void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
+void gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi );
+void gi_copy( CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_Bool gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 );
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );
 XP_U16 gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint );

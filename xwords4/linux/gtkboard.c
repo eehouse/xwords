@@ -1458,7 +1458,7 @@ static gint
 ask_blank( gpointer data )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)data;
-    XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
+    const XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
     XP_S16 result = gtkletterask( NULL, XP_FALSE, name, 1,
                                   cGlobals->nTiles, cGlobals->tiles, NULL );
 
@@ -1499,7 +1499,7 @@ ask_tiles( gpointer data )
     CommonGlobals* cGlobals = (CommonGlobals*)data;
 
     TrayTileSet newTiles = {};
-    XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
+    const XP_UCHAR* name = cGlobals->gi->players[cGlobals->selPlayer].name;
     for ( XP_Bool done = XP_FALSE; !done; ) {
         XP_S16 picked = gtkletterask( &newTiles, XP_TRUE, name,
                                       cGlobals->nToPick, cGlobals->nTiles,
@@ -1856,8 +1856,8 @@ gtk_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
         char buf[300];
         gchar* strs = g_strjoinv( "\", \"", (gchar**)bwi->words );
 
-        XP_UCHAR* name = cGlobals->gi->players[player].name;
-        XP_ASSERT( !!name );
+        const XP_UCHAR* name = cGlobals->gi->players[player].name;
+        XP_ASSERT( !!name[0] );
 
         sprintf( buf, "Player %d (%s) played illegal word[s] \"%s\"; loses turn.",
                  player+1, name, strs );

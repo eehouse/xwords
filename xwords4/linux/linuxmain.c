@@ -182,19 +182,6 @@ linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
     }
 }
 
-void
-ensureLocalPlayerNames( LaunchParams* XP_UNUSED_DBG(params), CurGameInfo* gi )
-{
-    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        LocalPlayer* lp = &gi->players[ii];
-        if ( lp->isLocal && !lp->name ) {
-            XP_ASSERT(0);
-            replaceStringIfDifferent( params->mpool,
-                                      &lp->name, "LPlayer" );
-        }
-    }
-}
-
 XP_Bool
 getAndClear( GameChangeEvent evt, GameChangeEvents* gces )
 {
@@ -2119,8 +2106,6 @@ freeParams( LaunchParams* params )
     linux_dutils_free( &params->dutil );
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
 
-    gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
-
     gdb_close( params->pDb );
     params->pDb = NULL;
 
@@ -2598,7 +2583,7 @@ main( int argc, char** argv )
 
     if ( file_exists( "./dict.xwd" ) )  {
         trimDictPath( "./dict.xwd", dictbuf, VSIZE(dictbuf), &path, &dict );
-        mainParams.pgi.dictName = copyString( mainParams.mpool, dict );
+        str2ChrArray( mainParams.pgi.dictName, dict );
     }
 
     char* envDictPath = getenv( "XW_DICTDIR" );
@@ -2666,8 +2651,7 @@ main( int argc, char** argv )
 #endif
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
-            replaceStringIfDifferent( mainParams.mpool, &mainParams.pgi.dictName,
-                                      dict );
+            str2ChrArray( mainParams.pgi.dictName, dict );
             if ( !path ) {
                 path = ".";
             }
@@ -2781,8 +2765,7 @@ main( int argc, char** argv )
             mainParams.skipWarnings = 1;
             break;
         case CMD_LOCALPWD:
-            mainParams.pgi.players[mainParams.nLocalPlayers-1].password
-                = (XP_UCHAR*)optarg;
+            str2ChrArray(mainParams.pgi.players[mainParams.nLocalPlayers-1].password, optarg );
             break;
         case CMD_LOCALSMARTS:
             index = mainParams.pgi.nPlayers - 1;
@@ -2850,9 +2833,8 @@ main( int argc, char** argv )
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 0; /* means human */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
-            XP_ASSERT( !mainParams.pgi.players[index].name );
-            mainParams.pgi.players[index].name = 
-                copyString( mainParams.mpool, (XP_UCHAR*)optarg);
+            XP_ASSERT( !mainParams.pgi.players[index].name[0] );
+            str2ChrArray(mainParams.pgi.players[index].name, optarg);
             break;
         case CMD_REMOTEPLAYER:
             index = mainParams.pgi.nPlayers++;
@@ -2867,9 +2849,8 @@ main( int argc, char** argv )
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
-            XP_ASSERT( !mainParams.pgi.players[index].name );
-            mainParams.pgi.players[index].name = 
-                copyString( mainParams.mpool, (XP_UCHAR*)optarg);
+            XP_ASSERT( !mainParams.pgi.players[index].name[0] );
+            str2ChrArray( mainParams.pgi.players[index].name, optarg );
             break;
         case CMD_SORTNEW:
             mainParams.sortNewTiles = XP_TRUE;
@@ -3155,7 +3136,7 @@ main( int argc, char** argv )
             }
         }
 
-        if ( !!mainParams.pgi.dictName ) {
+        if ( !!mainParams.pgi.dictName[0] ) {
             /* char path[256]; */
             /* getDictPath( &mainParams, mainParams.gi.dictName, path, VSIZE(path) ); */
             DictionaryCtxt* dict =

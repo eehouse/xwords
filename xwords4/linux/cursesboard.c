@@ -715,7 +715,7 @@ curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 p
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
         globalsForGameRef( cag, uc->gr, XP_FALSE );
     char query[128];
-    char* playerName = bGlobals->cGlobals.gi->players[playerNum].name;
+    const char* playerName = bGlobals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "

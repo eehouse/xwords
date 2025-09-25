@@ -1049,7 +1049,7 @@ ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe )
                                                              send this */
             /* The first nPlayers players are the ones we'll use.  The local flag
                doesn't matter when for ROLE_ISGUEST. */
-            XP_UCHAR* name = emptyStringIfNull(lp->name);
+            const XP_UCHAR* name = emptyStringIfNull(lp->name);
             XP_U16 len = XP_STRLEN(name);
             if ( len > MAX_NAME_LEN ) {
                 len = MAX_NAME_LEN;
@@ -1193,7 +1193,7 @@ setStreamVersion( CtrlrCtxt* ctrlr, XWEnv xwe )
         XWStreamCtxt* tmp = mkCtrlrStream( ctrlr, streamVersion );
         gi_writeToStream( tmp, gip );
         CurGameInfo tmpGi = {};
-        gi_readFromStream( MPPARM(ctrlr->mpool) tmp, &tmpGi );
+        gi_readFromStream( tmp, &tmpGi );
         stream_destroy( tmp );
         /* If downgrading forced tray size change, model needs to know. BUT:
            the guest would have to be >two years old now for this to happen. */
@@ -1203,14 +1203,11 @@ setStreamVersion( CtrlrCtxt* ctrlr, XWEnv xwe )
                 model_forceStack7Tiles( ctrlr->vol.model );
 
                 CurGameInfo updated = {};
-                gi_copy( MPPARM(ctrlr->mpool) &updated, gip );
+                gi_copy( &updated, gip );
                 updated.traySize = updated.bingoMin = 7;
                 gr_setGI( ctrlr->vol.dutil, ctrlr->vol.gr, xwe, &updated );
-                gi_disposePlayerInfo( MPPARM(ctrlr->mpool) &updated );
             }
         }
-
-        gi_disposePlayerInfo( MPPARM(ctrlr->mpool) &tmpGi );
     }
 }
 
@@ -1220,12 +1217,11 @@ checkResizeBoard( CtrlrCtxt* ctrlr, XWEnv xwe )
     const CurGameInfo* gip = ctrlr->vol.gi;
     if ( STREAM_VERS_BIGBOARD > ctrlr->nv.streamVersion && gip->boardSize > 15) {
         CurGameInfo gi;
-        gi_copy( MPPARM(ctrlr->mpool) &gi, gip );
+        gi_copy( &gi, gip );
         SRVR_LOGFF( "dropping board size from %d to 15", gip->boardSize );
         gi.boardSize = 15;
         model_setSize( ctrlr->vol.model, 15 );
         gr_setGI( ctrlr->vol.dutil, ctrlr->vol.gr, xwe, &gi );
-        gi_disposePlayerInfo( MPPARM(ctrlr->mpool) &gi );
     }
 }
 # else
@@ -2203,7 +2199,7 @@ registerRemotePlayer( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 
     if ( success ) {
         CurGameInfo gi = {};
-        gi_copy( MPPARM(ctrlr->mpool) &gi, ctrlr->vol.gi );
+        gi_copy( &gi, ctrlr->vol.gi );
         XP_ASSERT( ROLE_ISHOST == gi.deviceRole );
         LocalPlayer* lp = &gi.players[turn];
         /* get data from stream */
@@ -2214,10 +2210,9 @@ registerRemotePlayer( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         name[nameLen] = '\0';
         SRVR_LOGFF( "read remote name: %s", name );
 
-        replaceStringIfDifferent( ctrlr->mpool, &lp->name, name );
+        str2ChrArray( lp->name, name );
 
         gr_setGI( ctrlr->vol.dutil, ctrlr->vol.gr, xwe, &gi );
-        gi_disposePlayerInfo( MPPARM(ctrlr->mpool) &gi );
 
         XP_PlayerAddr channelNo = stream_getAddress( stream );
         deviceIndex = getIndexForDevice( ctrlr, channelNo );
@@ -2290,7 +2285,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         XP_U32 gameID = streamVersion < STREAM_VERS_REMATCHORDER
             ? stream_getU32( stream ) : 0;
         CurGameInfo myNewGI = {};
-        gi_readFromStream( MPPARM(ctrlr->mpool) stream, &myNewGI );
+        gi_readFromStream( stream, &myNewGI );
         XP_ASSERT( gameID == 0 || gameID == myNewGI.gameID );
         gameID = myNewGI.gameID;
         myNewGI.deviceRole = ROLE_ISGUEST;
@@ -2302,7 +2297,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         XP_ASSERT( gi->gameID == gameID );
         comms_setConnID( comms, gameID, streamVersion );
 
-        replaceStringIfDifferent( ctrlr->mpool, &myNewGI.dictName, gi->dictName );
+        str2ChrArray( myNewGI.dictName, gi->dictName );
 
         ctrlr->nv.flags |= FLAG_HARVEST_READY;
 
@@ -2352,7 +2347,6 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         gr_setGI( ctrlr->vol.dutil, ctrlr->vol.gr, xwe, &myNewGI );
-        gi_disposePlayerInfo( MPPARM(ctrlr->mpool) &myNewGI );
 
         XP_ASSERT( !ctrlr->pool );
         makePoolOnce( ctrlr );
@@ -2422,7 +2416,7 @@ makeSendableGICopy( CtrlrCtxt* ctrlr, CurGameInfo* giCopy,
     SRVR_LOGFFV( "assigning forceChannel from deviceIndex: %d",
                 giCopy->forceChannel );
 
-    giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
+    giCopy->dictName[0] = '\0';
     LOG_GI( giCopy, "after" );
 } /* makeSendableGICopy */
 

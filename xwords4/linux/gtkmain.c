@@ -428,7 +428,7 @@ newGameIn( GtkAppGlobals* apg, GroupRef grp )
 {
     LaunchParams* params = apg->cag.params;
     CurGameInfo gi = {};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+    gi_copy( &gi, &params->pgi );
 
     CommsAddrRec selfAddr;
     makeSelfAddress( &selfAddr, params );
@@ -437,7 +437,6 @@ newGameIn( GtkAppGlobals* apg, GroupRef grp )
         LOG_GI( &gi, __func__ );
         /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, grp, &gi, NULL );
     }
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
 }
 
 static void
@@ -550,7 +549,7 @@ handle_rename_button( GtkWidget* XP_UNUSED(widget), void* closure )
     const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
 
     XP_UCHAR name[64];
-    XP_SNPRINTF( name, VSIZE(name), "%s", gi->gameName );
+    str2ChrArray( name, gi->gameName );
     if ( gtkEditAlert( apg->window, "Edit this game's name",
                        name, VSIZE(name) ) ) {
         gr_setGameName( dutil, gr, NULL_XWE, name );
@@ -820,7 +819,7 @@ getCounts( GtkAppGlobals* apg, int* nToConvert, int* nToDelete )
                                                     params->vtMgr );
         DeviceRole role;
         if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
-            GameRef gr = gmgr_figureGR( params->dutil, NULL_XWE, stream );
+            GameRef gr = gmgr_figureGR( stream );
             XP_LOGFF( "row %llx => " GR_FMT, rowid, gr );
             if ( gmgr_gameExists( params->dutil, NULL_XWE, gr ) ) {
                 XP_LOGFF( GR_FMT " exists", gr );
