@@ -119,13 +119,23 @@ enum {
     N_ITEMS,
 };
 
+static GameRef
+grFromIter( GtkTreeModel* model, GtkTreeIter* iter )
+{
+    gchar* str = NULL;
+    gtk_tree_model_get( model, iter, GAMEREF_ITEM, &str, -1 );
+    GameRef gr;
+    sscanf( str, GR_FMT, &gr );
+    g_free( str );
+    return gr;
+}
+
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
              GtkTreeIter* iter, gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
-    GameRef val;
-    gtk_tree_model_get( model, iter, GAMEREF_ITEM, &val, -1 );
+    GameRef val = grFromIter( model, iter );
     apg->selRows = g_array_append_val( apg->selRows, val );
 }
 
@@ -148,8 +158,7 @@ row_activated_cb( GtkTreeView* treeView, GtkTreePath* path,
     GtkTreeModel* model = gtk_tree_view_get_model( treeView );
     GtkTreeIter iter;
     if ( gtk_tree_model_get_iter( model, &iter, path ) ) {
-        GameRef gr;
-        gtk_tree_model_get( model, &iter, GAMEREF_ITEM, &gr, -1 );
+        GameRef gr = grFromIter( model, &iter );
         open_row( apg, gr, XP_FALSE );
     }
 }
@@ -167,8 +176,7 @@ findFor( GtkAppGlobals* apg, GameRef target, GtkTreeIter* foundP, GtkWidget** tr
             for ( valid = gtk_tree_model_get_iter_first( model, &iter );
                   valid;
                   valid = gtk_tree_model_iter_next( model, &iter ) ) {
-                GameRef val;
-                gtk_tree_model_get( model, &iter, GAMEREF_ITEM, &val, -1 );
+                GameRef val = grFromIter( model, &iter );
                 if ( val == target ) {
                     if ( !!foundP ) {
                         *foundP = iter;
@@ -250,7 +258,7 @@ init_games_list( GtkAppGlobals* apg )
 #ifdef XWFEATURE_DEVICE_STORES
                                               // G_TYPE_POINTER, /* GAMEREF_ITEM */
                                               G_TYPE_STRING,  /* GAMENAME_ITEM */
-                                              G_TYPE_INT64,   /* GAMEREF_ITEM */
+                                              G_TYPE_STRING,   /* GAMEREF_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
                                               G_TYPE_STRING,  /* STATUS_ITEM */
                                               G_TYPE_STRING,  /* GROUPNAME_ITEM */
@@ -365,10 +373,13 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
     gchar conTypesBuf[32];
     snprintf( conTypesBuf, sizeof(conTypesBuf), "0X%X", gi->conTypes );
 
+    gchar grStr[32];
+    snprintf( grStr, sizeof(grStr), GR_FMT, gr );
+
     gtk_list_store_set( store, &iter, 
                         ROW_THUMB, snap,
                         GAMENAME_ITEM, gi->gameName,
-                        GAMEREF_ITEM, gr,
+                        GAMEREF_ITEM, grStr,
                         CREATED_ITEM, createdStr,
                         STATUS_ITEM, state,
                         GROUPNAME_ITEM, groupName,
