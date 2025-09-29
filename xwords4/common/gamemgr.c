@@ -1289,9 +1289,12 @@ gmgr_newFor( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const CurGameInfo* gip,
     checkDefault( duc, &grp );
     GameRef gr = gr_makeForGI( duc, xwe, &grp, gip, NULL );
     if ( !!invitee ) {
-        NetLaunchInfo nli = {};
         const CurGameInfo* gi = gr_getGI(duc, gr, xwe);
-        nli_init( &nli, gi, invitee, 1, 0 );
+        CommsAddrRec selfAddr;
+        dutil_getSelfAddr( duc, xwe, &selfAddr );
+        NetLaunchInfo nli = {};
+        nli_init( &nli, gi, &selfAddr, 1, 0 );
+
         gr_invite( duc, gr, xwe, &nli, invitee, XP_TRUE );
     }
     postOnGroupChanged( duc, xwe, grp, GRCE_GAME_ADDED );

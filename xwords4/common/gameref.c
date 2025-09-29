@@ -669,7 +669,7 @@ makeGameID( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 curID )
         newID &= ~0x80000000;
 #endif
     }
-    XP_LOGFF( "() => %08X", newID );
+    XP_LOGFF( "(%08X) => %08X", curID, newID );
     return newID;
 }
 
