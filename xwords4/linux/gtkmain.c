@@ -263,23 +263,23 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_STRING,  /* STATUS_ITEM */
                                               G_TYPE_STRING,  /* GROUPNAME_ITEM */
 #else
-                                              G_TYPE_INT64,   /* ROW_ITEM */
-                                              G_TYPE_STRING,  /* NAME_ITEM */
-                                              G_TYPE_STRING,  /* CREATED_ITEM */
-                                              G_TYPE_INT,     /* SEED_ITEM */
-                                              G_TYPE_INT,     /* ROLE_ITEM */
-                                              G_TYPE_STRING,  /* CONN_ITEM */
-                                              G_TYPE_INT,     /* NPACKETS_ITEM */
-                                              G_TYPE_BOOLEAN, /* OVER_ITEM */
-                                              G_TYPE_INT,     /* TURN_ITEM */
-                                              G_TYPE_STRING,  /* LOCAL_ITEM */
-                                              G_TYPE_INT,     /* NMOVES_ITEM */
-                                              G_TYPE_INT,     /* MISSING_ITEM */
-                                              G_TYPE_STRING,  /* LASTTURN_ITEM */
-                                              G_TYPE_STRING,  /* DUPTIMER_ITEM */
+                                              /* G_TYPE_INT64,   /\* ROW_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* NAME_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* CREATED_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* SEED_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* ROLE_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* CONN_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* NPACKETS_ITEM *\/ */
+                                              /* G_TYPE_BOOLEAN, /\* OVER_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* TURN_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* LOCAL_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* NMOVES_ITEM *\/ */
+                                              /* G_TYPE_INT,     /\* MISSING_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* LASTTURN_ITEM *\/ */
+                                              /* G_TYPE_STRING,  /\* DUPTIMER_ITEM *\/ */
 #endif
                                               // G_TYPE_STRING,  /* GAMEID_ITEM */
-                                              G_TYPE_INT,     /* TURN_ITEM */
+                                              G_TYPE_STRING,  /* TURN_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
                                               G_TYPE_STRING,  /* LASTMOVE_ITEM */
                                               G_TYPE_STRING,  /* LANG_ITEM */
@@ -384,7 +384,7 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         STATUS_ITEM, state,
                         GROUPNAME_ITEM, groupName,
                         // GAMEID_ITEM, gameIDStr,
-                        TURN_ITEM, sum->turn,
+                        TURN_ITEM, sum->turnIsLocal?"Local":"Remote",
                         NMOVES_ITEM, sum->nMoves,
                         LASTMOVE_ITEM, lastMoveStr,
                         LANG_ITEM, gi->isoCodeStr,

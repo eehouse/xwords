@@ -261,11 +261,10 @@ OBJ = \
 LIBS = -lm -lpthread -luuid -lcurl $(GPROFFLAG)
 ifdef USE_SQLITE
 LIBS += -lsqlite3
-LIBS += -lmosquitto
 DEFINES += -DUSE_SQLITE
-DEFINES += -DSHORTFILE=\"$(notdir $<)\"
-
 endif
+DEFINES += -DSHORTFILE=\"$(notdir $<)\"
+LIBS += -lmosquitto
 # Turn this off for now.  I apparently have a memory problem, but it
 # doesn't make the app unusable for testing while crash on boot does.
 # LIBS += -lmcheck
