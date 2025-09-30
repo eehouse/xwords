@@ -56,6 +56,7 @@ typedef enum {
     SO_GAMENAME,
     SO_CREATED_TS,
     SO_GAMESTATE,               /* Game created, in-play, or over */
+    SO_HASCHAT,                 /* There's an unread chat available */
 
     SO_NSOS,
 } SORT_ORDER;

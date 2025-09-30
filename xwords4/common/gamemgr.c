@@ -986,6 +986,9 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
     const GameSummary* gs2 = gr_getSummary( duc, (GameRef)dl2, xwe );
     for ( int ii = 0; result == 0 && ii < grps->nSOs; ++ii ) {
         switch ( sos[ii] ) {
+        case SO_HASCHAT:
+            result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
+            break;
         case SO_GAMENAME:
             if ( !gi1->gameName[0] && !gi2->gameName[0] ) {
                 /* they're equal */
@@ -1041,6 +1044,7 @@ addGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const XP_UCHAR* name )
     grps->index = -1;
     grps->collapsed = XP_TRUE;
     SORT_ORDER sos[] = {
+        SO_HASCHAT,
         SO_GAMESTATE,
         SO_TURNLOCAL,
         SO_LASTMOVE_TS,
