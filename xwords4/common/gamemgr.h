@@ -65,6 +65,7 @@ typedef enum {
 #define GROUP_DEFAULT ((GroupRef)0xFF)
 #define GROUP_ARCHIVE ((GroupRef)0xFE)
 
+/* returns 0 if e.g. gi describes an impossible game */
 GameRef gmgr_newFor( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
                      const CurGameInfo* gi, const CommsAddrRec* invitee );
 GameRef gmgr_addForInvite( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,

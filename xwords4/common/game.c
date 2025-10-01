@@ -1006,6 +1006,7 @@ gi_isValid(const CurGameInfo* gi)
         && 0 < gi->nPlayers && gi->nPlayers <= MAX_NUM_PLAYERS
         && gi->created
         && gi->gameID
+        && (ROLE_STANDALONE == gi->deviceRole || 0 != gi->conTypes)
         ;
     return result;
 }

@@ -31,6 +31,7 @@ void
 nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
           XP_U16 nPlayersH, XP_U16 forceChannel )
 {
+    XP_ASSERT( gi_isValid(gi) );
     XP_MEMSET( nli, 0, sizeof(*nli) );
     nli->gameID = gi->gameID;
     XP_STRCAT( nli->dict, gi->dictName );
@@ -42,36 +43,41 @@ nli_init( NetLaunchInfo* nli, const CurGameInfo* gi, const CommsAddrRec* addr,
 
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
-        types_addType( &nli->_conTypes, typ );
-        switch ( typ ) {
+        if ( types_hasType( gi->conTypes, typ ) ) {
+            types_addType( &nli->_conTypes, typ );
+            switch ( typ ) {
 #ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            XP_STRCAT( nli->room, addr->u.ip_relay.invite );
-            break;
+            case COMMS_CONN_RELAY:
+                XP_STRCAT( nli->room, addr->u.ip_relay.invite );
+                break;
 #endif
-        case COMMS_CONN_SMS:
-            XP_STRCAT( nli->phone, addr->u.sms.phone );
-            if ( 1 != addr->u.sms.port ) {
-                /* PENDING I've seen an assert about this fire, but no time
-                   to investigate now */
-                XP_LOGFF( "unexpected port value: %d", addr->u.sms.port );
+            case COMMS_CONN_SMS:
+                XP_STRCAT( nli->phone, addr->u.sms.phone );
+                if ( 1 != addr->u.sms.port ) {
+                    /* PENDING I've seen an assert about this fire, but no time
+                       to investigate now */
+                    XP_LOGFF( "unexpected port value: %d", addr->u.sms.port );
+                }
+                // nli->port = addr->u.sms.port; <-- I wish
+                break;
+            case COMMS_CONN_MQTT:
+                nli_setMQTTDevID( nli, &addr->u.mqtt.devID );
+                break;
+            case COMMS_CONN_BT:
+                XP_STRCAT( nli->btAddress, addr->u.bt.btAddr.chars );
+                XP_STRCAT( nli->btName, addr->u.bt.hostName );
+                break;
+            case COMMS_CONN_NFC:
+                break;
+            default:
+                XP_ASSERT(0);
+                break;
             }
-            // nli->port = addr->u.sms.port; <-- I wish
-            break;
-        case COMMS_CONN_MQTT:
-            nli_setMQTTDevID( nli, &addr->u.mqtt.devID );
-            break;
-        case COMMS_CONN_BT:
-            XP_STRCAT( nli->btAddress, addr->u.bt.btAddr.chars );
-            XP_STRCAT( nli->btName, addr->u.bt.hostName );
-            break;
-        case COMMS_CONN_NFC:
-            break;
-        default:
-            XP_ASSERT(0);
-            break;
+        } else {
+            XP_LOGFF( "dropping type %s because not in gi", ConnType2Str(typ) );
         }
     }
+    XP_ASSERT( 0 != nli->_conTypes );
 }
 
 void

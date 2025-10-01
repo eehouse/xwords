@@ -414,6 +414,11 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
     }
 
     gi.deviceRole = isSolo ? ROLE_STANDALONE : ROLE_ISHOST;
+    if ( !isSolo ) {
+        CommsAddrRec addr;
+        dutil_getSelfAddr( params->dutil, NULL_XWE, &addr );
+        gi.conTypes = addr._conTypes;
+    }
 
     tmp = cJSON_GetObjectItem( args, "dict" );
     XP_ASSERT( tmp );
@@ -422,12 +427,10 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
     /* cb_dims dims; */
     /* figureDims( aGlobals, &dims ); */
 
-    XP_U32 newGameID;
-#ifdef DEBUG
-    bool success =
-#endif
-        (*wr->procs.newGame)( wr->closure, &gi, &newGameID );
-    XP_ASSERT( success );
+    XP_U32 newGameID = 0;
+    if ( !(*wr->procs.newGame)( wr->closure, &gi, &newGameID ) ) {
+        XP_ASSERT( 0 ==newGameID );
+    }
 
     return newGameID;
 }

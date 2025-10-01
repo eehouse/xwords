@@ -2970,8 +2970,9 @@ class GamesListDelegate(delegator: Delegator) :
     fun makeAndLaunch(gi: CurGameInfo, invitee: CommsAddrRec? = null) {
         launch {
             Log.d(TAG, "makeAndLaunch: calling newFor($gi, invitee=$invitee)")
-            val gr = GameMgr.newFor(gi, invitee)
-            GameUtils.launchGame(getDelegator(), gr!!)
+            GameMgr.newFor(gi, invitee)?.let {
+                GameUtils.launchGame(getDelegator(), it)
+            }
         }
     }
 
