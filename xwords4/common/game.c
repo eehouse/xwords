@@ -770,6 +770,7 @@ gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint )
 void
 gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi )
 {
+    XP_MEMSET( gi, 0, sizeof(*gi) );
     XP_U16 strVersion = stream_getVersion( stream );
     XP_U16 nColsNBits;
     XP_ASSERT( 0 < strVersion );
@@ -881,6 +882,14 @@ gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi )
 
     XP_ASSERT( !!gi->isoCodeStr[0] );
 } /* gi_readFromStream */
+
+CurGameInfo
+gi_readFromStream2( XWStreamCtxt* stream )
+{
+    CurGameInfo gi;
+    gi_readFromStream( stream, &gi );
+    return gi;
+}
 
 void
 gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )

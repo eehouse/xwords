@@ -258,8 +258,7 @@ gmgr_figureGR( XWStreamCtxt* stream )
 {
     XP_U8 strVersion = stream_getU8( stream );
     stream_setVersion( stream, strVersion );
-    CurGameInfo gi = {};
-    gi_readFromStream( stream, &gi );
+    CurGameInfo gi = gi_readFromStream2( stream );
     GameRef gr = formatGR( gi.gameID, gi.deviceRole );
     return gr;
 }
