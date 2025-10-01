@@ -191,11 +191,12 @@ cb_newGame( CursesBoardState* cbState, const CurGameInfo* gi,
     LOG_FUNC();
     XW_DUtilCtxt* dutil = cbState->params->dutil;
     GameRef gr = gmgr_newFor( dutil, NULL_XWE, GROUP_DEFAULT, gi, NULL );
-    if ( !!newGameIDP ) {
+    bool success = !!gr;
+    if ( success && !!newGameIDP ) {
         const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
         *newGameIDP = gi->gameID;
     }
-    return XP_TRUE;
+    return success;
 }
 
 /* Close the board, but don't dispose of its globals, which belong to the util

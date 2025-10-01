@@ -677,44 +677,49 @@ GameRef
 gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
               const CurGameInfo* gip, const CommsAddrRec* hostAddr )
 {
-    CurGameInfo gi = {};
-    gi_copy( &gi, gip );
+    GameRef gr = 0;
+    CurGameInfo gi = *gip;
     /* Game coming from an invitation received will have a gameID already */
     gi.gameID = makeGameID( duc, xwe, gi.gameID );
     if ( !gi.created ) {
         gi.created = dutil_getCurSeconds( duc, xwe );
     }
 
-    if ( !gi.isoCodeStr[0] ) {
-        const DictionaryCtxt* dict = dmgr_get( duc, xwe, gi.dictName );
-        XP_STRNCPY( gi.isoCodeStr, dict_getISOCode( dict ),
-                    VSIZE(gi.isoCodeStr) );
-        dict_unref( dict, xwe );
-    }
+    if ( gi_isValid(&gi) ) {
+        if ( !gi.isoCodeStr[0] ) {
+            const DictionaryCtxt* dict = dmgr_get( duc, xwe, gi.dictName );
+            XP_STRNCPY( gi.isoCodeStr, dict_getISOCode( dict ),
+                        VSIZE(gi.isoCodeStr) );
+            dict_unref( dict, xwe );
+        }
 
-    GameRef gr = gi_formatGR( &gi );
+        gr = gi_formatGR( &gi );
 
-    GameData* gd = gmgr_getForRef( duc, xwe, gr, NULL );
-    if ( !!gd ) {
-        XP_LOGFF( "gr " GR_FMT " already exists; doing nothing!", gr );
-        gr = 0;
+        GameData* gd = gmgr_getForRef( duc, xwe, gr, NULL );
+        if ( !!gd ) {
+            XP_LOGFF( "gr " GR_FMT " already exists; doing nothing!", gr );
+            gr = 0;
+        } else {
+            GameData* gd = makeGD( gr );
+            if ( *grp == gmgr_getArchiveGroup(duc) || *grp == GROUP_DEFAULT ) {
+                *grp = gmgr_getDefaultGroup(duc);
+            }
+            gd->grp = *grp;
+            gi_copy( &gd->gi, &gi );
+
+            gd->util = makeDummyUtil( duc, gd );
+            XP_LOGFF( "created game with id %X", gd->gi.gameID );
+
+            if ( !!hostAddr ) {
+                gd->hostAddr = *hostAddr;
+            }
+
+            gmgr_addGame( duc, xwe, gd, gr );
+            gmgr_addToGroup( duc, xwe, gr, gd->grp );
+        }
     } else {
-        GameData* gd = makeGD( gr );
-        if ( *grp == gmgr_getArchiveGroup(duc) || *grp == GROUP_DEFAULT ) {
-            *grp = gmgr_getDefaultGroup(duc);
-        }
-        gd->grp = *grp;
-        gi_copy( &gd->gi, &gi );
-
-        gd->util = makeDummyUtil( duc, gd );
-        XP_LOGFF( "created game with id %X", gd->gi.gameID );
-
-        if ( !!hostAddr ) {
-            gd->hostAddr = *hostAddr;
-        }
-
-        gmgr_addGame( duc, xwe, gd, gr );
-        gmgr_addToGroup( duc, xwe, gr, gd->grp );
+        LOG_GI( gip, __func__ );
+        XP_LOGFF( "failing: bad gi" );
     }
     return gr;
 }
@@ -788,8 +793,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
             XP_LOGFF( "conTypes now 0x%x", conTypes );
 
             /* Now add it to gi */
-            CurGameInfo tmpGI = {};
-            gi_copy( &tmpGI, gi );
+            CurGameInfo tmpGI = *gi;
             tmpGI.conTypes = conTypes;
             LOG_GI( &tmpGI, __func__ );
             setGIImpl( duc, xwe, gd, &tmpGI );
@@ -860,68 +864,72 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
     }
     GroupRef grp = gd->grp;
     newGR = gr_makeForGI( duc, xwe, &grp, &tmpGI, NULL );
+    if ( !!newGR ) {
+        XP_LOGFF( "made new gr: " GR_FMT, newGR );
+        XP_Bool deleted;
+        GameData* newGd = gmgr_getForRef( duc, xwe, newGR, &deleted );
+        XP_ASSERT( !!newGd );
+        XP_ASSERT( !deleted );
 
-    XP_LOGFF( "made new gr: " GR_FMT, newGR );
-    XP_Bool deleted;
-    GameData* newGd = gmgr_getForRef( duc, xwe, newGR, &deleted );
-    XP_ASSERT( !deleted );
+        /* Now create a new gi to be modified but whose mempool is the new
+           game's */
+        CurGameInfo newGI = newGd->gi;
 
-    /* Now create a new gi to be modified but whose mempool is the new
-       game's */
-    CurGameInfo newGI = newGd->gi;
+        RematchInfo* rip;
+        if ( ctrl_getRematchInfo( gd->ctrlr, xwe, ro, &newGI, &rip ) ) {
+            setGIImpl( duc, xwe, newGd, &newGI );
 
-    RematchInfo* rip;
-    if ( ctrl_getRematchInfo( gd->ctrlr, xwe, ro, &newGI, &rip ) ) {
-        setGIImpl( duc, xwe, newGd, &newGI );
-
-        XP_Bool loaded;
+            XP_Bool loaded;
 #ifdef DEBUG
-        GameData* newGD2 =
+            GameData* newGD2 =
 #endif
-            loadToLevel( duc, newGR, xwe, MODEL, &loaded, NULL );
-        XP_ASSERT( loaded );
-        XP_ASSERT( newGD2 == newGd );
+                loadToLevel( duc, newGR, xwe, MODEL, &loaded, NULL );
+            XP_ASSERT( loaded );
+            XP_ASSERT( newGD2 == newGd );
 
-        if ( !!newGd->comms ) {
-            CommsAddrRec* selfAddrP = NULL;
-            CommsAddrRec selfAddr;
-            comms_getSelfAddr( gd->comms, &selfAddr );
-            selfAddrP = &selfAddr;
+            if ( !!newGd->comms ) {
+                XP_ASSERT( 0 != newGd->gi.conTypes );
+                CommsAddrRec* selfAddrP = NULL;
+                CommsAddrRec selfAddr;
+                comms_getSelfAddr( gd->comms, &selfAddr );
+                selfAddrP = &selfAddr;
 
-            ctrl_setRematchOrder( newGd->ctrlr, rip );
+                ctrl_setRematchOrder( newGd->ctrlr, rip );
 
-            const CurGameInfo* newGI = &newGd->gi;
-            for ( int ii = 0; ; ++ii ) {
-                CommsAddrRec guestAddr;
-                XP_U16 nPlayersH;
-                if ( !ctrl_ri_getAddr( rip, ii, &guestAddr, &nPlayersH )){
-                    break;
+                const CurGameInfo* newGI = &newGd->gi;
+                for ( int ii = 0; ; ++ii ) {
+                    CommsAddrRec guestAddr;
+                    XP_U16 nPlayersH;
+                    if ( !ctrl_ri_getAddr( rip, ii, &guestAddr, &nPlayersH )){
+                        break;
+                    }
+
+                    NetLaunchInfo nli = {};
+                    nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
+                    if ( !!newName ) {
+                        nli_setGameName( &nli, newName );
+                    }
+                    LOGNLI( &nli );
+                    comms_invite( newGd->comms, xwe, &nli, &guestAddr, XP_TRUE );
                 }
-
-                NetLaunchInfo nli = {};
-                nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
-                if ( !!newName ) {
-                    nli_setGameName( &nli, newName );
-                }
-                LOGNLI( &nli );
-                comms_invite( newGd->comms, xwe, &nli, &guestAddr, XP_TRUE );
             }
+            ctrl_disposeRematchInfo( gd->ctrlr, rip );
+        } else {
+            XP_ASSERT(0);
+            gmgr_deleteGame( duc, xwe, newGR );
+            newGR = 0;
         }
-        ctrl_disposeRematchInfo( gd->ctrlr, rip );
-    } else {
-        XP_ASSERT(0);
-        gmgr_deleteGame( duc, xwe, newGR );
-        newGR = 0;
     }
 
     GR_HEADER_END();
 
-    if ( archiveAfter ) {
-        gmgr_moveGames( duc, xwe, GROUP_ARCHIVE, &gr, 1  );
-    } else if ( deleteAfter ) {
-        gmgr_deleteGame( duc, xwe, gr );
+    if ( !!newGR ) {
+        if ( archiveAfter ) {
+            gmgr_moveGames( duc, xwe, GROUP_ARCHIVE, &gr, 1  );
+        } else if ( deleteAfter ) {
+            gmgr_deleteGame( duc, xwe, gr );
+        }
     }
-
     return newGR;
 }
 
@@ -1012,6 +1020,7 @@ static void
 setGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
            const CurGameInfo* gip )
 {
+    XP_ASSERT( gi_isValid(gip) );
     if ( !gi_equal( gip, &gd->gi ) ) {
         /* If the gi's different, then it might be impacting sort order within
            groups. So we remove the game from its group, make the change, then

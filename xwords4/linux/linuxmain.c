@@ -175,7 +175,9 @@ linux_addInvites( CommonGlobals* cGlobals, XP_U16 nRemotes,
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_getSelfAddr( dutil, gr, NULL_XWE, &selfAddr );
     NetLaunchInfo nli;
-    nli_init( &nli, cGlobals->gi, &selfAddr, 1, 0 );
+    CurGameInfo gi = *cGlobals->gi;
+    gi.conTypes = selfAddr._conTypes;
+    nli_init( &nli, &gi, &selfAddr, 1, 0 );
 
     for ( int ii = 0; ii < nRemotes; ++ii ) {
         gr_invite( dutil, gr, NULL_XWE, &nli, &destAddrs[ii], XP_TRUE );
