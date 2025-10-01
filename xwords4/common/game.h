@@ -80,6 +80,7 @@ void gi_setNPlayers( XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi,
                      XP_U16 nTotal, XP_U16 nHere );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi );
+CurGameInfo gi_readFromStream2( XWStreamCtxt* stream );
 void gi_copy( CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_Bool gi_equal( const CurGameInfo* gi1, const CurGameInfo* gi2 );
 XP_U16 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly );

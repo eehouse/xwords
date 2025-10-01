@@ -1192,8 +1192,7 @@ setStreamVersion( CtrlrCtxt* ctrlr, XWEnv xwe )
 
         XWStreamCtxt* tmp = mkCtrlrStream( ctrlr, streamVersion );
         gi_writeToStream( tmp, gip );
-        CurGameInfo tmpGi = {};
-        gi_readFromStream( tmp, &tmpGi );
+        CurGameInfo tmpGi = gi_readFromStream2( tmp );
         stream_destroy( tmp );
         /* If downgrading forced tray size change, model needs to know. BUT:
            the guest would have to be >two years old now for this to happen. */
@@ -2284,8 +2283,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 
         XP_U32 gameID = streamVersion < STREAM_VERS_REMATCHORDER
             ? stream_getU32( stream ) : 0;
-        CurGameInfo myNewGI = {};
-        gi_readFromStream( stream, &myNewGI );
+        CurGameInfo myNewGI = gi_readFromStream2( stream );
         XP_ASSERT( gameID == 0 || gameID == myNewGI.gameID );
         gameID = myNewGI.gameID;
         myNewGI.deviceRole = ROLE_ISGUEST;

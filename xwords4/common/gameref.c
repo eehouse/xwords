@@ -735,8 +735,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
     stream_setVersion( stream, strVersion );
     GameRef gr;
     {
-        CurGameInfo gi = {};
-        gi_readFromStream( stream, &gi );
+        CurGameInfo gi = gi_readFromStream2( stream );
         LOG_GI( &gi, __func__ );
 
         XP_U32 created = strVersion < STREAM_VERS_GICREATED
@@ -750,6 +749,11 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
         }
         LOG_GI( &gi, __func__ );
 
+        if ( ROLE_STANDALONE != gi.deviceRole ) {
+            /* Set something so test in gr_makeForGI() won't fail. We'll
+               overwrite conTypes below anyway */
+            types_addType( &gi.conTypes, COMMS_CONN_NFC );
+        }
         gr = gr_makeForGI( duc, xwe, grpp, &gi, NULL );
     }
     
