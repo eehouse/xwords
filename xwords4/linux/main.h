@@ -53,6 +53,7 @@ typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock,
 
 typedef struct CommonAppGlobals CommonAppGlobals;
 typedef struct MQTTConStorage MQTTConStorage;
+typedef struct BLEConState BLEConState;
 #ifdef XWFEATURE_SMS
 typedef struct LinSMSData LinSMSData;
 #endif
@@ -77,6 +78,8 @@ typedef struct _LaunchParams {
 #ifdef XWFEATURE_SMS
     LinSMSData* smsStorage;
 #endif
+    BLEConState* bleConState;
+
     char* pipe;
     char* nbs;
     char* bonusFile;

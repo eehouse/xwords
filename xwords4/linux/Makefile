@@ -246,6 +246,7 @@ endif
 
 OBJ = \
 	$(BUILD_PLAT_DIR)/linuxbt.o \
+	$(BUILD_PLAT_DIR)/blecon.o \
 	$(BUILD_PLAT_DIR)/uuidhack.o \
 	$(BUILD_PLAT_DIR)/linuxudp.o \
 	$(BUILD_PLAT_DIR)/linuxsms.o \
