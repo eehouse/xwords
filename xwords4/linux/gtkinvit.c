@@ -169,7 +169,7 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
     GSList* devNames = lbt_scan(params);
     int count = g_slist_length(devNames);
     if ( 0 < count ) {
-        AskPair pairs[count+1] = {};
+        AskPair pairs[count+1];
         int ii = 0;
         for ( GSList* iter = devNames; !!iter; iter = iter->next ) {
             BTHostPair* hp = iter->data;
@@ -178,6 +178,7 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
             // XP_LOGF( "%s: got %s", __func__, name );
             ++ii;
         }
+        pairs[ii].txt = NULL;
         bool success = gtkask_radios( state->dialog, "message",
                                       pairs, &count );
         if ( success ) {
