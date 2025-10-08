@@ -375,6 +375,7 @@ object NBSProto {
         var success = false
         if (XWPrefs.getNBSEnabled(context) && Perms23.haveNBSPerms(context)
         ) {
+            val port = 7001.toShort()
             // Try send-to-self
             if (XWPrefs.getSMSToSelfEnabled(context)) {
                 val myPhone = SMSPhoneInfo.get(context)!!.number
@@ -393,11 +394,12 @@ object NBSProto {
                     val mgr = SmsManager.getDefault()
                     val sent = makeStatusIntent(context, MSG_SENT)
                     val delivery = makeStatusIntent(context, MSG_DELIVERED)
-                    for (fragment in fragments) {
+                    fragments.map { fragment ->
                         mgr.sendDataMessage(
                             phone, null, port, fragment,
                             sent, delivery
                         )
+                        Log.d(TAG, "called $mgr.sendDataMessage(len=${fragment.size},port=$port)")
                     }
                     Stats.increment(STAT.STAT_NBS_SENT);
                     success = true
@@ -489,31 +491,4 @@ object NBSProto {
     //     }
     // }
 
-    // private class NBSMsgSink(private val mContext: Context) : MultiMsgSink(mContext) {
-    //     override fun sendViaSMS(
-    //         buf: ByteArray,
-    //         msgID: String?,
-    //         gameID: Int,
-    //         addr: CommsAddrRec
-    //     ): Int {
-    //         return sendPacket(mContext, addr.sms_phone!!, gameID, buf, msgID)
-    //     }
-    // }
-
-    // private class SMSServiceHelper internal constructor(private val mContext: Context) :
-    //     XWServiceHelper(mContext) {
-    //     override fun getSink(rowid: Long): MultiMsgSink {
-    //         return NBSMsgSink(mContext)
-    //     }
-
-    //     override fun postNotification(phone: String?, gameID: Int, rowid: Long) {
-    //         Assert.failDbg()
-    //         // val owner = Utils.phoneToContact(mContext, phone!!, true)
-    //         // val body = LocUtils.getString(
-    //         //     mContext, R.string.new_name_body_fmt,
-    //         //     owner
-    //         // )
-    //         // GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
-    //     }
-    // }
 }

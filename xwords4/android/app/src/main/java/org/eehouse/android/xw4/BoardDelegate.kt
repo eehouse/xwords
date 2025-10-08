@@ -108,7 +108,7 @@ class BoardDelegate(delegator: Delegator) :
 //     private val mExchCommmitButton: Button? = null
 //     private val mExchCancelButton: Button? = null
 //     private val mSentInfo: SentInvitesInfo? = null
-//     private var mPermCbck: PermCbck? = null
+    private var mPermCbck: PermCbck? = null
 
     private var mMissingDevs: Array<String>? = null
     private var mMissingCounts: IntArray? = null
@@ -349,7 +349,7 @@ class BoardDelegate(delegator: Delegator) :
                     ) { dlg, bttn ->
                         val msg = et.getText().toString()
                         post {
-                            mMissingDevs = arrayOf(msg)
+                            mMissingDevs = arrayOf(msg) // set here?
                             mMissingCounts = intArrayOf(1)
                             mMissingMeans = InviteMeans.MQTT
                             tryInvites()
@@ -575,7 +575,7 @@ class BoardDelegate(delegator: Delegator) :
                 // onActivityResult is called immediately *before* onResume --
                 // meaning m_gi etc are still null.
                 val data = data!!
-                mMissingDevs = data.getStringArrayExtra(InviteDelegate.DEVS)
+                mMissingDevs = data.getStringArrayExtra(InviteDelegate.DEVS) // or here
                 mMissingCounts = data.getIntArrayExtra(InviteDelegate.COUNTS)
                 mRemotesAreRobots = data.getBooleanExtra(InviteDelegate.RAR, false)
                 mMissingMeans = it
@@ -947,14 +947,14 @@ class BoardDelegate(delegator: Delegator) :
 //             Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
              Action.DELETE_AND_EXIT -> deleteAndClose()
              Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
-            Action.INVITE_SMS_DATA -> {
-                val nMissing = params[0] as Int
-                val info = params[1] as? SentInvitesInfo
-                launchPhoneNumberInvite(
-                    nMissing, info,
-                    RequestCode.SMS_DATA_INVITE_RESULT
-                )
-            }
+             Action.INVITE_SMS_DATA -> {
+                 val nMissing = params[0] as Int
+                 val info = params[1] as? SentInvitesInfo
+                 launchPhoneNumberInvite(
+                     nMissing, info,
+                     RequestCode.SMS_DATA_INVITE_RESULT
+                 )
+             }
 
              Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
              Action.BLANK_PICKED -> {
@@ -1124,7 +1124,7 @@ class BoardDelegate(delegator: Delegator) :
         return handled
     } // onDismissed
 
-    override fun inviteChoiceMade(
+    override fun inviteChoiceMade( //not getting called
         action: Action, means: InviteMeans,
         vararg params: Any?
     ) {
@@ -1149,7 +1149,7 @@ class BoardDelegate(delegator: Delegator) :
                 InviteMeans.SMS_DATA ->
                     Perms23.tryGetPerms(
                         this, Perms23.NBS_PERMS, R.string.sms_invite_rationale,
-                        Action.INVITE_SMS_DATA, mSummary!!.nMissing, info
+                        Action.INVITE_SMS_DATA, mSummary!!.nMissing, info // here
                     )
 
                 InviteMeans.MQTT -> showDialogFragment(DlgID.GET_DEVID)
@@ -2029,27 +2029,27 @@ class BoardDelegate(delegator: Delegator) :
         if (alertOrderAt(thisOrder) // already asked?
                 && mGi!!.conTypes!!.contains(CommsConnType.COMMS_CONN_SMS)
         ) {
-            //             if (Perms23.haveNBSPerms(mActivity)) {
-            //                 // We have them or a workaround; cool! proceed
-            //                 alertOrderIncrIfAt(thisOrder)
-            //             } else {
-            //                 mPermCbck = object:PermCbck {
-            //                     override fun onPermissionResult(allGood: Boolean) {
-            //                         if (allGood) {
-            //                             // Yay! nothing to do
-            //                             alertOrderIncrIfAt(thisOrder)
-            //                         } else {
-            //                             val explID =
-            //                                 if (Perms23.NBSPermsInManifest(mActivity)) R.string.missing_sms_perms else R.string.variant_missing_nbs
-            //                             makeConfirmThenBuilder(Action.DROP_SMS_ACTION, explID)
-            //                                 .setNegButton(R.string.remove_sms)
-            //                                 .show()
-            //                         }
-            //                     }
-            //                 }
-            //                 Perms23.Builder(*Perms23.NBS_PERMS)
-            //                     .asyncQuery(mActivity, mPermCbck)
-            //             }
+            if (Perms23.haveNBSPerms(mActivity)) {
+                // We have them or a workaround; cool! proceed
+                alertOrderIncrIfAt(thisOrder)
+            } else {
+                mPermCbck = object:PermCbck {
+                    override fun onPermissionResult(allGood: Boolean) {
+                        if (allGood) {
+                            // Yay! nothing to do
+                            alertOrderIncrIfAt(thisOrder)
+                        } else {
+                            val explID =
+                                if (Perms23.NBSPermsInManifest(mActivity)) R.string.missing_sms_perms else R.string.variant_missing_nbs
+                            makeConfirmThenBuilder(Action.DROP_SMS_ACTION, explID)
+                                .setNegButton(R.string.remove_sms)
+                                .show()
+                        }
+                    }
+                }
+                Perms23.Builder(*Perms23.NBS_PERMS)
+                    .asyncQuery(mActivity, mPermCbck)
+            }
         } else {
             alertOrderIncrIfAt(thisOrder)
         }
@@ -2144,15 +2144,20 @@ class BoardDelegate(delegator: Delegator) :
     // we never post it. BUT on a lot of devices without the test we wind up
     // trying over and over to put the thing up.
     private fun showInviteAlertIf() {
+        Log.d(TAG, "showInviteAlertIf()")
         if (alertOrderAt(StartAlertOrder.INVITE) && !isFinishing()) {
             showOrHide(iNAWrapper)
+        } else {
+            Log.d(TAG, "showInviteAlertIf() doing nothing")
         }
     }
 
     private fun showOrHide(wrapper: InvitesNeededAlert.Wrapper) {
+        Log.d(TAG, "showOrHide()")
         launch {
             mGR!!.getSummary()!!.let { summary ->
                 val hostAddr = null as CommsAddrRec? // null in host case
+                Log.d(TAG, "showOrHide(): calling wrapper.showOrHide()")
                 wrapper.showOrHide(
                     hostAddr, summary.nMissing,
                     summary.nInvited, summary.fromRematch
@@ -2164,6 +2169,7 @@ class BoardDelegate(delegator: Delegator) :
     private var mINAWrapper: InvitesNeededAlert.Wrapper? = null
     private val iNAWrapper: InvitesNeededAlert.Wrapper
         private get() {
+            Log.d(TAG, "iNAWrapper.get()")
             if (null == mINAWrapper) {
                 mINAWrapper = InvitesNeededAlert.Wrapper(this)
                 showOrHide(mINAWrapper!!)
@@ -2241,6 +2247,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun warnIfNoTransport() {
+        Log.d(TAG, "warnIfNoTransport()")
         mGi!!.conTypes?.let { connTypes ->
             if ( alertOrderAt(StartAlertOrder.NO_MEANS)) {
                 var pending = false
@@ -2298,7 +2305,7 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     private fun tryInvites() {
-        Log.d(TAG, "tryInvites($mMissingDevs)")
+        Log.d(TAG, "tryInvites($mMissingDevs)") // is null -- when works too
         mMissingDevs?.let { missingDevs ->
             Assert.assertNotNull(mMissingMeans)
             //             val gameName = GameUtils.getName(mActivity, mRowid)
@@ -2335,6 +2342,7 @@ class BoardDelegate(delegator: Delegator) :
             mMissingCounts = null
             mMissingMeans = null
         }
+        Log.d(TAG, "tryInvites() DONE")
     }
 
     private var m_needsResize = false
@@ -2581,7 +2589,7 @@ class BoardDelegate(delegator: Delegator) :
         }
 
         private fun noteClosed(gr: GameRef) {
-            Log.d(TAG, "noteClosed($gr)")
+            // Log.d(TAG, "noteClosed($gr)")
             Assert.assertTrueNR(sOpenGames.contains(gr.gr))
             sOpenGames.remove(gr.gr)
         }

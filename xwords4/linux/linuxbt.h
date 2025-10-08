@@ -23,18 +23,21 @@
 
 #include "main.h"
 
-void linux_bt_open( CommonGlobals* globals, XP_Bool amMaster );
-void linux_bt_reset( CommonGlobals* globals );
-void linux_bt_close( CommonGlobals* globals );
+void lbt_init( LaunchParams* params );
+void lbt_destroy( LaunchParams* params );
 
-XP_S16 linux_bt_send( const SendMsgsPacket* const msgs,
-                      const CommsAddrRec* addrRec, 
-                      CommonGlobals* globals );
-XP_S16 linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen );
+void lbt_reset( LaunchParams* params );
+void lbt_close( LaunchParams* params );
 
-void linux_bt_socketclosed( CommonGlobals* globals, int sock );
+XP_S16 lbt_send( const SendMsgsPacket* const msgs,
+                 const CommsAddrRec* addrRec, 
+                 LaunchParams* params );
+XP_S16 lbt_receive( int sock, XP_U8* buf, XP_U16 buflen );
 
-GSList* linux_bt_scan();
+void lbt_socketclosed( LaunchParams* params, int sock );
+
+GSList* lbt_scan( LaunchParams* params );
+void lbt_freeScan( LaunchParams* params, GSList* list );
 
 XP_Bool nameToBtAddr( const char* name, bdaddr_t* ba );
 
