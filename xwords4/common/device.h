@@ -61,7 +61,9 @@ void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 void dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                          const CommsAddrRec* fromAddr,
                          const XP_U8* buf, XP_U16 len );
-
+void dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        const XP_U8* buf, XP_U16 len,
+                        const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );
 void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                           XP_Bool succeeded, const XP_UCHAR* result );
 

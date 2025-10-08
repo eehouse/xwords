@@ -29,12 +29,17 @@ void lbt_destroy( LaunchParams* params );
 void lbt_reset( LaunchParams* params );
 void lbt_close( LaunchParams* params );
 
-XP_S16 lbt_send( const SendMsgsPacket* const msgs,
-                 const CommsAddrRec* addrRec, 
-                 LaunchParams* params );
+XP_S16 lbt_send( LaunchParams* params, const XP_U8* buf, XP_U16 len,
+                 const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr );
 XP_S16 lbt_receive( int sock, XP_U8* buf, XP_U16 buflen );
 
 void lbt_socketclosed( LaunchParams* params, int sock );
+
+// lbt_scan returns a GSList* of these:
+typedef struct _BTHostPair {
+    XP_UCHAR hostName[64];
+    XP_BtAddrStr btAddr;
+} BTHostPair;
 
 GSList* lbt_scan( LaunchParams* params );
 void lbt_freeScan( LaunchParams* params, GSList* list );

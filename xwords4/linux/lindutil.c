@@ -39,6 +39,7 @@
 #include "gtkdraw.h"
 #include "mqttcon.h"
 #include "linuxsms.h"
+#include "linuxbt.h"
 #include "gsrcwrap.h"
 
 typedef struct _LinDUtilCtxt {
@@ -422,14 +423,14 @@ linux_dutil_sendViaMQTT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static XP_S16
-linux_dutil_sendViaBT( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
-                       const XP_U8* XP_UNUSED(buf), XP_U16 len,
+linux_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                       const XP_U8* buf, XP_U16 len,
                        const XP_UCHAR* hostName,
-                       const XP_BtAddrStr* XP_UNUSED(btAddr) )
+                       const XP_BtAddrStr* btAddr )
 {
     XP_LOGFF( "sending %d bytes to %s", len, hostName );
-    
-    return -1;
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    return lbt_send( params, buf, len, hostName, btAddr );
 }
 
 static XP_S16
