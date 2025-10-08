@@ -26,8 +26,8 @@ import java.util.regex.Pattern
 
 class SMSReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d( TAG, "onReceive(): intent=$intent" )
         val action = intent.action
-        Log.d( TAG, "onReceive(): action=%s", action );
         if (action == "android.intent.action.DATA_SMS_RECEIVED" && checkPort(context, intent)) {
             val bundle = intent.extras
             if (null != bundle) {

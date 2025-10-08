@@ -144,18 +144,12 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
     XP_USE(state);
     LOG_FUNC();
 
-    GSList* devNames = linux_bt_scan();
-    if ( !devNames ) {
-        XP_LOGF( "%s: got nothing", __func__ );
-    } else {
-        GSList* iter;
-        for ( iter = devNames; !!iter; iter = iter->next ) {
-#ifdef DEBUG
-            gchar* name = iter->data;
-            XP_LOGF( "%s: got %s", __func__, name );
-#endif
-        }
+    GSList* devNames = lbt_scan( state->params );
+    for ( GSList* iter = devNames; !!iter; iter = iter->next ) {
+        gchar* name = iter->data;
+        XP_LOGFF( "got %s", name );
     }
+    lbt_freeScan( state->params, devNames );
 }
 
 static void

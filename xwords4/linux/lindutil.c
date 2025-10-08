@@ -428,6 +428,7 @@ linux_dutil_sendViaBT( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
                        const XP_BtAddrStr* XP_UNUSED(btAddr) )
 {
     XP_LOGFF( "sending %d bytes to %s", len, hostName );
+    
     return -1;
 }
 

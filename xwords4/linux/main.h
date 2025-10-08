@@ -53,7 +53,8 @@ typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock,
 
 typedef struct CommonAppGlobals CommonAppGlobals;
 typedef struct MQTTConStorage MQTTConStorage;
-typedef struct BLEConState BLEConState;
+typedef struct LinuxBTState LinuxBTState;
+
 #ifdef XWFEATURE_SMS
 typedef struct LinSMSData LinSMSData;
 #endif
@@ -78,7 +79,9 @@ typedef struct _LaunchParams {
 #ifdef XWFEATURE_SMS
     LinSMSData* smsStorage;
 #endif
-    BLEConState* bleConState;
+#if defined XWFEATURE_BLUETOOTH
+    struct LinuxBTState* btState;
+#endif
 
     char* pipe;
     char* nbs;
@@ -306,9 +309,6 @@ struct CommonGlobals {
     char* defaultServerName;
 #endif
 
-#if defined XWFEATURE_BLUETOOTH
-    struct LinBtStuff* btStuff;
-#endif
 #if defined XWFEATURE_IP_DIRECT
     struct LinUDPStuff* udpStuff;
 #endif

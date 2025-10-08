@@ -669,9 +669,8 @@ cleanup( GtkGameGlobals* globals )
 
     cancelTimers( cGlobals );
 
-#ifdef XWFEATURE_BLUETOOTH
-    linux_bt_close( cGlobals );
-#endif
+    LaunchParams* params = cGlobals->params;
+    // lbt_destroy( params );
 #ifdef XWFEATURE_SMS
     // linux_sms_close( cGlobals );
 #endif
@@ -685,7 +684,7 @@ cleanup( GtkGameGlobals* globals )
 
     draw_unref( cGlobals->draw, NULL_XWE );
     util_unref( cGlobals->util, NULL_XWE );
-    gr_setDraw( cGlobals->params->dutil, cGlobals->gr, NULL_XWE,
+    gr_setDraw( params->dutil, cGlobals->gr, NULL_XWE,
                 NULL, NULL );
     cGlobals->draw = NULL;
     cGlobals->util = NULL;

@@ -20,6 +20,7 @@
 
 #include "knownplyr.h"
 #include "gtkinvit.h"
+#include "gtkask.h"
 #include "gtkutils.h"
 #include "linuxbt.h"
 #include "comtypes.h"
@@ -46,6 +47,7 @@ typedef struct _GtkInviteState {
     gint* nPlayersP;
     gint maxPlayers;
 
+    GtkWidget* dialog;
     GtkWidget* nPlayersCombo;
 #ifdef XWFEATURE_RELAY
     GtkWidget* devID;
@@ -161,18 +163,25 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
     XP_USE(state);
     LOG_FUNC();
 
-    GSList* devNames = linux_bt_scan();
-    if ( !devNames ) {
-        XP_LOGF( "%s: got nothing", __func__ );
-    } else {
-        GSList* iter;
-        for ( iter = devNames; !!iter; iter = iter->next ) {
-#ifdef DEBUG
-            gchar* name = iter->data;
-            XP_LOGF( "%s: got %s", __func__, name );
-#endif
+    LaunchParams* params = state->globals->cGlobals.params;
+    GSList* devNames = lbt_scan(params);
+    int count = g_slist_length(devNames);
+    if ( 0 < count ) {
+        AskPair pairs[count+1] = {};
+        int ii = 0;
+        for ( GSList* iter = devNames; !!iter; iter = iter->next ) {
+            pairs[ii].txt = iter->data;
+            pairs[ii].result = ii;
+            // XP_LOGF( "%s: got %s", __func__, name );
+            ++ii;
+        }
+        bool success = gtkask_radios( state->dialog, "message",
+                                       pairs, &count );
+        if ( success ) {
+            gtk_entry_set_text( GTK_ENTRY(state->bthost), pairs[count].txt );
         }
     }
+    lbt_freeScan( params, devNames );
 }
 
 static void
@@ -371,7 +380,6 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
         .dutil = globals->cGlobals.params->dutil,
     };
 
-    GtkWidget* dialog;
     GtkWidget* hbox;
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
@@ -461,15 +469,15 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 
     gtk_widget_show( vbox );
 
-    dialog = gtk_dialog_new();
-    gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-    gtk_window_set_transient_for( GTK_WINDOW(dialog),
+    state.dialog = gtk_dialog_new();
+    gtk_window_set_modal( GTK_WINDOW( state.dialog ), TRUE );
+    gtk_window_set_transient_for( GTK_WINDOW(state.dialog),
                                   GTK_WINDOW(globals->window) );
-    gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
+    gtk_dialog_add_action_widget( GTK_DIALOG(state.dialog), vbox, 0 );
 
-    gtk_widget_show_all( dialog );
+    gtk_widget_show_all( state.dialog );
     gtk_main();
-    gtk_widget_destroy( dialog );
+    gtk_widget_destroy( state.dialog );
 
     return !state.cancelled;
 } /* gtkInviteDlg */

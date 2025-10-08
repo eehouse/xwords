@@ -77,7 +77,6 @@
 #include "xwarray.h"
 #include "xwmutex.h"
 #include "lindmgr.h"
-#include "blecon.h"
 /* #include "commgr.h" */
 /* #include "compipe.h" */
 #include "memstream.h"
@@ -3224,9 +3223,8 @@ main( int argc, char** argv )
 
         dvc_init( mainParams.dutil, NULL_XWE );
         testPhonies( &mainParams );
+        lbt_init( &mainParams );
 
-        ble_init( &mainParams );
-        
         if ( mainParams.useCurses ) {
             /* if ( mainParams.needsNewGame ) { */
             /*     /\* curses doesn't have newgame dialog *\/ */
@@ -3244,7 +3242,7 @@ main( int argc, char** argv )
 #endif
         }
 
-        ble_destroy( &mainParams );
+        lbt_destroy( &mainParams );
         freeParams( &mainParams );
     }
 
