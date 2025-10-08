@@ -108,8 +108,6 @@ void dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts );
 void dvc_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                             const CommsAddrRec* from, const XP_U8* buf,
                             XP_U16 len );
-void dvc_onInviteReceived( XW_DUtilCtxt* duc, XWEnv xwe,
-                           const NetLaunchInfo* nli );
 void dvc_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              const CommsAddrRec* from );
 void dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );

@@ -232,9 +232,8 @@ dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
 /*     stream_destroy( stream ); */
 /* } */
 
-void
-dvc_onInviteReceived( XW_DUtilCtxt* dutil, XWEnv xwe,
-                      const NetLaunchInfo* nli )
+static void
+onInviteReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli )
 {
     /*GameRef gr = */
     gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, nli );
@@ -603,6 +602,7 @@ static void
 sendMsgViaBT()
 {
     LOG_FUNC();
+    XP_ASSERT(0);
 }
 
 XP_S16
@@ -1142,7 +1142,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                 case CMD_INVITE: {
                     NetLaunchInfo nli = {};
                     if ( nli_makeFromStream( &nli, stream ) ) {
-                        dvc_onInviteReceived( dutil, xwe, &nli );
+                        onInviteReceived( dutil, xwe, &nli );
                     }
                 }
                     break;
@@ -1203,7 +1203,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 stream_putBytes( stream, msg->data, msg->len );
                 NetLaunchInfo nli = {};
                 if ( nli_makeFromStream( &nli, stream ) ) {
-                    dvc_onInviteReceived( dutil, xwe, &nli );
+                    onInviteReceived( dutil, xwe, &nli );
                 } else {
                     XP_ASSERT(0);
                 }
@@ -1219,16 +1219,57 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     }
 } /* dvc_parseSMSPacket */
 
+static void
+handleBTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream )
+{
+    XP_U8 cmd;
+    if ( stream_gotU8( stream, &cmd ) ) {
+        switch ( cmd ) {
+        case BTCMD_INVITE: {
+            NetLaunchInfo nli = {};
+            if ( nli_makeFromStream( &nli, stream ) ) {
+                onInviteReceived( dutil, xwe, &nli );
+            }
+        }
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+}
+
 void
 dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                    const XP_U8* buf, XP_U16 len,
                    const XP_UCHAR* fromName, const XP_UCHAR* fromAddr )
 {
-    XP_USE(dutil);
-    XP_USE(xwe);
-    XP_USE(buf);
     XP_USE(fromName);
     XP_LOGFF( "got %d bytes from %s", len, fromAddr );
+
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    stream_putBytes( stream, buf, len );
+    XP_U8 proto;
+    if ( stream_gotU8( stream, &proto ) ) {
+        XP_LOGFF( "got proto: %d", proto );
+        XP_ASSERT( BT_PROTO == proto );
+        XP_U8 count;
+        if ( stream_gotU8( stream, &count ) ) {
+            XP_LOGFF( "have %d messages", count );
+            for ( int ii = 0; ii < count; ++ii ) {
+                XP_U16 size;
+                if ( !stream_gotU16( stream, &size ) ) {
+                    break;
+                }
+                XP_LOGFF( "message len: %d", size );
+                XWStreamCtxt* msgStream = dvc_makeStream( dutil );
+                stream_getFromStream( msgStream, stream, size );
+                handleBTMessage( dutil, xwe, msgStream );
+                stream_destroy( msgStream );
+            }
+        }
+    }
+
+    stream_destroy( stream );
 }
 
 typedef struct _GetByKeyData {
