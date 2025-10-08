@@ -46,7 +46,7 @@ typedef struct _GtkInviteState {
     CommsAddrRec* addr;
     gint* nPlayersP;
     gint maxPlayers;
-
+    BTHostPair hp;
     GtkWidget* dialog;
     GtkWidget* nPlayersCombo;
 #ifdef XWFEATURE_RELAY
@@ -123,9 +123,11 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 #endif
 #ifdef XWFEATURE_BLUETOOTH
         case COMMS_CONN_BT:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
-            XP_STRNCPY( state->addr->u.bt.hostName, txt,
+            BTHostPair* hp = &state->hp;
+            // txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
+            XP_STRNCPY( state->addr->u.bt.hostName, hp->hostName,
                         sizeof(state->addr->u.bt.hostName) );
+            state->addr->u.bt.btAddr = hp->btAddr;
             break;
 #endif
         case COMMS_CONN_SMS:
@@ -170,15 +172,18 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
         AskPair pairs[count+1] = {};
         int ii = 0;
         for ( GSList* iter = devNames; !!iter; iter = iter->next ) {
-            pairs[ii].txt = iter->data;
+            BTHostPair* hp = iter->data;
+            pairs[ii].txt = hp->hostName;
             pairs[ii].result = ii;
             // XP_LOGF( "%s: got %s", __func__, name );
             ++ii;
         }
         bool success = gtkask_radios( state->dialog, "message",
-                                       pairs, &count );
+                                      pairs, &count );
         if ( success ) {
-            gtk_entry_set_text( GTK_ENTRY(state->bthost), pairs[count].txt );
+            state->hp = *(BTHostPair*)g_slist_nth_data( devNames, count );
+            gtk_entry_set_text( GTK_ENTRY(state->bthost),
+                                state->hp.hostName );
         }
     }
     lbt_freeScan( params, devNames );

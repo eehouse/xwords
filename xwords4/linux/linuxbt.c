@@ -47,8 +47,23 @@
 #include "uuidhack.h"
 #include "gsrcwrap.h"
 #include "gameref.h"
+#include "device.h"
+
+/* /\* begin new *\/ */
+#include <stdlib.h>
+#include <string.h>
+
+#include <sys/socket.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
+
+/* #include <gio/gio.h> */
+
 
 #define MAX_CLIENTS 1
+#define CHANNEL 1
 
 #if defined BT_USE_L2CAP
 # define L2_RF_ADDR struct sockaddr_l2
@@ -104,54 +119,123 @@ on_dbus_closed( GDBusConnection *connection,
     // schedule reconnection
 }
 
-static void
-on_method_call( GDBusConnection *conn,
-                const gchar *sender,
-                const gchar *XP_UNUSED(object_path),
-                const gchar *XP_UNUSED(interface_name),
-                const gchar *method_name,
-                GVariant *parameters,
-                GDBusMethodInvocation *invocation,
-                gpointer user_data )
+/* static void */
+/* on_method_call( GDBusConnection *conn, */
+/*                 const gchar *sender, */
+/*                 const gchar *XP_UNUSED(object_path), */
+/*                 const gchar *XP_UNUSED(interface_name), */
+/*                 const gchar *method_name, */
+/*                 GVariant *parameters, */
+/*                 GDBusMethodInvocation *invocation, */
+/*                 gpointer user_data ) */
+/* { */
+/*     LinuxBTState* btState = (LinuxBTState*)user_data; */
+/*     XP_ASSERT( conn == btState->conn ); */
+/*     XP_LOGFF( "(method_name: %s, sender: %s)", method_name, sender ); */
+/*     if (g_strcmp0(method_name, "NewConnection") == 0) { */
+/*         const gchar *device_path; */
+/*         int fd; */
+/*         GVariant *fd_props; */
+
+/*         g_variant_get(parameters, "(&oh@a{sv})", &device_path, &fd, &fd_props); */
+/*         g_print("NewConnection from %s, fd=%d\n", device_path, fd); */
+
+/*         // make fd non-blocking (optional) */
+/*         int flags = fcntl(fd, F_GETFL, 0); */
+/*         fcntl(fd, F_SETFL, flags | O_NONBLOCK); */
+
+/*         // Example: just read 1 byte (for demonstration) */
+/*         char buf[128]; */
+/*         ssize_t n = read(fd, buf, sizeof(buf)-1); */
+/*         if (n > 0) { */
+/*             buf[n] = 0; */
+/*             g_print("Received: %s\n", buf); */
+/*         } */
+
+/*         g_variant_unref(fd_props); */
+
+/*         // return to BlueZ */
+/*         g_dbus_method_invocation_return_value(invocation, NULL); */
+/*     } else if (g_strcmp0(method_name, "Release") == 0) { */
+/*         g_print("Profile released\n"); */
+/*         g_dbus_method_invocation_return_value(invocation, NULL); */
+/*     } */
+/* } */
+
+/* static const GDBusInterfaceVTable vtable = { */
+/*     .method_call = on_method_call, */
+/*     .get_property = NULL, */
+/*     .set_property = NULL */
+/* }; */
+
+static void*
+serverProc( void* closure )
 {
-    LinuxBTState* btState = (LinuxBTState*)user_data;
-    XP_ASSERT( conn == btState->conn );
-    XP_LOGFF( "(method_name: %s, sender: %s)", method_name, sender );
-    if (g_strcmp0(method_name, "NewConnection") == 0) {
-        const gchar *device_path;
-        int fd;
-        GVariant *fd_props;
+    LaunchParams* params = (LaunchParams*)closure;
+    LOG_FUNC();
+    struct sockaddr_rc loc_addr = {};
 
-        g_variant_get(parameters, "(&oh@a{sv})", &device_path, &fd, &fd_props);
-        g_print("NewConnection from %s, fd=%d\n", device_path, fd);
+    int s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    if (s < 0) {
+        perror("socket"); return NULL;
+    }
 
-        // make fd non-blocking (optional)
-        int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    loc_addr.rc_family = AF_BLUETOOTH;
+    bacpy(&loc_addr.rc_bdaddr, BDADDR_ANY);
+    loc_addr.rc_channel = CHANNEL;
 
-        // Example: just read 1 byte (for demonstration)
-        char buf[128];
-        ssize_t n = read(fd, buf, sizeof(buf)-1);
-        if (n > 0) {
-            buf[n] = 0;
-            g_print("Received: %s\n", buf);
+    if (bind(s, (struct sockaddr *)&loc_addr, sizeof(loc_addr)) < 0) {
+        perror("bind"); close(s); goto out;
+    }
+    if (listen(s, 1) < 0) {
+        perror("listen"); close(s); goto out;
+    }
+
+    for ( ; ; ) {
+        XP_LOGFF("Server listening on RFCOMM channel %d...\n", CHANNEL);
+        struct sockaddr_rc rem_addr = {0};
+        socklen_t opt = sizeof(rem_addr);
+        int client = accept(s, (struct sockaddr *)&rem_addr, &opt);
+        if (client < 0) {
+            perror("accept");
+            close(s);
+            break;
         }
 
-        g_variant_unref(fd_props);
+        char addr_str[18] = {0};
+        ba2str(&rem_addr.rc_bdaddr, addr_str);
+        printf("Accepted connection from %s\n", addr_str);
 
-        // return to BlueZ
-        g_dbus_method_invocation_return_value(invocation, NULL);
-    } else if (g_strcmp0(method_name, "Release") == 0) {
-        g_print("Profile released\n");
-        g_dbus_method_invocation_return_value(invocation, NULL);
+        short hlen;
+        read(client, &hlen, sizeof(hlen));
+        XP_U16 len = ntohs(hlen);
+        if ( 1024 < len ) {
+            XP_LOGFF( "packet too large, at %d", len );
+        } else {
+            XP_U8 buf[len];
+            ssize_t bytes = read( client, buf, len );
+            if (bytes == len ) {
+                XP_LOGFF("Received: %d bytes", len);
+                dvc_parseBTPacket( params->dutil, NULL_XWE,
+                                   buf, len, NULL, addr_str );
+            } else {
+                XP_LOGFF( "too few bytes? got %ld, expected %d", bytes, len );
+            }
+        }
+
+        close(client);
     }
+ out:
+    close(s);
+    return NULL;
 }
 
-static const GDBusInterfaceVTable vtable = {
-    .method_call = on_method_call,
-    .get_property = NULL,
-    .set_property = NULL
-};
+static void
+startListener( LaunchParams* params )
+{
+    pthread_t thread;
+    (void)pthread_create( &thread, NULL, serverProc, params );
+}
 
 static LinuxBTState*
 lbt_make( LaunchParams* params )
@@ -169,80 +253,8 @@ lbt_make( LaunchParams* params )
                      btState);
     XP_LOGFF( "connected using dbus conn" );
 
-    // Introspect XML to create interface skeleton
-    const gchar profile_xml[] =
-        "<node>"
-        "  <interface name='org.bluez.Profile1'>"
-        "    <method name='NewConnection'>"
-        "      <arg type='o' name='device' direction='in'/>"
-        "      <arg type='h' name='fd' direction='in'/>"
-        "      <arg type='a{sv}' name='fd_properties' direction='in'/>"
-        "    </method>"
-        "    <method name='RequestDisconnection'>"
-        "      <arg type='o' name='device' direction='in'/>"
-        "    </method>"
-        "    <method name='Release'/>"
-        "  </interface>"
-        "</node>";
+    startListener( params );
 
-    GDBusNodeInfo *introspection =
-        g_dbus_node_info_new_for_xml( profile_xml, &error );
-    if (!introspection) {
-        XP_LOGFF("Failed to parse introspection XML: %s", error->message);
-        XP_ASSERT(0);
-    }
-
-    // Export the object path first
-    guint reg_id = g_dbus_connection_register_object
-        ( btState->conn,
-          PROFILE_PATH,
-          introspection->interfaces[0],
-          &vtable,
-          btState,  // user_data
-          NULL,  // user_data_free_func
-          &error );
-
-    if (!reg_id) {
-        XP_LOGFF("Failed to register object path: %s", error->message);
-        XP_ASSERT(0);
-    }
-
-    // Register profile
-    // Build the dictionary inline
-    GVariantBuilder dict_builder;
-    g_variant_builder_init(&dict_builder, G_VARIANT_TYPE("a{sv}"));
-    g_variant_builder_add(&dict_builder, "{sv}", "AutoConnect", g_variant_new_boolean(TRUE));
-    g_variant_builder_add(&dict_builder, "{sv}", "Role", g_variant_new_string("server"));
-    g_variant_builder_add(&dict_builder, "{sv}", "Channel", g_variant_new_uint16(1));
-    g_variant_builder_add(&dict_builder, "{sv}", "Service", g_variant_new_string(UUID));
-    g_variant_builder_add(&dict_builder, "{sv}", "Name", g_variant_new_string("EricsServer"));
-
-    // Build the tuple with object path, UUID, and dictionary
-    GVariantBuilder tuple_builder;
-    g_variant_builder_init(&tuple_builder, G_VARIANT_TYPE("(osa{sv})"));
-    g_variant_builder_add(&tuple_builder, "o", PROFILE_PATH);
-    g_variant_builder_add(&tuple_builder, "s", UUID);
-    g_variant_builder_add(&tuple_builder, "a{sv}", &dict_builder);
-    GVariant *profile_opts = g_variant_builder_end(&tuple_builder);
-    XP_ASSERT( !!profile_opts );
-
-    GVariant* result = g_dbus_connection_call_sync
-        (btState->conn, "org.bluez", "/org/bluez",
-         "org.bluez.ProfileManager1", "RegisterProfile",
-         profile_opts, NULL,
-         G_DBUS_CALL_FLAGS_NONE,
-         -1, NULL, &error);
-
-    if (!result) {
-        XP_LOGFF("RegisterProfile failed: %s", error->message);
-        XP_ASSERT(0);
-    }
-
-    XP_LOGFF("Profile registered, waiting for connections...");
-
-    // Listen for new connections
-    // g_signal_connect( btState->conn, "signal", G_CALLBACK(on_new_connection), btState );
-    
     return btState;
 } /* lbt_make */
 
@@ -345,26 +357,73 @@ lbt_destroy( LaunchParams* params )
 /*     return nSent; */
 /* } /\* lbt_send_impl *\/ */
 
-XP_S16
-lbt_send( const SendMsgsPacket* const XP_UNUSED(msgs),
-          const CommsAddrRec* XP_UNUSED(addrRec),
-          LaunchParams* XP_UNUSED(params) )
+typedef struct _BTSendData {
+    LaunchParams* params;
+    XP_U16 len;
+    XP_U8* buf;
+    XP_UCHAR hostName[64];
+    XP_BtAddrStr btAddr;
+} BTSendData;
+
+
+static void*
+sendProc( void* closure )
 {
-    XP_ASSERT(0);               /* look this stuff over; I doubt it works,
-                                   starting with lbt_open() never being
-                                   called. */
-    /* XP_S16 result = 0; */
-    /* for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs; */
-    /*       !!packet; packet = (SendMsgsPacket* const)packet->next ) { */
-    /*     XP_S16 tmp = lbt_send_impl( packet->buf, packet->len, */
-    /*                                      addrRec, cGlobals ); */
-    /*     if ( tmp > 0 ) { */
-    /*         result += tmp; */
-    /*     } else { */
-    /*         result = -1; */
-    /*         break; */
-    /*     } */
-    /* } */
+    BTSendData* dp = (BTSendData*)closure;
+    XP_LOGFF( "(len: %d, hostName: %s, addr: %s)", dp->len, dp->hostName, dp->btAddr.chars );
+
+    int s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    if (s < 0) {
+        perror("socket");
+        goto err;
+    }
+
+    struct sockaddr_rc addr = {
+        .rc_family = AF_BLUETOOTH,
+        .rc_channel = CHANNEL,
+    };
+    const char* addr_str = dp->btAddr.chars;
+    if (str2ba(addr_str, &addr.rc_bdaddr) < 0) {
+        XP_LOGFF( "Invalid Bluetooth address %s", addr_str);
+        goto err;
+    }
+
+    XP_LOGFF("Connecting to %s on RFCOMM channel %d...", addr_str, CHANNEL);
+    int status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+    if (status == 0) {
+        printf("Connected. Sending len plus %d bytes...", dp->len);
+        short hlen = htons(dp->len);
+        write( s, &hlen, sizeof(hlen) );
+        write( s, dp->buf, dp->len );
+        printf("Message sent.\n");
+    } else {
+        XP_LOGFF( "error connecting" );
+        goto err;
+    }
+
+ err:
+    close(s);
+    g_free(dp);
+    return NULL;
+}
+
+XP_S16
+lbt_send( LaunchParams* params, const XP_U8* buf, XP_U16 len,
+          const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
+{
+    XP_LOGFF( "(len: %d, hostName: %s, addr: %s)", len, hostName, btAddr->chars );
+    // LinuxBTState* btState = params->btState;
+    BTSendData* dp = g_malloc0( sizeof(*dp) );
+    dp->len = len;
+    dp->buf = g_malloc(len);
+    memcpy( dp->buf, buf, len );
+    strcat( dp->hostName, hostName );
+    dp->btAddr = *btAddr;
+    dp->params = params;
+
+    pthread_t thread;
+    (void)pthread_create( &thread, NULL, sendProc, dp );
+
     return -1;
 }
 
@@ -553,10 +612,13 @@ lbt_scan( LaunchParams* params )
         GVariant *name_var = g_dbus_proxy_get_cached_property(G_DBUS_PROXY(iface), "Name");
 
         const gchar* name = g_variant_get_string(name_var, NULL);
-        XP_LOGFF("Paired device: %s (%s)", name,
-                 g_variant_get_string(addr_var, NULL));
+        const gchar* addr = g_variant_get_string(addr_var, NULL);
+        XP_LOGFF("Paired device: %s (%s)", name, addr );
 
-        result = g_slist_append( result, g_strdup(name) );
+        BTHostPair* hp = g_malloc0( sizeof(*hp) );
+        strcat( hp->hostName, name );
+        strcat( hp->btAddr.chars, addr );
+        result = g_slist_append( result, hp );
 
         g_variant_unref(paired_var);
         g_variant_unref(addr_var);

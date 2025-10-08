@@ -1219,6 +1219,18 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     }
 } /* dvc_parseSMSPacket */
 
+void
+dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
+                   const XP_U8* buf, XP_U16 len,
+                   const XP_UCHAR* fromName, const XP_UCHAR* fromAddr )
+{
+    XP_USE(dutil);
+    XP_USE(xwe);
+    XP_USE(buf);
+    XP_USE(fromName);
+    XP_LOGFF( "got %d bytes from %s", len, fromAddr );
+}
+
 typedef struct _GetByKeyData {
     XP_U32 resultKey;
     WSData* found;
