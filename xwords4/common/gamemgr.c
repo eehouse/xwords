@@ -978,56 +978,57 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
     XW_DUtilCtxt* duc = grps->duc;
     SORT_ORDER* sos = grps->sos;
     int result = 0;
-
-    const CurGameInfo* gi1 = gr_getGI( duc, (GameRef)dl1, xwe );
-    const CurGameInfo* gi2 = gr_getGI( duc, (GameRef)dl2, xwe );
-    const GameSummary* gs1 = gr_getSummary( duc, (GameRef)dl1, xwe );
-    const GameSummary* gs2 = gr_getSummary( duc, (GameRef)dl2, xwe );
-    for ( int ii = 0; result == 0 && ii < grps->nSOs; ++ii ) {
-        switch ( sos[ii] ) {
-        case SO_HASCHAT:
-            result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
-            break;
-        case SO_GAMENAME:
-            if ( !gi1->gameName[0] && !gi2->gameName[0] ) {
-                /* they're equal */
-            } else if ( !gi1->gameName[0] ) {
-                result = -1;
-            } else if ( !gi2->gameName[0] ) {
-                result = 1;
-            } else {
-                result = XP_STRCMP( gi1->gameName, gi2->gameName );
+    if ( dl1 != dl2 ) {         /* identity? short-circuit */
+        const CurGameInfo* gi1 = gr_getGI( duc, (GameRef)dl1, xwe );
+        const CurGameInfo* gi2 = gr_getGI( duc, (GameRef)dl2, xwe );
+        const GameSummary* gs1 = gr_getSummary( duc, (GameRef)dl1, xwe );
+        const GameSummary* gs2 = gr_getSummary( duc, (GameRef)dl2, xwe );
+        for ( int ii = 0; result == 0 && ii < grps->nSOs; ++ii ) {
+            switch ( sos[ii] ) {
+            case SO_HASCHAT:
+                result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
+                break;
+            case SO_GAMENAME:
+                if ( !gi1->gameName[0] && !gi2->gameName[0] ) {
+                    /* they're equal */
+                } else if ( !gi1->gameName[0] ) {
+                    result = -1;
+                } else if ( !gi2->gameName[0] ) {
+                    result = 1;
+                } else {
+                    result = XP_STRCMP( gi1->gameName, gi2->gameName );
+                }
+                break;
+            case SO_CREATED:
+                if ( gi1->created < gi2->created ) {
+                    result = -1;
+                } else if ( gi1->created > gi2->created ) {
+                    result = 1;
+                }
+                break;
+            case SO_GAMESTATE: {
+                int sc1 = stateCodeFor( gs1 );
+                int sc2 = stateCodeFor( gs2 );
+                result = sc1 - sc2;
             }
-            break;
-        case SO_CREATED:
-            if ( gi1->created < gi2->created ) {
-                result = -1;
-            } else if ( gi1->created > gi2->created ) {
-                result = 1;
+                break;
+            case SO_TURNLOCAL:
+                /* reverse so local turns sort first  */
+                result = ((int)gs2->turnIsLocal) - ((int)gs1->turnIsLocal);
+                break;
+            case SO_LASTMOVE_TS:
+                result = cmpU32( gs1->lastMoveTime, gs2->lastMoveTime );
+                break;
+
+            default:
+                XP_LOGFF( "so %d not handled", sos[ii] );
+                XP_ASSERT(0);
             }
-            break;
-        case SO_GAMESTATE: {
-            int sc1 = stateCodeFor( gs1 );
-            int sc2 = stateCodeFor( gs2 );
-            result = sc1 - sc2;
         }
-            break;
-        case SO_TURNLOCAL:
-            /* reverse so local turns sort first  */
-            result = ((int)gs2->turnIsLocal) - ((int)gs1->turnIsLocal);
-            break;
-        case SO_LASTMOVE_TS:
-            result = cmpU32( gs1->lastMoveTime, gs2->lastMoveTime );
-            break;
 
-        default:
-            XP_LOGFF( "so %d not handled", sos[ii] );
-            XP_ASSERT(0);
+        if ( !result ) {
+            result = PtrCmpProc( dl1, dl2, xwe, NULL );
         }
-    }
-
-    if ( !result ) {
-        result = PtrCmpProc( dl1, dl2, xwe, NULL );
     }
     return result;
 }
