@@ -220,7 +220,11 @@ int
 PtrCmpProc(const void* dl1, const void* dl2,
            XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure))
 {
-    return dl1 - dl2;
+    int result;
+    if ( dl1 < dl2 ) result = -1;
+    else if ( dl1 > dl2 ) result = 1;
+    else result = 0;
+    return result;
 }
 
 static void
