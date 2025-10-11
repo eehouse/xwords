@@ -21,7 +21,7 @@
 #include "xwarray.h"
 #include "dictmgrp.h"
 #include "stats.h"
-#include "device.h"
+#include "devicep.h"
 #include "nli.h"
 #include "dbgutil.h"
 #include "timers.h"
@@ -1503,7 +1503,7 @@ gmgr_addGame( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, GameRef gr )
 
 void
 gmgr_onMessageReceived(XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                       const CommsAddrRec* from, XP_U8* msgBuf,
+                       const CommsAddrRec* from, const XP_U8* msgBuf,
                        XP_U16 msgLen, const MsgCountState* mcs )
 {
     GameRef grs[3];

@@ -20,7 +20,7 @@ n *
 #include "chatp.h"
 #include "xwarray.h"
 #include "strutils.h"
-#include "device.h"
+#include "devicep.h"
 #include "util.h"
 
 typedef struct _ChatEntry {

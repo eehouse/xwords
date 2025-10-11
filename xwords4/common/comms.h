@@ -176,7 +176,8 @@ void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );
-
+void addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName,
+                 const XP_UCHAR* btAddr );
 
 void types_addType( ConnTypeSetBits* conTypes, CommsConnType type );
 void types_rmType( ConnTypeSetBits* conTypes, CommsConnType type );

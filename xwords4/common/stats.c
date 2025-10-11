@@ -17,7 +17,7 @@
  */
 
 #include "stats.h"
-#include "device.h"
+#include "devicep.h"
 #include "xwstream.h"
 #include "strutils.h"
 #include "dbgutil.h"

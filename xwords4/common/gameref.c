@@ -21,7 +21,7 @@
 #include "gamemgrp.h"
 #include "gamep.h"
 #include "strutils.h"
-#include "device.h"
+#include "devicep.h"
 #include "gamemgr.h"
 #include "stats.h"
 #include "timers.h"

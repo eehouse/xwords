@@ -61,6 +61,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/dutil.o \
 	$(COMMONOBJDIR)/util.o \
 	$(COMMONOBJDIR)/device.o \
+	$(COMMONOBJDIR)/dvcbt.o \
 	$(COMMONOBJDIR)/chatp.o \
 	$(COMMONOBJDIR)/knownplyr.o \
 	$(COMMONOBJDIR)/dllist.o \

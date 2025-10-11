@@ -33,6 +33,7 @@
 #include "gamemgrp.h"
 #include "stats.h"
 #include "dictmgrp.h"
+#include "dvcbtp.h"
 
 #ifdef DEBUG
 # define MAGIC_INITED 0x8283413F
@@ -231,13 +232,6 @@ dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
 /*     } */
 /*     stream_destroy( stream ); */
 /* } */
-
-static void
-onInviteReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli )
-{
-    /*GameRef gr = */
-    gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, nli );
-}
 
 void
 dvc_onGameGoneReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
@@ -483,52 +477,23 @@ sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     stream_destroy( stream );
 }
 
-typedef enum {
-    BTCMD_BAD_PROTO,
-    BTCMD_PING,
-    BTCMD_PONG,
-    BTCMD_SCAN,
-    BTCMD_INVITE,
-    BTCMD_INVITE_ACCPT,
-    BTCMD__INVITE_DECL,  // unused
-    BTCMD_INVITE_DUPID,
-    BTCMD__INVITE_FAILED,  // generic error, and unused
-    BTCMD_MESG_SEND,
-    BTCMD_MESG_ACCPT,
-    BTCMD__MESG_DECL,  // unused
-    BTCMD_MESG_GAMEGONE,
-    BTCMD__REMOVE_FOR,  // unused
-    BTCMD_INVITE_DUP_INVITE,
-    BTCMD_MAC_ASK,  // ask peer what my mac address is
-    BTCMD_MAC_REPLY,  // reply to above
-} BTCmd;
 
-#define BT_PROTO_BATCH 2
-#define BT_PROTO BT_PROTO_BATCH
+/* static ForEachAct */
+/* addBTMsgProc( void* elem, void* closure, XWEnv xwe ) */
+/* { */
+/*     /\* tmp stream lets us put message together then get length *\/ */
+/*     XWStreamCtxt* msgStream = (XWStreamCtxt*)elem; */
+/*     XWStreamCtxt* tmpStream = dvc_makeStream( dutil ); */
+/*     stream_putU8( tmpStream, BTCMD_MESG_SEND ); */
+/*     XP_U16 size = stream_getSize(msgStream) */
+/*     stream_putU16( tmpStream, size ); */
+/*     stream_getFromStream( tmpStream, msgStream, size ); */
 
-static void
-sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
-                 const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
-{
-    XWStreamCtxt* stream = dvc_makeStream( dutil );
-    stream_putU8( stream, BT_PROTO );
-    stream_putU8( stream, 1 );  /* one message in this packet */
-
-    /* tmp stream lets us put message together then get length */
-    XWStreamCtxt* tmpStream = dvc_makeStream( dutil );
-    stream_putU8( tmpStream, BTCMD_INVITE );
-    nli_saveToStream( nli, tmpStream );
-    XP_U16 size = stream_getSize(tmpStream);
-    stream_putU16( stream, size );
-    stream_getFromStream( stream, tmpStream, size );
-    stream_destroy( tmpStream );
-
-    const XP_U8* ptr = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
-    dutil_sendViaBT( dutil, xwe, ptr, len, hostName, btAddr );
-
-    stream_destroy( stream );
-}
+/*     XWStreamCtxt* outStream = (XWStreamCtxt*)closure; */
+/*     stream_getFromStream( outStream, tmpStream, stream_getSize(tmpStream) ); */
+/*     stream_destroy( tmpStream ); */
+/*     return FEA_OK; */
+/* } */
 
 XP_S16
 dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
@@ -572,10 +537,12 @@ sendMsgViaMQTT(XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* addressee,
 static void
 sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
                const SendMsgsPacket* const packets,
-               const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
+               const CommsAddrRec* addr, XP_U32 gameID )
 {
     initSMSProtoOnce( dutil, xwe );
 
+    const XP_UCHAR* phone = addr->u.sms.phone;
+    XP_U16 port = addr->u.sms.port;
     for ( SendMsgsPacket* packet = (SendMsgsPacket*)packets;
           !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         XP_U16 waitSecs;
@@ -586,23 +553,6 @@ sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
         sendOrRetry( dutil, xwe, arr, DATA, waitSecs, phone, port, gameID,
                      packet->msgNo );
     }
-
-    /* XP_U16 waitSecs; */
-    /* SMSMsgArray* arr = smsproto_prepOutbound( dutil->protoState, NULL_XWE, DATA, gameID, */
-    /*                                           buf, buflen, phone, port, */
-    /*                                           XP_TRUE, &waitSecs ); */
-    /*     sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo ); */
-    /*     nSent = buflen; */
-    /* } else { */
-    /*     XP_LOGFF( "dropping: sms not configured" ); */
-    /* } */
-}
-
-static void
-sendMsgViaBT()
-{
-    LOG_FUNC();
-    XP_ASSERT(0);
 }
 
 XP_S16
@@ -620,14 +570,13 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
                         gameID, streamVersion );
         break;
     case COMMS_CONN_SMS:
-        sendMsgViaNBS( dutil, xwe, packets, addr->u.sms.phone,
-                       addr->u.sms.port, gameID );
+        sendMsgViaNBS( dutil, xwe, packets, addr, gameID );
         break;
     case COMMS_CONN_NFC:
         XP_LOGFF( "Nothing to do for NFC" );
         break;
     case COMMS_CONN_BT:
-        sendMsgViaBT();
+        sendMsgsViaBT( dutil, xwe, packets, addr, gameID );
         break;
     default:
         XP_LOGFF( "don't handle %s", ConnType2Str( typ ) );
@@ -1142,7 +1091,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                 case CMD_INVITE: {
                     NetLaunchInfo nli = {};
                     if ( nli_makeFromStream( &nli, stream ) ) {
-                        onInviteReceived( dutil, xwe, &nli );
+                        gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, &nli );
                     }
                 }
                     break;
@@ -1203,7 +1152,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 stream_putBytes( stream, msg->data, msg->len );
                 NetLaunchInfo nli = {};
                 if ( nli_makeFromStream( &nli, stream ) ) {
-                    onInviteReceived( dutil, xwe, &nli );
+                    gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, &nli );
                 } else {
                     XP_ASSERT(0);
                 }
@@ -1219,57 +1168,12 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     }
 } /* dvc_parseSMSPacket */
 
-static void
-handleBTMessage( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream )
-{
-    XP_U8 cmd;
-    if ( stream_gotU8( stream, &cmd ) ) {
-        switch ( cmd ) {
-        case BTCMD_INVITE: {
-            NetLaunchInfo nli = {};
-            if ( nli_makeFromStream( &nli, stream ) ) {
-                onInviteReceived( dutil, xwe, &nli );
-            }
-        }
-            break;
-        default:
-            XP_ASSERT(0);
-        }
-    }
-}
-
 void
 dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                    const XP_U8* buf, XP_U16 len,
                    const XP_UCHAR* fromName, const XP_UCHAR* fromAddr )
 {
-    XP_USE(fromName);
-    XP_LOGFF( "got %d bytes from %s", len, fromAddr );
-
-    XWStreamCtxt* stream = dvc_makeStream( dutil );
-    stream_putBytes( stream, buf, len );
-    XP_U8 proto;
-    if ( stream_gotU8( stream, &proto ) ) {
-        XP_LOGFF( "got proto: %d", proto );
-        XP_ASSERT( BT_PROTO == proto );
-        XP_U8 count;
-        if ( stream_gotU8( stream, &count ) ) {
-            XP_LOGFF( "have %d messages", count );
-            for ( int ii = 0; ii < count; ++ii ) {
-                XP_U16 size;
-                if ( !stream_gotU16( stream, &size ) ) {
-                    break;
-                }
-                XP_LOGFF( "message len: %d", size );
-                XWStreamCtxt* msgStream = dvc_makeStream( dutil );
-                stream_getFromStream( msgStream, stream, size );
-                handleBTMessage( dutil, xwe, msgStream );
-                stream_destroy( msgStream );
-            }
-        }
-    }
-
-    stream_destroy( stream );
+    parseBTPacket( dutil, xwe, buf, len, fromName, fromAddr );
 }
 
 typedef struct _GetByKeyData {

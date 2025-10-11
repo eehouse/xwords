@@ -191,6 +191,14 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
 }
 
 static void
+handle_setSelf( GtkWidget* XP_UNUSED(widget), gpointer closure )
+{
+    GtkInviteState* state = (GtkInviteState*)closure;
+    lbt_setToSelf( state->globals->cGlobals.params, &state->hp );
+    gtk_entry_set_text( GTK_ENTRY(state->bthost), state->hp.hostName );
+}
+
+static void
 handle_self( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkInviteState* state = (GtkInviteState*)closure;
@@ -246,9 +254,14 @@ makeBTPage( GtkInviteState* state, PageData* data )
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
+
+    hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     state->bgScanButton = makeButton( "Scan", (GCallback)handle_scan,
                                       state );
-    gtk_box_pack_start( GTK_BOX(vbox), state->bgScanButton, FALSE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), state->bgScanButton, FALSE, TRUE, 0 );
+    GtkWidget* button = makeButton( "Set self", (GCallback)handle_setSelf, state );
+    gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
 

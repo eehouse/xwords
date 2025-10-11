@@ -89,9 +89,6 @@ XP_U8 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv env );
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
-/* Utility functions; not an API to count on!! */
-XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
-
 GameRef dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                             XWStreamCtxt* stream, const CurGameInfo* gi,
                             XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp);

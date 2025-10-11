@@ -92,7 +92,7 @@ GroupRef gmgr_toGroup(GLItemRef ir);
 XP_Bool gmgr_getGroupCollapsed( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp );
 XP_U32 gmgr_getGroupGamesCount(XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp);
 void gmgr_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                             const CommsAddrRec* from, XP_U8* msgBuf,
+                             const CommsAddrRec* from, const XP_U8* msgBuf,
                              XP_U16 msgLen, const MsgCountState* mcs );
 void gmgr_clearThumbnails( XW_DUtilCtxt* duc, XWEnv xwe );
 
