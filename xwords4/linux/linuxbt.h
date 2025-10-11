@@ -43,6 +43,7 @@ typedef struct _BTHostPair {
 
 GSList* lbt_scan( LaunchParams* params );
 void lbt_freeScan( LaunchParams* params, GSList* list );
+void lbt_setToSelf( LaunchParams* params, BTHostPair* hp );
 
 XP_Bool nameToBtAddr( const char* name, bdaddr_t* ba );
 

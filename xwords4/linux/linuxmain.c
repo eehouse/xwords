@@ -603,6 +603,7 @@ typedef enum {
     ,CMD_SKIP_GAMEOVER
     ,CMD_NO_SHOW_OTHERSCORES
     ,CMD_SKIP_MQTT
+    ,CMD_SKIP_BT
     ,CMD_HOSTIP
     ,CMD_HOSTPORT
     ,CMD_MYPORT
@@ -757,6 +758,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_NO_SHOW_OTHERSCORES, false, "no-show-other", "Don't show robot/remote scores" }
     ,{ CMD_SKIP_MQTT, false, "skip-mqtt-add", "Do not add MQTT to games as they connect" }
+    ,{ CMD_SKIP_BT, false, "disable-bt", "Don't support or offer bluetooth" }
     ,{ CMD_HOSTIP, true, "host-ip", "remote host ip address (for direct connect)" }
     ,{ CMD_HOSTPORT, true, "host-port", "remote host ip address (for direct connect)" }
     ,{ CMD_MYPORT, true, "my-port", "remote host ip address (for direct connect)" }
@@ -2158,7 +2160,7 @@ testOneString( const LaunchParams* params, GSList* testDicts )
 #endif
 
 void
-makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
+makeSelfAddress( CommsAddrRec* selfAddr, LaunchParams* params )
 {
     XP_MEMSET( selfAddr, 0, sizeof(*selfAddr) );
 
@@ -2176,6 +2178,12 @@ makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params )
             XP_STRCAT( selfAddr->u.sms.phone, params->connInfo.sms.myPhone );
             XP_ASSERT( 1 == params->connInfo.sms.port ); /* It's ignored, but keep it 1 */
             selfAddr->u.sms.port = params->connInfo.sms.port;
+            break;
+        case COMMS_CONN_BT: {
+            BTHostPair hp;
+            lbt_setToSelf( params, &hp );
+            addr_addBT( selfAddr, hp.hostName, hp.btAddr.chars );
+        }
             break;
         default:
             XP_ASSERT(0);
@@ -2629,6 +2637,9 @@ main( int argc, char** argv )
             break;
         case CMD_SKIP_MQTT:
             mainParams.skipMQTTAdd = XP_TRUE;
+            break;
+        case CMD_SKIP_BT:
+            mainParams.disableBT = XP_TRUE;
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:

@@ -26,6 +26,7 @@
 */
 
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -64,6 +65,7 @@
 
 #define MAX_CLIENTS 1
 #define CHANNEL 1
+#define SELF_NAME "localhost"
 
 #if defined BT_USE_L2CAP
 # define L2_RF_ADDR struct sockaddr_l2
@@ -74,36 +76,13 @@
 #define PROFILE_PATH "/org/bluez/my/profile"
 #define UUID "00001101-0000-1000-8000-00805f9b34fb"
 
-/* LinuxBTState* */
-/* lbt_init( LaunchParams* params ) */
-/* { */
-/* } */
-
-/* void */
-/* lbt_destroy( LinuxBTState** state ) */
-/* { */
-/* } */
-
 struct LinuxBTState {
-    union {
-        struct {
-            int listener;               /* socket */
-            void* listenerStorage;
-            XP_Bool threadDie;
-            sdp_session_t* session;
-        } master;
-    } u;
-
-    /* A single socket's fine as long as there's only one client allowed. */
-    // int socket;
-    // XP_Bool amMaster;
-
+    XP_BtAddrStr myBtAddr;
     GDBusConnection* conn;
 } LinBtStuff;
 
-/* static gboolean bt_socket_proc( GIOChannel* source, GIOCondition condition,  */
-/*                                 gpointer data ); */
-
+static XP_Bool isLocalSend( const LaunchParams* params,
+                            const XP_BtAddrStr* btAddr );
 
 static void
 on_dbus_closed( GDBusConnection *connection,
@@ -237,6 +216,56 @@ startListener( LaunchParams* params )
     (void)pthread_create( &thread, NULL, serverProc, params );
 }
 
+/* Looks like ChatGPT stole this from some MIT course notes */
+static void
+figureSelfAddress( LinuxBTState* btState )
+{
+    int hciSocket = hci_open_dev(hci_get_route(NULL));
+    XP_LOGFF( "hciSocket: %d", hciSocket );
+
+    // Create int and pointers to hold results for later
+    if ( 0 < hciSocket ) {
+        struct hci_dev_list_req *devList;
+
+        // Allocate memory for devList pointer. Based on HCI_MAX_DEV (maximum
+        // number of HCI devices) multiplied by the size of struct hci_dev_req,
+        // plus the size of uint16_t (to store the device number)
+        devList = (struct hci_dev_list_req *)
+            malloc(HCI_MAX_DEV * sizeof(*devList) + sizeof(uint16_t));
+        if (!devList) {
+            XP_LOGFF("Failed to allocate HCI device request memory");
+            goto exit;
+        }
+
+        devList->dev_num = HCI_MAX_DEV;
+
+        // Send the HCIGETDEVLIST command to get the device list.
+        if (ioctl(hciSocket, HCIGETDEVLIST, (void *)devList) < 0) {
+            XP_LOGFF("Failed to get HCI device list");
+            free(devList);
+            goto exit;
+        }
+        int devCount = devList->dev_num;
+        XP_LOGFF( "ioctl worked: got %d", devCount );
+
+        for (int ii = 0; ii < devCount; ii++) {
+            // Set the device ID for device info retrieval
+            struct hci_dev_info devInfo = {
+                .dev_id = devList->dev_req[ii].dev_id,
+                    };
+            if (ioctl(hciSocket, HCIGETDEVINFO, (void *)&devInfo) < 0) {
+                XP_LOGFF("Failed to get HCI device info");
+                continue;
+            }
+
+            ba2str(&devInfo.bdaddr, btState->myBtAddr.chars );
+            XP_LOGFF( "got addr: %s", btState->myBtAddr.chars );
+        }
+    exit:
+        close(hciSocket);
+    }
+}
+
 static LinuxBTState*
 lbt_make( LaunchParams* params )
 {
@@ -252,6 +281,8 @@ lbt_make( LaunchParams* params )
     g_signal_connect(btState->conn, "closed", G_CALLBACK(on_dbus_closed),
                      btState);
     XP_LOGFF( "connected using dbus conn" );
+
+    figureSelfAddress(btState);
 
     startListener( params );
 
@@ -365,6 +396,12 @@ typedef struct _BTSendData {
     XP_BtAddrStr btAddr;
 } BTSendData;
 
+static void
+freeSendData( BTSendData* dp )
+{
+    g_free( dp->buf );
+    g_free( dp );
+}
 
 static void*
 sendProc( void* closure )
@@ -403,27 +440,45 @@ sendProc( void* closure )
 
  err:
     close(s);
-    g_free(dp);
+    freeSendData(dp);
     return NULL;
+}
+
+static int
+sendToSelfIdle( void* closure )
+{
+    BTSendData* dp = (BTSendData*)closure;
+    dvc_parseBTPacket( dp->params->dutil, NULL_XWE,
+                       dp->buf, dp->len,
+                       dp->hostName, dp->btAddr.chars );
+    freeSendData( dp );
+    return 0;                   /* don't run again */
 }
 
 XP_S16
 lbt_send( LaunchParams* params, const XP_U8* buf, XP_U16 len,
           const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
 {
-    XP_LOGFF( "(len: %d, hostName: %s, addr: %s)", len, hostName, btAddr->chars );
-    // LinuxBTState* btState = params->btState;
-    BTSendData* dp = g_malloc0( sizeof(*dp) );
-    dp->len = len;
-    dp->buf = g_malloc(len);
-    memcpy( dp->buf, buf, len );
-    strcat( dp->hostName, hostName );
-    dp->btAddr = *btAddr;
-    dp->params = params;
+    LinuxBTState* btState = params->btState;
+    if ( !!btState ) {
+        XP_LOGFF( "(len: %d, hostName: %s, addr: %s)", len, hostName, btAddr->chars );
+        BTSendData* dp = g_malloc0( sizeof(*dp) );
+        dp->len = len;
+        dp->buf = g_malloc(len);
+        memcpy( dp->buf, buf, len );
+        strcat( dp->hostName, hostName );
+        dp->btAddr = *btAddr;
+        dp->params = params;
 
-    pthread_t thread;
-    (void)pthread_create( &thread, NULL, sendProc, dp );
-
+        if ( isLocalSend(params, btAddr) ) {
+            g_idle_add( sendToSelfIdle, dp );
+        } else {
+            pthread_t thread;
+            (void)pthread_create( &thread, NULL, sendProc, dp );
+        }
+    } else {
+        XP_LOGFF( "no btState; shutting down?" );
+    }
     return -1;
 }
 
@@ -443,41 +498,6 @@ read_all( int sock, unsigned char* buf, const int len )
     }
 }
 #endif
-
-XP_S16
-lbt_receive( int sock, XP_U8* buf, XP_U16 buflen )
-{
-    XP_S16 nRead = 0;
-    LOG_FUNC();
-    XP_ASSERT( sock >= 0 );
-
-#if defined BT_USE_RFCOMM
-    read_all( sock, (unsigned char*)&nRead, sizeof(nRead) );
-    nRead = ntohs(nRead);
-    XP_LOGFF( "nRead=%d", nRead );
-    XP_ASSERT( nRead < buflen );
-
-    read_all( sock, buf, nRead );
-    LOG_HEX( buf, nRead, __func__ );
-#else        
-    nRead = read( sock, buf, buflen );
-    if ( nRead < 0 ) {
-        XP_LOGFF( "read->%s", strerror(errno) );
-    }
-#endif
-
-    LOG_RETURNF( "%d", nRead );
-    return nRead;
-}
-
-/* void */
-/* lbt_socketclosed( CommonGlobals* cGlobals, int XP_UNUSED_DBG(sock) ) */
-/* { */
-/*     LinBtStuff* btStuff = cGlobals->btStuff; */
-/*     LOG_FUNC(); */
-/*     XP_ASSERT( sock == btStuff->socket ); */
-/*     btStuff->socket = -1; */
-/* } */
 
 #define RESPMAX 20
 
@@ -633,6 +653,21 @@ lbt_freeScan( LaunchParams* params, GSList* list )
 {
     XP_USE(params);
     XP_USE(list);
+}
+
+void
+lbt_setToSelf( LaunchParams* params, BTHostPair* hp )
+{
+    strcpy( hp->hostName, SELF_NAME );
+    LinuxBTState* btState = params->btState;
+    strcpy( hp->btAddr.chars, btState->myBtAddr.chars );
+}
+
+static XP_Bool
+isLocalSend( const LaunchParams* params, const XP_BtAddrStr* btAddr )
+{
+    LinuxBTState* btState = params->btState;
+    return 0 == strcmp( btState->myBtAddr.chars, btAddr->chars );
 }
 
 /* static gboolean */

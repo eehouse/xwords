@@ -2265,8 +2265,8 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
             COMMS_LOGFF( "elem's sendCount since load: %d", elem->sendCount );
         }
         CNO_FMT( cbuf1, elem->channelNo );
-        COMMS_LOGFF( "(%s; msgID=" XP_LD ", len=%d)=>%d", cbuf1, elem->msgID,
-                     elem->smp.len, result );
+        COMMS_LOGFF( "(%s; msgID=" XP_LD ", len=%d, sum=%s)=>%d", cbuf1, elem->msgID,
+                     elem->smp.len, elem->sb.buf, result );
     }
     return result;
 } /* sendMsg */
@@ -3828,6 +3828,14 @@ addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 {
     XP_Bool result = types_iter( addr->_conTypes, typp, state );
     return result;
+}
+
+void
+addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName, const XP_UCHAR* btAddr )
+{
+    addr_addType( addr, COMMS_CONN_BT );
+    str2ChrArray( addr->u.bt.hostName, btName );
+    str2ChrArray( addr->u.bt.btAddr.chars, btAddr );
 }
 
 XP_Bool

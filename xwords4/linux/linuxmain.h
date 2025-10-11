@@ -100,7 +100,7 @@ void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
 XP_Bool parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort );
 
-void makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params );
+void makeSelfAddress( CommsAddrRec* selfAddr, LaunchParams* params );
 
 unsigned int makeRandomInt();
 bool linuxOpenGame( CommonGlobals* cGlobals );

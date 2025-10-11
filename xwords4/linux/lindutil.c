@@ -111,6 +111,13 @@ linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
         XP_STRCAT( addr->u.sms.phone, params->connInfo.sms.myPhone );
         addr->u.sms.port = params->connInfo.sms.port;
     }
+
+    /* Some test for this? */
+    if ( !params->disableBT ) {
+        BTHostPair hp;
+        lbt_setToSelf( params, &hp );
+        addr_addBT( addr, hp.hostName, hp.btAddr.chars );
+    }
 }
 
 static void
