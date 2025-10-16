@@ -786,6 +786,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
 
     int len = 0;
     XP_Bool haveAll = XP_TRUE;
+    XP_ASSERT( 0 < rec->count );
     for ( int ii = 0; ii < rec->count; ++ii ) {
         if ( rec->parts[ii].len == 0 ) {
             haveAll = XP_FALSE;
@@ -816,6 +817,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
             } else {
                 XP_LOGFF( "expected port %d, got %d", wantPort, port );
                 XP_FREEP( state->mpool, &msg.data );
+                XP_ASSERT(0);   /* This happening? */
             }
         }
         stream_destroy( stream );
