@@ -451,7 +451,7 @@ static SMSProto*
 initSMSProtoOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     if ( !dutil->protoState ) {
-        dutil->protoState = smsproto_init( MPPARM(dutil->mpool) xwe, dutil );
+        dutil->protoState = smsproto_init( dutil, xwe );
     }
     return dutil->protoState;
 }
