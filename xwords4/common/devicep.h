@@ -1,5 +1,5 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
-/* 
+/*
  * Copyright 2020 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
@@ -18,17 +18,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _DVCBTP_H_
-#define _DVCBTP_H_
+#ifndef _DEVICEP_H_
+#define _DEVICEP_H_
 
-#include "dutil.h"
+#include "device.h"
 
-void parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                    const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );
-
-void sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
-                      const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr );
-void sendMsgsViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const SendMsgsPacket* const packets,
-                    const CommsAddrRec* addr, XP_U32 gameID );
+XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
+void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+                      XWStreamCtxt* stream );
+void dvc_removeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] );
+void dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts );
+XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe,
+                              const XP_UCHAR* keys[] );
+void dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+                      OnGotKey proc, void* closure );
 
 #endif
