@@ -261,7 +261,7 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
     XP_U32 len = version < STREAM_VERS_NORELAY ? stream_getU8( stream )
         : stream_getU32VL( stream );
     if ( len > 0 ) {
-        if ( buflen <= len ) {
+        if ( buflen < len ) {
             XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
             XP_ASSERT(0);       /* firing */
         }

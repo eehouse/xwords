@@ -56,6 +56,9 @@
 # define ACK_TIMER_INTERVAL_MS 5000
 #endif
 
+#define SMS_WAIT_SECS 5
+#define SMS_MAX_SIZE 20
+
 static XP_S16
 makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
                   MsgAndTopicProc proc, void* closure,
@@ -427,6 +430,8 @@ sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, SMS_CMD cmd,
     if ( !!arr ) {
         for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
             const SMSMsgNet* msg = &arr->u.msgsNet[ii];
+            XP_LOGFF( "msg->len: %d", msg->len );
+            XP_ASSERT( msg->len <= SMS_MAX_SIZE );
             dutil_sendViaNBS( dutil, xwe, msg->data, msg->len, phone, port );
         }
         smsproto_freeMsgArray( dutil->protoState, arr );
@@ -451,7 +456,7 @@ static SMSProto*
 initSMSProtoOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     if ( !dutil->protoState ) {
-        dutil->protoState = smsproto_init( dutil, xwe );
+        dutil->protoState = smsproto_init( dutil, xwe, SMS_WAIT_SECS, SMS_MAX_SIZE );
     }
     return dutil->protoState;
 }
@@ -1131,6 +1136,8 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                     const CommsAddrRec* fromAddr,
                     const XP_U8* buf, XP_U16 len )
 {
+    XP_LOGFF( "(len: %d)", len );
+    XP_ASSERT( len <= SMS_MAX_SIZE );
     SMSProto* state = initSMSProtoOnce( dutil, xwe );
     SMSMsgArray* msgArr = smsproto_prepInbound( state, xwe,
                                                 fromAddr->u.sms.phone,

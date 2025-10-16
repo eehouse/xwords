@@ -26,15 +26,6 @@
 #include "xwmutex.h"
 #include "devicep.h"
 
-#define MAX_WAIT 3
-// # define MAX_MSG_LEN 50         /* for testing */
-#ifndef MAX_LEN_BINARY
-# define MAX_LEN_BINARY 115
-#endif
-/* PENDING: Might want to make SEND_NOW_SIZE smaller; might as well send now
-   if even the smallest new message is likely to put us over. */
-#define SEND_NOW_SIZE MAX_LEN_BINARY
-
 /* To match the SMSService format */
 #define SMS_PROTO_VERSION_JAVA 1
 #define SMS_PROTO_VERSION_COMBO 2
@@ -50,6 +41,7 @@ typedef struct _ToPhoneRec {
     XP_UCHAR phone[32];
     XP_U32 createSeconds;
     XP_U16 nMsgs;
+    XP_U16 maxLen;
     XP_U16 totalSize;
     MsgRec** msgs;
 } ToPhoneRec;
@@ -76,6 +68,8 @@ struct SMSProto {
     XP_U16 nNextID;
     int lastStoredSize;
     XP_U16 nToPhones;
+    XP_U16 defaultMaxLen;
+    XP_U32 waitSecs;
     ToPhoneRec* toPhoneRecs;
 
     int nFromPhones;
@@ -117,11 +111,14 @@ static const XP_UCHAR* cmd2Str( SMS_CMD cmd );
 #endif
 
 SMSProto*
-smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe )
+smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
+               XP_U16 defaultMaxLen )
 {
     SMSProto* state = (SMSProto*)XP_CALLOC( dutil->mpool, sizeof(*state) );
     MUTEX_INIT( &state->mutex, XP_FALSE );
     state->dutil = dutil;
+    state->waitSecs = waitSecs;
+    state->defaultMaxLen = defaultMaxLen - 4; /* 4 for my overhead */
     MPASSIGN( state->mpool, dutil->mpool );
 
     XP_U32 siz = sizeof(state->nNextID);
@@ -240,8 +237,8 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
     XP_Bool doSend = XP_FALSE;
     if ( rec != NULL ) {
         doSend = forceOld
-            || rec->totalSize > SEND_NOW_SIZE
-            || MAX_WAIT <= nowSeconds - rec->createSeconds;
+            // || rec->totalSize > SEND_NOW_SIZE
+            || state->waitSecs <= nowSeconds - rec->createSeconds;
         /* other criteria? */
     }
 
@@ -252,7 +249,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
 
     XP_U16 waitSecs = 0;
     if ( !result && !!rec && (rec->nMsgs > 0) ) {
-        waitSecs = MAX_WAIT - (nowSeconds - rec->createSeconds);
+        waitSecs = state->waitSecs - (nowSeconds - rec->createSeconds);
     }
     *waitSecsP = waitSecs;
 
@@ -481,6 +478,7 @@ getForPhone( SMSProto* state, const XP_UCHAR* phone, XP_Bool create )
         rec = &state->toPhoneRecs[state->nToPhones++];
         XP_MEMSET( rec, 0, sizeof(*rec) );
         XP_STRCAT( rec->phone, phone );
+        rec->maxLen = state->defaultMaxLen;
     }
 
     return rec;
@@ -807,7 +805,7 @@ toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
 
     for ( XP_U16 ii = 0; ii < rec->nMsgs; ) {
         // XP_LOGF( "%s(): looking at msg %d of %d", __func__, ii, rec->nMsgs );
-        XP_U16 count = (rec->msgs[ii]->msgNet.len + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
+        XP_U16 count = (rec->msgs[ii]->msgNet.len + (rec->maxLen-1)) / rec->maxLen;
 
         /* First, see if this message and some number of its neighbors can be
            combined */
@@ -816,7 +814,7 @@ toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
         if ( count == 1 && !forceOld ) {
             for ( ; last < rec->nMsgs; ++last ) {
                 int nextLen = rec->msgs[last]->msgNet.len;
-                if ( sum + nextLen > MAX_LEN_BINARY ) {
+                if ( sum + nextLen > rec->maxLen ) {
                     break;
                 }
                 sum += nextLen;
@@ -851,8 +849,8 @@ toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
             for ( XP_U16 indx = 0; indx < count; ++indx ) {
                 XP_ASSERT( lenLeft > 0 );
                 XP_U16 useLen = lenLeft;
-                if ( useLen >= MAX_LEN_BINARY ) {
-                    useLen = MAX_LEN_BINARY;
+                if ( useLen >= rec->maxLen ) {
+                    useLen = rec->maxLen;
                 }
                 lenLeft -= useLen;
 
@@ -906,7 +904,7 @@ void
 smsproto_runTests( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
-    SMSProto* state = smsproto_init( dutil, xwe );
+    SMSProto* state = smsproto_init( dutil, xwe, 3, 20 );
 
     const int smallSiz = 20;
     const char* phones[] = {"1234", "3456", "5467", "9877"};
@@ -917,10 +915,7 @@ smsproto_runTests( XW_DUtilCtxt* dutil, XWEnv xwe )
         ;
     const XP_Bool forceOld = XP_TRUE;
 
-    SMSMsgArray* arrs[VSIZE(phones)];
-    for ( int ii = 0; ii < VSIZE(arrs); ++ii ) {
-        arrs[ii] = NULL;
-    }
+    SMSMsgArray* arrs[VSIZE(phones)] = {};
 
     /* Loop until all the messages are ready. */
     const XP_U32 gameID = 12344321;
@@ -1074,7 +1069,7 @@ smsproto_runTests( XW_DUtilCtxt* dutil, XWEnv xwe )
             break;
         }
         smsproto_free( state ); /* give it a chance to store state */
-        state = smsproto_init( dutil, xwe );
+        state = smsproto_init( dutil, xwe, 3, 20 );
     }
 
     /* Really bad to pass a different state than was created with, but now

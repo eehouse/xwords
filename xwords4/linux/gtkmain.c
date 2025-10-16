@@ -1837,9 +1837,7 @@ gtkmain( LaunchParams* params )
         }
 
         if ( params->runSMSTest ) {
-            XP_ASSERT(0);       /* fix this (rewrite entirely?) */
-            /* CommonGlobals cGlobals = {.params = params }; */
-            /* smsproto_runTests( params->mpool, NULL_XWE, cGlobals.params->dutil ); */
+            smsproto_runTests( params->dutil, NULL_XWE );
         }
 #endif
         makeGamesWindow( &apg );

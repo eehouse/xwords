@@ -77,7 +77,8 @@ typedef struct _SMSMsgArray {
     } u;
 } SMSMsgArray;
 
-SMSProto* smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe );
+SMSProto* smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
+                         XP_U16 defaultMaxSize );
 void smsproto_free( SMSProto* state );
 
 

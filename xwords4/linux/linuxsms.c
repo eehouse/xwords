@@ -163,6 +163,7 @@ void
 linux_sms_enqueue( LaunchParams* params, const XP_U8* buf,
                    XP_U16 len, const XP_UCHAR* phone, XP_U16 port )
 {
+    XP_LOGFF( "(phone: %s; len: %d)", phone, len );
     write_fake_sms( params, buf, len, phone, port );
 }
 
