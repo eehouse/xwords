@@ -77,7 +77,7 @@ typedef struct _SMSMsgArray {
     } u;
 } SMSMsgArray;
 
-SMSProto* smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil );
+SMSProto* smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void smsproto_free( SMSProto* state );
 
 
@@ -102,8 +102,8 @@ SMSMsgArray* smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* f
 void smsproto_freeMsgArray( SMSProto* state, SMSMsgArray* arr );
 
 # ifdef DEBUG
-void smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil );
+void smsproto_runTests( XW_DUtilCtxt* dutil, XWEnv xwe );
 # else
-#  define smsproto_runTests(p1,p2,p3 )
+#  define smsproto_runTests(p1,p2 )
 # endif
 #endif

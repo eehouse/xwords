@@ -118,12 +118,12 @@ static const XP_UCHAR* cmd2Str( SMS_CMD cmd );
 #endif
 
 SMSProto*
-smsproto_init( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
+smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    SMSProto* state = (SMSProto*)XP_CALLOC( mpool, sizeof(*state) );
+    SMSProto* state = (SMSProto*)XP_CALLOC( dutil->mpool, sizeof(*state) );
     MUTEX_INIT( &state->mutex, XP_FALSE );
     state->dutil = dutil;
-    MPASSIGN( state->mpool, mpool );
+    MPASSIGN( state->mpool, dutil->mpool );
 
     XP_U32 siz = sizeof(state->nNextID);
     dutil_loadPtr( state->dutil, xwe, KEY_NEXTID, &state->nNextID, &siz );
@@ -918,10 +918,10 @@ cmd2Str( SMS_CMD cmd )
 }
 
 void
-smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
+smsproto_runTests( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     LOG_FUNC();
-    SMSProto* state = smsproto_init( mpool, xwe, dutil );
+    SMSProto* state = smsproto_init( dutil, xwe );
 
     const int smallSiz = 20;
     const char* phones[] = {"1234", "3456", "5467", "9877"};
@@ -1089,7 +1089,7 @@ smsproto_runTests( MPFORMAL XWEnv xwe, XW_DUtilCtxt* dutil )
             break;
         }
         smsproto_free( state ); /* give it a chance to store state */
-        state = smsproto_init( mpool, xwe, dutil );
+        state = smsproto_init( dutil, xwe );
     }
 
     /* Really bad to pass a different state than was created with, but now

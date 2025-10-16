@@ -62,7 +62,6 @@ struct LinSMSData {
     FILE* lock;
 
     const gchar* myPhone;
-    SMSProto* protoState;
 };
 
 static gint check_for_files( gpointer data );
@@ -227,8 +226,6 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort )
     params->smsStorage = storage;
     storage->myPhone = myPhone;
     storage->myPort = myPort;
-    storage->protoState = smsproto_init( MPPARM(params->mpool) NULL_XWE, params->dutil );
-    XP_ASSERT( !!storage->protoState );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGFF( "my queue: %s", storage->myQueue );
@@ -366,7 +363,6 @@ linux_sms_cleanup( LaunchParams* params )
 {
     LinSMSData* storage = params->smsStorage;
     if ( !!storage ) {
-        smsproto_free( storage->protoState );
         XP_FREEP( params->mpool, &params->smsStorage );
     }
 }
