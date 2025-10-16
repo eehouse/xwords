@@ -17,68 +17,103 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #include "dvcbtp.h"
 #include "devicep.h"
+#include "gamemgr.h"
 
-typedef enum {
-    BTCMD_BAD_PROTO,
-    BTCMD_PING,
-    BTCMD_PONG,
-    BTCMD_SCAN,
-    BTCMD_INVITE,
-    BTCMD_INVITE_ACCPT,
-    BTCMD__INVITE_DECL,  // unused
-    BTCMD_INVITE_DUPID,
-    BTCMD__INVITE_FAILED,  // generic error, and unused
-    BTCMD_MESG_SEND,
-    BTCMD_MESG_ACCPT,
-    BTCMD__MESG_DECL,  // unused
-    BTCMD_MESG_GAMEGONE,
-    BTCMD__REMOVE_FOR,  // unused
-    BTCMD_INVITE_DUP_INVITE,
-    BTCMD_MAC_ASK,  // ask peer what my mac address is
-    BTCMD_MAC_REPLY,  // reply to above
-} BTCmd;
+#define BT_DFLT_MAX_LEN 20
 
-#define BT_PROTO_BATCH 2
-#define BT_PROTO BT_PROTO_BATCH
+static SMSProto*
+initBTChunkerOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    if ( !dutil->btChunkerState ) {
+        dutil->btChunkerState = smsproto_init( dutil, xwe, 0, BT_DFLT_MAX_LEN );
+    }
+    return dutil->btChunkerState;
+}
+
+static void
+sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, XP_U16 waitSecs,
+          const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
+{
+    XP_ASSERT( 0 == waitSecs );
+    if ( !!arr ) {
+        for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
+            const SMSMsgNet* msg = &arr->u.msgsNet[ii];
+            // dutil_sendViaNBS( dutil, xwe, msg->data, msg->len, phone, port );
+            dutil_sendViaBT( dutil, xwe, msg->data, msg->len, hostName, btAddr );
+        }
+        smsproto_freeMsgArray( dutil->btChunkerState, arr );
+    }
+}
 
 void
 sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                  const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
 {
-    XWStreamCtxt* stream = dvc_makeStream( dutil );
-    stream_putU8( stream, BT_PROTO );
-    stream_putU8( stream, 1 );  /* one message in this packet */
+    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
 
-    /* tmp stream lets us put message together then get length */
-    XWStreamCtxt* tmpStream = dvc_makeStream( dutil );
-    stream_putU8( tmpStream, BTCMD_INVITE );
-    nli_saveToStream( nli, tmpStream );
-    XP_U16 size = stream_getSize(tmpStream);
-    stream_putU16( stream, size );
-    stream_getFromStream( stream, tmpStream, size );
-    stream_destroy( tmpStream );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    nli_saveToStream( nli, stream );
 
     const XP_U8* ptr = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
-    dutil_sendViaBT( dutil, xwe, ptr, len, hostName, btAddr );
-
+    XP_U16 waitSecs;
+    const XP_Bool forceOld = XP_FALSE;
+    SMSMsgArray* arr
+        = smsproto_prepOutbound( chunker, xwe, INVITE, nli->gameID,
+                                 ptr, len, btAddr->chars, 0,
+                                 forceOld, &waitSecs );
+    XP_ASSERT( !!arr || !forceOld );
+    sendMsgs( dutil, xwe, arr, waitSecs, hostName, btAddr );
     stream_destroy( stream );
 }
 
 void
 sendMsgsViaBT( XW_DUtilCtxt* dutil, XWEnv xwe,
-               const SendMsgsPacket* const XP_UNUSED(packets),
+               const SendMsgsPacket* const packets,
                const CommsAddrRec* addr, XP_U32 gameID )
 {
-    XP_USE(dutil);
-    XP_USE(xwe);
-    XP_USE(addr);
-    XP_USE(gameID);
-    // XP_ASSERT(0);
-    XP_LOGFF( "NOT IMPLEMENTED" );
+    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
+
+    const XP_UCHAR* hostName = addr->u.bt.hostName;
+    const XP_BtAddrStr* btAddr = &addr->u.bt.btAddr;
+    for ( const SendMsgsPacket* next = packets; !!next; next = next->next ) {
+        XP_U16 waitSecs;
+        SMSMsgArray* arr
+            = smsproto_prepOutbound( chunker, xwe, DATA, gameID,
+                                     next->buf, next->len,
+                                     btAddr->chars, 0,
+                                     XP_TRUE, &waitSecs );
+        sendMsgs( dutil, xwe, arr, waitSecs, hostName, btAddr );
+    }
+}
+
+static void
+handleMsg( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgLoc* msg, const CommsAddrRec* from )
+{
+    switch ( msg->cmd ) {
+    case DATA:
+        gmgr_onMessageReceived( dutil, xwe, msg->gameID,
+                                from, msg->data, msg->len,
+                                NULL );
+        break;
+    case INVITE: {
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
+        stream_putBytes( stream, msg->data, msg->len );
+        NetLaunchInfo nli = {};
+        if ( nli_makeFromStream( &nli, stream ) ) {
+            gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, &nli );
+        } else {
+            XP_ASSERT(0);
+        }
+        stream_destroy( stream );
+    }
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
 }
 
 void
@@ -86,10 +121,26 @@ parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                const XP_U8* buf, XP_U16 len,
                const XP_UCHAR* fromName, const XP_UCHAR* fromAddr )
 {
-    XP_USE(dutil);
-    XP_USE(xwe);
-    XP_USE(buf);
-    XP_USE(len);
-    XP_USE(fromName);
-    XP_USE(fromAddr);
+    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
+    SMSMsgArray* msgArr = smsproto_prepInbound( chunker, xwe, fromAddr, 0,
+                                                buf, len );
+    if ( NULL != msgArr ) {
+        CommsAddrRec from = {};
+        addr_addBT( &from, fromName, fromAddr );
+        XP_ASSERT( msgArr->format == FORMAT_LOC );
+        for ( int ii = 0; ii < msgArr->nMsgs; ++ii ) {
+            SMSMsgLoc* msg = &msgArr->u.msgsLoc[ii];
+            handleMsg( dutil, xwe, msg, &from );
+        }
+        smsproto_freeMsgArray( chunker, msgArr );
+    }
+}
+
+void
+cleanupBT( XW_DUtilCtxt* dutil )
+{
+    if ( !!dutil->btChunkerState ) {
+        smsproto_free(dutil->btChunkerState);
+        dutil->btChunkerState = NULL;
+    }
 }

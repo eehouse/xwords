@@ -1711,6 +1711,7 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     freeWSState( dutil, dc );
 
     smsproto_free( dutil->protoState );
+    cleanupBT( dutil );
 
     MUTEX_DESTROY( &dc->webSend.mutex );
     MUTEX_DESTROY( &dc->ackTimer.mutex );
