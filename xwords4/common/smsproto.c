@@ -24,6 +24,7 @@
 #include "comtypes.h"
 #include "strutils.h"
 #include "xwmutex.h"
+#include "devicep.h"
 
 #define MAX_WAIT 3
 // # define MAX_MSG_LEN 50         /* for testing */
@@ -87,8 +88,6 @@ struct SMSProto {
 };
 
 static int nextMsgID( SMSProto* state, XWEnv xwe );
-static XWStreamCtxt* mkStream( SMSProto* state );
-static void destroyStream( XWStreamCtxt* stream );
 static SMSMsgArray* toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec,
                                XP_Bool forceOld );
 static ToPhoneRec* getForPhone( SMSProto* state, const XP_UCHAR* phone,
@@ -312,7 +311,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
     SMSMsgArray* result = NULL;
     WITH_MUTEX( &state->mutex );
 
-    XWStreamCtxt* stream = mkStream( state );
+    XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     stream_putBytes( stream, data, len );
 
     XP_U8 proto;
@@ -340,7 +339,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                 XP_U8 tmp[oneLen];
                 stream_getBytes( stream, tmp, oneLen );
 
-                XWStreamCtxt* msgStream = mkStream( state );
+                XWStreamCtxt* msgStream = dvc_makeStream( state->dutil );
                 stream_putBytes( msgStream, tmp, oneLen );
                 
                 XP_U32 gameID;
@@ -364,7 +363,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                         }
                     }
                 }
-                destroyStream( msgStream );
+                stream_destroy( msgStream );
             }
         }
             break;
@@ -375,7 +374,7 @@ smsproto_prepInbound( SMSProto* state, XWEnv xwe, const XP_UCHAR* fromPhone,
         }
     }
 
-    destroyStream( stream );
+    stream_destroy( stream );
 
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
     logResult( state, xwe, result, __func__ );
@@ -517,7 +516,7 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
              XP_U16 port, XP_U32 gameID, const XP_U8* buf, XP_U16 buflen,
              XP_U32 nowSeconds )
 {
-    XWStreamCtxt* stream = mkStream( state );
+    XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     headerToStream( stream, cmd, port, gameID );
     stream_putBytes( stream, buf, buflen );
     
@@ -526,7 +525,7 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
     mRec->msgNet.len = len;
     mRec->msgNet.data = XP_MALLOC( state->mpool, len );
     XP_MEMCPY( mRec->msgNet.data, stream_getPtr(stream), len );
-    destroyStream( stream );
+    stream_destroy( stream );
 
     mRec->createSeconds = nowSeconds;
 
@@ -679,7 +678,7 @@ freeMsgIDRec( SMSProto* state, MsgIDRec* XP_UNUSED_DBG(rec), int fromPhoneIndex,
 static void
 savePartials( SMSProto* state, XWEnv xwe )
 {
-    XWStreamCtxt* stream = mkStream( state );
+    XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     stream_putU8( stream, PARTIALS_FORMAT );
 
     stream_putU8( stream, state->nFromPhones );
@@ -709,7 +708,7 @@ savePartials( SMSProto* state, XWEnv xwe )
         state->lastStoredSize = newSize;
     }
 
-    destroyStream( stream );
+    stream_destroy( stream );
 
     LOG_RETURN_VOID();
 } /* savePartials */
@@ -717,7 +716,7 @@ savePartials( SMSProto* state, XWEnv xwe )
 static void
 restorePartials( SMSProto* state, XWEnv xwe )
 {
-    XWStreamCtxt* stream = mkStream( state );
+    XWStreamCtxt* stream = dvc_makeStream( state->dutil );
 
     dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, stream );
     if ( stream_getSize( stream ) >= 1
@@ -744,7 +743,7 @@ restorePartials( SMSProto* state, XWEnv xwe )
             }
         }
     }
-    destroyStream( stream );
+    stream_destroy( stream );
 }
 
 static SMSMsgArray*
@@ -771,7 +770,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
     }
 
     if ( haveAll ) {
-        XWStreamCtxt* stream = mkStream( state );
+        XWStreamCtxt* stream = dvc_makeStream( state->dutil );
         for ( int ii = 0; ii < rec->count; ++ii ) {
             stream_putBytes( stream, rec->parts[ii].data, rec->parts[ii].len );
         }
@@ -793,7 +792,7 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
                 XP_FREEP( state->mpool, &msg.data );
             }
         }
-        destroyStream( stream );
+        stream_destroy( stream );
 
         freeMsgIDRec( state, rec, fromPhoneIndex, msgIDIndex );
     }
@@ -884,20 +883,6 @@ nextMsgID( SMSProto* state, XWEnv xwe )
                     sizeof(state->nNextID) );
     LOG_RETURNF( "%d", result );
     return result;
-}
-
-static XWStreamCtxt*
-mkStream( SMSProto* state )
-{
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(state->mpool)
-                                                dutil_getVTManager(state->dutil) );
-    return stream;
-}
-
-static void
-destroyStream( XWStreamCtxt* stream )
-{
-    stream_destroy( stream );
 }
 
 #ifdef DEBUG
