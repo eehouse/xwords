@@ -30,5 +30,5 @@ void sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                       const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr );
 void sendMsgsViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const SendMsgsPacket* const packets,
                     const CommsAddrRec* addr, XP_U32 gameID );
-
+void cleanupBT( XW_DUtilCtxt* dutil );
 #endif

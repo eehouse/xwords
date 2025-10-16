@@ -192,6 +192,7 @@ struct XW_DUtilCtxt {
     void* statsState;           /* owned by stats.c */
     void* timersState;          /* owned by timers.c */
     SMSProto* protoState;
+    SMSProto* btChunkerState;
     GameMgrState* gameMgrState; /* owned by gamemgr.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
