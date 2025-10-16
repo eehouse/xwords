@@ -2635,9 +2635,6 @@ main( int argc, char** argv )
         case CMD_NO_SHOW_OTHERSCORES:
             mainParams.showRobotScores = XP_FALSE;
             break;
-        case CMD_SKIP_MQTT:
-            mainParams.skipMQTTAdd = XP_TRUE;
-            break;
         case CMD_SKIP_BT:
             mainParams.disableBT = XP_TRUE;
             break;
@@ -2811,6 +2808,9 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_WITHOUT_MQTT:
+        case CMD_SKIP_MQTT:
+            /* These should be joined */
+            mainParams.skipMQTTAdd = XP_TRUE;
             types_rmType( &mainParams.conTypes, COMMS_CONN_MQTT );
             break;
         case CMD_MQTTHOST:
