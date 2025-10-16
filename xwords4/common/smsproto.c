@@ -38,21 +38,27 @@ typedef struct _MsgRec {
 } MsgRec;
 
 typedef struct _ToPhoneRec {
-    XP_UCHAR phone[32];
     XP_U32 createSeconds;
     XP_U16 nMsgs;
-    XP_U16 maxLen;
     XP_U16 totalSize;
     MsgRec** msgs;
 } ToPhoneRec;
 
+typedef struct _ToPhoneEntry {
+    XP_UCHAR phone[32];
+    XP_U16 maxLen;
+    ToPhoneRec* rec;
+} ToPhoneEntry;
+
+typedef struct _Part {
+    XP_U16 len;
+    XP_U8* data;
+} Part;
+
 typedef struct _MsgIDRec {
     int msgID;
     int count;
-    struct {
-        XP_U16 len;
-        XP_U8* data;
-    }* parts;
+    Part* parts;
 } MsgIDRec;
 
 typedef struct _FromPhoneRec {
@@ -67,10 +73,9 @@ struct SMSProto {
     MutexState mutex;
     XP_U16 nNextID;
     int lastStoredSize;
-    XP_U16 nToPhones;
     XP_U16 defaultMaxLen;
     XP_U32 waitSecs;
-    ToPhoneRec* toPhoneRecs;
+    XWArray* toPhoneEntries;
 
     int nFromPhones;
     FromPhoneRec* fromPhoneRecs;
@@ -82,11 +87,11 @@ struct SMSProto {
 };
 
 static int nextMsgID( SMSProto* state, XWEnv xwe );
-static SMSMsgArray* toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec,
+static SMSMsgArray* toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneEntry* entry,
                                XP_Bool forceOld );
-static ToPhoneRec* getForPhone( SMSProto* state, const XP_UCHAR* phone,
-                                XP_Bool create );
-static void addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
+static ToPhoneEntry* getForPhone( SMSProto* state, XWEnv xwe,
+                                  const XP_UCHAR* phone, XP_Bool create );
+static void addToOutRec( SMSProto* state, ToPhoneEntry* entry, SMS_CMD cmd,
                          XP_U16 port, XP_U32 gameID, const XP_U8* buf,
                          XP_U16 buflen, XP_U32 nowSeconds );
 static void addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID,
@@ -99,7 +104,7 @@ static void restorePartials( SMSProto* state, XWEnv xwe );
 static void rmFromPhoneRec( SMSProto* state, int fromPhoneIndex );
 static void freeMsgIDRec( SMSProto* state, MsgIDRec* rec, int fromPhoneIndex,
                           int msgIDIndex );
-static void freeForPhone( SMSProto* state, const XP_UCHAR* phone );
+static void freeForPhone( SMSProto* state, XWEnv xwe, const XP_UCHAR* phone );
 static void freeMsg( SMSProto* state, MsgRec** msg );
 static void freeRec( SMSProto* state, ToPhoneRec* rec );
 #if defined DEBUG
@@ -110,6 +115,15 @@ static const XP_UCHAR* cmd2Str( SMS_CMD cmd );
 # define logResult( state, xwe, result, caller )
 #endif
 
+static int
+toPhoneCompProc( const void* dl1, const void* dl2,
+                 XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
+{
+    ToPhoneEntry* rec1 = (ToPhoneEntry*)dl1;
+    ToPhoneEntry* rec2 = (ToPhoneEntry*)dl2;
+    return XP_STRCMP( rec1->phone, rec2->phone );
+}
+
 SMSProto*
 smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
                XP_U16 defaultMaxLen )
@@ -119,6 +133,7 @@ smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
     state->dutil = dutil;
     state->waitSecs = waitSecs;
     state->defaultMaxLen = defaultMaxLen - 4; /* 4 for my overhead */
+    state->toPhoneEntries = arr_make( dutil->mpool, toPhoneCompProc, state );
     MPASSIGN( state->mpool, dutil->mpool );
 
     XP_U32 siz = sizeof(state->nNextID);
@@ -130,16 +145,23 @@ smsproto_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
     return state;
 }
 
+static void
+disposePhoneEntry( void* elem, void* closure )
+{
+    ToPhoneEntry* entry = (ToPhoneEntry*)elem;
+    SMSProto* state = (SMSProto*)closure;
+    freeRec( state, entry->rec );
+    XP_FREE( state->mpool, entry );
+}
+
 void
 smsproto_free( SMSProto* state )
 {
     if ( NULL != state ) {
         XP_ASSERT( state->creator == 0 || state->creator == pthread_self() );
 
-        for ( XP_U16 ii = 0; ii < state->nToPhones; ++ii ) {
-            freeRec( state, &state->toPhoneRecs[ii] );
-        }
-        XP_FREEP( state->mpool, &state->toPhoneRecs );
+        arr_removeAll( state->toPhoneEntries, disposePhoneEntry, state );
+        arr_destroy( state->toPhoneEntries );
 
         if ( 0 < state->nFromPhones ) {
             XP_LOGF( "%s(): freeing undelivered partial messages", __func__ );
@@ -200,6 +222,21 @@ headerFromStream( XWStreamCtxt* stream, SMS_CMD* cmd, XP_U16* port, XP_U32* game
     return success;
 }
 
+static void
+checkResult( SMSProto* state, XWEnv xwe, const XP_UCHAR* toPhone, const SMSMsgArray* result )
+{
+    if ( !!result ) {
+        const ToPhoneEntry* entry = getForPhone( state, xwe, toPhone, XP_FALSE );
+        XP_ASSERT( !!entry );
+        for ( int ii = 0; ii < result->nMsgs; ++ii ) {
+            XP_U16 len = result->format == FORMAT_LOC
+                ? result->u.msgsLoc[ii].len
+                : result->u.msgsNet[ii].len;
+            XP_ASSERT( len <= (4 + entry->maxLen) );
+        }
+    }
+}
+
 /* Maintain a list of pending messages per phone number. When called and it's
  * been at least some amount of time since we last added something, or at
  * least some longer time since the oldest message was added, return an array
@@ -225,12 +262,13 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
               gameID, buflen, sb.buf, toPhone );
 #endif
 
-    ToPhoneRec* rec = getForPhone( state, toPhone, cmd != NONE );
+    ToPhoneEntry* entry = getForPhone( state, xwe, toPhone, cmd != NONE );
+    ToPhoneRec* rec = entry->rec;
 
     /* First, add the new message (if present) to the array */
     XP_U32 nowSeconds = dutil_getCurSeconds( state->dutil, xwe );
     if ( cmd != NONE ) {
-        addToOutRec( state, rec, cmd, toPort, gameID, buf, buflen, nowSeconds );
+        addToOutRec( state, entry, cmd, toPort, gameID, buf, buflen, nowSeconds );
     }
 
     /* rec will be non-null if there's something in it */
@@ -243,8 +281,8 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
     }
 
     if ( doSend ) {
-        result = toNetMsgs( state, xwe, rec, forceOld );
-        freeForPhone( state, toPhone );
+        result = toNetMsgs( state, xwe, entry, forceOld );
+        freeForPhone( state, xwe, toPhone );
     }
 
     XP_U16 waitSecs = 0;
@@ -257,6 +295,7 @@ smsproto_prepOutbound( SMSProto* state, XWEnv xwe, SMS_CMD cmd, XP_U32 gameID,
              !!result ? result->nMsgs : 0, *waitSecsP );
 
     END_WITH_MUTEX();
+    checkResult( state, xwe, toPhone, result );
     logResult( state, xwe, result, __func__ );
     return result;
 } /* smsproto_prepOutbound */
@@ -456,64 +495,51 @@ freeMsg( SMSProto* XP_UNUSED_DBG(state), MsgRec** msgp )
 static void
 freeRec( SMSProto* state, ToPhoneRec* rec )
 {
-    for ( XP_U16 jj = 0; jj < rec->nMsgs; ++jj ) {
-        freeMsg( state, &rec->msgs[jj] );
+    if ( !!rec ) {
+        for ( XP_U16 ii = 0; ii < rec->nMsgs; ++ii ) {
+            freeMsg( state, &rec->msgs[ii] );
+        }
+        XP_FREEP( state->mpool, &rec->msgs );
     }
-    XP_FREEP( state->mpool, &rec->msgs );
 }
 
-static ToPhoneRec*
-getForPhone( SMSProto* state, const XP_UCHAR* phone, XP_Bool create )
+static ToPhoneEntry*
+getForPhone( SMSProto* state, XWEnv xwe, const XP_UCHAR* phone, XP_Bool create )
 {
-    ToPhoneRec* rec = NULL;
-    for ( XP_U16 ii = 0; !rec && ii < state->nToPhones; ++ii ) {
-        if ( 0 == XP_STRCMP( state->toPhoneRecs[ii].phone, phone ) ) {
-            rec = &state->toPhoneRecs[ii];
-        }
+    ToPhoneEntry target = {};
+    ToPhoneEntry* result = NULL;
+    XP_STRCAT( target.phone, phone );
+    XP_U32 loc;
+    if ( arr_find( state->toPhoneEntries, xwe, &target, &loc ) ) {
+        result = (ToPhoneEntry*)arr_getNth( state->toPhoneEntries, loc );
+    } else {
+        result = XP_CALLOC( state->mpool, sizeof(*result) );
+        XP_STRCAT( result->phone, phone );
+        result->maxLen = state->defaultMaxLen;
+        arr_insert( state->toPhoneEntries, xwe, result );
+    }
+    
+    if ( create && !result->rec ) {
+        result->rec = XP_CALLOC( state->mpool, sizeof(*result->rec) );
     }
 
-    if ( !rec && create ) {
-        state->toPhoneRecs = XP_REALLOC( state->mpool, state->toPhoneRecs,
-                                         (1 + state->nToPhones) * sizeof(*state->toPhoneRecs) );
-        rec = &state->toPhoneRecs[state->nToPhones++];
-        XP_MEMSET( rec, 0, sizeof(*rec) );
-        XP_STRCAT( rec->phone, phone );
-        rec->maxLen = state->defaultMaxLen;
-    }
-
-    return rec;
+    return result;
 }
 
 static void
-freeForPhone( SMSProto* state, const XP_UCHAR* phone )
+freeForPhone( SMSProto* state, XWEnv xwe, const XP_UCHAR* phone )
 {
-    for ( XP_U16 ii = 0; ii < state->nToPhones; ++ii ) {
-        if ( 0 == XP_STRCMP( state->toPhoneRecs[ii].phone, phone ) ) {
-            freeRec( state, &state->toPhoneRecs[ii] );
-
-            XP_U16 nAbove = state->nToPhones - ii - 1;
-            XP_ASSERT( nAbove >= 0 );
-            if ( nAbove > 0 ) {
-                XP_MEMMOVE( &state->toPhoneRecs[ii], &state->toPhoneRecs[ii+1],
-                            nAbove * sizeof(*state->toPhoneRecs) );
-            }
-            --state->nToPhones;
-            if ( 0 == state->nToPhones ) {
-                XP_FREEP( state->mpool, &state->toPhoneRecs );
-            } else {
-                state->toPhoneRecs = XP_REALLOC( state->mpool, state->toPhoneRecs,
-                                                 state->nToPhones * sizeof(*state->toPhoneRecs) );
-            }
-            break;
-        }
-    }
+    ToPhoneEntry* entry = getForPhone( state, xwe, phone, XP_FALSE );
+    freeRec( state, entry->rec );
+    XP_FREEP( state->mpool, &entry->rec );
 }
 
 static void
-addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
+addToOutRec( SMSProto* state, ToPhoneEntry* entry, SMS_CMD cmd,
              XP_U16 port, XP_U32 gameID, const XP_U8* buf, XP_U16 buflen,
              XP_U32 nowSeconds )
 {
+    ToPhoneRec* rec = entry->rec;
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     headerToStream( stream, cmd, port, gameID );
     stream_putBytes( stream, buf, buflen );
@@ -530,7 +556,7 @@ addToOutRec( SMSProto* state, ToPhoneRec* rec, SMS_CMD cmd,
     rec->msgs = XP_REALLOC( state->mpool, rec->msgs, (1 + rec->nMsgs) * sizeof(*rec->msgs) );
     rec->msgs[rec->nMsgs++] = mRec;
     rec->totalSize += len;
-    XP_LOGFF( "added msg to %s of len %d; total now %d", rec->phone, len,
+    XP_LOGFF( "added msg to %s of len %d; total now %d", entry->phone, len,
               rec->totalSize );
 
     if ( rec->nMsgs == 1 ) {
@@ -614,15 +640,17 @@ addMessage( SMSProto* state, const XP_UCHAR* fromPhone, int msgID, int indx,
     /* if it's new, fill in missing fields */
     if ( msgIDRec->count == 0 ) {
         msgIDRec->count = count;    /* in case it's new */
+        XP_ASSERT( !msgIDRec->parts );
         msgIDRec->parts = XP_CALLOC( state->mpool, count * sizeof(*msgIDRec->parts));
     }
 
-    XP_ASSERT( msgIDRec->parts[indx].len == 0
-               || msgIDRec->parts[indx].len == len ); /* replace with same ok */
-    msgIDRec->parts[indx].len = len;
-    XP_FREEP( state->mpool, &msgIDRec->parts[indx].data ); /* in case non-null (replacement) */
-    msgIDRec->parts[indx].data = XP_MALLOC( state->mpool, len );
-    XP_MEMCPY( msgIDRec->parts[indx].data, data, len );
+    Part* part = &msgIDRec->parts[indx];
+    XP_ASSERT( part->len == 0
+               || part->len == len ); /* replace with same ok */
+    part->len = len;
+    XP_FREEP( state->mpool, &part->data ); /* in case non-null (replacement) */
+    part->data = XP_MALLOC( state->mpool, len );
+    XP_MEMCPY( part->data, data, len );
 }
 
 static void
@@ -799,13 +827,14 @@ completeMsgs( SMSProto* state, SMSMsgArray* arr, const XP_UCHAR* fromPhone,
 }
 
 static SMSMsgArray*
-toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
+toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneEntry* entry, XP_Bool forceOld )
 {
     SMSMsgArray* result = NULL;
-
+    ToPhoneRec* rec = entry->rec;
+    XP_U16 maxLen = entry->maxLen;
     for ( XP_U16 ii = 0; ii < rec->nMsgs; ) {
         // XP_LOGF( "%s(): looking at msg %d of %d", __func__, ii, rec->nMsgs );
-        XP_U16 count = (rec->msgs[ii]->msgNet.len + (rec->maxLen-1)) / rec->maxLen;
+        XP_U16 count = (rec->msgs[ii]->msgNet.len + (maxLen-1)) / maxLen;
 
         /* First, see if this message and some number of its neighbors can be
            combined */
@@ -814,7 +843,7 @@ toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
         if ( count == 1 && !forceOld ) {
             for ( ; last < rec->nMsgs; ++last ) {
                 int nextLen = rec->msgs[last]->msgNet.len;
-                if ( sum + nextLen > rec->maxLen ) {
+                if ( sum + nextLen > maxLen ) {
                     break;
                 }
                 sum += nextLen;
@@ -849,8 +878,8 @@ toNetMsgs( SMSProto* state, XWEnv xwe, ToPhoneRec* rec, XP_Bool forceOld )
             for ( XP_U16 indx = 0; indx < count; ++indx ) {
                 XP_ASSERT( lenLeft > 0 );
                 XP_U16 useLen = lenLeft;
-                if ( useLen >= rec->maxLen ) {
-                    useLen = rec->maxLen;
+                if ( useLen >= maxLen ) {
+                    useLen = maxLen;
                 }
                 lenLeft -= useLen;
 

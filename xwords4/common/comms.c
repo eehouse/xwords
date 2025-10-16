@@ -2208,8 +2208,8 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        it needs would be better here.... */
                     if ( typ == COMMS_CONN_MQTT && 0 == addr.u.mqtt.devID ) {
                         COMMS_LOGFF( "not sending: MQTT address NULL" );
-                        XP_ASSERT(0);
-                        break;
+                        // XP_ASSERT(0);
+                        continue;
                     }
 
                     if ( 0 ) {
