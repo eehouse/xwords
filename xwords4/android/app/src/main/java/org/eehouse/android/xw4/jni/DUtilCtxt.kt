@@ -35,7 +35,7 @@ import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 import org.eehouse.android.xw4.Assert
-import org.eehouse.android.xw4.BTUtils
+import org.eehouse.android.xw4.BleNetwork
 import org.eehouse.android.xw4.BoardDelegate
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Channels
@@ -364,7 +364,7 @@ class DUtilCtxt() {
     }
 
     fun sendViaBT(msg: ByteArray, hostName: String, hostAddr: String?) {
-        BTUtils.sendMessage(mContext, msg, hostName, hostAddr)
+        BleNetwork.sendPacket(mContext, hostName, hostAddr, msg)
     }
 
     fun sendViaNBS(msg: ByteArray, phone: String, port: Int) {

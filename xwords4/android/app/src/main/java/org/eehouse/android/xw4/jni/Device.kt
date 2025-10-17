@@ -193,15 +193,19 @@ object Device {
         return we.result
     }
 
-    suspend fun getUUID(): UUID {
-        return await {
-            UUID.fromString(dvc_getUUID())
-        } as UUID
+    fun getUUID(): UUID {
+        return UUID.fromString(dvc_getUUID())
     }
 
     fun parseMQTTPacket(topic: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
             dvc_parseMQTTPacket(m_ptrGlobals, topic, packet)
+        }
+    }
+
+    fun parseBTPacket(fromName: String?, fromMac: String?, packet: ByteArray) {
+        post( Priority.NETWORK ) {
+            dvc_parseBTPacket(m_ptrGlobals, fromName, fromMac, packet)
         }
     }
 
@@ -327,7 +331,10 @@ object Device {
     @JvmStatic
     private external fun dvc_parseMQTTPacket(jniState: Long, topic: String, packet: ByteArray)
     @JvmStatic
-    private external fun dvc_parseSMSPacket(jniState: Long, fronPhone: String, packet: ByteArray)
+    private external fun dvc_parseBTPacket(jniState: Long, fromName: String?,
+                                           fromMac: String?, packet: ByteArray)
+    @JvmStatic
+    private external fun dvc_parseSMSPacket(jniState: Long, fromPhone: String, packet: ByteArray)
     @JvmStatic
     private external fun dvc_onTimerFired(jniState: Long, key: Int)
     @JvmStatic

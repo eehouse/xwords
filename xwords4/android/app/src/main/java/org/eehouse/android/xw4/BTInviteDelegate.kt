@@ -34,7 +34,7 @@ import android.widget.TextView
 import java.io.Serializable
 import java.util.Collections
 
-import org.eehouse.android.xw4.BTUtils.ScanListener
+import org.eehouse.android.xw4.BleNetwork.ScanListener
 import org.eehouse.android.xw4.DBUtils.SentInvitesInfo
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
@@ -46,8 +46,8 @@ class BTInviteDelegate(delegator: Delegator) :
     private val mHandler = Handler(Looper.getMainLooper())
     private var mNDevsThisScan = 0
 
-    private class BTDev internal constructor(private val mName: String) : InviterItem,
-        Serializable {
+    private class BTDev internal constructor(private val mName: String) :
+        InviterItem, Serializable {
         override fun equals(item: InviterItem): Boolean = item.getDev() == getDev()
 
         override fun getDev(): String { return mName }
@@ -79,6 +79,16 @@ class BTInviteDelegate(delegator: Delegator) :
                     }
                 }
             }
+        }
+
+        fun contains(name: String): Boolean {
+            val dev = mDevs.firstOrNull() {
+                it.getDev().equals(name)
+            }
+
+            val result = dev != null
+            Log.d(TAG, "contains($name) => $result")
+            return result
         }
 
         fun empty(): Boolean {
@@ -129,12 +139,12 @@ class BTInviteDelegate(delegator: Delegator) :
     }
 
     override fun onResume() {
-        BTUtils.addScanListener(this)
+        BleNetwork.addScanListener(mActivity, this)
         super.onResume()
     }
 
     override fun onPause() {
-        BTUtils.removeScanListener(this)
+        BleNetwork.removeScanListener(this)
         super.onResume()
     }
 
@@ -181,51 +191,36 @@ class BTInviteDelegate(delegator: Delegator) :
         post { processScanResult(dev) }
     }
 
-    override fun onScanDone() {
-        post {
-            hideProgress()
-            if (sPersistedRef[0]!!.empty() || 0 == mNDevsThisScan) {
-                makeNotAgainBuilder(
-                    R.string.key_notagain_emptybtscan,
-                    R.string.not_again_emptybtscan
-                ).show()
-            }
-        }
-    }
-
     private fun scan() {
         if (ENABLE_FAKER && Utils.nextRandomInt() % 5 == 0) {
             sPersistedRef[0]!!.add("Do Not Invite Me")
         }
-        val count = BTUtils.scan(mActivity, 1000 * SCAN_SECONDS)
-        if (0 < count) {
-            mNDevsThisScan = 0
-            showProgress(count, 2 * SCAN_SECONDS)
-        } else {
-            makeConfirmThenBuilder(
-                Action.OPEN_BT_PREFS_ACTION,
-                R.string.bt_no_devs
-            ).setPosButton(R.string.button_go_settings)
-                .show()
-        }
+        BleNetwork.startScan(mActivity)
+        mNDevsThisScan = 0
+        showProgress(2 * SCAN_SECONDS)
     }
 
     private fun processScanResult(dev: BluetoothDevice) {
         DbgUtils.assertOnUIThread()
-        ++mNDevsThisScan
-        sPersistedRef[0]!!.add(dev.getName())
-        store(mActivity)
-        updateList()
-        tryEnable()
+        val name = dev.name
+        sPersistedRef!![0]?.let { ref ->
+            if ( !ref.contains(name) ) {
+                ++mNDevsThisScan
+                ref.add(dev.getName())
+                store(mActivity)
+                updateList()
+                tryEnable()
+            }
+        }
     }
 
-    private fun showProgress(nDevs: Int, nSeconds: Int) {
+    private fun showProgress(nSeconds: Int) {
         mProgressBar = findViewById(R.id.progress) as ProgressBar
         mProgressBar!!.progress = 0
         mProgressBar!!.setMax(nSeconds)
         val msg = getQuantityString(
             R.plurals.bt_scan_progress_fmt,
-            nDevs, nDevs
+            3, 3
         )
         (requireViewById(R.id.progress_msg) as TextView).text = msg
         requireViewById(R.id.progress_line).visibility = View.VISIBLE
@@ -304,25 +299,26 @@ class BTInviteDelegate(delegator: Delegator) :
 
         private fun removeNotPaired(prs: Persisted?) {
             Log.d(TAG, "removeNotPaired()")
-            val pairedDevs = BTUtils.getCandidates()
-            val paired: MutableSet<String> = HashSet()
-            for (dev in pairedDevs) {
-                Log.d(TAG, "removeNotPaired(): paired dev: %s", dev.getName())
-                paired.add(dev.getName())
-            }
-            val toRemove: MutableSet<String> = HashSet()
-            for (dev in prs!!.mDevs) {
-                val name = dev.getDev()
-                if (!paired.contains(name)) {
-                    Log.d(TAG, "%s no longer paired; removing", name)
-                    toRemove.add(name)
-                } else {
-                    Log.d(TAG, "%s STILL paired", name)
-                }
-            }
-            if (!toRemove.isEmpty()) {
-                prs.remove(toRemove)
-            }
+            // Assert.failDbg()
+            // val pairedDevs = BTUtils.getCandidates()
+            // val paired: MutableSet<String> = HashSet()
+            // for (dev in pairedDevs) {
+            //     Log.d(TAG, "removeNotPaired(): paired dev: %s", dev.getName())
+            //     paired.add(dev.getName())
+            // }
+            // val toRemove: MutableSet<String> = HashSet()
+            // for (dev in prs!!.mDevs) {
+            //     val name = dev.getDev()
+            //     if (!paired.contains(name)) {
+            //         Log.d(TAG, "%s no longer paired; removing", name)
+            //         toRemove.add(name)
+            //     } else {
+            //         Log.d(TAG, "%s STILL paired", name)
+            //     }
+            // }
+            // if (!toRemove.isEmpty()) {
+            //     prs.remove(toRemove)
+            // }
         }
 
         @Synchronized

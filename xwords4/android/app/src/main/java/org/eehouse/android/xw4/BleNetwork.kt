@@ -59,6 +59,7 @@ object BleNetwork {
     fun init(context: Context) {
         mContext = context
         mServiceUUID = Device.getUUID()
+        Log.d(TAG, "UUID: $mServiceUUID")
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         Assert.assertTrueNR(mBluetoothAdapter.isMultipleAdvertisementSupported)
 
@@ -298,7 +299,7 @@ object BleNetwork {
         }
         
         private fun writeAny() {
-            // Log.d(TAG, "writeAny()")
+            Log.d(TAG, "writeAny(): have ${mPackets.size} packets")
             if (!mWriting && mPackets.isNotEmpty()) {
                 val gatt = mGatt!!
                 gatt.getService(mServiceUUID)?.let { service ->
@@ -314,7 +315,7 @@ object BleNetwork {
                     } else {
                         mPackets.addFirst(firstPacket)
                     }
-                }
+                } ?: Log.d(TAG, "no service")
             }
         }
 

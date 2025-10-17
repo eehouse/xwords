@@ -55,7 +55,9 @@ class XWApp : Application(), LifecycleObserver {
         WiDirWrapper.init(this)
         DupeModeTimer.init()
         MQTTUtils.init(this)
+        // Eventually only one of these will remain
         BTUtils.init(this, appName)
+        BleNetwork.init(this)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_ANY)
