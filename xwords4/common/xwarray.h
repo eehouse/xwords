@@ -58,7 +58,7 @@ void arr_setSort( XWArray* array, XWEnv xwe, ArCompProc proc, void* procClosure 
    maintained */
 int PtrCmpProc(const void* dl1, const void* dl2, XWEnv xwe, void* closure);
 
-void arr_insert( XWArray* array, XWEnv xwe, void* node );
+XP_U32 arr_insert( XWArray* array, XWEnv xwe, void* node );
 void arr_insertAt( XWArray* array, void* node, XP_U32 locp );
 void* arr_getNth( XWArray* array, XP_U32 nn );
 XP_Bool arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp );
