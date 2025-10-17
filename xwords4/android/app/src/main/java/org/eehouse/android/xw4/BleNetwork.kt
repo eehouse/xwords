@@ -341,8 +341,10 @@ object BleNetwork {
 
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d(TAG, "onMtuChanged(): MTU changing from $mMtu to $mtu")
+                var addr = device.address
+                Log.d(TAG, "onMtuChanged(): MTU for $addr changing from $mMtu to $mtu")
                 mMtu = mtu
+                Device.onBLEMtuChanged(addr, mtu-3)
                 writeAny()
             }
         }

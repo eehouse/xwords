@@ -145,6 +145,16 @@ cnk_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
     return state;
 }
 
+void
+cnk_maxSizeChangedFor( MsgChunker* state, XWEnv xwe,
+                       const XP_UCHAR* phone, XP_U16 mtu )
+{
+    ToPhoneEntry* tpe = getForPhone( state, xwe, phone, XP_TRUE );
+    XP_LOGFF( "changing maxLen for %s from %d to %d", phone, tpe->maxLen,
+              mtu - 4 );
+    tpe->maxLen = mtu - 4;
+}
+
 static void
 disposePhoneEntry( void* elem, void* closure )
 {
@@ -505,11 +515,9 @@ freeRec( MsgChunker* state, ToPhoneRec* rec )
 static ToPhoneEntry*
 getForPhone( MsgChunker* state, XWEnv xwe, const XP_UCHAR* phone, XP_Bool create )
 {
-    ToPhoneEntry target = {};
     ToPhoneEntry* result = NULL;
-    XP_STRCAT( target.phone, phone );
     XP_U32 loc;
-    if ( arr_find( state->toPhoneEntries, xwe, &target, &loc ) ) {
+    if ( arr_find( state->toPhoneEntries, xwe, phone, &loc ) ) {
         result = (ToPhoneEntry*)arr_getNth( state->toPhoneEntries, loc );
     } else {
         result = XP_CALLOC( state->mpool, sizeof(*result) );

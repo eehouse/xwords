@@ -209,6 +209,12 @@ object Device {
         }
     }
 
+    fun onBLEMtuChanged(addr: String, newBTU: Int) {
+        post( Priority.NETWORK ) {
+            dvc_onBLEMtuChanged(m_ptrGlobals, addr, newBTU)
+        }
+    }
+
     fun parseSMSPacket(fromPhone: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
             dvc_parseSMSPacket(m_ptrGlobals, fromPhone, packet)
@@ -333,6 +339,9 @@ object Device {
     @JvmStatic
     private external fun dvc_parseBTPacket(jniState: Long, fromName: String?,
                                            fromMac: String?, packet: ByteArray)
+    @JvmStatic
+    private external fun dvc_onBLEMtuChanged(jniState: Long, addr: String,
+                                             newBTU:Int )
     @JvmStatic
     private external fun dvc_parseSMSPacket(jniState: Long, fromPhone: String, packet: ByteArray)
     @JvmStatic
