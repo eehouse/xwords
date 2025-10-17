@@ -20,3 +20,4 @@ nohup.out
 /xwords4/dawg/*/*.bin*
 /xwords4/android/app/.cxx
 /xwords4/linux/discon_ok2_logs/
+/xwords4/linux/vgcore.*
