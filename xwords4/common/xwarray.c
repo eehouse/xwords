@@ -100,12 +100,22 @@ arr_getData(const XWArray* array)
     return array->elems;
 }
 
+static int
+callProc( XWArray* array, XWEnv xwe, const void* elem1, const void* elem2 )
+{
+    int result = 0;
+    if ( elem1 != elem2 ) {
+        result = (*array->proc)(elem1, elem2, xwe, array->procClosure);
+    }
+    return result;
+}
+
 XP_Bool
 arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp )
 {
     XP_U32 indx = findFit( array, xwe, target );
     XP_Bool found = indx < array->nElems
-        && 0 == (*array->proc)(array->elems[indx], target, xwe, array->procClosure);
+        && 0 == callProc(array, xwe, array->elems[indx], target );
     if ( found && !!locp ) {
         *locp = indx;
     }
@@ -134,15 +144,16 @@ arr_removeAt( XWArray* array, XWEnv XP_UNUSED_DBG(xwe), XP_U32 loc )
     return removed;
 }
 
-void
+XP_U32
 arr_insert( XWArray* array, XWEnv xwe, void* node )
 {
     assertSorted( array, xwe );
-    int indx = ( !array->proc || 0 == array->nElems )
+    XP_U32 indx = ( !array->proc || 0 == array->nElems )
         ? array->nElems
         : findFit( array, xwe, node );
     arr_insertAt( array, node, indx );
     assertSorted( array, xwe );
+    return indx;
 }
 
 void
@@ -245,7 +256,7 @@ assertSorted( XWArray* array, XWEnv xwe )
     ArCompProc proc = array->proc;
     if ( !!proc ) {
         for ( int ii = 1; ii < array->nElems; ++ii ) {
-            int res = (*proc)( array->elems[ii-1], array->elems[ii], xwe, array->procClosure );
+            int res = callProc( array, xwe, array->elems[ii-1], array->elems[ii] );
             if ( 0 < res ) {
                 XP_LOGFF( "ERROR: array from %s line %d out-of-order", array->caller, array->line );
                 XP_LOGFF( "bad elems are #%d,#%d of %d", ii-1, ii, array->nElems );
@@ -269,7 +280,7 @@ findFitBinary( XWArray* array, XWEnv xwe, const void* node )
 
         while ( low <= high ) {
             int mid = (low + high) / 2;
-            int comp = (*array->proc)( array->elems[mid], node, xwe, array->procClosure );
+            int comp = callProc(array, xwe, array->elems[mid], node );
             if ( 0 == comp ) {
                 result = mid;
                 break;
