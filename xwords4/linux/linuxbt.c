@@ -231,7 +231,7 @@ figureSelfAddress( LinuxBTState* btState )
         // number of HCI devices) multiplied by the size of struct hci_dev_req,
         // plus the size of uint16_t (to store the device number)
         devList = (struct hci_dev_list_req *)
-            malloc(HCI_MAX_DEV * sizeof(*devList) + sizeof(uint16_t));
+            g_malloc0(HCI_MAX_DEV * sizeof(*devList) + sizeof(uint16_t));
         if (!devList) {
             XP_LOGFF("Failed to allocate HCI device request memory");
             goto exit;
@@ -240,9 +240,9 @@ figureSelfAddress( LinuxBTState* btState )
         devList->dev_num = HCI_MAX_DEV;
 
         // Send the HCIGETDEVLIST command to get the device list.
-        if (ioctl(hciSocket, HCIGETDEVLIST, (void *)devList) < 0) {
+        if (ioctl(hciSocket, HCIGETDEVLIST, (void *)devList) < 0) { /* valgrind hates this */
             XP_LOGFF("Failed to get HCI device list");
-            free(devList);
+            g_free(devList);
             goto exit;
         }
         int devCount = devList->dev_num;

@@ -3593,9 +3593,10 @@ logTypeSet( ConnTypeSetBits conTypes, XP_UCHAR buf[], XP_U16 bufLen )
         XP_UCHAR* ptr;
         switch ( typ ) {
         case COMMS_CONN_BT: ptr = "BT"; break;
-        case COMMS_CONN_SMS:ptr = "SMS"; break;
-        case COMMS_CONN_MQTT:ptr = "MQTT"; break;
-        default: ptr = "???"; break;
+        case COMMS_CONN_SMS: ptr = "SMS"; break;
+        case COMMS_CONN_MQTT: ptr = "MQTT"; break;
+        default: ptr = "???"; // XP_ASSERT(0);
+            break;
         }
         offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "%s, ", ptr );
         XP_ASSERT( offset < bufLen );

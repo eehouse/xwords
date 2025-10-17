@@ -338,7 +338,7 @@ check_for_files_once( gpointer data )
     while ( !!storage ) {
         lock_queue( storage );
 
-        uint8_t buf[256];
+        uint8_t buf[256] = {};
         CommsAddrRec fromAddr = {};
         XP_S16 nRead = -1;
         XP_UCHAR path[1024];

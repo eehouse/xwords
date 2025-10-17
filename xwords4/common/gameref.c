@@ -1094,7 +1094,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
             loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
         }
         if ( haveCtrlr ) {
-            XP_Bool needsChatNotify;
+            XP_Bool needsChatNotify = XP_FALSE;;
             result = ctrl_receiveMessage( gd->ctrlr, xwe, stream,
                                           &needsChatNotify );
             if ( needsChatNotify ) {
