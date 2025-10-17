@@ -750,6 +750,7 @@ gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 static void
 mkKeys( GameRef gr, KeyStore* ksp, const XP_UCHAR* third )
 {
+    XP_MEMSET( ksp, 0, sizeof(*ksp) );
     int keyIndx = 0;
     int storeIndx = 0;
     ksp->keys[keyIndx++] = KEY_GAMES;
