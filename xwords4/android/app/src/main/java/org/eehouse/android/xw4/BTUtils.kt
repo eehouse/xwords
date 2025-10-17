@@ -174,13 +174,11 @@ object BTUtils {
     }
 
     fun init(context: Context, appName: String?) {
-        Utils.launch {
-            Log.d(TAG, "init()")
-            sAppName = appName
-            sUUID = Device.getUUID()
-            loadOwnMac(context)
-            onResume(context)
-        }
+        Log.d(TAG, "init()")
+        sAppName = appName
+        sUUID = Device.getUUID()
+        loadOwnMac(context)
+        onResume(context)
     }
 
     private fun timerFired(context: Context) {
@@ -344,14 +342,14 @@ object BTUtils {
         }
     }
 
-    fun scan(context: Context, timeoutMS: Int): Int {
-        val devs = getCandidates()
-        val count = devs.size
-        if (0 < count) {
-            ScanThread.startOnce(timeoutMS, devs)
-        }
-        return count
-    }
+    // fun scan(context: Context, timeoutMS: Int): Int {
+    //     val devs = getCandidates()
+    //     val count = devs.size
+    //     if (0 < count) {
+    //         ScanThread.startOnce(timeoutMS, devs)
+    //     }
+    //     return count
+    // }
 
     private fun isActivePeer(devName: String?): Boolean {
         var result = false
@@ -536,26 +534,27 @@ object BTUtils {
             val pas: MutableMap<BluetoothDevice, PacketAccumulator> = HashMap()
 
             for (dev in mDevs) {
-                val pa =
-                    PacketAccumulator(dev.name, dev.address, mTimeoutMS)
-                        .addPing(0)
-                        .setExitWhenEmpty()
-                        .setLifetimeMS(mTimeoutMS.toLong())
-                        .wake()
+                callListeners(dev)
+                // val pa =
+                //     PacketAccumulator(dev.name, dev.address, mTimeoutMS)
+                //         .addPing(0)
+                //         .setExitWhenEmpty()
+                //         .setLifetimeMS(mTimeoutMS.toLong())
+                //         .wake()
 
-                pas[dev] = pa
+                // pas[dev] = pa
             }
 
             // PENDING: figure out how to let these send results the minute
             // they have one!!!
-            for (dev in pas.keys) {
-                val pa = pas[dev]
-                try {
-                    pa!!.join()
-                } catch (ex: InterruptedException) {
-                    Assert.failDbg()
-                }
-            }
+            // for (dev in pas.keys) {
+            //     val pa = pas[dev]
+            //     try {
+            //         pa!!.join()
+            //     } catch (ex: InterruptedException) {
+            //         Assert.failDbg()
+            //     }
+            // }
 
             synchronized(sListeners) {
                 for (listener in sListeners) {

@@ -2180,13 +2180,6 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1setOpenCount
     DVC_HEADER_END();
 }
 
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_Device_dvc_1getUUID
-(JNIEnv* env, jclass C)
-{
-    return (*env)->NewStringUTF( env, XW_BT_UUID );
-}
-
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1parseMQTTPacket
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jtopic, jbyteArray jmsg )
@@ -2201,6 +2194,28 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseMQTTPacket
 
     (*env)->ReleaseStringUTFChars( env, jtopic, topic );
     (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1parseBTPacket
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname, jstring jaddr,
+  jbyteArray jmsg )
+{
+    LOG_FUNC();
+    DVC_HEADER(jniGlobalPtr);
+
+    const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    const char* addr = (*env)->GetStringUTFChars( env, jaddr, NULL );
+    XP_U16 len = (*env)->GetArrayLength( env, jmsg );
+    jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
+
+    dvc_parseBTPacket( globalState->dutil, env, buf, len, name, addr );
+
+    (*env)->ReleaseStringUTFChars( env, jname, name );
+    (*env)->ReleaseStringUTFChars( env, jaddr, addr );
+    (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
+
     DVC_HEADER_END();
 }
 
@@ -2484,6 +2499,13 @@ Java_org_eehouse_android_xw4_jni_Stats_sts_1clearAll
     DVC_HEADER(jniGlobalPtr);
     sts_clearAll( globalState->dutil, env );
     DVC_HEADER_END();
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1getUUID
+(JNIEnv* env, jclass C)
+{
+    return (*env)->NewStringUTF( env, XW_BT_UUID );
 }
 
 JNIEXPORT jboolean JNICALL
