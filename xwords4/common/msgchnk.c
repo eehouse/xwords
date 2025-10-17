@@ -543,7 +543,7 @@ addToOutRec( MsgChunker* state, ToPhoneEntry* entry, CHUNK_CMD cmd,
     headerToStream( stream, cmd, port, gameID );
     stream_putBytes( stream, buf, buflen );
     
-    MsgRec* mRec = XP_CALLOC( state->mpool, sizeof(*rec) );
+    MsgRec* mRec = XP_CALLOC( state->mpool, sizeof(*mRec) );
     XP_U16 len = stream_getSize( stream );
     mRec->msgNet.len = len;
     mRec->msgNet.data = XP_MALLOC( state->mpool, len );
