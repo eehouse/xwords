@@ -176,6 +176,7 @@ void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );
+void addr_addMQTT( CommsAddrRec* addr, const MQTTDevID* devID );
 void addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName,
                  const XP_UCHAR* btAddr );
 void addr_addSMS( CommsAddrRec* addr, const XP_UCHAR* phone,

@@ -3831,6 +3831,13 @@ addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 }
 
 void
+addr_addMQTT( CommsAddrRec* addr, const MQTTDevID* devID )
+{
+    addr_addType( addr, COMMS_CONN_MQTT );
+    addr->u.mqtt.devID = *devID;
+}
+
+void
 addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName, const XP_UCHAR* btAddr )
 {
     addr_addType( addr, COMMS_CONN_BT );

@@ -415,7 +415,7 @@ makeGameFromArgs( CmdWrapper* wr, cJSON* args )
 
     gi.deviceRole = isSolo ? ROLE_STANDALONE : ROLE_ISHOST;
     if ( !isSolo ) {
-        CommsAddrRec addr;
+        CommsAddrRec addr = {};
         dutil_getSelfAddr( params->dutil, NULL_XWE, &addr );
         gi.conTypes = addr._conTypes;
     }

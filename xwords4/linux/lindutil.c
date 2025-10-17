@@ -102,8 +102,9 @@ linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
     LaunchParams* params = (LaunchParams*)duc->closure;
 
     if ( !params->skipMQTTAdd ) {
-        addr_addType( addr, COMMS_CONN_MQTT );
-        dvc_getMQTTDevID( duc, xwe, &addr->u.mqtt.devID );
+        MQTTDevID devID;
+        dvc_getMQTTDevID( duc, xwe, &devID );
+        addr_addMQTT( addr, &devID );
     }
 
     if ( !!params->connInfo.sms.myPhone ) {
