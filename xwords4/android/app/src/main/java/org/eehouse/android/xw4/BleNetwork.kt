@@ -33,6 +33,7 @@ import kotlin.collections.HashMap
 
 import java.util.UUID
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType.COMMS_CONN_BT
 import org.eehouse.android.xw4.jni.Device
 
 object BleNetwork {
@@ -204,6 +205,17 @@ object BleNetwork {
         mAdvertiser?.startAdvertising(settings, data, advertiseCallback)
     }
 
+    private fun updateStatus(inWorked: Boolean? = null, outWorked: Boolean? = null) {
+        mContext?.let { context -> // just to be safe...
+            inWorked?.let {
+                ConnStatusHandler.updateStatusIn(context, COMMS_CONN_BT, it)
+            }
+            outWorked?.let {
+                ConnStatusHandler.updateStatusOut(context, COMMS_CONN_BT, it)
+            }
+        }
+    }
+
     // GATT server callbacks (receiving messages)
     private val gattServerCallback = object : BluetoothGattServerCallback() {
 
@@ -227,6 +239,7 @@ object BleNetwork {
             if (characteristic.uuid == WRITE_CHAR_UUID) {
                 Log.d(TAG, "callback(): got packet of len ${packet.size}")
                 Device.parseBTPacket(device.name, device.address, packet)
+                updateStatus(inWorked=true)
                 if (responseNeeded) {
                     mGattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
@@ -312,6 +325,7 @@ object BleNetwork {
                             gatt.writeCharacteristic(char)
                         }
                         Log.d(TAG, "writeAny(): wrote packet of len ${firstPacket.size}")
+                        updateStatus(outWorked =true)
                     } else {
                         mPackets.addFirst(firstPacket)
                     }
