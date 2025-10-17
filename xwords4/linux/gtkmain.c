@@ -1837,7 +1837,7 @@ gtkmain( LaunchParams* params )
         }
 
         if ( params->runSMSTest ) {
-            smsproto_runTests( params->dutil, NULL_XWE );
+            cnk_runTests( params->dutil, NULL_XWE );
         }
 #endif
         makeGamesWindow( &apg );
