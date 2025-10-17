@@ -3838,6 +3838,14 @@ addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName, const XP_UCHAR* btAddr )
     str2ChrArray( addr->u.bt.btAddr.chars, btAddr );
 }
 
+void
+addr_addSMS( CommsAddrRec* addr, const XP_UCHAR* phone, XP_U16 port )
+{
+    addr_addType( addr, COMMS_CONN_SMS );
+    str2ChrArray( addr->u.sms.phone, phone );
+    addr->u.sms.port = port;
+}
+
 XP_Bool
 types_iter( ConnTypeSetBits conTypes, CommsConnType* typp, XP_U32* state )
 {
