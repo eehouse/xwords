@@ -391,15 +391,15 @@ sendInviteViaMQTT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
 }
 
 typedef struct _RetryClosure {
-    SMS_CMD cmd;
+    CHUNK_CMD cmd;
     XP_U16 port;
     XP_U32 gameID;
     XP_UCHAR msgNo[32];
     XP_UCHAR phone[32];
 } RetryClosure;
 
-static void sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr,
-                         SMS_CMD cmd, XP_U16 waitSecs, const XP_UCHAR* phone,
+static void sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, ChunkMsgArray* arr,
+                         CHUNK_CMD cmd, XP_U16 waitSecs, const XP_UCHAR* phone,
                          XP_U16 port, XP_U32 gameID, const XP_UCHAR* msgNo );
 
 static void
@@ -411,11 +411,11 @@ retryProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
         RetryClosure* rc = (RetryClosure*)closure;
 
         XP_U16 waitSecs;
-        SMSMsgArray* arr = smsproto_prepOutbound( dutil->protoState, xwe,
-                                                  rc->cmd,
-                                                  rc->gameID, NULL, 0,
-                                                  rc->phone, rc->port,
-                                                  XP_TRUE, &waitSecs );
+        ChunkMsgArray* arr = cnk_prepOutbound( dutil->smsChunkerState, xwe,
+                                               rc->cmd,
+                                               rc->gameID, NULL, 0,
+                                               rc->phone, rc->port,
+                                               XP_TRUE, &waitSecs );
         sendOrRetry( dutil, xwe, arr, rc->cmd, waitSecs, rc->phone,
                      rc->port, rc->gameID, rc->msgNo );
     }
@@ -423,18 +423,18 @@ retryProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
 }
 
 static void
-sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, SMS_CMD cmd,
+sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, ChunkMsgArray* arr, CHUNK_CMD cmd,
              XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
              XP_U32 gameID, const XP_UCHAR* msgNo )
 {
     if ( !!arr ) {
         for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
-            const SMSMsgNet* msg = &arr->u.msgsNet[ii];
+            const ChunkMsgNet* msg = &arr->u.msgsNet[ii];
             XP_LOGFF( "msg->len: %d", msg->len );
             XP_ASSERT( msg->len <= SMS_MAX_SIZE );
             dutil_sendViaNBS( dutil, xwe, msg->data, msg->len, phone, port );
         }
-        smsproto_freeMsgArray( dutil->protoState, arr );
+        cnk_freeMsgArray( dutil->smsChunkerState, arr );
     } else if ( waitSecs > 0 ) {
         RetryClosure* rc = (RetryClosure*)XP_CALLOC( dutil->mpool, sizeof(*rc) );
         XP_STRCAT( rc->phone, phone );
@@ -452,13 +452,13 @@ sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, SMS_CMD cmd,
     }
 }
 
-static SMSProto*
+static MsgChunker*
 initSMSProtoOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    if ( !dutil->protoState ) {
-        dutil->protoState = smsproto_init( dutil, xwe, SMS_WAIT_SECS, SMS_MAX_SIZE );
+    if ( !dutil->smsChunkerState ) {
+        dutil->smsChunkerState = cnk_init( dutil, xwe, SMS_WAIT_SECS, SMS_MAX_SIZE );
     }
-    return dutil->protoState;
+    return dutil->smsChunkerState;
 }
 
 static void
@@ -473,9 +473,9 @@ sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
 
     XP_U16 waitSecs;
     const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
-    SMSMsgArray* arr
-        = smsproto_prepOutbound( dutil->protoState, xwe, INVITE, nli->gameID,
-                                 ptr, len, phone, port, forceOld, &waitSecs );
+    ChunkMsgArray* arr
+        = cnk_prepOutbound( dutil->smsChunkerState, xwe, INVITE, nli->gameID,
+                            ptr, len, phone, port, forceOld, &waitSecs );
     XP_ASSERT( !!arr || !forceOld );
     sendOrRetry( dutil, xwe, arr, INVITE, waitSecs, phone, port,
                  nli->gameID, "invite" );
@@ -551,10 +551,10 @@ sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
     for ( SendMsgsPacket* packet = (SendMsgsPacket*)packets;
           !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         XP_U16 waitSecs;
-        SMSMsgArray* arr
-            = smsproto_prepOutbound( dutil->protoState, xwe, DATA, gameID,
-                                     packet->buf, packet->len, phone, port,
-                                     XP_TRUE, &waitSecs );
+        ChunkMsgArray* arr
+            = cnk_prepOutbound( dutil->smsChunkerState, xwe, DATA, gameID,
+                                packet->buf, packet->len, phone, port,
+                                XP_TRUE, &waitSecs );
         sendOrRetry( dutil, xwe, arr, DATA, waitSecs, phone, port, gameID,
                      packet->msgNo );
     }
@@ -1138,8 +1138,8 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 {
     XP_LOGFF( "(len: %d)", len );
     XP_ASSERT( len <= SMS_MAX_SIZE );
-    SMSProto* state = initSMSProtoOnce( dutil, xwe );
-    SMSMsgArray* msgArr = smsproto_prepInbound( state, xwe,
+    MsgChunker* state = initSMSProtoOnce( dutil, xwe );
+    ChunkMsgArray* msgArr = cnk_prepInbound( state, xwe,
                                                 fromAddr->u.sms.phone,
                                                 fromAddr->u.sms.port,
                                                 buf, len );
@@ -1147,7 +1147,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     if ( NULL != msgArr ) {
         XP_ASSERT( msgArr->format == FORMAT_LOC );
         for ( int ii = 0; ii < msgArr->nMsgs; ++ii ) {
-            SMSMsgLoc* msg = &msgArr->u.msgsLoc[ii];
+            ChunkMsgLoc* msg = &msgArr->u.msgsLoc[ii];
             switch ( msg->cmd ) {
             case DATA:
                 gmgr_onMessageReceived( dutil, xwe, msg->gameID,
@@ -1171,7 +1171,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 break;
             }
         }
-        smsproto_freeMsgArray( state, msgArr );
+        cnk_freeMsgArray( state, msgArr );
     }
 } /* dvc_parseSMSPacket */
 
@@ -1710,7 +1710,7 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* dc = freePhonyState( dutil, xwe );
     freeWSState( dutil, dc );
 
-    smsproto_free( dutil->protoState );
+    cnk_free( dutil->smsChunkerState );
     cleanupBT( dutil );
 
     MUTEX_DESTROY( &dc->webSend.mutex );

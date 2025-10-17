@@ -30,7 +30,7 @@
 #include "nlityp.h"
 #include "cJSON.h"
 #include "gameinfo.h"
-#include "smsprotop.h"
+#include "msgchnkp.h"
 #include "xwarray.h"
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* keys[]);
@@ -191,8 +191,8 @@ struct XW_DUtilCtxt {
     void* devCtxt;              /* owned by device.c */
     void* statsState;           /* owned by stats.c */
     void* timersState;          /* owned by timers.c */
-    SMSProto* protoState;
-    SMSProto* btChunkerState;
+    MsgChunker* smsChunkerState;
+    MsgChunker* btChunkerState;
     GameMgrState* gameMgrState; /* owned by gamemgr.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;

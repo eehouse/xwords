@@ -23,27 +23,27 @@
 
 #define BT_DFLT_MAX_LEN 20
 
-static SMSProto*
+static MsgChunker*
 initBTChunkerOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     if ( !dutil->btChunkerState ) {
-        dutil->btChunkerState = smsproto_init( dutil, xwe, 0, BT_DFLT_MAX_LEN );
+        dutil->btChunkerState = cnk_init( dutil, xwe, 0, BT_DFLT_MAX_LEN );
     }
     return dutil->btChunkerState;
 }
 
 static void
-sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, XP_U16 waitSecs,
+sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, ChunkMsgArray* arr, XP_U16 waitSecs,
           const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
 {
     XP_ASSERT( 0 == waitSecs );
     if ( !!arr ) {
         for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
-            const SMSMsgNet* msg = &arr->u.msgsNet[ii];
+            const ChunkMsgNet* msg = &arr->u.msgsNet[ii];
             // dutil_sendViaNBS( dutil, xwe, msg->data, msg->len, phone, port );
             dutil_sendViaBT( dutil, xwe, msg->data, msg->len, hostName, btAddr );
         }
-        smsproto_freeMsgArray( dutil->btChunkerState, arr );
+        cnk_freeMsgArray( dutil->btChunkerState, arr );
     }
 }
 
@@ -51,7 +51,7 @@ void
 sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                  const XP_UCHAR* hostName, const XP_BtAddrStr* btAddr )
 {
-    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
+    MsgChunker* chunker = initBTChunkerOnce( dutil, xwe );
 
     XWStreamCtxt* stream = dvc_makeStream( dutil );
     nli_saveToStream( nli, stream );
@@ -60,8 +60,8 @@ sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     XP_U16 len = stream_getSize( stream );
     XP_U16 waitSecs;
     const XP_Bool forceOld = XP_FALSE;
-    SMSMsgArray* arr
-        = smsproto_prepOutbound( chunker, xwe, INVITE, nli->gameID,
+    ChunkMsgArray* arr
+        = cnk_prepOutbound( chunker, xwe, INVITE, nli->gameID,
                                  ptr, len, btAddr->chars, 0,
                                  forceOld, &waitSecs );
     XP_ASSERT( !!arr || !forceOld );
@@ -74,23 +74,23 @@ sendMsgsViaBT( XW_DUtilCtxt* dutil, XWEnv xwe,
                const SendMsgsPacket* const packets,
                const CommsAddrRec* addr, XP_U32 gameID )
 {
-    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
+    MsgChunker* chunker = initBTChunkerOnce( dutil, xwe );
 
     const XP_UCHAR* hostName = addr->u.bt.hostName;
     const XP_BtAddrStr* btAddr = &addr->u.bt.btAddr;
     for ( const SendMsgsPacket* next = packets; !!next; next = next->next ) {
         XP_U16 waitSecs;
-        SMSMsgArray* arr
-            = smsproto_prepOutbound( chunker, xwe, DATA, gameID,
-                                     next->buf, next->len,
-                                     btAddr->chars, 0,
-                                     XP_TRUE, &waitSecs );
+        ChunkMsgArray* arr
+            = cnk_prepOutbound( chunker, xwe, DATA, gameID,
+                                next->buf, next->len,
+                                btAddr->chars, 0,
+                                XP_TRUE, &waitSecs );
         sendMsgs( dutil, xwe, arr, waitSecs, hostName, btAddr );
     }
 }
 
 static void
-handleMsg( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgLoc* msg, const CommsAddrRec* from )
+handleMsg( XW_DUtilCtxt* dutil, XWEnv xwe, ChunkMsgLoc* msg, const CommsAddrRec* from )
 {
     switch ( msg->cmd ) {
     case DATA:
@@ -121,18 +121,18 @@ parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                const XP_U8* buf, XP_U16 len,
                const XP_UCHAR* fromName, const XP_UCHAR* fromAddr )
 {
-    SMSProto* chunker = initBTChunkerOnce( dutil, xwe );
-    SMSMsgArray* msgArr = smsproto_prepInbound( chunker, xwe, fromAddr, 0,
-                                                buf, len );
+    MsgChunker* chunker = initBTChunkerOnce( dutil, xwe );
+    ChunkMsgArray* msgArr = cnk_prepInbound( chunker, xwe, fromAddr, 0,
+                                             buf, len );
     if ( NULL != msgArr ) {
         CommsAddrRec from = {};
         addr_addBT( &from, fromName, fromAddr );
         XP_ASSERT( msgArr->format == FORMAT_LOC );
         for ( int ii = 0; ii < msgArr->nMsgs; ++ii ) {
-            SMSMsgLoc* msg = &msgArr->u.msgsLoc[ii];
+            ChunkMsgLoc* msg = &msgArr->u.msgsLoc[ii];
             handleMsg( dutil, xwe, msg, &from );
         }
-        smsproto_freeMsgArray( chunker, msgArr );
+        cnk_freeMsgArray( chunker, msgArr );
     }
 }
 
@@ -140,7 +140,7 @@ void
 cleanupBT( XW_DUtilCtxt* dutil )
 {
     if ( !!dutil->btChunkerState ) {
-        smsproto_free(dutil->btChunkerState);
+        cnk_free(dutil->btChunkerState);
         dutil->btChunkerState = NULL;
     }
 }

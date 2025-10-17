@@ -57,7 +57,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/vtabmgr.o \
 	$(COMMONOBJDIR)/dictmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
-	$(COMMONOBJDIR)/smsproto.o \
+	$(COMMONOBJDIR)/msgchnk.o \
 	$(COMMONOBJDIR)/dutil.o \
 	$(COMMONOBJDIR)/util.o \
 	$(COMMONOBJDIR)/device.o \
