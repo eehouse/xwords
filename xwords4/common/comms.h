@@ -178,6 +178,8 @@ XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp,
                    XP_U32* state );
 void addr_addBT( CommsAddrRec* addr, const XP_UCHAR* btName,
                  const XP_UCHAR* btAddr );
+void addr_addSMS( CommsAddrRec* addr, const XP_UCHAR* phone,
+                 XP_U16 port );
 
 void types_addType( ConnTypeSetBits* conTypes, CommsConnType type );
 void types_rmType( ConnTypeSetBits* conTypes, CommsConnType type );

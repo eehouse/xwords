@@ -107,9 +107,8 @@ linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
     }
 
     if ( !!params->connInfo.sms.myPhone ) {
-        addr_addType( addr, COMMS_CONN_SMS );
-        XP_STRCAT( addr->u.sms.phone, params->connInfo.sms.myPhone );
-        addr->u.sms.port = params->connInfo.sms.port;
+        addr_addSMS( addr, params->connInfo.sms.myPhone,
+                     params->connInfo.sms.port );
     }
 
     /* Some test for this? */
