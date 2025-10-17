@@ -63,6 +63,9 @@ MsgChunker* cnk_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
                       XP_U16 defaultMaxSize );
 void cnk_free( MsgChunker* state );
 
+void cnk_maxSizeChangedFor( MsgChunker* state, XWEnv xwe,
+                            const XP_UCHAR* phone, XP_U16 mtu );
+
 /* Return ptr to structure if one's ready to be sent, otherwise null. Caller *
  * should interpret null as meaning it's meant to call again. To support that,
  * null buf is legit.

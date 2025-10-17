@@ -2220,6 +2220,17 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseBTPacket
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1onBLEMtuChanged
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname, jint mtu )
+{
+    DVC_HEADER(jniGlobalPtr);
+    const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    dvc_onBLEMtuChangedFor( globalState->dutil, env, name, mtu );
+    (*env)->ReleaseStringUTFChars( env, jname, name );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1parseSMSPacket
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jphone, jbyteArray jmsg )
 {

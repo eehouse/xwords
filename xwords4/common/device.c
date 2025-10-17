@@ -1183,6 +1183,13 @@ dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     parseBTPacket( dutil, xwe, buf, len, fromName, fromAddr );
 }
 
+void
+dvc_onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        const XP_UCHAR* phone, XP_U16 mtu )
+{
+    onBLEMtuChangedFor( dutil, xwe, phone, mtu );
+}
+
 typedef struct _GetByKeyData {
     XP_U32 resultKey;
     WSData* found;

@@ -137,6 +137,14 @@ parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 }
 
 void
+onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
+                    const XP_UCHAR* phone, XP_U16 mtu )
+{
+    MsgChunker* chunker = initBTChunkerOnce( dutil, xwe );
+    cnk_maxSizeChangedFor( chunker, xwe, phone, mtu );
+}
+
+void
 cleanupBT( XW_DUtilCtxt* dutil )
 {
     if ( !!dutil->btChunkerState ) {
