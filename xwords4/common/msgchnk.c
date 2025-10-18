@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2018 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@ typedef struct _ToPhoneRec {
 } ToPhoneRec;
 
 typedef struct _ToPhoneEntry {
-    XP_UCHAR phone[32];
+    XP_UCHAR phone[32];         /* must be first so phoneCompProc works */
     XP_U16 maxLen;
     ToPhoneRec* rec;
 } ToPhoneEntry;
@@ -62,7 +62,7 @@ typedef struct _MsgIDRec {
 } MsgIDRec;
 
 typedef struct _FromPhoneRec {
-    XP_UCHAR phone[32];
+    XP_UCHAR phone[32];         /* must be first so phoneCompProc works */
     int nMsgIDs;
     MsgIDRec* msgIDRecs;
 } FromPhoneRec;
@@ -77,8 +77,7 @@ struct MsgChunker {
     XP_U32 waitSecs;
     XWArray* toPhoneEntries;
 
-    int nFromPhones;
-    FromPhoneRec* fromPhoneRecs;
+    XWArray* fromPhoneRecs;
 #ifdef DEBUG
     pthread_t starter;
     int nestCount;
@@ -94,16 +93,16 @@ static ToPhoneEntry* getForPhone( MsgChunker* state, XWEnv xwe,
 static void addToOutRec( MsgChunker* state, ToPhoneEntry* entry, CHUNK_CMD cmd,
                          XP_U16 port, XP_U32 gameID, const XP_U8* buf,
                          XP_U16 buflen, XP_U32 nowSeconds );
-static void addMessage( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID,
-                        int indx, int count, const XP_U8* data, XP_U16 len );
-static ChunkMsgArray* completeMsgs( MsgChunker* state, ChunkMsgArray* arr,
+static void addMessage( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
+                        int msgID, int indx, int count, const XP_U8* data, XP_U16 len );
+static ChunkMsgArray* completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr,
                                     const XP_UCHAR* fromPhone, XP_U16 wantPort,
                                     int msgID );
 static void savePartials( MsgChunker* state, XWEnv xwe );
 static void restorePartials( MsgChunker* state, XWEnv xwe );
-static void rmFromPhoneRec( MsgChunker* state, int fromPhoneIndex );
-static void freeMsgIDRec( MsgChunker* state, MsgIDRec* rec, int fromPhoneIndex,
-                          int msgIDIndex );
+static void rmFromPhoneRec( MsgChunker* state, XWEnv xwe, int fromPhoneIndex );
+static void freeMsgIDRec( MsgChunker* state, XWEnv xwe, MsgIDRec* rec,
+                          int fromPhoneIndex, int msgIDIndex );
 static void freeForPhone( MsgChunker* state, XWEnv xwe, const XP_UCHAR* phone );
 static void freeMsg( MsgChunker* state, MsgRec** msg );
 static void freeRec( MsgChunker* state, ToPhoneRec* rec );
@@ -116,12 +115,30 @@ static const XP_UCHAR* cmd2Str( CHUNK_CMD cmd );
 #endif
 
 static int
-toPhoneCompProc( const void* dl1, const void* dl2,
-                 XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
+phoneCompProc( const void* dl1, const void* dl2,
+               XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
 {
-    ToPhoneEntry* rec1 = (ToPhoneEntry*)dl1;
-    ToPhoneEntry* rec2 = (ToPhoneEntry*)dl2;
-    return XP_STRCMP( rec1->phone, rec2->phone );
+    const XP_UCHAR* ph1 = (const XP_UCHAR*)dl1;
+    const XP_UCHAR* ph2 = (const XP_UCHAR*)dl2;
+    return XP_STRCMP( ph1, ph2 );
+}
+
+static void
+disposeFromPhoneEntry( void* elem, void* closure )
+{
+    FromPhoneRec* rec = (FromPhoneRec*)elem;
+    MsgChunker* state = (MsgChunker*)closure;
+    if ( !!rec ) {
+        for ( int jj = 0; jj < rec->nMsgIDs; ++jj ) {
+            MsgIDRec* mir = &rec->msgIDRecs[jj];
+            for ( int kk = 0; kk < mir->count; ++kk ) {
+                XP_FREEP( state->mpool, &mir->parts[kk].data );
+            }
+            XP_FREEP( state->mpool, &mir->parts );
+        }
+        XP_FREEP( state->mpool, &rec->msgIDRecs );
+        XP_FREEP( state->mpool, &rec );
+    }
 }
 
 MsgChunker*
@@ -133,7 +150,8 @@ cnk_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
     state->dutil = dutil;
     state->waitSecs = waitSecs;
     state->defaultMaxLen = defaultMaxLen - 4; /* 4 for my overhead */
-    state->toPhoneEntries = arr_make( dutil->mpool, toPhoneCompProc, state );
+    state->toPhoneEntries = arr_make( dutil->mpool, phoneCompProc, state );
+    state->fromPhoneRecs = arr_make( dutil->mpool, phoneCompProc, state );
     MPASSIGN( state->mpool, dutil->mpool );
 
     XP_U32 siz = sizeof(state->nNextID);
@@ -173,16 +191,12 @@ cnk_free( MsgChunker* state )
         arr_removeAll( state->toPhoneEntries, disposePhoneEntry, state );
         arr_destroy( state->toPhoneEntries );
 
-        if ( 0 < state->nFromPhones ) {
+        if ( arr_length(state->fromPhoneRecs) > 0 ) {
             XP_LOGF( "%s(): freeing undelivered partial messages", __func__ );
         }
-        while (0 < state->nFromPhones) {
-            FromPhoneRec* ffr = &state->fromPhoneRecs[0];
-            while ( 0 < ffr->nMsgIDs ) {
-                freeMsgIDRec( state, &ffr->msgIDRecs[0], 0, 0 );
-            }
-        }
-        XP_ASSERT( !state->fromPhoneRecs ); /* above nulls this once empty */
+        arr_removeAll( state->fromPhoneRecs, disposeFromPhoneEntry, state );
+        arr_destroy( state->fromPhoneRecs );
+        state->fromPhoneRecs = NULL;
 
         MUTEX_DESTROY( &state->mutex );
 
@@ -371,8 +385,8 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                 XP_U16 len = stream_getSize( stream );
                 XP_U8 buf[len];
                 stream_getBytes( stream, buf, len );
-                addMessage( state, fromPhone, msgID, indx, count, buf, len );
-                result = completeMsgs( state, result, fromPhone, wantPort, msgID );
+                addMessage( state, xwe, fromPhone, msgID, indx, count, buf, len );
+                result = completeMsgs( state, xwe, result, fromPhone, wantPort, msgID );
                 savePartials( state, xwe );
             }
         }
@@ -386,7 +400,7 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
 
                 XWStreamCtxt* msgStream = dvc_makeStream( state->dutil );
                 stream_putBytes( msgStream, tmp, oneLen );
-                
+
                 XP_U32 gameID;
                 XP_U16 port;
                 CHUNK_CMD cmd;
@@ -525,7 +539,7 @@ getForPhone( MsgChunker* state, XWEnv xwe, const XP_UCHAR* phone, XP_Bool create
         result->maxLen = state->defaultMaxLen;
         arr_insert( state->toPhoneEntries, xwe, result );
     }
-    
+
     if ( create && !result->rec ) {
         result->rec = XP_CALLOC( state->mpool, sizeof(*result->rec) );
     }
@@ -550,7 +564,7 @@ addToOutRec( MsgChunker* state, ToPhoneEntry* entry, CHUNK_CMD cmd,
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     headerToStream( stream, cmd, port, gameID );
     stream_putBytes( stream, buf, buflen );
-    
+
     MsgRec* mRec = XP_CALLOC( state->mpool, sizeof(*mRec) );
     XP_U16 len = stream_getSize( stream );
     mRec->msgNet.len = len;
@@ -572,29 +586,28 @@ addToOutRec( MsgChunker* state, ToPhoneEntry* entry, CHUNK_CMD cmd,
 }
 
 static MsgIDRec*
-getMsgIDRec( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID,
+getMsgIDRec( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone, int msgID,
              XP_Bool addMissing, int* fromPhoneIndex, int* msgIDIndex )
 {
     MsgIDRec* result = NULL;
 
     FromPhoneRec* fromPhoneRec = NULL;
-    for ( int ii = 0; ii < state->nFromPhones; ++ii ) {
-        if ( 0 == XP_STRCMP( state->fromPhoneRecs[ii].phone, fromPhone ) ) {
-            fromPhoneRec = &state->fromPhoneRecs[ii];
-            *fromPhoneIndex = ii;
-            break;
-        }
+    XP_U32 loc = 0;
+    if ( arr_find( state->fromPhoneRecs, NULL, fromPhone, &loc ) ) {
+        fromPhoneRec = (FromPhoneRec*)arr_getNth( state->fromPhoneRecs, loc );
+        *fromPhoneIndex = (int)loc;
     }
 
-    // create and add if not found
+    /* create and add if not found */
     if ( NULL == fromPhoneRec && addMissing ) {
-        state->fromPhoneRecs =
-            XP_REALLOC( state->mpool, state->fromPhoneRecs,
-                        (state->nFromPhones + 1) * sizeof(*state->fromPhoneRecs) );
-        *fromPhoneIndex = state->nFromPhones;
-        fromPhoneRec = &state->fromPhoneRecs[state->nFromPhones++];
-        XP_MEMSET( fromPhoneRec, 0, sizeof(*fromPhoneRec) );
+        fromPhoneRec = XP_CALLOC( state->mpool, sizeof(*fromPhoneRec) );
         XP_STRCAT( fromPhoneRec->phone, fromPhone );
+        arr_insert( state->fromPhoneRecs, xwe, fromPhoneRec );
+        /* find index of newly inserted entry */
+        arr_find( state->fromPhoneRecs, xwe, fromPhone, &loc );
+        *fromPhoneIndex = (int)loc;
+        XP_ASSERT( fromPhoneRec == (FromPhoneRec*)
+                   arr_getNth( state->fromPhoneRecs, loc ) );
     }
 
     // Now find msgID record
@@ -625,8 +638,8 @@ getMsgIDRec( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID,
 /* Messages that are split gather here until complete
  */
 static void
-addMessage( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID, int indx,
-            int count, const XP_U8* data, XP_U16 len )
+addMessage( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
+            int msgID, int indx, int count, const XP_U8* data, XP_U16 len )
 {
     // XP_LOGFF( "phone=%s, msgID=%d, %d/%d", fromPhone, msgID, indx, count );
     XP_ASSERT( 0 < len );
@@ -634,14 +647,14 @@ addMessage( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID, int indx,
     for ( ; ; ) {
         int fromPhoneIndex;
         int msgIDIndex;
-        msgIDRec = getMsgIDRec( state, fromPhone, msgID, XP_TRUE,
+        msgIDRec = getMsgIDRec( state, xwe, fromPhone, msgID, XP_TRUE,
                                 &fromPhoneIndex, &msgIDIndex );
 
         /* sanity check... */
         if ( msgIDRec->count == 0 || msgIDRec->count == count ) {
             break;
         }
-        freeMsgIDRec( state, msgIDRec, fromPhoneIndex, msgIDIndex );
+        freeMsgIDRec( state, xwe, msgIDRec, fromPhoneIndex, msgIDIndex );
     }
 
     /* if it's new, fill in missing fields */
@@ -661,30 +674,22 @@ addMessage( MsgChunker* state, const XP_UCHAR* fromPhone, int msgID, int indx,
 }
 
 static void
-rmFromPhoneRec( MsgChunker* state, int fromPhoneIndex )
+rmFromPhoneRec( MsgChunker* state, XWEnv xwe, int fromPhoneIndex )
 {
-    FromPhoneRec* fromPhoneRec = &state->fromPhoneRecs[fromPhoneIndex];
+    /* free the element and remove from array */
+    FromPhoneRec* fromPhoneRec = (FromPhoneRec*)
+        arr_removeAt( state->fromPhoneRecs, xwe, fromPhoneIndex );
     XP_ASSERT( fromPhoneRec->nMsgIDs == 0 );
     XP_FREEP( state->mpool, &fromPhoneRec->msgIDRecs );
-
-    if ( --state->nFromPhones == 0 ) {
-        XP_FREEP( state->mpool, &state->fromPhoneRecs );
-    } else {
-        XP_U16 nAbove = state->nFromPhones - fromPhoneIndex;
-        XP_ASSERT( nAbove >= 0 );
-        if ( nAbove > 0 ) {
-            XP_MEMMOVE( &state->fromPhoneRecs[fromPhoneIndex], &state->fromPhoneRecs[fromPhoneIndex+1],
-                        nAbove * sizeof(*state->fromPhoneRecs) );
-        }
-        state->fromPhoneRecs = XP_REALLOC( state->mpool, state->fromPhoneRecs,
-                                           state->nFromPhones * sizeof(*state->fromPhoneRecs));
-    }
+    XP_FREEP( state->mpool, &fromPhoneRec );
 }
 
 static void
-freeMsgIDRec( MsgChunker* state, MsgIDRec* XP_UNUSED_DBG(rec), int fromPhoneIndex, int msgIDIndex )
+freeMsgIDRec( MsgChunker* state, XWEnv xwe, MsgIDRec* XP_UNUSED_DBG(rec),
+              int fromPhoneIndex, int msgIDIndex )
 {
-    FromPhoneRec* fromPhoneRec = &state->fromPhoneRecs[fromPhoneIndex];
+    FromPhoneRec* fromPhoneRec = (FromPhoneRec*)
+        arr_getNth( state->fromPhoneRecs, fromPhoneIndex );
     MsgIDRec* msgIDRec = &fromPhoneRec->msgIDRecs[msgIDIndex];
     XP_ASSERT( msgIDRec == rec );
 
@@ -704,8 +709,30 @@ freeMsgIDRec( MsgChunker* state, MsgIDRec* XP_UNUSED_DBG(rec), int fromPhoneInde
                                               fromPhoneRec->nMsgIDs
                                               * sizeof(*fromPhoneRec->msgIDRecs));
     } else {
-        rmFromPhoneRec( state, fromPhoneIndex );
+        rmFromPhoneRec( state, xwe, fromPhoneIndex );
     }
+}
+
+static ForEachAct
+savePartialProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+{
+    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    const FromPhoneRec* rec = (FromPhoneRec*)elem;
+    stringToStream( stream, rec->phone );
+    stream_putU8( stream, rec->nMsgIDs );
+    for ( int jj = 0; jj < rec->nMsgIDs; ++jj ) {
+        MsgIDRec* mir = &rec->msgIDRecs[jj];
+        stream_putU16( stream, mir->msgID );
+        stream_putU8( stream, mir->count );
+
+        /* There's an array here. It may be sparse. Save a len of 0 */
+        for ( int kk = 0; kk < mir->count; ++kk ) {
+            int len = mir->parts[kk].len;
+            stream_putU8( stream, len );
+            stream_putBytes( stream, mir->parts[kk].data, len );
+        }
+    }
+    return FEA_OK;
 }
 
 static void
@@ -714,24 +741,9 @@ savePartials( MsgChunker* state, XWEnv xwe )
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     stream_putU8( stream, PARTIALS_FORMAT );
 
-    stream_putU8( stream, state->nFromPhones );
-    for ( int ii = 0; ii < state->nFromPhones; ++ii ) {
-        const FromPhoneRec* rec = &state->fromPhoneRecs[ii];
-        stringToStream( stream, rec->phone );
-        stream_putU8( stream, rec->nMsgIDs );
-        for ( int jj = 0; jj < rec->nMsgIDs; ++jj ) {
-            MsgIDRec* mir = &rec->msgIDRecs[jj];
-            stream_putU16( stream, mir->msgID );
-            stream_putU8( stream, mir->count );
-
-            /* There's an array here. It may be sparse. Save a len of 0 */
-            for ( int kk = 0; kk < mir->count; ++kk ) {
-                int len = mir->parts[kk].len;
-                stream_putU8( stream, len );
-                stream_putBytes( stream, mir->parts[kk].data, len );
-            }
-        }
-    }
+    XP_U16 nFrom = arr_length(state->fromPhoneRecs);
+    stream_putU8( stream, nFrom );
+    arr_map( state->fromPhoneRecs, xwe, savePartialProc, stream );
 
     XP_U16 newSize = stream_getSize( stream );
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
@@ -770,7 +782,7 @@ restorePartials( MsgChunker* state, XWEnv xwe )
                     if ( 0 < len ) {
                         XP_U8 buf[len];
                         stream_getBytes( stream, buf, len );
-                        addMessage( state, phone, msgID, kk, count, buf, len );
+                        addMessage( state, xwe, phone, msgID, kk, count, buf, len );
                     }
                 }
             }
@@ -780,11 +792,11 @@ restorePartials( MsgChunker* state, XWEnv xwe )
 }
 
 static ChunkMsgArray*
-completeMsgs( MsgChunker* state, ChunkMsgArray* arr, const XP_UCHAR* fromPhone,
+completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr, const XP_UCHAR* fromPhone,
               XP_U16 wantPort, int msgID )
 {
     int fromPhoneIndex, msgIDIndex;
-    MsgIDRec* rec = getMsgIDRec( state, fromPhone, msgID, XP_FALSE,
+    MsgIDRec* rec = getMsgIDRec( state, xwe, fromPhone, msgID, XP_FALSE,
                                  &fromPhoneIndex, &msgIDIndex);
     if ( !rec ) {
         XP_LOGFF( "no rec for phone %s, msgID %d", fromPhone, msgID );
@@ -829,7 +841,7 @@ completeMsgs( MsgChunker* state, ChunkMsgArray* arr, const XP_UCHAR* fromPhone,
         }
         stream_destroy( stream );
 
-        freeMsgIDRec( state, rec, fromPhoneIndex, msgIDIndex );
+        freeMsgIDRec( state, xwe, rec, fromPhoneIndex, msgIDIndex );
     }
 
     return arr;
