@@ -235,7 +235,8 @@ CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/cursesask.o \
 	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
 	$(BUILD_PLAT_DIR)/cursesletterask.o \
-	$(BUILD_PLAT_DIR)/curseschat.o
+	$(BUILD_PLAT_DIR)/curseschat.o \
+	$(BUILD_PLAT_DIR)/curnewgame.o
 endif
 ifndef LIB_NO_UI
 MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \

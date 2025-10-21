@@ -1,6 +1,5 @@
 /* 
- * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,16 +17,22 @@
  */
 
 
-#ifdef PLATFORM_GTK
+#ifdef PLATFORM_NCURSES
 
-#ifndef _GTKNEWGAME_H_
-#define _GTKNEWGAME_H_
+#include "curnewgame.h"
 
-#include "gtkboard.h"
+gboolean
+curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
+                  CommsAddrRec* addr, XP_Bool isNewGame,
+                  XP_Bool fireConnDlg )
+{
+    XP_USE(params);
+    XP_USE(gi);
+    XP_USE(addr);
+    XP_USE(isNewGame);
+    XP_USE(fireConnDlg);
+    XP_ASSERT(0);               /* not implemented. :-) */
+    return false;
+}
 
-gboolean gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi,
-                           CommsAddrRec* addr, XP_Bool isNewGame,
-                           XP_Bool fireConnDlg );
-
-#endif /* _GTKNEWGAME_H_ */
-#endif /* PLATFORM_GTK */
+#endif /* PLATFORM_NCURSES */
