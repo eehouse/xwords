@@ -18,16 +18,16 @@
  */
 
 
-#ifdef PLATFORM_GTK
+#ifdef PLATFORM_NCURSES
 
-#ifndef _GTKNEWGAME_H_
-#define _GTKNEWGAME_H_
+#ifndef _CURNEWGAME_H_
+#define _CURNEWGAME_H_
 
-#include "gtkboard.h"
+#include "main.h"
 
-gboolean gtkNewGameDialog( LaunchParams* params, CurGameInfo* gi,
+gboolean curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
                            CommsAddrRec* addr, XP_Bool isNewGame,
                            XP_Bool fireConnDlg );
 
-#endif /* _GTKNEWGAME_H_ */
-#endif /* PLATFORM_GTK */
+#endif /* _CURNEWGAME_H_ */
+#endif /* PLATFORM_NCURSES */

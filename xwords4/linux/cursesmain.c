@@ -71,6 +71,7 @@
 #include "extcmds.h"
 #include "knownplyr.h"
 #include "gamemgr.h"
+#include "curnewgame.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -292,28 +293,28 @@ handleRematchGame( void* closure, int XP_UNUSED(key) )
     return true;
 }
 
-static bool
-canMakeFromGI( const CurGameInfo* gi )
-{
-    LOG_FUNC();
-    bool result = 0 < gi->nPlayers
-        && !!gi->isoCodeStr[0]
-        ;
-    bool haveDict = !!gi->dictName[0];
-    bool allHaveDicts = true;
-    for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* lp = &gi->players[ii];
-        result = !lp->isLocal || '\0' != lp->name[0];
-        if ( allHaveDicts ) {
-            allHaveDicts = !!lp->dictName[0];
-        }
-    }
+/* static bool */
+/* canMakeFromGI( const CurGameInfo* gi ) */
+/* { */
+/*     LOG_FUNC(); */
+/*     bool result = 0 < gi->nPlayers */
+/*         && !!gi->isoCodeStr[0] */
+/*         ; */
+/*     bool haveDict = !!gi->dictName[0]; */
+/*     bool allHaveDicts = true; */
+/*     for ( int ii = 0; result && ii < gi->nPlayers; ++ii ) { */
+/*         const LocalPlayer* lp = &gi->players[ii]; */
+/*         result = !lp->isLocal || '\0' != lp->name[0]; */
+/*         if ( allHaveDicts ) { */
+/*             allHaveDicts = !!lp->dictName[0]; */
+/*         } */
+/*     } */
 
-    result = result && (haveDict || allHaveDicts);
+/*     result = result && (haveDict || allHaveDicts); */
 
-    LOG_RETURNF( "%s", boolToStr(result) );
-    return result;
-}
+/*     LOG_RETURNF( "%s", boolToStr(result) ); */
+/*     return result; */
+/* } */
 
 static bool
 handleNewGame( void* closure, int XP_UNUSED(key) )
@@ -322,19 +323,28 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
 
     // aGlobals->cag.params->needsNewGame = XP_FALSE;
+    LaunchParams* params = aGlobals->cag.params;
 
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-
-    const CurGameInfo* gi = &aGlobals->cag.params->pgi;
-    if ( !canMakeFromGI(gi) ) {
-        ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
-    } else if ( cb_newGame( aGlobals->cbState, gi, NULL ) ) {
-        /* do nothing; callbacks will result in add to list and, optionally,
-           opening */
-    } else {
-        XP_ASSERT(0);
+    CurGameInfo gi = params->pgi;
+    
+    CommsAddrRec addr = {};
+    if ( curNewGameDialog( params, &gi, &addr, XP_TRUE, XP_FALSE ) ) {
+        LOG_GI( &gi, __func__ );
+        /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, &gi, NULL );
     }
+
+    /* cb_dims dims; */
+    /* figureDims( aGlobals, &dims ); */
+
+    /* const CurGameInfo* gi = &aGlobals->cag.params->pgi; */
+    /* if ( !canMakeFromGI(gi) ) { */
+    /*     ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" ); */
+    /* } else if ( cb_newGame( aGlobals->cbState, gi, NULL ) ) { */
+    /*     /\* do nothing; callbacks will result in add to list and, optionally, */
+    /*        opening *\/ */
+    /* } else { */
+    /*     XP_ASSERT(0); */
+    /* } */
     return XP_TRUE;
 }
 
