@@ -628,11 +628,12 @@ object DictUtils {
         fun anyMissing(names: Array<String?>): Boolean {
             var missing = false
             for (ii in m_paths.indices) {
-                names[ii]?.let {
+                val name = names[ii]
+                if (name != null) { // don't use let if we're breaking/continuing
                     // It's ok for there to be no dict IFF there's no
                     // name.  That's a player using the default dict.
                     if (null == m_bytes[ii] && null == m_paths[ii]) {
-                        Log.d(TAG, "anyMissing(): no bytes or path for $it")
+                        Log.d(TAG, "anyMissing(): no bytes or path for $name")
                         missing = true
                         break
                     }

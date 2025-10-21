@@ -72,6 +72,7 @@ val CURTAG = "git describe --exact-match".runString()
 plugins {
 	id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 repositories {
@@ -402,20 +403,23 @@ android {
 }
 
 dependencies {
-    implementation( "androidx.legacy:legacy-support-v4:1.0.+" )
-	implementation( "androidx.preference:preference:1.2.+" )
+    implementation( "androidx.legacy:legacy-support-v4:1.0.0" )
+	implementation( "androidx.preference:preference:1.2.1" )
 
-    implementation( "androidx.lifecycle:lifecycle-extensions:2.0.+" )
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0")
-    annotationProcessor( "androidx.lifecycle:lifecycle-compiler:2.0.+" )
+    // Updated lifecycle components - lifecycle-extensions is deprecated
+    implementation( "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7" )
+    implementation( "androidx.lifecycle:lifecycle-livedata-ktx:2.8.7" )
+    implementation( "androidx.lifecycle:lifecycle-runtime-ktx:2.8.7" )
+    implementation( "androidx.lifecycle:lifecycle-process:2.8.7" )
+    kapt( "androidx.lifecycle:lifecycle-compiler:2.8.7" )
 
     implementation("com.hivemq:hivemq-mqtt-client:1.3.7")
 
-    implementation( "com.google.zxing:core:3.3.+" )
-    implementation( "com.jakewharton:process-phoenix:2.1.2" )
+    implementation( "com.google.zxing:core:3.5.3" )
+    implementation( "com.jakewharton:process-phoenix:3.0.0" )
 
-    // AndroidX equivalents (replacing old support libraries)
-    implementation( "androidx.appcompat:appcompat:1.6.1" )
+    // AndroidX equivalents (replacing old support libraries) - Updated to latest
+    implementation( "androidx.appcompat:appcompat:1.7.0" )
     implementation( "androidx.recyclerview:recyclerview:1.3.2" )
 }
 
@@ -505,7 +509,13 @@ tasks.create("testClasses") {}
 
 // must match JavaVersion.VERSION_17 above
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.ExperimentalStdlibApi"
+        )
+    }
 }
 
 // To turn on javac options

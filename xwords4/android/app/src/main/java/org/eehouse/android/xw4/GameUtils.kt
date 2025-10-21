@@ -1716,9 +1716,9 @@ object GameUtils {
         for ( rowid in games.keys ) {
 
             // If we're looking for a specific type, check
-            filter?.let {
+            if (filter != null) { // don't use let if we're breaking/continuing
                 val gameSet = games[rowid]
-                if (gameSet != null && !gameSet.contains(it)) {
+                if (gameSet != null && !gameSet.contains(filter)) {
                     continue
                 }
             }
