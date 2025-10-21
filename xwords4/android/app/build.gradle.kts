@@ -414,8 +414,9 @@ dependencies {
     implementation( "com.google.zxing:core:3.3.+" )
     implementation( "com.jakewharton:process-phoenix:2.1.2" )
 
-    implementation( "com.android.support:appcompat-v7:28.0.0" )
-    implementation( "com.android.support:recyclerview-v7:28.0.0" )
+    // AndroidX equivalents (replacing old support libraries)
+    implementation( "androidx.appcompat:appcompat:1.6.1" )
+    implementation( "androidx.recyclerview:recyclerview:1.3.2" )
 }
 
 tasks.create<Exec>("mkImages") {
