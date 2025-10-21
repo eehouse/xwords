@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath ("com.android.tools.build:gradle:8.5.0")
-        classpath ( "com.google.gms:google-services:4.3.10" )
+        classpath ( "com.google.gms:google-services:4.3.15" )
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
         // classpath ( "com.google.firebase:firebase-crashlytics-gradle:2.5.2" ) // rm-for-fdroid
         // NOTE: Do not place your application dependencies here; they belong
