@@ -83,8 +83,8 @@ android {
 	// It'll compile without specifying these. So let's try going with
 	// the defaults for now
      compileOptions {
-         sourceCompatibility = JavaVersion.VERSION_1_8
-         targetCompatibility = JavaVersion.VERSION_1_8
+         sourceCompatibility = JavaVersion.VERSION_17
+         targetCompatibility = JavaVersion.VERSION_17
 	 }
 
      packagingOptions {
@@ -502,9 +502,9 @@ tasks.create( "makeBuildAssets" ) {
 
 tasks.create("testClasses") {}
 
-// must match JavaVersion.VERSION_1_8 above
+// must match JavaVersion.VERSION_17 above
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 // To turn on javac options
