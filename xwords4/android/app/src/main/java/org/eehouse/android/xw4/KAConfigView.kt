@@ -31,7 +31,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -49,7 +49,7 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
         super.onAttachedToWindow()
         Assert.assertTrueNR(null == sSelf)
         sSelf = this
-        mScope = ViewTreeLifecycleOwner.get(this)?.lifecycleScope
+        mScope = (context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope
 
         mScope?.launch(Dispatchers.Main) {
             while (true) {
