@@ -150,11 +150,13 @@ gtkkp_show( GtkAppGlobals* apg, GtkWindow* parent )
     const XP_UCHAR* players[nFound];
     kplr_getNames( dutil, NULL_XWE, XP_FALSE, players, &nFound );
 
-    for ( int ii = 0; ii < nFound; ++ii ) {
-        XP_LOGFF( "got one: %s", players[ii] );
-    }
+    if ( 0 == nFound ) {
+        XP_LOGFF( "NO known players found" );
+    } else {
+        for ( int ii = 0; ii < nFound; ++ii ) {
+            XP_LOGFF( "got one: %s", players[ii] );
+        }
 
-    if ( 0 < nFound ) {
         showDialog( dutil, parent, players, nFound );
     }
     LOG_RETURN_VOID();
