@@ -223,6 +223,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkrmtch.o \
 	$(BUILD_PLAT_DIR)/gtkedalr.o \
 	$(BUILD_PLAT_DIR)/gtkaskgrp.o \
+	$(BUILD_PLAT_DIR)/gtknetst.o \
 
 endif
 ifdef DO_CURSES
@@ -277,6 +278,7 @@ ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-3.0`
 	CFLAGS += `pkg-config --cflags gtk+-3.0`
 	CFLAGS += -DGDK_DISABLE_DEPRECATED
+	LIBS += -lqrencode
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
 
@@ -312,6 +314,7 @@ REQUIRED_DEBS = gcc \
 		elpa-magit \
 		elpa-projectile \
 		xclip \
+		libqrencode-dev \
 
 .PHONY: debcheck debs_install
 

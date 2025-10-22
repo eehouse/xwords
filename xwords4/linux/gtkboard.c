@@ -68,6 +68,7 @@
 #include "gtkaskdict.h"
 #include "gtkaskbad.h"
 #include "gtkaskgo.h"
+#include "gtknetst.h"
 #include "linuxdict.h"
 /* #include "undo.h" */
 #include "gtkdraw.h"
@@ -2003,17 +2004,22 @@ ask_move( gpointer data )
 }
 
 static void
+updateCountButton(GtkGameGlobals* globals, XP_U16 newCount, XP_Bool quashed)
+{
+    gchar buf[128];
+    snprintf( buf, VSIZE(buf), "pending count: %d%s", newCount,
+              quashed?"q":"");
+    gtk_button_set_label( GTK_BUTTON(globals->countButton), buf );
+}
+
+static void
 gtk_util_countChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                        XP_U16 newCount, XP_Bool quashed )
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
     if ( !!cGlobals ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
-
-        gchar buf[128];
-        snprintf( buf, VSIZE(buf), "pending count: %d%s", newCount,
-                  quashed?"q":"");
-        gtk_label_set_text( GTK_LABEL(globals->countLabel), buf );
+        updateCountButton( globals, newCount, quashed );
     }
 }
 
@@ -2398,6 +2404,12 @@ on_draw_event( GtkWidget* widget, cairo_t* cr, gpointer user_data )
     return FALSE;
 }
 
+static void
+handle_count_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    gtkNetStateDlg( globals );
+}
+
 void
 initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params, GameRef gr )
 {
@@ -2503,9 +2515,11 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params, GameRef gr )
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
 
-    GtkWidget* label = globals->countLabel = gtk_label_new( "" );
-    gtk_box_pack_start( GTK_BOX(vbox), label, TRUE, TRUE, 0);
-    gtk_widget_show( label );
+    GtkWidget* button = globals->countButton = gtk_button_new_with_label( "" );
+    g_signal_connect( button, "clicked", G_CALLBACK(handle_count_button), globals );
+    gtk_box_pack_start( GTK_BOX(vbox), button, TRUE, TRUE, 0);
+    gtk_widget_show( button );
+    updateCountButton( globals, 0, XP_FALSE );
 #ifdef DEBUG
     id =
 #endif
@@ -2554,6 +2568,12 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params, GameRef gr )
 /*  			 | GDK_POINTER_MOTION_HINT_MASK */
 			   );
 } /* initGlobals */
+
+GtkWidget*
+getWindow(GtkGameGlobals* globals)
+{
+    return globals->window;
+}
 
 void
 freeGlobals( GtkGameGlobals* globals )

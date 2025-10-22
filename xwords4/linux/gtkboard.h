@@ -76,7 +76,7 @@ typedef struct GtkGameGlobals {
     GtkWidget* chat_button;
     GtkWidget* pause_button;
     GtkWidget* unpause_button;
-    GtkWidget* countLabel;
+    GtkWidget* countButton;
 
     EngineCtxt* engine;
 
@@ -152,6 +152,7 @@ void setupGtkUtilCallbacks( XW_UtilCtxt* util );
 
 CommonGlobals* allocGTKBoardGlobals();
 void gtkShowFinalScores( GtkGameGlobals* globals, XP_Bool ignoreTimeout );
+GtkWidget* getWindow(GtkGameGlobals* globals);
 
 #endif /* PLATFORM_GTK */
 
