@@ -1369,6 +1369,16 @@ comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
     return na.count;
 }
 
+XP_Bool
+comms_getPendingPacketsFor( RELCONST CommsCtxt* comms,
+                            const CommsAddrRec* XP_UNUSED(addr),
+                            XWStreamCtxt* stream )
+{
+    XP_USE(comms);
+    stream_catString( stream, "hello" );
+    return XP_TRUE;
+}
+
 static XP_Bool
 formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                XP_UCHAR* buf, XP_U16* lenp )

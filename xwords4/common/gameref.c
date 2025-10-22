@@ -1347,6 +1347,19 @@ gr_countPendingPackets( DUTIL_GR_XWE, XP_Bool* quashed )
     return result;
 }
 
+XWStreamCtxt*
+gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr )
+{
+    XWStreamCtxt* result = NULL;
+    GR_HEADER_WITH(COMMS);
+    if ( !!gd->comms ) {
+        result = dvc_makeStream( duc );
+        comms_getPendingPacketsFor( gd->comms, addr, result );
+    }
+    GR_HEADER_END();
+    return result;
+}
+
 XW_UtilCtxt*
 gr_getUtil( DUTIL_GR_XWE )
 {

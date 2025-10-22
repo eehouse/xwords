@@ -193,6 +193,7 @@ void gr_getAddrs( DUTIL_GR_XWE, CommsAddrRec addr[],
 XP_U16 gr_getChannelSeed( DUTIL_GR_XWE );
 XP_U16 gr_countPendingPackets( DUTIL_GR_XWE,
                                XP_Bool* quashed );
+XWStreamCtxt* gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr );
 void gr_getSelfAddr( DUTIL_GR_XWE, CommsAddrRec* addr );
 XP_S16 gr_resendAll( DUTIL_GR_XWE,
                      CommsConnType filter, XP_Bool force );
