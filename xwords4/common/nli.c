@@ -398,6 +398,142 @@ nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv )
 }
 #endif
 
+void
+nli_makeInviteURL( const NetLaunchInfo* nli, XWStreamCtxt* stream,
+                   const XP_UCHAR* host, const XP_UCHAR* prefix )
+{
+    /* Generate URL compatible with Android NetLaunchInfo.makeLaunchUri() */
+    if ( !host ) {
+        host = "eehouse.org";
+    }
+    if ( !prefix ) {
+        prefix = "/andd/";
+    }
+
+    stream_catf( stream, "https://%s%s?", host, prefix );
+
+    XP_Bool needAmp = XP_FALSE;
+    XP_UCHAR buf[128];
+
+    /* Add parameters in same order as Android implementation */
+
+    /* ISO code (URL encoded for safety) */
+    if ( '\0' != nli->isoCodeStr[0] ) {
+        urlEncode( nli->isoCodeStr, buf, VSIZE(buf) );
+        if ( needAmp ) stream_catf( stream, "&" );
+        stream_catf( stream, "iso=%s", buf );
+        needAmp = XP_TRUE;
+    }
+
+    XP_LangCode lc;
+    if (haveLocaleToLc(nli->isoCodeStr, &lc)) {
+        if ( needAmp ) stream_catf( stream, "&" );
+        stream_catf( stream, "lang=%d", lc );
+        needAmp = XP_TRUE;
+    }
+
+    /* Total players */
+    if ( needAmp ) stream_catf( stream, "&" );
+    stream_catf( stream, "np=%d", nli->nPlayersT );
+    needAmp = XP_TRUE;
+
+    /* Here players */
+    if ( needAmp ) stream_catf( stream, "&" );
+    stream_catf( stream, "nh=%d", nli->nPlayersH );
+    needAmp = XP_TRUE;
+
+    /* Game ID */
+    if ( needAmp ) stream_catf( stream, "&" );
+    stream_catf( stream, "gid=%d", nli->gameID );
+    needAmp = XP_TRUE;
+
+    /* Force channel */
+    if ( needAmp ) stream_catf( stream, "&" );
+    stream_catf( stream, "fc=%d", nli->forceChannel );
+    needAmp = XP_TRUE;
+
+    /* Connection types */
+    if ( needAmp ) stream_catf( stream, "&" );
+    stream_catf( stream, "ad=%d", nli->_conTypes );
+    needAmp = XP_TRUE;
+
+    /* Game name (URL encoded for special characters) */
+    if ( '\0' != nli->gameName[0] ) {
+        urlEncode( nli->gameName, buf, VSIZE(buf) );
+        if ( needAmp ) stream_catf( stream, "&" );
+        stream_catf( stream, "nm=%s", buf );
+        needAmp = XP_TRUE;
+    }
+
+    /* Dictionary name (URL encoded for special characters) */
+    if ( '\0' != nli->dict[0] ) {
+        urlEncode( nli->dict, buf, VSIZE(buf) );
+        if ( needAmp ) stream_catf( stream, "&" );
+        stream_catf( stream, "wl=%s", buf );
+        needAmp = XP_TRUE;
+    }
+
+    /* Duplicate mode */
+    if ( nli->inDuplicateMode ) {
+        if ( needAmp ) stream_catf( stream, "&" );
+        stream_catf( stream, "du=1" );
+        needAmp = XP_TRUE;
+    }
+
+    /* Connection-specific parameters */
+    CommsConnType typ;
+    for ( XP_U32 state = 0; types_iter( nli->_conTypes, &typ, &state ); ) {
+        switch ( typ ) {
+#ifdef XWFEATURE_RELAY
+        case COMMS_CONN_RELAY:
+            if ( '\0' != nli->inviteID[0] ) {
+                urlEncode( nli->inviteID, buf, VSIZE(buf) );
+                if ( needAmp ) stream_catf( stream, "&" );
+                stream_catf( stream, "id=%s", buf );
+                needAmp = XP_TRUE;
+            }
+            break;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+        case COMMS_CONN_BT:
+            /* Note: Android shortens BT address, but we'll use full for now */
+            if ( '\0' != nli->btName[0] ) {
+                urlEncode( nli->btName, buf, VSIZE(buf) );
+                if ( needAmp ) stream_catf( stream, "&" );
+                stream_catf( stream, "btn=%s", buf );
+                needAmp = XP_TRUE;
+            }
+            break;
+#endif
+#ifdef XWFEATURE_SMS
+        case COMMS_CONN_SMS:
+            if ( '\0' != nli->phone[0] ) {
+                urlEncode( nli->phone, buf, VSIZE(buf) );
+                if ( needAmp ) stream_catf( stream, "&" );
+                stream_catf( stream, "phone=%s", buf );
+                needAmp = XP_TRUE;
+            }
+            break;
+#endif
+#ifdef XWFEATURE_DIRECTIP
+        case COMMS_CONN_P2P:
+            /* P2P MAC address would go here */
+            break;
+#endif
+        case COMMS_CONN_MQTT:
+            if ( '\0' != nli->mqttDevID[0] ) {
+                urlEncode( nli->mqttDevID, buf, VSIZE(buf) );
+                if ( needAmp ) stream_catf( stream, "&" );
+                stream_catf( stream, "r2id=%s", buf );
+                needAmp = XP_TRUE;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 # ifdef DEBUG
 void
 logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )

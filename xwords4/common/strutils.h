@@ -158,6 +158,9 @@ void log_devid( const MQTTDevID* devID, const XP_UCHAR* tag );
 # define LOG_DEVID(id, tag)
 #endif
 
+/* URL encoding for JNI-safe string parameters */
+XP_UCHAR* urlEncode( const XP_UCHAR* input, XP_UCHAR buf[], XP_U16 len );
+
 #ifdef CPLUS
 }
 #endif

@@ -952,46 +952,49 @@ object GameUtils {
     }
 
     fun inviteURLToClip(context: Context, nli: NetLaunchInfo) {
-        val gameUri = nli.makeLaunchUri(context)
-        val asStr = gameUri.toString()
+        Utils.launch {
+            val gameUri = nli.makeLaunchUri(context)
+            val asStr = gameUri.toString()
 
-        Utils.stringToClip(context, asStr)
+            Utils.stringToClip(context, asStr)
 
-        Utils.showToast(context, R.string.invite_copied)
+            Utils.showToast(context, R.string.invite_copied)
+        }
     }
 
     fun launchEmailInviteActivity(activity: Activity, nli: NetLaunchInfo) {
-        val message = makeInviteMessage(activity, nli, R.string.invite_htm_fmt)
-        if (null != message) {
-            val intent = Intent()
-            intent.setAction(Intent.ACTION_SEND)
-            val subject = LocUtils.getString(activity, R.string.invite_subject)
-            intent.putExtra(Intent.EXTRA_SUBJECT, subject)
-            intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(message))
+        Utils.launch {
+            makeInviteMessage(activity, nli, R.string.invite_htm_fmt)?.let { message ->
+                val intent = Intent()
+                intent.setAction(Intent.ACTION_SEND)
+                val subject = LocUtils.getString(activity, R.string.invite_subject)
+                intent.putExtra(Intent.EXTRA_SUBJECT, subject)
+                intent.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(message))
 
-            var attach: File? = null
-            val tmpdir =
-                if (BuildConfig.ATTACH_SUPPORTED) DictUtils.getDownloadDir(activity) else null
-            if (null != tmpdir) { // no attachment
-                attach = makeJsonFor(tmpdir, nli)
+                var attach: File? = null
+                val tmpdir =
+                    if (BuildConfig.ATTACH_SUPPORTED) DictUtils.getDownloadDir(activity) else null
+                if (null != tmpdir) { // no attachment
+                    attach = makeJsonFor(tmpdir, nli)
+                }
+
+                if (null == attach) { // no attachment
+                    intent.setType("message/rfc822")
+                } else {
+                    val mime = LocUtils.getString(activity, R.string.invite_mime)
+                    intent.setType(mime)
+                    val uri = Uri.fromFile(attach)
+                    intent.putExtra(Intent.EXTRA_STREAM, uri)
+                }
+
+                val choiceType = LocUtils.getString(activity, R.string.invite_chooser_email)
+                val chooserMsg =
+                    LocUtils.getString(
+                        activity, R.string.invite_chooser_fmt,
+                        choiceType
+                    )
+                activity.startActivity(Intent.createChooser(intent, chooserMsg))
             }
-
-            if (null == attach) { // no attachment
-                intent.setType("message/rfc822")
-            } else {
-                val mime = LocUtils.getString(activity, R.string.invite_mime)
-                intent.setType(mime)
-                val uri = Uri.fromFile(attach)
-                intent.putExtra(Intent.EXTRA_STREAM, uri)
-            }
-
-            val choiceType = LocUtils.getString(activity, R.string.invite_chooser_email)
-            val chooserMsg =
-                LocUtils.getString(
-                    activity, R.string.invite_chooser_fmt,
-                    choiceType
-                )
-            activity.startActivity(Intent.createChooser(intent, chooserMsg))
         }
     }
 
@@ -1005,6 +1008,7 @@ object GameUtils {
         activity: Activity,
         nli: NetLaunchInfo
     ) {
+        Utils.launch {
         val message = makeInviteMessage(
             activity, nli,
             R.string.invite_sms_fmt
@@ -1052,8 +1056,9 @@ object GameUtils {
             }
         }
     }
+}
 
-    private fun makeInviteMessage(
+    private suspend fun makeInviteMessage(
         activity: Activity, nli: NetLaunchInfo,
         fmtID: Int
     ): String? {

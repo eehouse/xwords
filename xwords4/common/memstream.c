@@ -282,12 +282,24 @@ mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence,
 } /* mem_stream_putBytes */
 
 static void
-mem_stream_catString( XWStreamCtxt* p_sctx, const char* whence )
+mem_stream_catf( XWStreamCtxt* p_sctx, const char* format, ... )
 {
-    if ( !!whence ) {
-        XP_U16 len = XP_STRLEN( whence );
-        mem_stream_putBytes( p_sctx, (void*)whence, len );
+    va_list args;
+    va_start( args, format );
+
+    /* First, determine the required buffer size */
+    va_list args_copy;
+    va_copy( args_copy, args );
+    int len = vsnprintf( NULL, 0, format, args_copy );
+    va_end( args_copy );
+
+    if ( len > 0 ) {
+        char buffer[len+1];
+        vsnprintf( buffer, len + 1, format, args );
+        mem_stream_putBytes( p_sctx, buffer, len );
     }
+
+    va_end( args );
 }
 
 static void
@@ -559,7 +571,7 @@ make_vtable( MemStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( vtable, stream_putU8, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBytes, mem );
-    SET_VTABLE_ENTRY( vtable, stream_catString, mem );
+    SET_VTABLE_ENTRY( vtable, stream_catf, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU32, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU32VL, mem );

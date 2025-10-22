@@ -2539,4 +2539,30 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1toGame
 {
     return gmgr_toGame(jval);
 }
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1makeInviteURL
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli,
+ jstring jhost, jstring jprefix )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+
+    NetLaunchInfo nli;
+    loadNLI( env, &nli, jnli );
+
+    const char* host = (*env)->GetStringUTFChars( env, jhost, NULL );
+    const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+
+    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
+    nli_makeInviteURL( &nli, stream, host, prefix );
+    result = streamToJString( env, stream );
+    stream_destroy( stream );
+    (*env)->ReleaseStringUTFChars( env, jhost, host );
+    (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+
+    DVC_HEADER_END();
+    return result;
+}
+
 #endif  /* XWFEATURE_BOARDWORDS */

@@ -515,18 +515,22 @@ class NetLaunchInfo : Serializable {
         ub.appendQueryParameter(key, String.format("%d", value))
     }
 
-    fun makeLaunchUri(context: Context): Uri {
+    suspend fun makeLaunchUri(context: Context): Uri {
         var host: String? = LocUtils.getString(context, R.string.invite_host)
         host = NetUtils.forceHost(host)
+        val prefix = LocUtils.getString(context, R.string.invite_prefix)!!
+        val fromJNI = Device.makeInviteURL(this, host!!, prefix)
+        val fromKT = makeLaunchUriImpl(context, host!!, prefix)
+        Log.d(TAG, "makeLaunchUri(): %s vs %s", fromJNI, fromKT)
+        return fromKT
+    }
+
+    private fun makeLaunchUriImpl(context: Context, host: String, prefix: String): Uri {
         val ub = Uri.Builder()
             .scheme("https")
             .path(
                 String.format(
-                    "//%s%s", host,
-                    LocUtils.getString(
-                        context,
-                        R.string.invite_prefix
-                    )
+                    "//%s%s", host, prefix
                 )
             )
 

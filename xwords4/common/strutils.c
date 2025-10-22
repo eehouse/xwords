@@ -788,6 +788,31 @@ log_devid( const MQTTDevID* devID, const XP_UCHAR* tag )
 }
 #endif
 
+/* URL encoding for JNI-safe string parameters.
+ * Encodes characters that need to be percent-encoded in URL parameters.
+ */
+XP_UCHAR*
+urlEncode( const XP_UCHAR* input, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    const char* specials = "!*'();:@&=+$,/?#[]%";
+
+    XP_U16 outIndex = 0;
+    for ( XP_U16 ii = 0; ; ++ii ) {
+        XP_ASSERT( outIndex < bufLen );
+        XP_U8 ch = input[ii];
+        if ( !ch ) {
+            buf[outIndex] = '\0';
+            break;
+        } else if ( ch <= 32 || ch >= 127 || strchr(specials, ch)) {
+            outIndex += XP_SNPRINTF( &buf[outIndex], 4, "%%%02X", (unsigned char)ch );
+        } else {
+            buf[outIndex++] = ch;
+        }
+    }
+
+    return buf;
+}
+
 #ifdef CPLUS
 }
 #endif
