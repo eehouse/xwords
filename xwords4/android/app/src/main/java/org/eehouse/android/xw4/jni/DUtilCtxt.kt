@@ -368,8 +368,8 @@ class DUtilCtxt() {
     }
 
     fun sendViaNBS(msg: ByteArray, phone: String, port: Int) {
-        Log.d(TAG, "sendViaNBS($msg, $phone)")
-        NBSProto.sendPacket(mContext, msg, phone, port)
+        Log.d(TAG, "sendViaNBS($msg, $phone, $port)")
+        NBSProto.sendPacket(mContext, msg, phone)
     }
 
     fun onGameGoneReceived(gameID: Int, from: CommsAddrRec) {

@@ -77,14 +77,14 @@ object NBSProto {
     // }
 
     fun sendPacket(
-        context: Context, binmsg: ByteArray, phone: String, port: Int
+        context: Context, binmsg: ByteArray, phone: String
     ): Int {
         Log.d(
             TAG, "sendPacket(phone=%s, len=%d)",
             phone, binmsg!!.size
         )
         val asArray = Array<ByteArray>(1, {binmsg})
-        sendBuffers(asArray, phone, port.toShort())
+        sendBuffers(asArray, phone)
         // addPacketTo(context, phone, binmsg)
         return binmsg.size
     }
@@ -369,13 +369,12 @@ object NBSProto {
     //         }
     //     }
 
-    private fun sendBuffers(fragments: Array<ByteArray>, phone: String,
-                            port: Short) {
+    private fun sendBuffers(fragments: Array<ByteArray>, phone: String) {
         val context = XWApp.getContext()
         var success = false
         if (XWPrefs.getNBSEnabled(context) && Perms23.haveNBSPerms(context)
         ) {
-            val port = 7001.toShort()
+            val port = nBSPort
             // Try send-to-self
             if (XWPrefs.getSMSToSelfEnabled(context)) {
                 val myPhone = SMSPhoneInfo.get(context)!!.number

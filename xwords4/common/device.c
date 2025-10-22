@@ -57,7 +57,7 @@
 #endif
 
 #define SMS_WAIT_SECS 5
-#define SMS_MAX_SIZE 20
+#define SMS_MAX_SIZE 130
 
 static XP_S16
 makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
