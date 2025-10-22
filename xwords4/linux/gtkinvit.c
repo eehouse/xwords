@@ -199,6 +199,22 @@ handle_setSelf( GtkWidget* XP_UNUSED(widget), gpointer closure )
 }
 
 static void
+handle_qr( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkInviteState* state = (GtkInviteState*)closure;
+    GameRef gr = state->globals->cGlobals.gr;
+    XWStreamCtxt* stream = gr_inviteData( state->dutil, gr, NULL_XWE );
+    if ( !!stream ) {
+        XP_U16 size = stream_getSize(stream);
+        gchar buf[size+1];
+        stream_getBytes( stream, buf, size );
+        buf[size] = '\0';
+        XP_LOGFF( "got url: %s", buf );
+        stream_destroy( stream );
+    }
+}
+
+static void
 handle_self( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkInviteState* state = (GtkInviteState*)closure;
@@ -478,6 +494,10 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox),
                         makeButton( "Invite self", (GCallback)handle_self,
+                                    &state ),
+                        FALSE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox),
+                        makeButton( "Show QR", (GCallback)handle_qr,
                                     &state ),
                         FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox),

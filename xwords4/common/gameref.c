@@ -853,6 +853,21 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
 } /* gr_convertGame */
 #endif
 
+static NetLaunchInfo
+makeSelfNLI( GameData* gd, const XP_UCHAR* name,
+             XP_U16 nPlayersH, XP_U16 forceChannel )
+{
+    NetLaunchInfo nli = {};
+
+    CommsAddrRec selfAddr;
+    comms_getSelfAddr( gd->comms, &selfAddr );
+    nli_init( &nli, &gd->gi, &selfAddr, nPlayersH, forceChannel );
+    if ( !!name ) {
+        nli_setGameName( &nli, name );
+    }
+    return nli;
+}
+
 GameRef
 gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
                 XP_Bool archiveAfter, XP_Bool deleteAfter )
@@ -893,26 +908,16 @@ gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
 
             if ( !!newGd->comms ) {
                 XP_ASSERT( 0 != newGd->gi.conTypes );
-                CommsAddrRec* selfAddrP = NULL;
-                CommsAddrRec selfAddr;
-                comms_getSelfAddr( gd->comms, &selfAddr );
-                selfAddrP = &selfAddr;
 
                 ctrl_setRematchOrder( newGd->ctrlr, rip );
 
-                const CurGameInfo* newGI = &newGd->gi;
                 for ( int ii = 0; ; ++ii ) {
                     CommsAddrRec guestAddr;
                     XP_U16 nPlayersH;
                     if ( !ctrl_ri_getAddr( rip, ii, &guestAddr, &nPlayersH )){
                         break;
                     }
-
-                    NetLaunchInfo nli = {};
-                    nli_init( &nli, newGI, selfAddrP, nPlayersH, ii + 1 );
-                    if ( !!newName ) {
-                        nli_setGameName( &nli, newName );
-                    }
+                    NetLaunchInfo nli = makeSelfNLI( newGd, newName, nPlayersH, ii+1 );
                     LOGNLI( &nli );
                     comms_invite( newGd->comms, xwe, &nli, &guestAddr, XP_TRUE );
                 }
@@ -1355,6 +1360,21 @@ gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr )
     if ( !!gd->comms ) {
         result = dvc_makeStream( duc );
         comms_getPendingPacketsFor( gd->comms, addr, result );
+    }
+    GR_HEADER_END();
+    return result;
+}
+
+XWStreamCtxt*
+gr_inviteData( DUTIL_GR_XWE )
+{
+    XWStreamCtxt* result = NULL;
+    GR_HEADER_WITH(COMMS);
+    XP_U16 channel;
+    if ( !!gd->comms && ctrl_getOpenChannel( gd->ctrlr, &channel )) {
+        result = dvc_makeStream( duc );
+        NetLaunchInfo nli = makeSelfNLI( gd, gd->gi.gameName, 1, channel );
+        nli_makeInviteURL( &nli, result, NULL, NULL );
     }
     GR_HEADER_END();
     return result;

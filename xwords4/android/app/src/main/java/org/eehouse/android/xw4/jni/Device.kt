@@ -18,6 +18,7 @@
  */
 package org.eehouse.android.xw4.jni
 
+import android.net.Uri
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 import kotlinx.coroutines.CompletableDeferred
@@ -239,6 +240,13 @@ object Device {
         } as Boolean
     }
 
+    suspend fun makeInviteURL(nli: NetLaunchInfo, host: String, prefix: String): Uri {
+        val asStr = await {
+            dvc_makeInviteURL(m_ptrGlobals, nli, host, prefix)
+        } as String
+        return Uri.parse(asStr)
+    }
+
     fun onDictAdded(dictName: String) {
         Log.d(TAG, "onDictAdded($dictName)")
         post {
@@ -288,7 +296,7 @@ object Device {
         return dvc_haveLocaleToLc(isoCodeStr, lang)
     }
 
-        // Ok, so for now I can't figure out how to call the real constructor from
+    // Ok, so for now I can't figure out how to call the real constructor from
     // jni (javac -h and kotlin files are beyond me still) so I'm putting back
     // the nullable fields and an empty constructor. PENDING()...
     class TopicsAndPackets(val topics: Array<String>?,
@@ -351,6 +359,9 @@ object Device {
                                              succeeded: Boolean, result: String?)
     @JvmStatic
     private external fun dvc_setMQTTDevID(jniState: Long, newID: String): Boolean
+    @JvmStatic
+    private external fun dvc_makeInviteURL(jniState: Long, nli: NetLaunchInfo,
+                                           host: String, prefix: String): String
 	@JvmStatic
     private external fun dvc_getLegalPhonyCodes(
         jniState: Long, list: ArrayList<String>
@@ -366,7 +377,7 @@ object Device {
     @JvmStatic
     private external fun dvc_onDictRemoved(jniState: Long, dictName: String )
     @JvmStatic
-    external fun dvc_lcToLocale(jniState: Long, lc: Int): String?
+    private external fun dvc_lcToLocale(jniState: Long, lc: Int): String?
     @JvmStatic
-    external fun dvc_haveLocaleToLc(isoCodeStr: String?, lc: IntArray): Boolean
+    private external fun dvc_haveLocaleToLc(isoCodeStr: String?, lc: IntArray): Boolean
 }
