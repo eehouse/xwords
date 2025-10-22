@@ -191,7 +191,7 @@ cgl_draw( CursGameList* cgl )
         mvwaddstr( win, 0, cgl->width-1, "+" );
     }
 
-    const char* cols[] = {"#", "Lang", "GameID", "Role", "nTot", "Chats", };
+    const char* cols[] = {"#", "Lang", "GameID", "Role", "nTot", "nMoves", "Chats", };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
@@ -203,12 +203,15 @@ cgl_draw( CursGameList* cgl )
         GameRef gr = (GameRef)g_slist_nth_data( cgl->games, ii + cgl->yOffset );
         XP_ASSERT( gr );
         const CurGameInfo* gi = gr_getGI( cgl->params->dutil, gr, NULL_XWE );
+        const GameSummary* sum = gr_getSummary( cgl->params->dutil, gr, NULL_XWE );
+
         int col = 0;
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
         data[line][col++] = g_strdup( gi->isoCodeStr );
         data[line][col++] = g_strdup_printf( "%x", gi->gameID );
         data[line][col++] = g_strdup_printf( "%d", gi->deviceRole );
         data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
+        data[line][col++] = g_strdup_printf( "%d", sum->nMoves );
         data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(cgl->params->dutil,
                                                                    gr, NULL_XWE ));
         XP_ASSERT( col == VSIZE(data[line]) );

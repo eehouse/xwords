@@ -236,7 +236,8 @@ CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
 	$(BUILD_PLAT_DIR)/cursesletterask.o \
 	$(BUILD_PLAT_DIR)/curseschat.o \
-	$(BUILD_PLAT_DIR)/curnewgame.o
+	$(BUILD_PLAT_DIR)/curnewgame.o \
+	$(BUILD_PLAT_DIR)/cursinvit.o
 endif
 ifndef LIB_NO_UI
 MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \
@@ -310,6 +311,7 @@ REQUIRED_DEBS = gcc \
 		libmosquitto-dev \
 		elpa-magit \
 		elpa-projectile \
+		xclip \
 
 .PHONY: debcheck debs_install
 

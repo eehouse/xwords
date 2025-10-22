@@ -1387,12 +1387,6 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
             linux_sms_invite( cGlobals->params, &nli,
                               destAddr->u.sms.phone, destAddr->u.sms.port );
         }
-# ifdef XWFEATURE_RELAY
-        if ( 0 != relayDevID || !!relayID ) {
-            XP_ASSERT( 0 != relayDevID || (!!relayID && !!relayID[0]) );
-            relaycon_invite( cGlobals->params, relayDevID, relayID, &nli );
-        }
-# endif
 
         if ( addr_hasType( destAddr, COMMS_CONN_MQTT ) ) {
             mqttc_invite( cGlobals->params, 0, &nli, &destAddr->u.mqtt.devID );

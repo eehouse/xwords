@@ -27,6 +27,7 @@
 #include "cursesask.h"
 #include "cursesmenu.h"
 #include "cursesletterask.h"
+#include "cursinvit.h"
 #include "linuxdict.h"
 #include "gamesdb.h"
 #include "game.h"
@@ -1291,73 +1292,73 @@ handleReplace( void* closure, int XP_UNUSED(key) )
     return XP_TRUE;
 } /* handleReplace */
 
-static bool
-inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
-            CommsConnType typ )
-{
-    bool haveAddressees = !!invitees;
-    if ( haveAddressees ) {
-        LaunchParams* params = cGlobals->params;
-#ifdef XWFEATURE_COMMS_INVITE
-        CommsAddrRec destAddr = {};
-#endif
-        for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) {
-            const XP_U16 nPlayersH = params->connInfo.inviteeCounts[ii];
-            const gint forceChannel = ii + 1;
-            XP_LOGFF( "using nPlayersH of %d, forceChannel of %d for guest device %d",
-                      nPlayersH, forceChannel, ii );
-            NetLaunchInfo nli;
-            nli_init( &nli, cGlobals->gi, myAddr, nPlayersH, forceChannel );
-            switch ( typ ) {
-#ifdef XWFEATURE_RELAY
-            case COMMS_CONN_RELAY: {
-                uint64_t inviteeRelayID = *(uint64_t*)g_slist_nth_data( invitees, ii );
-                relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli );
-            }
-                break;
-#endif
-            case COMMS_CONN_SMS: {
-                const gchar* inviteePhone = (const gchar*)g_slist_nth_data( invitees, ii );
-#ifdef XWFEATURE_COMMS_INVITE
-                addr_addType( &destAddr, COMMS_CONN_SMS );
-                destAddr.u.sms.port = params->connInfo.sms.port;
-                XP_STRNCPY( destAddr.u.sms.phone, inviteePhone,
-                            sizeof(destAddr.u.sms.phone) );
-#else
-                linux_sms_invite( params, &nli, inviteePhone,
-                                  params->connInfo.sms.port );
-#endif
-            }
-                break;
-            case COMMS_CONN_MQTT: {
-                MQTTDevID devID;
-                const gchar* str = g_slist_nth_data( invitees, ii );
-                if ( strToMQTTCDevID( str, &devID ) ) {
-#ifdef XWFEATURE_COMMS_INVITE
-                    addr_addType( &destAddr, COMMS_CONN_MQTT );
-                    destAddr.u.mqtt.devID = devID;
-#else
-                    mqttc_invite( params, 0, &nli, &devID );
-#endif
-                } else {
-                    XP_LOGFF( "unable to convert devid %s", str );
-                }
-            }
-                break;
-            default:
-                XP_ASSERT(0);
-            }
-#ifdef XWFEATURE_COMMS_INVITE
-            XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-            gr_invite( dutil, cGlobals->gr, NULL_XWE, &nli, &destAddr, XP_TRUE );
-#endif
-        }
-    }
-    if ( haveAddressees ) {
-        XP_LOGFF( "worked for %s", ConnType2Str( typ ) );
-    }
-    return haveAddressees;
-}
+/* static bool */
+/* inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees, */
+/*             CommsConnType typ ) */
+/* { */
+/*     bool haveAddressees = !!invitees; */
+/*     if ( haveAddressees ) { */
+/*         LaunchParams* params = cGlobals->params; */
+/* #ifdef XWFEATURE_COMMS_INVITE */
+/*         CommsAddrRec destAddr = {}; */
+/* #endif */
+/*         for ( int ii = 0; ii < g_slist_length(invitees); ++ii ) { */
+/*             const XP_U16 nPlayersH = params->connInfo.inviteeCounts[ii]; */
+/*             const gint forceChannel = ii + 1; */
+/*             XP_LOGFF( "using nPlayersH of %d, forceChannel of %d for guest device %d", */
+/*                       nPlayersH, forceChannel, ii ); */
+/*             NetLaunchInfo nli; */
+/*             nli_init( &nli, cGlobals->gi, myAddr, nPlayersH, forceChannel ); */
+/*             switch ( typ ) { */
+/* #ifdef XWFEATURE_RELAY */
+/*             case COMMS_CONN_RELAY: { */
+/*                 uint64_t inviteeRelayID = *(uint64_t*)g_slist_nth_data( invitees, ii ); */
+/*                 relaycon_invite( params, (XP_U32)inviteeRelayID, NULL, &nli ); */
+/*             } */
+/*                 break; */
+/* #endif */
+/*             case COMMS_CONN_SMS: { */
+/*                 const gchar* inviteePhone = (const gchar*)g_slist_nth_data( invitees, ii ); */
+/* #ifdef XWFEATURE_COMMS_INVITE */
+/*                 addr_addType( &destAddr, COMMS_CONN_SMS ); */
+/*                 destAddr.u.sms.port = params->connInfo.sms.port; */
+/*                 XP_STRNCPY( destAddr.u.sms.phone, inviteePhone, */
+/*                             sizeof(destAddr.u.sms.phone) ); */
+/* #else */
+/*                 linux_sms_invite( params, &nli, inviteePhone, */
+/*                                   params->connInfo.sms.port ); */
+/* #endif */
+/*             } */
+/*                 break; */
+/*             case COMMS_CONN_MQTT: { */
+/*                 MQTTDevID devID; */
+/*                 const gchar* str = g_slist_nth_data( invitees, ii ); */
+/*                 if ( strToMQTTCDevID( str, &devID ) ) { */
+/* #ifdef XWFEATURE_COMMS_INVITE */
+/*                     addr_addType( &destAddr, COMMS_CONN_MQTT ); */
+/*                     destAddr.u.mqtt.devID = devID; */
+/* #else */
+/*                     mqttc_invite( params, 0, &nli, &devID ); */
+/* #endif */
+/*                 } else { */
+/*                     XP_LOGFF( "unable to convert devid %s", str ); */
+/*                 } */
+/*             } */
+/*                 break; */
+/*             default: */
+/*                 XP_ASSERT(0); */
+/*             } */
+/* #ifdef XWFEATURE_COMMS_INVITE */
+/*             XW_DUtilCtxt* dutil = cGlobals->params->dutil; */
+/*             gr_invite( dutil, cGlobals->gr, NULL_XWE, &nli, &destAddr, XP_TRUE ); */
+/* #endif */
+/*         } */
+/*     } */
+/*     if ( haveAddressees ) { */
+/*         XP_LOGFF( "worked for %s", ConnType2Str( typ ) ); */
+/*     } */
+/*     return haveAddressees; */
+/* } */
 
 static bool
 sendInvite( void* closure, int XP_UNUSED(key) )
@@ -1366,57 +1367,63 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
-    CommsAddrRec selfAddr;
-    // CommsCtxt* comms = _getGame(cGlobals->gr)->comms;
-    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &selfAddr );
-
-    gint forceChannel = 1;
-    const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
-    NetLaunchInfo nli;
-    nli_init( &nli, cGlobals->gi, &selfAddr, nPlayers, forceChannel );
+    /* CommsAddrRec selfAddr; */
+    XW_DUtilCtxt* dutil = params->dutil;
+    // gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &selfAddr );
 
     if ( ROLE_ISHOST != cGlobals->gi->deviceRole ) {
         ca_inform( bGlobals->boardWin, "Only hosts can invite" );
-
-        /* Invite first based on an invitee provided. Otherwise, fall back to
-           doing a send-to-self. Let the recipient code reject a duplicate if
-           the user so desires. */
-    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.sms.inviteePhones,
-                            COMMS_CONN_SMS ) ) {
-        /* do nothing */
-#ifdef XWFEATURE_RELAY
-    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.relay.inviteeRelayIDs,
-                            COMMS_CONN_RELAY ) ) {
-        /* do nothing */
-#endif
-    } else if ( inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs,
-                            COMMS_CONN_MQTT ) ) {
-        /* do nothing */
-    /* Try sending to self, using the phone number or relayID of this device */
-/* <<<<<<< HEAD */
-    } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
-        // linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
-        XP_ASSERT(0);
-    } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
-        XP_ASSERT(0);
-        // mqttc_invite( params, &nli, mqttc_getDevID( params ) );
-#ifdef XWFEATURE_RELAY
-    } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
-/* ======= */
-/*     } else if ( addr_hasType( &addr, COMMS_CONN_SMS ) ) { */
-/*         linux_sms_invite( params, &nli, addr.u.sms.phone, addr.u.sms.port ); */
-/*     } else if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) { */
-/*         mqttc_invite( params, 0, &nli, mqttc_getDevID( params ) ); */
-/*     } else if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) { */
-/* >>>>>>> d9781d21e (snapshot: mqtt invites for gtk work via comms) */
-        XP_U32 relayID = linux_getDevIDRelay( params );
-        if ( 0 != relayID ) {
-            relaycon_invite( params, relayID, NULL, &nli );
-        }
-#endif
     } else {
-        ca_inform( bGlobals->boardWin, "Cannot invite via relayID, MQTT or by \"sms phone\"." );
+        /* Get the CursesAppGlobals from the CommonAppGlobals */
+        // CommonAppGlobals* cag = getCag( cGlobals->util );
+        // CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
+        GameRef gr = cGlobals->gr;
+        XP_U16 nMissing = gr_getPendingRegs( dutil, gr, NULL_XWE );
+        XP_U16 channel;
+        if ( nMissing <= 0 ) {
+            ca_inform( bGlobals->boardWin, "There are no players missing" );
+        } else if ( !gr_getOpenChannel( dutil, gr, NULL_XWE, &channel ) ) {
+            ca_inform( bGlobals->boardWin, "No channel available" );
+        } else {
+            gint nPlayers = nMissing;
+            CommsAddrRec addr;
+            XP_LOGFF( "calling cursesInviteDlg()" );
+            if ( cursesInviteDlg( cGlobals, &addr, &nPlayers ) ) {
+                logAddr(dutil, &addr, __func__);
+
+                CommsAddrRec myAddr = {};
+                gr_getSelfAddr( dutil, gr, NULL_XWE, &myAddr );
+
+                NetLaunchInfo nli = {};    /* include everything!!! */
+                const CurGameInfo* gi = cGlobals->gi;
+                nli_init( &nli, gi, &myAddr, nPlayers, channel );
+
+                gr_invite( dutil, gr, NULL_XWE, &nli, &addr, XP_TRUE );
+
+                /* User accepted - create and send invitation */
+                /* gint forceChannel = 1; */
+                /* NetLaunchInfo nli; */
+                /* nli_init( &nli, cGlobals->gi, &selfAddr, nPlayersToInvite, forceChannel ); */
+
+                /* /\* Try to send invitation based on address type *\/ */
+                /* XP_Bool sent = XP_FALSE; */
+                /* if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) { */
+                /*     /\* Send MQTT invitation *\/ */
+                /*     sent = inviteList( cGlobals, &selfAddr, params->connInfo.mqtt.inviteeDevIDs, */
+                /*                       COMMS_CONN_MQTT ); */
+                /* } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) { */
+                /*     /\* Send SMS invitation *\/ */
+                /*     sent = inviteList( cGlobals, &selfAddr, params->connInfo.sms.inviteePhones, */
+                /*                       COMMS_CONN_SMS ); */
+                /* } */
+
+                /* if ( !sent ) { */
+                /*     ca_inform( bGlobals->boardWin, "Unable to send invitation via available connection type" ); */
+                /* } */
+            } else {
+                XP_LOGFF( "got back false!!");
+            }
+        }
     }
     LOG_RETURNF( "%s", "TRUE" );
     return XP_TRUE;
