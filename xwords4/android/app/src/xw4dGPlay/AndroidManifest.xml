@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          >
 
   <!-- Added for wifi-direct; don't ship until move to 23!!! -->
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -13,6 +15,11 @@
                android:name=".XWApp"
                android:theme="@style/AppTheme"
                >
+
+    <!-- Remove SMS receiver for Google Play compliance -->
+    <receiver android:name="SMSReceiver"
+              tools:node="remove"
+              />
 
     <activity android:name="WiDirInviteActivity"
 			  android:label="@string/p2p_invite_title"

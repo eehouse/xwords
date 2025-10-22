@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          >
 
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
                android:theme="@style/AppTheme"
                >
+
+    <!-- Remove SMS receiver for Google Play compliance -->
+    <receiver android:name="SMSReceiver"
+              tools:node="remove"
+              />
 
   </application>
 </manifest>

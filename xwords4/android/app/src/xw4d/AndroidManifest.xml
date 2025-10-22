@@ -31,31 +31,5 @@
 
     <service android:name="WiDirService"/>
 
-    <receiver android:name="SMSReceiver"
-              android:exported="true"
-              android:enabled="true"
-              >
-      <intent-filter>
-        <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
-        <data android:scheme="sms" />
-        <data android:port="7001" /> <!--or *??-->
-        <data android:host="*" />
-      </intent-filter>
-    </receiver>
-
-    <!--receiver
-    android:name=".SmsReceiver"
-    android:enabled="true"
-    android:exported="true"
-    >
-    <intent-filter android:priority="10" >
-        <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
-        <data
-            android:scheme="sms"
-            android:host="*"
-            android:port="6734" />
-    </intent-filter>
-</receiver-->
-
   </application>
 </manifest>

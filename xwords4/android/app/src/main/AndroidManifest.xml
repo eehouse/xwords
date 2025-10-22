@@ -124,6 +124,21 @@
     <receiver android:name="TimerReceiver"/>
     <!--receiver android:name="DupeModeTimer"/-->
 
+    <!-- SMSReceiver: removed from GPlay variants via
+         tools:node="remove"
+         -->
+    <receiver android:name="SMSReceiver"
+              android:exported="true"
+              android:enabled="true"
+              >
+      <intent-filter>
+        <action android:name="android.intent.action.DATA_SMS_RECEIVED" />
+        <data android:scheme="sms" />
+        <data android:port="@string/nbs_port" />
+        <data android:host="*" />
+      </intent-filter>
+    </receiver>
+
     <receiver android:name="UpdateCheckReceiver"
               android:exported="true"
               >
