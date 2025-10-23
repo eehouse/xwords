@@ -70,11 +70,11 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
         if (null == sis) {
             sis = arguments
         }
-        mSummary = sis!!.getSerializable(SUMMARY) as GameSummary?
+        mSummary = sis!!.getSerializableSafe<GameSummary>(SUMMARY)
         mTitleID = sis.getInt(TITLE)
         mMsg = sis.getString(MSG)
-        mInArchive = sis.getSerializable(IN_ARCH) as Boolean
-        mHasPending = sis.getSerializable(HAS_PENDING) as Boolean
+        mInArchive = sis.getSerializableSafe<Boolean>(IN_ARCH) ?: false
+        mHasPending = sis.getSerializableSafe<Boolean>(HAS_PENDING) ?: false
         val context = requireContext()
         mView = LocUtils.inflate(context, R.layout.game_over) as ViewGroup
         initView()

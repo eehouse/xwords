@@ -552,7 +552,7 @@ class BoardDelegate(delegator: Delegator) :
      }
 
     private fun getBundledData(bundle: Bundle?) {
-        m_mySIS = bundle?.getSerializable(SAVE_MYSIS) as MySIS? ?: MySIS()
+        m_mySIS = bundle?.getSerializableSafe<MySIS>(SAVE_MYSIS) ?: MySIS()
     }
 
     override fun onActivityResult(

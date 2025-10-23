@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-gradle.sh inXw4dDeb"; -*- */
 /*
- * Copyright 2015 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2015 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -40,15 +40,27 @@ val NFC_AID_XW4d = "FDDA0A3EB5E5"
 
 fun String.runString(): String {
 	var bytesOut = ByteArrayOutputStream()
-	val errCode = project.exec {
-		commandLine = this@runString.split(" ")
-		// println("commandLine: " + commandLine)
-		standardOutput = bytesOut
-		isIgnoreExitValue = true
-	}
 	var result: String = ""
-	if ( errCode.exitValue == 0 ) {
-		result = String(bytesOut.toByteArray()).trim()
+    // This is copilot-generated stuff
+	try {
+		@Suppress("DEPRECATION")
+		val errCode = project.exec {
+			commandLine = this@runString.split(" ")
+			// println("commandLine: " + commandLine)
+			standardOutput = bytesOut
+			isIgnoreExitValue = true
+		}
+		if ( errCode.exitValue == 0 ) {
+			result = String(bytesOut.toByteArray()).trim()
+		} else {
+			// Log non-zero exit code for debugging
+			logger.debug("Command '${this@runString}' "
+                         + "returned exit code ${errCode.exitValue}")
+		}
+	} catch (e: Exception) {
+		// Log execution exception for debugging
+		logger.warn("Command execution failed for "
+                    + "'${this@runString}': ${e.message}")
 	}
 	return result;
 }
@@ -399,7 +411,7 @@ android {
     }
     lint {
         abortOnError = false
-        disable += listOf("Deprecation", "ObsoleteLintCustomCheck")
+        disable += listOf("ObsoleteLintCustomCheck")
     }
 }
 

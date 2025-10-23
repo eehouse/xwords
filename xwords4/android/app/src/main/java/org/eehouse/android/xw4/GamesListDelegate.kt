@@ -1016,7 +1016,7 @@ class GamesListDelegate(delegator: Delegator) :
     private fun getBundledData(bundle: Bundle?) {
         if (null != bundle) {
             m_netLaunchInfo = NetLaunchInfo.makeFrom(bundle)
-            m_mySIS = bundle.getSerializable(SAVE_MYSIS) as MySIS?
+            m_mySIS = bundle.getSerializableSafe<MySIS>(SAVE_MYSIS)
         } else {
             m_mySIS = MySIS()
         }
@@ -1472,8 +1472,9 @@ class GamesListDelegate(delegator: Delegator) :
                     if (0L != gr) {
                         launchGame(GameRef(gr))
                     } else {        // new game case?
-                        (data.getSerializableExtra(GameConfigDelegate.INTENT_KEY_GI) as CurGameInfo?)
-                            ?.let { makeAndLaunch(it) }
+                        data.getSerializableExtraSafe<CurGameInfo>(
+                            GameConfigDelegate.INTENT_KEY_GI
+                        )?.let { makeAndLaunch(it) }
                         // val selfAddr = data
                         //     .getSerializableExtra(GameConfigDelegate.INTENT_KEY_SADDR) as CommsAddrRec?
                         // val selfTypes = selfAddr!!.conTypes
@@ -2362,13 +2363,12 @@ class GamesListDelegate(delegator: Delegator) :
     private fun startWithInvitee(intent: Intent): Boolean {
         val result = false
         try {
-            val invitee = intent
-                .getSerializableExtra(INVITEE_REC_EXTRA) as CommsAddrRec?
-            invitee?.let {
-                val gameName = intent.getStringExtra(REMATCH_NEWNAME_EXTRA)
-                Log.d(TAG, "gameName: $gameName")
-                makeThenLaunchOrConfigure(gameName, false, false, it)
-            }
+            intent.getSerializableExtraSafe<CommsAddrRec>(INVITEE_REC_EXTRA)
+                ?.let {
+                    val gameName = intent.getStringExtra(REMATCH_NEWNAME_EXTRA)
+                    Log.d(TAG, "gameName: $gameName")
+                    makeThenLaunchOrConfigure(gameName, false, false, it)
+                }
         } catch (ex: Exception) {
             Log.ex(TAG, ex)
         }

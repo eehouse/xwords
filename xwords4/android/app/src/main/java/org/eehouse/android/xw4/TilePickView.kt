@@ -44,7 +44,7 @@ class TilePickView(context: Context, aset: AttributeSet?) : LinearLayout(context
     ) {
         mState = state
         mListner = lstn
-        mPendingTiles = bundle.getSerializable(NEW_TILES) as ArrayList<Int>?
+        mPendingTiles = bundle.getSerializableSafe<ArrayList<Int>>(NEW_TILES)
         if (null == mPendingTiles) {
             Log.d(TAG, "creating new mPendingTiles")
             mPendingTiles = ArrayList()

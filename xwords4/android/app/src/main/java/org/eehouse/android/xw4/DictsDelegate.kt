@@ -432,20 +432,8 @@ class DictsDelegate(delegator: Delegator) :
     private fun getBundledData(sis: Bundle?) {
         sis?.let {
             mShowRemote = it.getBoolean(REMOTE_SHOW_KEY, false)
-            mRemoteInfo =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    it.getSerializable(REMOTE_INFO_KEY, HashMap::class.java) as? HashMap<String, Array<AvailDictInfo>>
-                } else {
-                    @Suppress("DEPRECATION")
-                    it.getSerializable(REMOTE_INFO_KEY) as? HashMap<String, Array<AvailDictInfo>>
-                }
-            mSelDicts =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    it.getSerializable(SEL_DICTS_KEY, HashMap::class.java) as? HashMap<String, Any>
-                } else {
-                    @Suppress("DEPRECATION")
-                    it.getSerializable(SEL_DICTS_KEY) as? HashMap<String, Any>
-                }
+            mRemoteInfo = it.getSerializableSafe<HashMap<String, Array<AvailDictInfo>>>(REMOTE_INFO_KEY)
+            mSelDicts = it.getSerializableSafe<HashMap<String, Any>>(SEL_DICTS_KEY)
         }
     }
 

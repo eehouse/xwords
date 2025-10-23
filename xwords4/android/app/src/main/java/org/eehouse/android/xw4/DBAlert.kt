@@ -59,10 +59,8 @@ class DBAlert : XWDialogFragment() {
         if (null == sis) {
             sis = arguments
         }
-        val lst = sis!!.getSerializable(PARMS_KEY)
-        if (null != lst) {
-            mParams = (lst as Array<Any?>?)
-        }
+        sis!!.getSerializableSafe<Array<Any?>>(PARMS_KEY)
+            ?.let{mParams = it}
         val activity = activity as XWActivity?
         var dialog = activity!!.makeDialog(this, *mParams.orEmpty())
         if (null == dialog) {

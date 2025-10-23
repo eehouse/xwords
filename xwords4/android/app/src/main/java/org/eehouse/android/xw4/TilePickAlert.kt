@@ -89,8 +89,8 @@ class TilePickAlert : XWDialogFragment(), TilePickListener {
         if (null == sis) {
             sis = arguments
         }
-        mState = sis!!.getSerializable(TPS) as TilePickState?
-        mAction = sis.getSerializable(ACTION) as Action?
+        mState = sis!!.getSerializableSafe<TilePickState>(TPS)
+        mAction = sis.getSerializableSafe<Action>(ACTION)
         val activity: Activity? = activity
         Assert.assertNotNull(activity)
         val context = requireContext()

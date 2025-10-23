@@ -276,12 +276,12 @@ abstract class IsoWordsBase(delegator: Delegator, private val CHECKED_KEY: Strin
         }
     }
 
-    private fun getBundledData( sis: Bundle? )
+    private fun getBundledData(sis: Bundle?)
     {
         if ( null != sis ) {
-			val checkeds = sis.getSerializable( CHECKED_KEY ) as HashSet<String>
             m_checkeds.clear()
-            m_checkeds.addAll(checkeds)
+			sis.getSerializableSafe<HashSet<String>>(CHECKED_KEY)
+                ?.let { m_checkeds.addAll(it) }
         }
     }
 

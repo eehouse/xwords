@@ -638,12 +638,14 @@ class GameConfigDelegate(delegator: Delegator) :
     }
 
     private fun getBundledData(bundle: Bundle?) {
-        if (null != bundle) {
+        bundle?.let { bundle ->
             mWhichPlayer = bundle.getInt(WHICH_PLAYER)
-            mGi = bundle.getSerializable(LOCAL_GI) as CurGameInfo?
-            mConTypes = bundle.getSerializable(LOCAL_TYPES) as CommsConnTypeSet?
+            mGi = bundle.getSerializableSafe<CurGameInfo>(LOCAL_GI)
+            mConTypes = bundle.getSerializableSafe<CommsConnTypeSet>(LOCAL_TYPES)
             if (BuildConfig.DEBUG) {
-                mDisabMap = bundle.getSerializable(DIS_MAP) as? HashMap<CommsConnType, BooleanArray>?
+                @Suppress("UNCHECKED_CAST")
+                mDisabMap = bundle.getSerializableSafe<HashMap<*, *>>(DIS_MAP)
+                    as? HashMap<CommsConnType, BooleanArray>?
             }
         }
     }

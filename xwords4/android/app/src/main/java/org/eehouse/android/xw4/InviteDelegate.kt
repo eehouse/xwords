@@ -103,10 +103,8 @@ abstract class InviteDelegate(delegator: Delegator) :
     {
         bundle?.let {
             m_checked.clear()
-            val checked = it.getSerializable(KEY_CHECKED) as HashSet<String>?
-            if (null != checked) {
-                m_checked.addAll(checked)
-            }
+            it.getSerializableSafe<HashSet<String>>(KEY_CHECKED)
+                ?.let { m_checked.addAll(it) }
         }
     }
 
