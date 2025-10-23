@@ -27,6 +27,7 @@
 #include "mqttcon.h"
 #include "strutils.h"
 #include "linuxmain.h"
+#include "gtkqrwrp.h"
 
 typedef struct _PageData {
     CommsConnType pageType;
@@ -43,6 +44,8 @@ static XP_UCHAR s_devIDBuf[32] = {};
 typedef struct _GtkInviteState {
     GtkGameGlobals* globals;
     XW_DUtilCtxt* dutil;        /* hang onto as optimization */
+    GameRef gr;
+    QRThingState* qrThing;
     CommsAddrRec* addr;
     gint* nPlayersP;
     gint maxPlayers;
@@ -196,22 +199,6 @@ handle_setSelf( GtkWidget* XP_UNUSED(widget), gpointer closure )
     GtkInviteState* state = (GtkInviteState*)closure;
     lbt_setToSelf( state->globals->cGlobals.params, &state->hp );
     gtk_entry_set_text( GTK_ENTRY(state->bthost), state->hp.hostName );
-}
-
-static void
-handle_qr( GtkWidget* XP_UNUSED(widget), void* closure )
-{
-    GtkInviteState* state = (GtkInviteState*)closure;
-    GameRef gr = state->globals->cGlobals.gr;
-    XWStreamCtxt* stream = gr_inviteData( state->dutil, gr, NULL_XWE );
-    if ( !!stream ) {
-        XP_U16 size = stream_getSize(stream);
-        gchar buf[size+1];
-        stream_getBytes( stream, buf, size );
-        buf[size] = '\0';
-        XP_LOGFF( "got url: %s", buf );
-        stream_destroy( stream );
-    }
 }
 
 static void
@@ -407,12 +394,14 @@ onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1),
 XP_Bool
 gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 {
+    CommonGlobals* cGlobals = &globals->cGlobals;
     GtkInviteState state = {
         .globals = globals,
         .addr = addr,
         .nPlayersP = nPlayersP,
         .maxPlayers = *nPlayersP,
-        .dutil = globals->cGlobals.params->dutil,
+        .dutil = cGlobals->params->dutil,
+        .gr = cGlobals->gr,
     };
 
     GtkWidget* hbox;
@@ -484,8 +473,17 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
         gint pageNo = conTypeToPageNum( &state, firstType );
         gtk_notebook_set_current_page( GTK_NOTEBOOK(state.notebook), pageNo );
     }
-
     gtk_widget_show( state.notebook );
+
+    XWStreamCtxt* invite = gr_inviteData( state.dutil, state.gr, NULL_XWE );
+    if ( !!invite ) {
+        GtkWidget* qrWidget;
+        const XP_UCHAR* str = (XP_UCHAR*)stream_getPtr(invite);
+        XP_U16 len = stream_getSize( invite );
+        state.qrThing = mkQRThing( &qrWidget, str, len );
+        gtk_box_pack_start( GTK_BOX(vbox), qrWidget, FALSE, TRUE, 0 );
+        stream_destroy( invite );
+    }
 
     /* buttons at the bottom */
     hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -494,10 +492,6 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox),
                         makeButton( "Invite self", (GCallback)handle_self,
-                                    &state ),
-                        FALSE, TRUE, 0 );
-    gtk_box_pack_start( GTK_BOX(hbox),
-                        makeButton( "Show QR", (GCallback)handle_qr,
                                     &state ),
                         FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox),
@@ -517,7 +511,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
     gtk_widget_show_all( state.dialog );
     gtk_main();
     gtk_widget_destroy( state.dialog );
-
+    freeQRThing(&state.qrThing);
     return !state.cancelled;
 } /* gtkInviteDlg */
 #endif
