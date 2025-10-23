@@ -1,6 +1,6 @@
-/* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,16 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
-#ifndef _GTKQRCODE_H_
-#define _GTKQRCODE_H_
-
 #ifdef PLATFORM_GTK
+#ifndef _GTKQRWRP_H_
+#define _GTKQRWRP_H_
 
 #include <gtk/gtk.h>
+#include "comtypes.h"
 
-void gtkShowQRCode(GtkWidget* parent, const gchar* data, const gchar* title);
+typedef struct QRThingState QRThingState;
 
-#endif /* PLATFORM_GTK */
+QRThingState* mkQRThing( GtkWidget** widget, const XP_UCHAR* str, XP_U16 len );
+void freeQRThing( QRThingState** thing );
 
-#endif /* _GTKQRCODE_H_ */
+#endif
+#endif
