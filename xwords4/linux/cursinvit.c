@@ -2,6 +2,7 @@
 
 #include "cursinvit.h"
 #include "cursesask.h" 
+#include "cursqr.h"
 #include "dbgutil.h"
 #include "comtypes.h"
 #include "comms.h"
@@ -265,6 +266,21 @@ updateAddress(CursesInviteState* state, const CurGameInfo* gi)
     }
 }
 
+static void
+launchQRInvite( CommonGlobals* cGlobals )
+{
+    LaunchParams* params = cGlobals->params;
+    XWStreamCtxt* invite = gr_inviteData( params->dutil, cGlobals->gr, NULL_XWE );
+    if ( !!invite ) {
+        XP_U16 len = stream_getSize( invite );
+        XP_UCHAR buf[len+1];
+        stream_getBytes( invite, buf, len );
+        buf[len] = '\0';
+        cursesShowQRDialog( buf, "Game Invitation QR Code" );
+        stream_destroy( invite );
+    }
+}
+
 XP_Bool
 cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addrp, gint* nPlayers )
 {
@@ -281,7 +297,7 @@ cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addrp, gint* nPlayers )
 
     /* Create dialog window */
     int height = 10;
-    int width = 50;
+    int width = 60;
     int yy, xx;
     getmaxyx(stdscr, yy, xx);
 
@@ -363,9 +379,9 @@ cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addrp, gint* nPlayers )
             mvwprintw(dlg, row++, 2, "Players: %d", state.selectedPlayers);
 
             if (state.currentTab == TAB_BY_ADDRESS) {
-                mvwprintw(dlg, height - 2, 2, "Tab: Switch, Enter: Edit, O: OK, C: Cancel");
+                mvwprintw(dlg, height - 2, 2, "Tab: Switch, Enter: Edit, Q: QR Code, O: OK, C: Cancel");
             } else {
-                mvwprintw(dlg, height - 2, 2, "Tab: Switch, Enter: Select, O: OK, C: Cancel");
+                mvwprintw(dlg, height - 2, 2, "Tab: Switch, Enter: Select, Q: QR Code, O: OK, C: Cancel");
             }
 
             wrefresh(dlg);
@@ -462,6 +478,12 @@ cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addrp, gint* nPlayers )
                         }
                     }
                 }
+                break;
+
+            case 'q':
+            case 'Q':
+                /* Show QR code */
+                launchQRInvite(cGlobals);
                 break;
 
             case 'o':
