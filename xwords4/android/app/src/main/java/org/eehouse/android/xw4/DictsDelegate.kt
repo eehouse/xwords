@@ -25,8 +25,9 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
+import kotlinx.coroutines.*
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
@@ -429,10 +430,22 @@ class DictsDelegate(delegator: Delegator) :
     }
 
     private fun getBundledData(sis: Bundle?) {
-        if (null != sis) {
-            mShowRemote = sis.getBoolean(REMOTE_SHOW_KEY, false)
-            mRemoteInfo = sis.getSerializable(REMOTE_INFO_KEY) as? HashMap<String, Array<AvailDictInfo>>
-            mSelDicts = sis.getSerializable(SEL_DICTS_KEY) as? HashMap<String, Any>
+        sis?.let {
+            mShowRemote = it.getBoolean(REMOTE_SHOW_KEY, false)
+            mRemoteInfo =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    it.getSerializable(REMOTE_INFO_KEY, HashMap::class.java) as? HashMap<String, Array<AvailDictInfo>>
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.getSerializable(REMOTE_INFO_KEY) as? HashMap<String, Array<AvailDictInfo>>
+                }
+            mSelDicts =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    it.getSerializable(SEL_DICTS_KEY, HashMap::class.java) as? HashMap<String, Any>
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.getSerializable(SEL_DICTS_KEY) as? HashMap<String, Any>
+                }
         }
     }
 
@@ -1015,9 +1028,19 @@ class DictsDelegate(delegator: Delegator) :
         private val m_context: Context,
         private val m_lc: ISOCode,
         private val m_lstnr: OnGotLcDictListener
-    ) : AsyncTask<Void?, Void?, String?>() {
+    ) {
         private var m_langName: String? = null
-        override fun doInBackground(vararg unused: Void?): String? {
+
+        fun execute() {
+            CoroutineScope(Dispatchers.IO).launch {
+                val result = doInBackground()
+                withContext(Dispatchers.Main) {
+                    onPostExecute(result)
+                }
+            }
+        }
+
+        private suspend fun doInBackground(): String? {
             // FIXME: this should pass up the language code to retrieve and
             // parse less data
             var name: String? = null
@@ -1084,16 +1107,17 @@ class DictsDelegate(delegator: Delegator) :
             return name
         }
 
-        override fun onPostExecute(name: String?) {
+        private fun onPostExecute(name: String?) {
             m_lstnr.gotDictInfo(null != name, m_lc, name)
         }
     }
 
     private inner class FetchListTask(private val mContext: Context) :
-        AsyncTask<Void?, Void?, Boolean>(),
         DialogInterface.OnCancelListener
     {
         private val mNeedUpdates:MutableMap<String, Uri> = HashMap()
+        private var job: Job? = null
+        private var isCancelled = false
 
         init {
             if (null == mLangs) {
@@ -1102,8 +1126,18 @@ class DictsDelegate(delegator: Delegator) :
             startProgress(R.string.progress_title, R.string.remote_empty, this)
         }
 
-        @Deprecated("Deprecated in Java")
-        override fun doInBackground(vararg unused: Void?): Boolean {
+        fun execute() {
+            job = CoroutineScope(Dispatchers.IO).launch {
+                val result = doInBackground()
+                if (!isCancelled) {
+                    withContext(Dispatchers.Main) {
+                        onPostExecute(result)
+                    }
+                }
+            }
+        }
+
+        private suspend fun doInBackground(): Boolean {
             var success = false
             val proc = listDictsProc(null)
             val conn = NetUtils.makeHttpUpdateConn(mContext, proc)
@@ -1119,19 +1153,14 @@ class DictsDelegate(delegator: Delegator) :
             return success
         }
 
-        @Deprecated("Deprecated in Java")
-        override fun onCancelled() {
+        override fun onCancel(dialog: DialogInterface) {
+            isCancelled = true
+            job?.cancel()
             mRemoteInfo = null
             mShowRemote = false
         }
 
-        @Deprecated("Deprecated in Java")
-        override fun onCancelled(success: Boolean) {
-            onCancelled()
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onPostExecute(success: Boolean) {
+        private fun onPostExecute(success: Boolean) {
             switchShowingRemote(success)
             mCheckbox!!.setChecked(success)
 
@@ -1269,13 +1298,6 @@ class DictsDelegate(delegator: Delegator) :
             return success
         } // digestData
 
-        /////////////////////////////////////////////////////////////////
-        // DialogInterface.OnCancelListener interface
-        /////////////////////////////////////////////////////////////////
-        override fun onCancel(dialog: DialogInterface) {
-            mCheckbox!!.setChecked(false)
-            cancel(true)
-        }
     }
 
     companion object {

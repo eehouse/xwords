@@ -88,7 +88,7 @@ android {
          targetCompatibility = JavaVersion.VERSION_17
 	 }
 
-     packagingOptions {
+     packaging {
          resources {
              excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
 
@@ -399,12 +399,16 @@ android {
     }
     lint {
         abortOnError = false
+        disable += listOf("Deprecation", "ObsoleteLintCustomCheck")
     }
 }
 
 dependencies {
     implementation( "androidx.legacy:legacy-support-v4:1.0.0" )
 	implementation( "androidx.preference:preference:1.2.1" )
+
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Updated lifecycle components - lifecycle-extensions is deprecated
     implementation( "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7" )
@@ -515,6 +519,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         freeCompilerArgs.addAll(
             "-opt-in=kotlin.ExperimentalStdlibApi"
         )
+        allWarningsAsErrors = false
     }
 }
 

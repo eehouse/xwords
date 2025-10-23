@@ -523,7 +523,7 @@ static XP_Bool
 and_util_showChat( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* msg,
                    XP_S16 fromIndx, XP_U32 timestamp )
 {
-    XP_Bool result;
+    XP_Bool result = XP_FALSE;
     UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;II)Z" );
 
     jstring jmsg = (*env)->NewStringUTF( env, msg );

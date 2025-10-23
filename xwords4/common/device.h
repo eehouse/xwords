@@ -64,6 +64,8 @@ void dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 void dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );
+void dvc_onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
+                             const XP_UCHAR* phone, XP_U16 mtu );
 void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                           XP_Bool succeeded, const XP_UCHAR* result );
 

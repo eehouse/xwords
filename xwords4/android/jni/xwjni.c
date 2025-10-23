@@ -431,8 +431,6 @@ static const SetInfo pl_ints[] = {
 static void
 makeGI( JNIEnv* env, XW_DUtilCtxt* dutil, CurGameInfo* gi, jobject jgi )
 {
-    XP_UCHAR buf[256];          /* in case needs whole path */
-
     getInts( env, (void*)gi, jgi, AANDS(gi_ints) );
     getBools( env, (void*)gi, jgi, AANDS(gi_bools) );
 
@@ -2210,7 +2208,8 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseBTPacket
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
 
-    dvc_parseBTPacket( globalState->dutil, env, buf, len, name, addr );
+    dvc_parseBTPacket( globalState->dutil, env, (const XP_U8*)buf, len,
+                       name, addr );
 
     (*env)->ReleaseStringUTFChars( env, jname, name );
     (*env)->ReleaseStringUTFChars( env, jaddr, addr );
