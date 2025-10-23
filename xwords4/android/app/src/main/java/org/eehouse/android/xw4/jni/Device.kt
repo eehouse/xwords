@@ -109,6 +109,7 @@ object Device {
     }
 
     abstract class WrapElem(val code: () -> Any?) {
+        val mCaller = Throwable().stackTrace[4] // for logging
         abstract fun run()
     }
 
@@ -120,7 +121,7 @@ object Device {
             result = code()
             done.set(true)
             val runtime = System.currentTimeMillis() - startTime
-            Log.d(TAG, "blocking task finished $runtime ms after creation")
+            Log.d(TAG, "blocking task for $mCaller finished $runtime ms after creation")
         }
     }
 
@@ -147,7 +148,7 @@ object Device {
                 while (true) {
                     delay(100)
                     if (running) {
-                        Log.d(TAG, "Watcher: $elem still running")
+                        Log.d(TAG, "Watcher: for ${elem.mCaller} still running")
                     } else {
                         break
                     }
@@ -162,10 +163,10 @@ object Device {
             try {
                 val elem = mQueue.take() as WrapElem
                 val watcher = Watcher(elem)
-                Log.d(TAG, "thread: running $elem")
+                Log.d(TAG, "thread: running for ${elem.mCaller}")
                 elem.run()
                 watcher.done()
-                Log.d(TAG, "thread: $elem done")
+                Log.d(TAG, "thread: ${elem.mCaller} done")
             } catch (ie: InterruptedException) {
                 Log.w(TAG, "interrupted; killing thread")
                 break
