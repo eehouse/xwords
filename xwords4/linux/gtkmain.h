@@ -25,7 +25,6 @@
 int gtkmain( LaunchParams* params );
 void addGTKGame( LaunchParams* params, GameRef gr );
 void windowDestroyed( GtkGameGlobals* globals );
-void gtkOnGameSaved( void* closure, GameRef gr, XP_Bool firstTime );
 void make_rematch( GtkAppGlobals* apg, GameRef parent,
                    XP_Bool archiveAfter, XP_Bool deleteAfter );
 void inviteReceivedGTK( void* closure, const NetLaunchInfo* invite );

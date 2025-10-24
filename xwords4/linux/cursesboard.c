@@ -324,26 +324,6 @@ initMenus( CursesBoardGlobals* bGlobals )
     }
 }
 
-static void
-onGameSaved( void* XP_UNUSED(closure), GameRef XP_UNUSED(gr), XP_Bool XP_UNUSED(firstTime) )
-{
-    XP_ASSERT(0);
-    /* CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure; */
-    /* CommonGlobals* cGlobals = &bGlobals->cGlobals; */
-    /* LaunchParams* params = cGlobals->params; */
-    /* /\* onCursesGameSaved( bGlobals->aGlobals, rowid ); *\/ */
-
-    /* // BoardCtxt* board = gr_getGame(cGlobals->gr)->board; */
-    /* gr_invalAll( params->dutil, cGlobals->gr, NULL_XWE ); */
-    /* gr_draw( params->dutil, cGlobals->gr, NULL_XWE ); */
-    /* /\* May not be recorded *\/ */
-    /* // XP_ASSERT( cGlobals->rowid == rowid ); */
-    /* // cGlobals->rowid = rowid; */
-
-    /* CursesBoardState* cbState = bGlobals->cbState; */
-    /* (*cbState->onGameSaved)( cbState->aGlobals, rowid, firstTime ); */
-}
-
 static gboolean
 fire_acceptor( GIOChannel* source, GIOCondition condition, gpointer data )
 {
@@ -407,8 +387,6 @@ commonInit( CursesBoardState* cbState, GameRef gr )
     XP_ASSERT( !!cGlobals->gi );
 
     cGlobals->socketAddedClosure = bGlobals;
-    cGlobals->onSave = onGameSaved;
-    cGlobals->onSaveClosure = bGlobals;
     cGlobals->addAcceptor = curses_socket_acceptor;
 
     makeSelfAddress( &cGlobals->selfAddr, params );

@@ -245,8 +245,6 @@ typedef struct _TimerInfo {
 #endif
 } TimerInfo;
 
-typedef void (*OnSaveFunc)( void* closure, GameRef gr, XP_Bool firstTime );
-
 typedef void (*cg_destructor)(CommonGlobals* self);
 
 struct CommonGlobals {
@@ -267,11 +265,8 @@ struct CommonGlobals {
     XP_U16 lastStreamSize;
     XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
-    // sqlite3_int64 rowid;
 
     void* socketAddedClosure;
-    OnSaveFunc onSave;
-    void* onSaveClosure;
     GSList* packetQueue;
     XP_U32 nextPacketID;        /* for debugging */
 

@@ -1619,25 +1619,6 @@ gtkErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
 }
 #endif
 
-void
-gtkOnGameSaved( void* closure, GameRef gr, XP_Bool firstTime )
-{
-#ifdef XWFEATURE_DEVICE_STORES
-    XP_ASSERT(0);
-    XP_LOGFF("doing nothing");
-    XP_USE(closure);
-    XP_USE(gr);
-    XP_USE(firstTime);
-#else
-    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-    GtkAppGlobals* apg = globals->apg;
-    /* May not be recorded */
-    if ( !!apg ) {
-        onNewData( apg, rowid, firstTime );
-    }
-#endif
-}
-
 static GtkAppGlobals* g_globals_for_signal = NULL;
 
 static void

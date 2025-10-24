@@ -2355,8 +2355,6 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 #endif
 
     cGlobals->socketAddedClosure = globals;
-    cGlobals->onSave = gtkOnGameSaved;
-    cGlobals->onSaveClosure = globals;
     cGlobals->addAcceptor = gtk_socket_acceptor;
 
     cpFromLP( &cGlobals->cp, params );
