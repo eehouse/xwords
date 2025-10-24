@@ -188,7 +188,7 @@ object NFCUtils {
         assertOnUIThread(false)
         val gameID = intArrayOf(0)
         val msgs = unformatMsgs(data, offset, gameID)
-        val helper = if ( 0 == msgs.size ) null else NFCServiceHelper(context)
+        // val helper = if ( 0 == msgs.size ) null else NFCServiceHelper(context)
         for (msg in msgs) {
             val typ = byteArrayOf(0)
             val body = MsgsStore.split(msg, typ)
@@ -200,7 +200,8 @@ object NFCUtils {
                     } else {
                         for (rowid in rowids) {
                             val sink = MultiMsgSink(context, rowid)
-                            helper!!.receiveMessage(rowid, sink, body)
+                            // helper!!.receiveMessage(rowid, sink, body)
+                            Log.d(TAG, "got message; now what???")
                         }
                     }
                 }
