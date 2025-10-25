@@ -38,8 +38,9 @@
 #include "gamemgr.h"
 #include "gtkedalr.h"
 #include "gtkaskgrp.h"
+#include "dbgutil.h"
 
-static void onNewData( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew );
+static void onNewData( GtkAppGlobals* apg, GameRef gr );
 static void buildGamesList( GtkAppGlobals* apg );
 
 static void updateButtons( GtkAppGlobals* apg );
@@ -96,6 +97,7 @@ enum {
     CREATED_ITEM,
     STATUS_ITEM,
     GROUPNAME_ITEM,
+    GROUP_ITEM,                 /* not shown */
 #else
     ROW_ITEM,
     NAME_ITEM, CREATED_ITEM,
@@ -129,6 +131,16 @@ grFromIter( GtkTreeModel* model, GtkTreeIter* iter )
     sscanf( str, GR_FMT, &gr );
     g_free( str );
     return gr;
+}
+
+static GroupRef
+grpFromIter( GtkTreeModel* model, GtkTreeIter* iter )
+{
+    gint val;
+    gtk_tree_model_get( model, iter, GROUP_ITEM, &val, -1 );
+    GroupRef grp = (GroupRef)val;
+    XP_LOGFF( "got group: %d", grp );
+    return grp;
 }
 
 static void
@@ -165,7 +177,7 @@ row_activated_cb( GtkTreeView* treeView, GtkTreePath* path,
 }
 
 static bool
-findFor( GtkAppGlobals* apg, GameRef target, GtkTreeIter* foundP, GtkWidget** treeP )
+findFor( GtkAppGlobals* apg, GameRef gr, GtkTreeIter* foundP, GtkListStore** listP )
 {
     bool valid = false;
     GList* children = gtk_container_get_children(GTK_CONTAINER(apg->treesBox));
@@ -178,12 +190,20 @@ findFor( GtkAppGlobals* apg, GameRef target, GtkTreeIter* foundP, GtkWidget** tr
                   valid;
                   valid = gtk_tree_model_iter_next( model, &iter ) ) {
                 GameRef val = grFromIter( model, &iter );
-                if ( val == target ) {
+                if ( val == gr ) {
+                    /* Confirm it's the right group */
+                    XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+                    GroupRef grp = gr_getGroup( dutil, gr, NULL_XWE );
+                    GroupRef curGrp = grpFromIter( model, &iter );
+                    if ( curGrp != grp ) {
+                        XP_ASSERT(0); /* TODO: remove from model */
+                        valid = false;
+                    }
                     if ( !!foundP ) {
                         *foundP = iter;
                     }
-                    if ( !!treeP ) {
-                        *treeP = tree;
+                    if ( !!listP ) {
+                        *listP = GTK_LIST_STORE( model );
                     }
                     break;
                 }
@@ -215,9 +235,9 @@ addImageColumn( GtkWidget* list, const gchar* title, int item )
 }
 
 static GtkWidget*
-init_games_list( GtkAppGlobals* apg )
+init_games_list( void* closure )
 {
-    GtkWidget* list = gtk_tree_view_new();
+    GtkWidget* list = (GtkWidget*)GTK_TREE_VIEW(gtk_tree_view_new());
     
     addImageColumn( list, "Snap", ROW_THUMB );
 #ifdef XWFEATURE_DEVICE_STORES
@@ -258,12 +278,12 @@ init_games_list( GtkAppGlobals* apg )
     GtkListStore* store = gtk_list_store_new( N_ITEMS,
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */
 #ifdef XWFEATURE_DEVICE_STORES
-                                              // G_TYPE_POINTER, /* GAMEREF_ITEM */
                                               G_TYPE_STRING,  /* GAMENAME_ITEM */
                                               G_TYPE_STRING,   /* GAMEREF_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
                                               G_TYPE_STRING,  /* STATUS_ITEM */
                                               G_TYPE_STRING,  /* GROUPNAME_ITEM */
+                                              G_TYPE_INT,     /* GROUP_ITEM */
 #else
                                               /* G_TYPE_INT64,   /\* ROW_ITEM *\/ */
                                               /* G_TYPE_STRING,  /\* NAME_ITEM *\/ */
@@ -297,13 +317,13 @@ init_games_list( GtkAppGlobals* apg )
     g_object_unref( store );
 
     g_signal_connect( G_OBJECT(list), "row-activated",
-                      G_CALLBACK(row_activated_cb), apg );
+                      G_CALLBACK(row_activated_cb), closure );
  
     GtkTreeSelection* select =
         gtk_tree_view_get_selection( GTK_TREE_VIEW (list) );
     gtk_tree_selection_set_mode( select, GTK_SELECTION_MULTIPLE );
     g_signal_connect( G_OBJECT(select), "changed",
-                      G_CALLBACK(tree_selection_changed_cb), apg );
+                      G_CALLBACK(tree_selection_changed_cb), closure );
     return list;
 }
 
@@ -326,22 +346,9 @@ getSnapData( LaunchParams* params, GameRef gr )
 }
 
 static void
-add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
+updateRow( LaunchParams* params, GameRef gr,
+           GtkListStore* store, GtkTreeIter* iter )
 {
-    XP_ASSERT( gr );
-    GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
-    GtkListStore* store = GTK_LIST_STORE( model );
-    GtkTreeIter iter;
-    XP_Bool found = XP_FALSE;
-#ifdef DEBUG
-    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
-    XP_ASSERT( !findFor( apg, gr, NULL, NULL ) );
-#endif
-
-    if ( !found ) {
-        gtk_list_store_append( store, &iter );
-    }
-
     const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
     const GameSummary* sum = gr_getSummary( params->dutil, gr, NULL_XWE );
 
@@ -379,13 +386,14 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
     gchar grStr[32];
     snprintf( grStr, sizeof(grStr), GR_FMT, gr );
 
-    gtk_list_store_set( store, &iter, 
+    gtk_list_store_set( store, iter,
                         ROW_THUMB, snap,
                         GAMENAME_ITEM, gi->gameName,
                         GAMEREF_ITEM, grStr,
                         CREATED_ITEM, createdStr,
                         STATUS_ITEM, state,
                         GROUPNAME_ITEM, groupName,
+                        GROUP_ITEM, grp,
                         // GAMEID_ITEM, gameIDStr,
                         TURN_ITEM, sum->turnIsLocal?"Local":"Remote",
                         NMOVES_ITEM, sum->nMoves,
@@ -397,6 +405,49 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         CONTYPES_ITEM, conTypesBuf,
                         NTOTAL_ITEM, gi->nPlayers,
                         -1 );
+}
+
+static GtkWidget*
+add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr,
+             GtkWidget* container, void* closure )
+{
+    XP_ASSERT( gr );
+    GtkListStore* store = NULL;
+    GtkTreeIter iter;
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    XP_Bool found = findFor( apg, gr, &iter, &store );
+
+    if ( !found ) {
+        XP_LOGFF( "making new row for " GR_FMT, gr );
+        if ( !list ) {
+            list = init_games_list( closure );
+            gtk_container_add( GTK_CONTAINER(container), list );
+            gtk_widget_show( list );
+        }
+
+        GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
+        store = GTK_LIST_STORE( model );
+        gtk_list_store_append( store, &iter );
+    } else {
+        XP_LOGFF( "using existing row" );
+    }
+
+    updateRow( params, gr, store, &iter );
+    return list;
+}
+
+static XP_Bool
+updateListFor( GtkAppGlobals* apg, GameRef gr )
+{
+    GtkTreeIter iter;
+    GtkListStore* list;
+    XP_Bool found = findFor( apg, gr, &iter, &list );
+    XP_ASSERT( found );
+    if ( found ) {
+        updateRow( apg->cag.params, gr, list, &iter );
+    }
+    LOG_RETURNF( "%s", boolToStr(found) );
+    return found;
 }
 
 /* This is supposed to check that at least one of the selected games is not
@@ -593,7 +644,7 @@ open_row( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew )
         gr_missingDicts( params->dutil, gr, NULL_XWE, missingNames, &count );
         if ( count == 0 ) {
             if ( isNew ) {
-                onNewData( apg, gr, XP_TRUE );
+                onNewData( apg, gr );
             }
 
             params->needsNewGame = XP_FALSE;
@@ -970,7 +1021,9 @@ onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
 {
     CommonAppGlobals* cag = params->cag;
     GtkAppGlobals* apg = (GtkAppGlobals*)cag;
-    buildGamesList( apg );
+    if ( !updateListFor( apg, gr ) ) {
+        buildGamesList( apg );
+    }
 
     CommonGlobals* cGlobals = globalsForGameRef( cag, gr, XP_FALSE );
     if ( !!cGlobals ) {
@@ -1284,7 +1337,8 @@ addOneProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
             gtk_widget_show( bld->list );
         }
         LaunchParams* params = bld->apg->cag.params;
-        add_to_list( params, bld->list, gmgr_toGame( ir ) );
+        bld->list = add_to_list( params, bld->list, gmgr_toGame( ir ),
+                                 bld->treesBox, bld->apg );
     } else {
         bld->list = NULL;   /* clear so any additional games will get new list */
         GtkWidget* header = mkGroupHeader( bld->apg, gmgr_toGroup(ir) );
@@ -1438,10 +1492,10 @@ windowDestroyed( GtkGameGlobals* globals )
 }
 
 static void
-onNewData( GtkAppGlobals* apg, GameRef XP_UNUSED(gr),
-           XP_Bool XP_UNUSED(isNew) )
+onNewData( GtkAppGlobals* apg, GameRef gr )
 {
-    buildGamesList( apg );
+    LaunchParams* params = apg->cag.params;
+    add_to_list( params, NULL, gr, apg->treesBox, apg );
 }
 
 /* Stuff common to receiving invitations */
