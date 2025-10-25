@@ -49,9 +49,6 @@ open class UtilCtxt(val gr: GameRef) {
     open fun notifyTrade(tiles: Array<String>) {}
     open fun notifyDupStatus(amHost: Boolean, msg: String) {}
     open fun userError(id: Int) {}
-    open fun countChanged( count: Int, quashed: Boolean ) {
-        Log.d(TAG, "countChanged($count); doing nothing")
-    }
     open fun informUndo() {}
     open fun informNetDict(
         isoCodeStr: String, oldName: String, newName: String,

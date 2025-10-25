@@ -1081,6 +1081,19 @@ gr_checkIncomingStream( DUTIL_GR_XWE, XWStreamCtxt* stream,
     return result;
 }
 
+static void
+checkMessageCount(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
+{
+    XP_Bool quashed;
+    XP_U16 count = comms_countPendingPackets( gd->comms, &quashed );
+    if ( !quashed && gd->sum.nPacketsPending != count ) {
+        gd->sum.nPacketsPending = count;
+        saveSummary( duc, xwe, gd );
+        postGameChangeEvent( duc, xwe, gd,
+                             GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
+    }
+}
+
 void
 gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
                       const XP_U8* msgBuf, XP_U16 msgLen,
@@ -1112,12 +1125,14 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
             }
         }
     }
-    comms_msgProcessed( gd->comms, xwe, &commsState, !result );
+    comms_msgProcessed( gd->comms, &commsState, !result );
     if ( result ) {
         ctrl_addIdle( gd->ctrlr, xwe );
     }
 
     stream_destroy( stream );
+
+    checkMessageCount( duc, xwe, gd );
 
     if ( result ) {
         if ( !!gd->board ) {
@@ -1133,7 +1148,7 @@ void
 gr_setQuashed( DUTIL_GR_XWE, XP_Bool set )
 {
     GR_HEADER_WITH(COMMS);
-    comms_setQuashed( gd->comms, xwe, set );
+    comms_setQuashed( gd->comms, set );
     GR_HEADER_END();
 }
 
@@ -1348,6 +1363,7 @@ gr_countPendingPackets( DUTIL_GR_XWE, XP_Bool* quashed )
     XP_U16 result = 0;
     GR_HEADER_WITH(COMMS);
     result = !!gd->comms ? comms_countPendingPackets( gd->comms, quashed ) : 0;
+    XP_ASSERT( result == gd->sum.nPacketsPending );
     GR_HEADER_END();
     return result;
 }

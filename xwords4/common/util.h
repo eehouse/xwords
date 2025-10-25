@@ -87,8 +87,6 @@ typedef void (*UtilDestroy)( XW_UtilCtxt* uc, XWEnv xwe );
 typedef struct UtilVtable {
     UtilDestroy m_util_destroy;
     void (*m_util_userError)( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id );
-    void (*m_util_countChanged)( XW_UtilCtxt* uc, XWEnv xwe,
-                                 XP_U16 count, XP_Bool quashed );
     void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream );
     void (*m_util_notifyTrade)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
                                 XP_U16 nTiles );
@@ -188,8 +186,6 @@ struct XW_UtilCtxt {
 
 #define util_userError(uc,...)                          \
     (uc)->vtable->m_util_userError((uc), __VA_ARGS__)
-#define util_countChanged(uc,...)                          \
-    (uc)->vtable->m_util_countChanged((uc), __VA_ARGS__)
 #define util_notifyMove(uc,...)                         \
     (uc)->vtable->m_util_notifyMove((uc), __VA_ARGS__)
 #define util_notifyTrade(uc,...)                                \

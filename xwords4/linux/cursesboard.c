@@ -832,16 +832,6 @@ curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     g_free( msg );
 } /* curses_util_notifyIllegalWord */
 
-static void
-curses_util_countChanged( XW_UtilCtxt* XP_UNUSED_DBG(uc), XWEnv xwe,
-                          XP_U16 XP_UNUSED_DBG(count),
-                          XP_Bool XP_UNUSED_DBG(quashed) )
-{
-    XP_LOGFF( "(gr: %lX, count: %d, quashed: %s)", uc->gr, count,
-              boolToStr(quashed) );
-    XP_USE(xwe);
-}
-
 /* this needs to change!!! */
 static void
 curses_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
@@ -1174,7 +1164,6 @@ cb_setupUtilCallbacks( XW_UtilCtxt* util )
     // util->closure = bGlobals;
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = curses_util_##NAM
     SET_PROC(userError);
-    SET_PROC(countChanged);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
     SET_PROC(notifyPickTileBlank);

@@ -101,12 +101,13 @@ enum {
     NAME_ITEM, CREATED_ITEM,
     SEED_ITEM, ROLE_ITEM,
     CONN_ITEM,
-    NPACKETS_ITEM, OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM,
+    OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM,
     MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
 #endif
     // GAMEID_ITEM,
     TURN_ITEM,
     NMOVES_ITEM,
+    NPACKETS_ITEM,
     LASTMOVE_ITEM,
     LANG_ITEM,
     CHANNEL_ITEM,
@@ -244,6 +245,7 @@ init_games_list( GtkAppGlobals* apg )
     // addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "#moves", NMOVES_ITEM );
+    addTextColumn( list, "#packets", NPACKETS_ITEM );
     addTextColumn( list, "Last move", LASTMOVE_ITEM );
     addTextColumn( list, "Lang", LANG_ITEM );
     addTextColumn( list, "Channel", CHANNEL_ITEM );
@@ -281,6 +283,7 @@ init_games_list( GtkAppGlobals* apg )
                                               // G_TYPE_STRING,  /* GAMEID_ITEM */
                                               G_TYPE_STRING,  /* TURN_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
+                                              G_TYPE_INT,     /* NPACKETS_ITEM */
                                               G_TYPE_STRING,  /* LASTMOVE_ITEM */
                                               G_TYPE_STRING,  /* LANG_ITEM */
                                               G_TYPE_INT,     /* CHANNEL_ITEM */
@@ -386,6 +389,7 @@ add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
                         // GAMEID_ITEM, gameIDStr,
                         TURN_ITEM, sum->turnIsLocal?"Local":"Remote",
                         NMOVES_ITEM, sum->nMoves,
+                        NPACKETS_ITEM, sum->nPacketsPending,
                         LASTMOVE_ITEM, lastMoveStr,
                         LANG_ITEM, gi->isoCodeStr,
                         CHANNEL_ITEM, gi->forceChannel,
@@ -964,10 +968,14 @@ saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key )
 void
 onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
 {
-    XP_LOGFF( "doing nothing" );
-    XP_USE( params );
-    XP_USE( gr );
-    XP_USE( gces );
+    CommonAppGlobals* cag = params->cag;
+    GtkAppGlobals* apg = (GtkAppGlobals*)cag;
+    buildGamesList( apg );
+
+    CommonGlobals* cGlobals = globalsForGameRef( cag, gr, XP_FALSE );
+    if ( !!cGlobals ) {
+        onGameChanged( (GtkGameGlobals*)cGlobals, gces );
+    }
 }
 
 void

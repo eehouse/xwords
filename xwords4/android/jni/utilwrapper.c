@@ -119,15 +119,6 @@ and_util_userError( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id )
 }
 
 static void
-and_util_countChanged( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 count,
-                       XP_Bool quashed )
-{
-    UTIL_CBK_HEADER( "countChanged", "(IZ)V" );
-    (*env)->CallVoidMethod( env, util->jutil, mid, count, quashed );
-    UTIL_CBK_TAIL();
-}
-
-static void
 and_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 {
     UTIL_CBK_HEADER("notifyMove", "(Ljava/lang/String;)V" );
@@ -1151,7 +1142,6 @@ makeUtil( MPFORMAL JNIEnv* env, jobject jutil, const CurGameInfo* gi,
 
 #define SET_PROC(nam) vtable->m_util_##nam = and_util_##nam
     SET_PROC(userError);
-    SET_PROC(countChanged);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
     SET_PROC(notifyPickTileBlank);

@@ -50,6 +50,7 @@ typedef enum {
     GCE_TURN_CHANGED = 0x08,
     GCE_BOARD_CHANGED = 0x10,
     GCE_CHAT_ARRIVED = 0x20,
+    GCE_MSGCOUNT_CHANGED = 0x40,
 } GameChangeEvent;
 typedef XP_U32 GameChangeEvents; /* bit vector of above */
 typedef enum {

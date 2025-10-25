@@ -25,7 +25,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.Serializable
@@ -109,7 +111,8 @@ fun Intent?.orEmpty(): Intent {
     return if (null == this) Intent() else this
 }
 
-fun View.launch(block: suspend CoroutineScope.() -> Unit) {
+fun View.launch(disp: CoroutineDispatcher = Dispatchers.Main,
+                block: suspend CoroutineScope.() -> Unit) {
     findViewTreeLifecycleOwner()
         ?.lifecycleScope
         ?.launch{block()}

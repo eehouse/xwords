@@ -216,11 +216,10 @@ static XP_Bool channelToAddress( const CommsCtxt* comms, XP_PlayerAddr channelNo
 static AddressRecord* getRecordFor( const CommsCtxt* comms, XP_PlayerAddr channelNo );
 static XP_S16 sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                        CommsConnType filter );
-static MsgQueueElem* addToQueue( CommsCtxt* comms, XWEnv xwe,
-                                 MsgQueueElem* newElem, XP_Bool notify );
+static MsgQueueElem* addToQueue( CommsCtxt* comms, MsgQueueElem* newElem );
 static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( MPFORMAL MsgQueueElem* elem );
-static void removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo,
+static void removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo,
                              MsgID msgID );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XWEnv xwe
@@ -234,7 +233,6 @@ static void forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure );
 
 static MsgQueueElem* makeNewElem( const CommsCtxt* comms, XWEnv xwe, MsgID msgID,
                                   XP_PlayerAddr channelNo );
-static void notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe );
 static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen,
                          MsgID msgID );
 
@@ -883,7 +881,7 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         }
         dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len, &msg->sb );
         XP_ASSERT( NULL == msg->smp.next );
-        if ( !addToQueue( comms, xwe, msg, XP_FALSE ) ) {
+        if ( !addToQueue( comms, msg ) ) {
             --queueLen;         /* was dropped */
         }
     }
@@ -905,7 +903,6 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         }
     }
 
-    notifyQueueChanged( comms, xwe );
     if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
          && removeRelayIf( comms, xwe ) ) {
         addr_rmType( &comms->selfAddr, COMMS_CONN_RELAY );
@@ -1582,7 +1579,7 @@ comms_getChannelSeed( CommsCtxt* comms )
 
 /* Remove any AddressRecord created for invitations, and any MsgQueueElems for it */
 static void
-nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
+nukeInvites( CommsCtxt* comms, XP_PlayerAddr channelNo )
 {
     COMMS_LOGFF( "(channelNo=0x%X)", channelNo );
     assertQueueOk( comms );
@@ -1611,7 +1608,7 @@ nukeInvites( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo )
         freeElem( MPPARM(comms->mpool) deadRec->_msgQueueHead );
         deadRec->_msgQueueHead = NULL;
         --comms->queueLen;
-        removeFromQueue( comms, xwe, channelNo, 0 );
+        removeFromQueue( comms, channelNo, 0 );
         CNO_FMT( cbuf, deadRec->channelNo );
         COMMS_LOGFF( "removing rec for %s", cbuf );
         XP_ASSERT( !deadRec->_msgQueueHead );
@@ -1726,14 +1723,14 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                it. */
 
             /* remove the old rec, if found */
-            nukeInvites( comms, xwe, forceChannel );
+            nukeInvites( comms, forceChannel );
 
             XP_U16 flags = COMMS_VERSION;
             /*AddressRecord* rec = */rememberChannelAddress( comms, forceChannel,
                                                              0, destAddr, flags );
             MsgQueueElem* elem = makeInviteElem( comms, xwe, forceChannel, nli );
 
-            elem = addToQueue( comms, xwe, elem, XP_TRUE );
+            elem = addToQueue( comms, elem );
             if ( !!elem ) {
                 XP_ASSERT( !elem->smp.next );
                 COMMS_LOGFF( "added invite with sum %s on channel %d", elem->sb.buf,
@@ -1860,7 +1857,7 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 
         elem = makeElemWithID( comms, xwe, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
-            elem = addToQueue( comms, xwe, elem, XP_TRUE );
+            elem = addToQueue( comms, elem );
             if ( !!elem ) {
                 printQueue( comms );
                 result = sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
@@ -1871,20 +1868,12 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
     return result;
 } /* comms_send */
 
-static void
-notifyQueueChanged( const CommsCtxt* comms, XWEnv xwe )
-{
-    XP_U16 count = comms->queueLen;
-    XP_Bool quashed = QUASHED(comms);
-    util_countChanged( *comms->utilp, xwe, count, quashed );
-}
-
 /* Add new message to the end of the list.  The list needs to be kept in order
  * by ascending msgIDs within each channel since if there's a resend that's
  * the order in which they need to be sent.
  */
 static MsgQueueElem*
-addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
+addToQueue( CommsCtxt* comms, MsgQueueElem* newElem )
 {
     MsgQueueElem* asAdded = newElem;
     WITH_MUTEX( &comms->mutex );
@@ -1921,9 +1910,6 @@ addToQueue( CommsCtxt* comms, XWEnv xwe, MsgQueueElem* newElem, XP_Bool notify )
         /* Do I need this? PENDING */
         formatMsgNo( comms, newElem, (XP_UCHAR*)newElem->smp.msgNo,
                      sizeof(newElem->smp.msgNo) );
-        if ( notify ) {
-            notifyQueueChanged( comms, xwe );
-        }
     }
  dropPacket:
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
@@ -2061,7 +2047,7 @@ removeProc( MsgQueueElem* elem, void* closure )
 }
 
 static void
-removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msgID )
+removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 {
     WITH_MUTEX( &comms->mutex );
     assertQueueOk( comms );
@@ -2081,7 +2067,6 @@ removeFromQueue( CommsCtxt* comms, XWEnv xwe, XP_PlayerAddr channelNo, MsgID msg
         };
         forEachElem( comms, removeProc, &rd );
 
-        notifyQueueChanged( comms, xwe );
     }
 
     XP_ASSERT( comms->queueLen <= prevLen );
@@ -2953,7 +2938,7 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe,
 
     rec = getRecordFor( comms, channelNo );
     if ( !!rec ) {
-        removeFromQueue( comms, xwe, channelNo, lastMsgRcd );
+        removeFromQueue( comms, channelNo, lastMsgRcd );
 
         augmentChannelAddr( comms, rec, retAddr, senderID );
 
@@ -3216,8 +3201,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 /* } */
 
 void
-comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
-                    CommsMsgState* state, XP_Bool rejected )
+comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
 {
     WITH_MUTEX(&comms->mutex);
     assertQueueOk( comms );
@@ -3250,7 +3234,7 @@ comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
             rec->lastMsgRcd = state->msgID;
         }
         // COMMS_LOGFF( "CALLING nukeInvites(); might be wrong" );
-        nukeInvites( comms, xwe, state->channelNo );
+        nukeInvites( comms, state->channelNo );
     }
 
 #ifdef DEBUG
@@ -3339,7 +3323,7 @@ comms_isConnected( const CommsCtxt* const comms )
 }
 
 XP_Bool
-comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed )
+comms_setQuashed( CommsCtxt* comms, XP_Bool quashed )
 {
     XP_U8 flags = comms->flags;
     if ( quashed ) {
@@ -3351,7 +3335,6 @@ comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed )
     if ( changed ) {
         comms->flags = flags;
         COMMS_LOGFF( "(quashed=%s): changing state", boolToStr(quashed) );
-        notifyQueueChanged( comms, xwe );
     }
     return changed;
 }
@@ -3378,7 +3361,7 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
     MsgQueueElem* elem = makeElemWithID( comms, xwe, 0 /* msgID */, 
                                          rec, rec? rec->channelNo : 0, NULL );
     XP_ASSERT( !!elem );
-    elem = addToQueue( comms, xwe, elem, XP_FALSE );
+    elem = addToQueue( comms, elem );
     if ( !!elem ) {
         sendMsg( comms, xwe, elem, filter );
     }

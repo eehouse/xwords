@@ -1462,6 +1462,15 @@ class BoardDelegate(delegator: Delegator) :
          }
      }
 
+     fun countChanged() {
+         launch {
+             val count = mGR!!.countPendingPackets()
+             Log.d(TAG, "countChanged($count)")
+             ConnStatusHandler.updateMoveCount(mActivity, count)
+             mGameOverAlert?.pendingCountChanged(count)
+         }
+     }
+
      private inner class BoardUtilCtxt(gr: GameRef) : UtilCtxt(gr) {
 
          override fun remSelected() {
@@ -1645,19 +1654,6 @@ class BoardDelegate(delegator: Delegator) :
             }
         } // userError
 
-        override fun countChanged( count: Int, quashed: Boolean ) {
-            Log.d(TAG, "countChanged($count)")
-            runOnUiThread {
-                ConnStatusHandler.updateMoveCount(mActivity, count, quashed)
-                if (quashed) {
-                    postDeleteOnce()
-                }
-                mGameOverAlert?.let {
-                    it.pendingCountChanged(count)
-                }
-            }
-        }
-        
 //         override fun informUndo() {
 //             nonBlockingDialog(
 //                 DlgID.DLG_OKONLY,
@@ -1816,6 +1812,9 @@ class BoardDelegate(delegator: Delegator) :
          }
          if (success) {
              ConnStatusHandler.setHandler(this)
+             mSummary?.let {
+                 ConnStatusHandler.updateMoveCount(mActivity, it.nPacketsPending)
+             }
          } else {
              finish()
          }

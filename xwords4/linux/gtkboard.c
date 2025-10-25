@@ -2013,17 +2013,6 @@ updateCountButton(GtkGameGlobals* globals, XP_U16 newCount, XP_Bool quashed)
 }
 
 static void
-gtk_util_countChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                       XP_U16 newCount, XP_Bool quashed )
-{
-    CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
-    if ( !!cGlobals ) {
-        GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
-        updateCountButton( globals, newCount, quashed );
-    }
-}
-
-static void
 gtk_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
@@ -2186,7 +2175,6 @@ setupGtkUtilCallbacks( XW_UtilCtxt* util )
     // util->closure = globals;
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = gtk_util_##NAM
     SET_PROC(userError);
-    SET_PROC(countChanged);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
     SET_PROC(notifyPickTileBlank);
@@ -2579,6 +2567,21 @@ freeGlobals( GtkGameGlobals* globals )
     LOG_FUNC();
     cleanup( globals );
     LOG_RETURN_VOID();
+}
+
+void
+onGameChanged( GtkGameGlobals* globals, GameChangeEvents gces )
+{
+    XP_LOGFF( "(gces=0x%x)", gces );
+    if ( 0 != (gces & GCE_MSGCOUNT_CHANGED) ) {
+        CommonGlobals* cGlobals = &globals->cGlobals;
+        XP_Bool quashed;
+        XP_U16 count = gr_countPendingPackets( cGlobals->params->dutil,
+                                               cGlobals->gr,
+                                               NULL_XWE, &quashed );
+        XP_LOGFF( "count now %d", count );
+        updateCountButton( globals, count, quashed );
+    }
 }
 
 XP_Bool

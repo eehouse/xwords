@@ -155,13 +155,13 @@ XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe,
                                    const CommsAddrRec* addr, 
                                    CommsMsgState* state,
                                    const MsgCountState* mcs );
-void comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
-                         CommsMsgState* state, XP_Bool rejected );
+void comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state,
+                         XP_Bool rejected );
 XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
-XP_Bool comms_setQuashed( CommsCtxt* comms, XWEnv xwe, XP_Bool quashed );
+XP_Bool comms_setQuashed( CommsCtxt* comms, XP_Bool quashed );
 
 #ifdef RELAY_VIA_HTTP
 void comms_gameJoined( CommsCtxt* comms, const XP_UCHAR* connname, XWHostID hid );

@@ -229,7 +229,7 @@ object ConnStatusHandler {
 
     fun updateMoveCount(
         context: Context, newCount: Int,
-        quashed: Boolean
+        quashed: Boolean = false
     ) {
         if (XWPrefs.moveCountEnabled(context)) {
             s_moveCount = newCount

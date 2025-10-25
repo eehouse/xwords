@@ -153,6 +153,7 @@ void setupGtkUtilCallbacks( XW_UtilCtxt* util );
 CommonGlobals* allocGTKBoardGlobals();
 void gtkShowFinalScores( GtkGameGlobals* globals, XP_Bool ignoreTimeout );
 GtkWidget* getWindow(GtkGameGlobals* globals);
+void onGameChanged( GtkGameGlobals* globals, GameChangeEvents gces );
 
 #endif /* PLATFORM_GTK */
 
