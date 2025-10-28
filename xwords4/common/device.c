@@ -1754,6 +1754,6 @@ dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host, const XP_UCHAR* prefix 
         prefix = "/andd/";
     }
 
-    stream_catf( stream, "https://%s%s?", host, prefix );
+    stream_catf( stream, "https://%s%s", host, prefix );
     return stream;
 }

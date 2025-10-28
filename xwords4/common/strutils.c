@@ -167,6 +167,35 @@ moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
 }
 
 void
+urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* key,
+                  const XP_UCHAR* fmt, ... )
+{
+    XP_ASSERT( strchr(fmt, '%') );
+    XP_UCHAR val[128];
+    va_list ap;
+    va_start( ap, fmt );
+    vsnprintf( val, sizeof(val), fmt, ap );
+    va_end( ap );
+
+    if ( '\0' != val[0] ) {
+        const char* prefix;
+        if ( !state->firstDone ) {
+            state->firstDone = XP_TRUE;
+            prefix = "?";
+        } else {
+            prefix = "&";
+        }
+        stream_catString( stream, prefix );
+        stream_catString( stream, key );
+        stream_catString( stream, "=" );
+
+        urlEncodeToStream( stream, val );
+    } else {
+        XP_LOGFF( "nothing to print for key %s", key );
+    }
+}
+
+void
 removeTile( TrayTileSet* tiles, XP_U16 index )
 {
     XP_U16 ii;
@@ -790,26 +819,24 @@ log_devid( const MQTTDevID* devID, const XP_UCHAR* tag )
 /* URL encoding for JNI-safe string parameters.
  * Encodes characters that need to be percent-encoded in URL parameters.
  */
-XP_UCHAR*
-urlEncode( const XP_UCHAR* input, XP_UCHAR* buf, XP_U16 bufLen )
+void
+urlEncodeToStream( XWStreamCtxt* stream, const XP_UCHAR* input )
 {
     const char* specials = "!*'();:@&=+$,/?#[]%";
 
-    XP_U16 outIndex = 0;
     for ( XP_U16 ii = 0; ; ++ii ) {
-        XP_ASSERT( outIndex < bufLen );
         char ch = input[ii];
         if ( !ch ) {
-            buf[outIndex] = '\0';
             break;
         } else if ( ch <= 32 || ch >= 127 || strchr(specials, ch)) {
-            outIndex += XP_SNPRINTF( &buf[outIndex], 4, "%%%02X", (unsigned char)ch );
+            XP_UCHAR buf[4];
+            XP_U16 len = XP_SNPRINTF( buf, VSIZE(buf), "%%%02X", (unsigned char)ch );
+            XP_ASSERT( len == 3 );
+            stream_putBytes( stream, buf, len );
         } else {
-            buf[outIndex++] = ch;
+            stream_putU8( stream, ch );
         }
     }
-
-    return buf;
 }
 
 #ifdef CPLUS

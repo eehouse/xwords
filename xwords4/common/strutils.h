@@ -45,8 +45,20 @@ void moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi,
 void moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi,
                          XP_U16 bitsPerTile );
 
-XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
-void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num );
+/* XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits ); */
+/* void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num ); */
+
+typedef struct _UrlParamState {
+    XP_Bool firstDone;
+#ifdef DEBUG
+    XP_U32 guard1;
+    XP_U32 guard2;
+#endif
+} UrlParamState;
+void urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* key,
+                       const XP_UCHAR* fmt, ... );
+/* URL encoding for JNI-safe string parameters */
+void urlEncodeToStream( XWStreamCtxt* stream, const XP_UCHAR* input );
 
 XP_UCHAR* p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #ifdef MEM_DEBUG
@@ -158,8 +170,6 @@ void log_devid( const MQTTDevID* devID, const XP_UCHAR* tag );
 # define LOG_DEVID(id, tag)
 #endif
 
-/* URL encoding for JNI-safe string parameters */
-XP_UCHAR* urlEncode( const XP_UCHAR* input, XP_UCHAR buf[], XP_U16 len );
 
 #ifdef CPLUS
 }

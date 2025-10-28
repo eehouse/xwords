@@ -49,11 +49,11 @@ makeForAddr( NetStateState* nss, int index )
     XWStreamCtxt* stream = gr_getPendingPacketsFor( nss->dutil, nss->gr,
                                                     NULL_XWE, addr, NULL, NULL );
     if ( !!stream ) {
-        const XP_U8* ptr = stream_getPtr( stream );
-        gchar* str64 = (gchar*)ptr;
+        const XP_UCHAR* ptr = (XP_UCHAR*)stream_getPtr( stream );
+        XP_U16 len = stream_getSize( stream );
 
         GtkWidget* widget;
-        nss->things[index] = mkQRThing( &widget, str64, strlen(str64) );
+        nss->things[index] = mkQRThing( &widget, ptr, len );
         gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 
         stream_destroy( stream );
