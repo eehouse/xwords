@@ -132,8 +132,8 @@ XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 XP_U16 countBits( XP_U32 mask );
 
 #ifdef XWFEATURE_BASE64
-void binToSms( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
-XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
+void binToB64( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
+XP_Bool b64ToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
 #endif
 
 GameRef formatGR( XP_U32 gameID, DeviceRole role );

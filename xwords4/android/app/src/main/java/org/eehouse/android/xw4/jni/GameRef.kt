@@ -18,6 +18,8 @@
  */
 package org.eehouse.android.xw4.jni
 
+import android.content.Context
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import java.io.Serializable
@@ -25,8 +27,10 @@ import java.io.Serializable
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
+import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
+import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = GameRef::class.java.simpleName
 class GameRef(val gr: Long): Parcelable, Serializable {
@@ -330,6 +334,18 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         }
     }
 
+    suspend fun inviteUrl(context: Context): String {
+        Log.d(TAG, "inviteUrl()")
+        var host: String? = LocUtils.getString(context, R.string.invite_host)
+        host = NetUtils.forceHost(host)
+        val prefix = LocUtils.getString(context, R.string.invite_prefix)!!
+
+        val result = Device.await {
+            gr_inviteUrl(jniState, gr, host!!, prefix)
+        } as String
+        return result
+    }
+
     suspend fun dropHostAddr(typ: CommsAddrRec.CommsConnType) {
         Assert.failDbg()
      }
@@ -623,7 +639,9 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         @JvmStatic
         private external fun gr_invite(jniState: Long, gr: Long, nli: NetLaunchInfo,
                                        addr: CommsAddrRec, sendNow: Boolean)
-
+        @JvmStatic
+        private external fun gr_inviteUrl(jniState: Long, gr: Long,
+                                          host: String, prefix: String): String
         @JvmStatic
         private external fun gr_getLikelyChatter(jniState: Long, gr: Long): Int
         @JvmStatic

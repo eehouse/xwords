@@ -270,7 +270,9 @@ static void
 launchQRInvite( CommonGlobals* cGlobals )
 {
     LaunchParams* params = cGlobals->params;
-    XWStreamCtxt* invite = gr_inviteData( params->dutil, cGlobals->gr, NULL_XWE );
+    XWStreamCtxt* invite = gr_inviteUrl( params->dutil, cGlobals->gr,
+                                         NULL_XWE, NULL, NULL );
+
     if ( !!invite ) {
         XP_U16 len = stream_getSize( invite );
         XP_UCHAR buf[len+1];

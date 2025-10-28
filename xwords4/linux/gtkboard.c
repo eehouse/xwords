@@ -552,6 +552,23 @@ addDropChecks( GtkGameGlobals* globals )
 #endif  /* DEBUG */
 
 static void
+updateCountButton( GtkGameGlobals* globals )
+{
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    XP_Bool quashed;
+    XP_U16 count = gr_countPendingPackets( cGlobals->params->dutil,
+                                           cGlobals->gr,
+                                           NULL_XWE, &quashed );
+    XP_LOGFF( "count now %d", count );
+
+    gchar buf[128];
+    snprintf( buf, VSIZE(buf), "Pending count: %d%s", count,
+              quashed?"q":"");
+    gtk_button_set_label( GTK_BUTTON(globals->countButton), buf );
+}
+
+
+static void
 createOrLoadObjects( GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
@@ -580,6 +597,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
 
         addDropChecks( globals );
         disenable_buttons( globals );
+        updateCountButton( globals );
     }
 } /* createOrLoadObjects */
 
@@ -2004,15 +2022,6 @@ ask_move( gpointer data )
 }
 
 static void
-updateCountButton(GtkGameGlobals* globals, XP_U16 newCount, XP_Bool quashed)
-{
-    gchar buf[128];
-    snprintf( buf, VSIZE(buf), "pending count: %d%s", newCount,
-              quashed?"q":"");
-    gtk_button_set_label( GTK_BUTTON(globals->countButton), buf );
-}
-
-static void
 gtk_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
@@ -2505,7 +2514,6 @@ initBoardGlobalsGtk( GtkGameGlobals* globals, LaunchParams* params, GameRef gr )
     g_signal_connect( button, "clicked", G_CALLBACK(handle_count_button), globals );
     gtk_box_pack_start( GTK_BOX(vbox), button, TRUE, TRUE, 0);
     gtk_widget_show( button );
-    updateCountButton( globals, 0, XP_FALSE );
 #ifdef DEBUG
     id =
 #endif
@@ -2574,13 +2582,7 @@ onGameChanged( GtkGameGlobals* globals, GameChangeEvents gces )
 {
     XP_LOGFF( "(gces=0x%x)", gces );
     if ( 0 != (gces & GCE_MSGCOUNT_CHANGED) ) {
-        CommonGlobals* cGlobals = &globals->cGlobals;
-        XP_Bool quashed;
-        XP_U16 count = gr_countPendingPackets( cGlobals->params->dutil,
-                                               cGlobals->gr,
-                                               NULL_XWE, &quashed );
-        XP_LOGFF( "count now %d", count );
-        updateCountButton( globals, count, quashed );
+        updateCountButton( globals );
     }
 }
 

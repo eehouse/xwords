@@ -33,4 +33,7 @@ XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe,
 void dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
                       OnGotKey proc, void* closure );
 
+XWStreamCtxt* dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host,
+                            const XP_UCHAR* prefix );
+
 #endif

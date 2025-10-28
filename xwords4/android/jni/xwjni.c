@@ -1826,6 +1826,26 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1invite
     LOG_RETURN_VOID();
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_GameRef_gr_1inviteUrl
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr,
+  jstring jhost, jstring jprefix )
+{
+    jstring result;
+    DVC_HEADER(jniGlobalPtr);
+    const char* host = (*env)->GetStringUTFChars( env, jhost, NULL );
+    const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+
+    XWStreamCtxt* stream = gr_inviteUrl( DUTIL_GR_ENV, host, prefix );
+    result = streamToJString( env, stream );
+    stream_destroy( stream );
+    (*env)->ReleaseStringUTFChars( env, jhost, host );
+    (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1getLikelyChatter
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr )
@@ -2109,10 +2129,14 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getAddrDisabled
  jobject jConnTyp, jboolean forSend )
 {
     jboolean result;
+#ifdef DEBUG
     DVC_HEADER(jniGlobalPtr);
     CommsConnType connType = jEnumToInt( env, jConnTyp );
     result = gr_getAddrDisabled( DUTIL_GR_ENV, connType, forSend );
     DVC_HEADER_END();
+#else
+    result = XP_FALSE;
+#endif
     return result;
 }
 
@@ -2538,30 +2562,4 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1toGame
 {
     return gmgr_toGame(jval);
 }
-
-JNIEXPORT jstring JNICALL
-Java_org_eehouse_android_xw4_jni_Device_dvc_1makeInviteURL
-(JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli,
- jstring jhost, jstring jprefix )
-{
-    jstring result = NULL;
-    DVC_HEADER(jniGlobalPtr);
-
-    NetLaunchInfo nli;
-    loadNLI( env, &nli, jnli );
-
-    const char* host = (*env)->GetStringUTFChars( env, jhost, NULL );
-    const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
-
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
-    nli_makeInviteURL( &nli, stream, host, prefix );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
-    (*env)->ReleaseStringUTFChars( env, jhost, host );
-    (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
-
-    DVC_HEADER_END();
-    return result;
-}
-
 #endif  /* XWFEATURE_BOARDWORDS */

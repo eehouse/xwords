@@ -89,6 +89,8 @@ mkQRThing( GtkWidget** widgetp, const XP_UCHAR* str, XP_U16 len )
     state->str = g_malloc0(len+1);
     memcpy( state->str, str, len );
 
+    GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+
     GtkWidget* area = gtk_drawing_area_new();
     gtk_widget_set_size_request(area, 300, 300);
     g_signal_connect(area, "draw", G_CALLBACK(qr_draw_callback), state);
@@ -96,7 +98,14 @@ mkQRThing( GtkWidget** widgetp, const XP_UCHAR* str, XP_U16 len )
     GtkWidget* frame = gtk_frame_new(NULL);
     gtk_container_add(GTK_CONTAINER(frame), area);
 
-    *widgetp = frame;
+    gtk_container_add(GTK_CONTAINER(vbox), frame);
+
+    gchar* label = g_strdup_printf("Copy %s", state->str);
+    GtkWidget* button = gtk_button_new_with_label( label );
+    g_free( label );
+    gtk_container_add(GTK_CONTAINER(vbox), button);
+
+    *widgetp = vbox;
     return state;
 }
 

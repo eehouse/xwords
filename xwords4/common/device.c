@@ -1742,3 +1742,18 @@ dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
     XP_USE(cp);
     return 0;
 }
+
+XWStreamCtxt*
+dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host, const XP_UCHAR* prefix )
+{
+    XWStreamCtxt* stream = dvc_makeStream(dutil);
+    if ( !host ) {
+        host = "eehouse.org";
+    }
+    if ( !prefix ) {
+        prefix = "/andd/";
+    }
+
+    stream_catf( stream, "https://%s%s?", host, prefix );
+    return stream;
+}

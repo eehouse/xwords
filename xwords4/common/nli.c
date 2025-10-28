@@ -399,18 +399,9 @@ nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv )
 #endif
 
 void
-nli_makeInviteURL( const NetLaunchInfo* nli, XWStreamCtxt* stream,
-                   const XP_UCHAR* host, const XP_UCHAR* prefix )
+nli_makeInviteData( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 {
     /* Generate URL compatible with Android NetLaunchInfo.makeLaunchUri() */
-    if ( !host ) {
-        host = "eehouse.org";
-    }
-    if ( !prefix ) {
-        prefix = "/andd/";
-    }
-
-    stream_catf( stream, "https://%s%s?", host, prefix );
 
     XP_Bool needAmp = XP_FALSE;
     XP_UCHAR buf[128];

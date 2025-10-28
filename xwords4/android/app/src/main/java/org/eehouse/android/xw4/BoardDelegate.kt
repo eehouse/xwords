@@ -620,22 +620,20 @@ class BoardDelegate(delegator: Delegator) :
 
     private fun showInviteChoicesThen() {
         Log.d(TAG, "showInviteChoicesThen()")
-        val nli = nliForMe()
-        if (ON_SERVER.NO != DictLangCache.getOnServer(mActivity, nli.dict)) {
-            onPosButton(Action.CUSTOM_DICT_CONFIRMED, nli)
+        // val nli = nliForMe()
+        val gr = mGR!!
+        val dictName = mGi!!.dictName
+        if (ON_SERVER.NO != DictLangCache.getOnServer(mActivity, dictName)) {
+            onPosButton(Action.CUSTOM_DICT_CONFIRMED, gr)
         } else {
-            val txt = LocUtils
-                .getString(
-                    mActivity, R.string.invite_custom_warning_fmt,
-                    nli.dict
-                )
+            val txt = LocUtils.getString(mActivity, R.string.invite_custom_warning_fmt, dictName)
             makeConfirmThenBuilder(Action.CUSTOM_DICT_CONFIRMED, txt)
                 .setNegButton(R.string.list_item_config)
                 .setActionPair(
                     Action.DELETE_AND_EXIT,
                     R.string.button_delete_game
                 )
-                .setParams(nli)
+                .setParams(gr)
                 .show()
         }
      }
@@ -1020,9 +1018,9 @@ class BoardDelegate(delegator: Delegator) :
 
             Action.CUSTOM_DICT_CONFIRMED -> {
                 mSummary!!.let { summary ->
-                    val nli = params[0] as NetLaunchInfo
+                    val gr = params[0] as GameRef
                     showInviteChoicesThen(
-                        Action.LAUNCH_INVITE_ACTION, nli,
+                        Action.LAUNCH_INVITE_ACTION, gr,
                         summary.nMissing, summary.nInvited
                     )
                 }
@@ -1161,14 +1159,11 @@ class BoardDelegate(delegator: Delegator) :
 //                 )
 
                 InviteMeans.SMS_USER, InviteMeans.EMAIL, InviteMeans.CLIPBOARD -> {
-                    val nli = NetLaunchInfo(
-                        mActivity, mSummary!!, mGi!!,
-                        1  // nPlayers
-                    ) // fc
+                    val gr = mGR!!
                     when (means) {
-                        InviteMeans.EMAIL -> GameUtils.launchEmailInviteActivity(mActivity, nli)
-                        InviteMeans.SMS_USER -> GameUtils.launchSMSInviteActivity(mActivity, nli)
-                        InviteMeans.CLIPBOARD -> GameUtils.inviteURLToClip(mActivity, nli)
+                        InviteMeans.EMAIL -> GameUtils.launchEmailInviteActivity(mActivity, gr)
+                        InviteMeans.SMS_USER -> GameUtils.launchSMSInviteActivity(mActivity, gr)
+                        InviteMeans.CLIPBOARD -> GameUtils.inviteURLToClip(mActivity, gr)
                         else -> Log.d(TAG, "unexpected means $means")
                     }
                     // recordInviteSent(means, null)

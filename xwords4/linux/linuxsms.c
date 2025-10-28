@@ -126,7 +126,7 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
             snprintf( &path[len], sizeof(path)-len, "/%u", rint );
             XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
             XP_U16 smslen = sizeof(sms);
-            binToSms( sms, &smslen, buf, buflen );
+            binToB64( sms, &smslen, buf, buflen );
             XP_ASSERT( smslen == strlen(sms) );
             XP_LOGFF( "writing msg to %s", path );
 
@@ -136,7 +136,7 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
 
             XP_U8 testout[buflen];
             XP_U16 lenout = sizeof( testout );
-            XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
+            XP_ASSERT( b64ToBin( testout, &lenout, sms, smslen ) );
             XP_ASSERT( lenout == buflen );
             // valgrind doesn't like this; punting on figuring out
             // XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
@@ -199,7 +199,7 @@ decodeAndDelete( const gchar* path, XP_U8* buf, XP_U16 buflen,
         XP_LOGFF( "decoding message from file %s", path );
         XP_U8 out[inlen];
         XP_U16 outlen = sizeof(out);
-        XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
+        XP_Bool valid = b64ToBin( out, &outlen, eol, inlen );
 
         if ( valid && outlen <= buflen ) {
             XP_MEMCPY( buf, out, outlen );

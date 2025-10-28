@@ -241,13 +241,6 @@ object Device {
         } as Boolean
     }
 
-    suspend fun makeInviteURL(nli: NetLaunchInfo, host: String, prefix: String): Uri {
-        val asStr = await {
-            dvc_makeInviteURL(m_ptrGlobals, nli, host, prefix)
-        } as String
-        return Uri.parse(asStr)
-    }
-
     fun onDictAdded(dictName: String) {
         Log.d(TAG, "onDictAdded($dictName)")
         post {
@@ -360,9 +353,6 @@ object Device {
                                              succeeded: Boolean, result: String?)
     @JvmStatic
     private external fun dvc_setMQTTDevID(jniState: Long, newID: String): Boolean
-    @JvmStatic
-    private external fun dvc_makeInviteURL(jniState: Long, nli: NetLaunchInfo,
-                                           host: String, prefix: String): String
 	@JvmStatic
     private external fun dvc_getLegalPhonyCodes(
         jniState: Long, list: ArrayList<String>

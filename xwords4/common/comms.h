@@ -95,9 +95,11 @@ XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
                              XP_UCHAR* buf, XP_U16* lenp );
 
 XP_U16 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed );
-XP_Bool comms_getPendingPacketsFor( RELCONST CommsCtxt* comms,
-                                    const CommsAddrRec* addr,
-                                    XWStreamCtxt* stream );
+
+typedef void (*GotPacketProc)( const XP_U8* buf, XP_U16 len, void* closure );
+void comms_getPendingPacketsFor( RELCONST CommsCtxt* comms, XWEnv xwe,
+                                 const CommsAddrRec* addr,
+                                 GotPacketProc proc, void* closure );
 
 #ifdef XWFEATURE_RELAY
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );

@@ -42,21 +42,20 @@ makeForAddr( NetStateState* nss, int index )
     if ( !name ) {
         name = "<unknown>";
     }
+
     GtkWidget* label = gtk_label_new(name);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
     XWStreamCtxt* stream = gr_getPendingPacketsFor( nss->dutil, nss->gr,
-                                                    NULL_XWE, addr );
+                                                    NULL_XWE, addr, NULL, NULL );
     if ( !!stream ) {
-        XP_U16 size = stream_getSize( stream );
         const XP_U8* ptr = stream_getPtr( stream );
-        gchar* str64 = g_base64_encode( ptr, size );
+        gchar* str64 = (gchar*)ptr;
 
         GtkWidget* widget;
         nss->things[index] = mkQRThing( &widget, str64, strlen(str64) );
         gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 
-        g_free( str64 );
         stream_destroy( stream );
     }
 

@@ -596,12 +596,11 @@ bitsToChars( const XP_U8* bytesIn, XP_U16 nValidBytes, XP_UCHAR* out,
 } /* bitsToChars */
 
 void
-binToSms( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
+binToB64( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
 {
-    XP_U16 inConsumed;
     XP_U16 outlen = 0;
 
-    for ( inConsumed = 0; ; /*inConsumed += 3*/ ) {
+    for ( XP_U16 inConsumed = 0; ; /*inConsumed += 3*/ ) {
         XP_U16 validBytes = XP_MIN( 3, inlen - inConsumed );
         bitsToChars( &in[inConsumed], validBytes, out, &outlen );
         XP_ASSERT( outlen <= *outlenp );
@@ -615,7 +614,7 @@ binToSms( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
     out[outlen] = '\0';
     *outlenp = outlen;
     XP_ASSERT( *outlenp >= inlen );
-} /* binToSms */
+} /* binToB64 */
 
 /* Return false if illegal, e.g. contains bad characters.
  */
@@ -644,7 +643,7 @@ findRank( XP_UCHAR ch )
  * Also, need to check there's space before writing!  PENDING
  */
 XP_Bool
-smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
+b64ToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 {
     const XP_UCHAR* inptr;
     XP_U8* outptr = out;
@@ -679,7 +678,7 @@ smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
     *outlenp = outptr - out;
 
     return XP_TRUE;
-} /* smsToBin */
+} /* b64ToBin */
 
 #endif
 
@@ -799,7 +798,7 @@ urlEncode( const XP_UCHAR* input, XP_UCHAR* buf, XP_U16 bufLen )
     XP_U16 outIndex = 0;
     for ( XP_U16 ii = 0; ; ++ii ) {
         XP_ASSERT( outIndex < bufLen );
-        XP_U8 ch = input[ii];
+        char ch = input[ii];
         if ( !ch ) {
             buf[outIndex] = '\0';
             break;

@@ -551,11 +551,11 @@ abstract class DelegateBase @JvmOverloads constructor(
     }
 
     protected fun showInviteChoicesThen(
-        action: Action, nli: NetLaunchInfo,
+        action: Action, gr: GameRef,
         nMissing: Int, nInvited: Int
     ) {
         Log.d(TAG, "showInviteChoicesThen(nMissing=$nMissing, nInvited=$nInvited)")
-        m_dlgDelegate.showInviteChoicesThen(action, nli, nMissing, nInvited)
+        m_dlgDelegate.showInviteChoicesThen(action, gr, nMissing, nInvited)
     }
 
     override fun makeOkOnlyBuilder(msgID: Int,

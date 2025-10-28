@@ -1363,34 +1363,69 @@ gr_countPendingPackets( DUTIL_GR_XWE, XP_Bool* quashed )
     XP_U16 result = 0;
     GR_HEADER_WITH(COMMS);
     result = !!gd->comms ? comms_countPendingPackets( gd->comms, quashed ) : 0;
-    XP_ASSERT( result == gd->sum.nPacketsPending );
+    if ( result != gd->sum.nPacketsPending ) {
+        XP_LOGFF( "result: %d and nPacketsPending: %d out of sync",
+                  result, gd->sum.nPacketsPending );
+    }
     GR_HEADER_END();
     return result;
 }
 
+typedef struct _GotPacketState {
+    XW_DUtilCtxt* duc;
+    XWStreamCtxt* stream;
+} GotPacketState;
+
+static void
+gotPacketProc( const XP_U8* buf, XP_U16 len, void* closure )
+{
+    GotPacketState* gps = (GotPacketState*)closure;
+    if ( !gps->stream ) {
+        gps->stream = dvc_makeStream( gps->duc );
+    }
+    stream_putU32VL( gps->stream, len );
+    stream_putBytes( gps->stream, buf, len );
+}
+
 XWStreamCtxt*
-gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr )
+gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
+                         const XP_UCHAR* host, const XP_UCHAR* prefix)
 {
     XWStreamCtxt* result = NULL;
     GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {
-        result = dvc_makeStream( duc );
-        comms_getPendingPacketsFor( gd->comms, addr, result );
+        GotPacketState gps = { .duc = duc, };
+        comms_getPendingPacketsFor( gd->comms, xwe, addr, gotPacketProc, &gps );
+
+        if ( !!gps.stream ) {
+            result = dvc_beginUrl( duc, host, prefix );
+            XP_U32 gid = gr_getGameID( gr );
+            stream_catf( result, "gid=%X&msgs=", gid );
+
+            XP_U16 binLen = stream_getSize( gps.stream );
+            XP_UCHAR out[3 + (binLen*2)];
+            XP_U16 outLen = VSIZE(out);
+            binToB64( out, &outLen, stream_getPtr(gps.stream), binLen );
+            stream_catString( result, out );
+
+            stream_destroy( gps.stream );
+        }
     }
     GR_HEADER_END();
     return result;
 }
 
 XWStreamCtxt*
-gr_inviteData( DUTIL_GR_XWE )
+gr_inviteUrl( DUTIL_GR_XWE, const XP_UCHAR* host, const XP_UCHAR* prefix )
 {
     XWStreamCtxt* result = NULL;
     GR_HEADER_WITH(COMMS);
+
     XP_U16 channel;
     if ( !!gd->comms && ctrl_getOpenChannel( gd->ctrlr, &channel )) {
-        result = dvc_makeStream( duc );
+        result = dvc_beginUrl( duc, host, prefix );
         NetLaunchInfo nli = makeSelfNLI( gd, gd->gi.gameName, 1, channel );
-        nli_makeInviteURL( &nli, result, NULL, NULL );
+        nli_makeInviteData( &nli, result );
     }
     GR_HEADER_END();
     return result;

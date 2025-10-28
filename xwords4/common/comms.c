@@ -1366,14 +1366,42 @@ comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
     return na.count;
 }
 
-XP_Bool
-comms_getPendingPacketsFor( RELCONST CommsCtxt* comms,
-                            const CommsAddrRec* XP_UNUSED(addr),
-                            XWStreamCtxt* stream )
+typedef struct _GetForAddrState {
+    GotPacketProc proc;
+    void* closure;
+    XWEnv xwe;
+    const CommsAddrRec* addr;
+    const CommsCtxt* comms;
+} GetForAddrState;
+
+static ForEachAct
+getForAddr( MsgQueueElem* elem, void* closure )
 {
-    XP_USE(comms);
-    stream_catString( stream, "hello" );
-    return XP_TRUE;
+    GetForAddrState* gfa = (GetForAddrState*)closure;
+    const CommsCtxt* comms = gfa->comms;
+
+    const CommsAddrRec* addr;
+    if ( channelToAddress( gfa->comms, elem->channelNo, &addr ) ) {
+        if ( addrsAreSame( comms->dutil, gfa->xwe, addr, gfa->addr ) ) {
+            (*gfa->proc)(elem->smp.buf, elem->smp.len, gfa->closure);
+        }
+    }
+
+    return FEA_OK;
+}
+
+void
+comms_getPendingPacketsFor( RELCONST CommsCtxt* comms, XWEnv xwe,
+                            const CommsAddrRec* addr,
+                            GotPacketProc proc, void* closure )
+{
+    GetForAddrState gfa = { .proc = proc,
+                            .closure = closure,
+                            .addr = addr,
+                            .xwe = xwe,
+                            .comms = comms,
+    };
+    forEachElem( (CommsCtxt*)comms, getForAddr, &gfa );
 }
 
 static XP_Bool

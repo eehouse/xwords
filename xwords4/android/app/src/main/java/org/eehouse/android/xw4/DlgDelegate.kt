@@ -29,6 +29,7 @@ import java.io.Serializable
 
 import org.eehouse.android.xw4.MultiService.MultiEvent
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.jni.GameRef
 
 class DlgDelegate(
     private val mActivity: Activity, private val mDlgt: DelegateBase
@@ -362,12 +363,12 @@ class DlgDelegate(
 
     fun showInviteChoicesThen(
         action: Action,
-        nli: NetLaunchInfo?, nMissing: Int,
+        gr: GameRef?, nMissing: Int,
         nInvited: Int
     ) {
         val state = DlgState(DlgID.INVITE_CHOICES_THEN)
             .setAction(action)
-            .setParams(nli, nMissing, nInvited)
+            .setParams(gr, nMissing, nInvited)
         mDlgt.show(state)
     }
 

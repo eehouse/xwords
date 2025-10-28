@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.InviteView.ItemClicked
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -47,12 +48,12 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
     ) {
         val means = ArrayList<InviteMeans>()
         val lastMeans: InviteMeans? = null
-        var nli: NetLaunchInfo? = null
+        var gr: GameRef? = null
         val params = state!!.getParams()
         var nMissing = 0
         var nInvited = 0
-        if (0 < params.size && params[0] is NetLaunchInfo) {
-            nli = params[0] as NetLaunchInfo
+        if (0 < params.size && params[0] is GameRef) {
+            gr = params[0] as GameRef
         }
         if (1 < params.size && params[1] is Int) {
             nMissing = params[1] as Int
@@ -126,7 +127,7 @@ class InviteChoicesAlert : DlgDelegateAlert(), ItemClicked {
         mInviteView!!.setChoices(
             means, nMissing, nInvited
         )
-            .setNli(nli)
+            .setGR(gr)
             .setCallbacks(this)
 
         // if ( BuildConfig.DEBUG ) {

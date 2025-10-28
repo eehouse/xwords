@@ -475,7 +475,8 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
     }
     gtk_widget_show( state.notebook );
 
-    XWStreamCtxt* invite = gr_inviteData( state.dutil, state.gr, NULL_XWE );
+    XWStreamCtxt* invite = gr_inviteUrl( state.dutil, state.gr, NULL_XWE,
+                                         NULL, NULL );
     if ( !!invite ) {
         GtkWidget* qrWidget;
         const XP_UCHAR* str = (XP_UCHAR*)stream_getPtr(invite);

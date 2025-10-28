@@ -41,6 +41,7 @@ import kotlinx.coroutines.yield
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -69,7 +70,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private var mCurChecked: CompoundButton? = null
     private val mHowMeans: MutableMap<Int, InviteMeans> = HashMap()
     private var mExpanded = false
-    private var mNli: NetLaunchInfo? = null
+    private var mGR: GameRef? = null
 
     init {
         addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
@@ -160,8 +161,8 @@ class InviteView(context: Context, aset: AttributeSet?) :
         return this
     }
 
-    fun setNli(nli: NetLaunchInfo?): InviteView {
-        mNli = nli
+    fun setGR(gr: GameRef?): InviteView {
+        mGR = gr
         return this
     }
 
@@ -238,11 +239,10 @@ class InviteView(context: Context, aset: AttributeSet?) :
         mGroupHow!!.visibility = if (mIsWho) INVISIBLE else VISIBLE
     }
 
-    private fun startQRCodeThread(nli: NetLaunchInfo? = null) {
-        nli?.let{mNli = it}
-        mNli?.let { nli ->
+    private fun startQRCodeThread() {
+        mGR?.let { gr ->
             launch {
-                nli.makeLaunchUri(context).toString().let { url ->
+                gr.inviteUrl(context).also { url ->
                     val qrSize =
                         if (mExpanded) QRCODE_SIZE_LARGE
                         else QRCODE_SIZE_SMALL

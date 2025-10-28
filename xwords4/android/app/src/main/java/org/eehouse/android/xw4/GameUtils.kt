@@ -951,20 +951,19 @@ object GameUtils {
         // return rowid
     }
 
-    fun inviteURLToClip(context: Context, nli: NetLaunchInfo) {
+    fun inviteURLToClip(context: Context, gr: GameRef) {
         Utils.launch {
-            val gameUri = nli.makeLaunchUri(context)
-            val asStr = gameUri.toString()
-
-            Utils.stringToClip(context, asStr)
+            gr.inviteUrl(context).also {
+                Utils.stringToClip(context, it)
+            }
 
             Utils.showToast(context, R.string.invite_copied)
         }
     }
 
-    fun launchEmailInviteActivity(activity: Activity, nli: NetLaunchInfo) {
+    fun launchEmailInviteActivity(activity: Activity, gr: GameRef) {
         Utils.launch {
-            makeInviteMessage(activity, nli, R.string.invite_htm_fmt)?.let { message ->
+            makeInviteMessage(activity, gr, R.string.invite_htm_fmt)?.let { message ->
                 val intent = Intent()
                 intent.setAction(Intent.ACTION_SEND)
                 val subject = LocUtils.getString(activity, R.string.invite_subject)
@@ -975,6 +974,9 @@ object GameUtils {
                 val tmpdir =
                     if (BuildConfig.ATTACH_SUPPORTED) DictUtils.getDownloadDir(activity) else null
                 if (null != tmpdir) { // no attachment
+                    val gi = gr.getGI()!!
+                    val summary = gr.getSummary()!!
+                    val nli = NetLaunchInfo(activity, summary, gi, 1)  // 1: nPlayers
                     attach = makeJsonFor(tmpdir, nli)
                 }
 
@@ -1006,11 +1008,11 @@ object GameUtils {
     // not include a phone number.
     fun launchSMSInviteActivity(
         activity: Activity,
-        nli: NetLaunchInfo
+        gr: GameRef
     ) {
         Utils.launch {
         val message = makeInviteMessage(
-            activity, nli,
+            activity, gr,
             R.string.invite_sms_fmt
         )
         if (null != message) {
@@ -1059,15 +1061,12 @@ object GameUtils {
 }
 
     private suspend fun makeInviteMessage(
-        activity: Activity, nli: NetLaunchInfo,
-        fmtID: Int
+        context: Context, gr: GameRef, fmtID: Int
     ): String? {
-        var result: String? = null
-        val gameUri = nli.makeLaunchUri(activity)
-        val msgString = gameUri?.toString()
-        if (null != msgString) {
-            result = LocUtils.getString(activity, fmtID, msgString)
-        }
+        var result =
+            gr.inviteUrl(context).let {
+                LocUtils.getString(context, fmtID, it)
+            } ?: null
         return result
     }
 
