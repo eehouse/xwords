@@ -148,10 +148,10 @@ struct XWStreamCtxt {
 #define stream_putBytes( sc, w, c ) \
          (sc)->vtable->m_stream_putBytes((sc), (w), (c))
 
-#define stream_catString( sc, w ) \
-         (sc)->vtable->m_stream_catf((sc), (w))
-#define stream_catf( sc, ... )                             \
-    (sc)->vtable->m_stream_catf((sc), __VA_ARGS__)
+#define stream_catString( sc, w )                   \
+         (sc)->vtable->m_stream_catf((sc), "%s", (w))
+#define stream_catf( sc, ... )                          \
+         (sc)->vtable->m_stream_catf((sc), __VA_ARGS__)
 
 #define stream_putU16(sc, d) \
          (sc)->vtable->m_stream_putU16((sc), (d))
