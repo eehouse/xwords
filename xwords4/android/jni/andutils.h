@@ -87,7 +87,7 @@ jobjectArray makeStringArray( JNIEnv* env, int size, const XP_UCHAR* const* vals
 void setStringArray( JNIEnv* env, jobject jowner, const char* ownerField,
                      int count, const XP_UCHAR** vals );
 
-jstring streamToJString( JNIEnv* env, XWStreamCtxt* stream );
+jstring streamToJString( JNIEnv* env, XWStreamCtxt* stream, XP_Bool destroy );
 jbyteArray streamToBArray( JNIEnv* env, XWStreamCtxt* stream );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */

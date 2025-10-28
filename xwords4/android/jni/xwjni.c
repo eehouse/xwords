@@ -703,8 +703,7 @@ Java_org_eehouse_android_xw4_jni_TmpDict_dict_1getTilesInfo
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr, 0 );
     dict_writeTilesInfo( dict, 15, stream );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;
 }
@@ -1495,8 +1494,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1formatDictCounts
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
     gr_formatDictCounts( DUTIL_GR_ENV, stream, 3, XP_FALSE );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
 
     DVC_HEADER_END();
     return result;
@@ -1801,8 +1799,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getStats
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
     gr_getStats( DUTIL_GR_ENV, stream );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;
 }
@@ -1837,8 +1834,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1inviteUrl
     const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
 
     XWStreamCtxt* stream = gr_inviteUrl( DUTIL_GR_ENV, host, prefix );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     (*env)->ReleaseStringUTFChars( env, jhost, host );
     (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
 
@@ -1969,8 +1965,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1formatRemainingTiles
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
     gr_formatRemainingTiles( DUTIL_GR_ENV, stream );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;
 }
@@ -1983,8 +1978,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1writeGameHistory
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
     gr_writeGameHistory( DUTIL_GR_ENV, stream, gameOver );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;
 }
@@ -1997,8 +1991,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1writeFinalScores
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
     gr_writeFinalScores( DUTIL_GR_ENV, stream );
-    result = streamToJString( env, stream );
-    stream_destroy( stream );
+    result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;
 }

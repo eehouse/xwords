@@ -125,7 +125,7 @@ and_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
 
     jstring jstr = NULL;
     if ( NULL != stream ) {
-        jstr = streamToJString( env, stream );
+        jstr = streamToJString( env, stream, XP_FALSE );
     }
     (*env)->CallVoidMethod( env, util->jutil, mid, jstr );
     deleteLocalRef( env, jstr );
@@ -615,7 +615,7 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 {
     if ( NULL != words ) {
         UTIL_CBK_HEADER( "cellSquareHeld", "(Ljava/lang/String;)V" );
-        jstring jwords = streamToJString( env, words );
+        jstring jwords = streamToJString( env, words, XP_FALSE );
         (*env)->CallVoidMethod( env, util->jutil, mid, jwords );
         deleteLocalRef( env, jwords );
         UTIL_CBK_TAIL();
@@ -652,7 +652,7 @@ and_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                              XWStreamCtxt* words, const XP_UCHAR* dict )
 {
     UTIL_CBK_HEADER( "informWordsBlocked", "(ILjava/lang/String;Ljava/lang/String;)V" );
-    jstring jwords = streamToJString( env, words );
+    jstring jwords = streamToJString( env, words, XP_FALSE );
     jstring jdict = (*env)->NewStringUTF( env, dict );
     (*env)->CallVoidMethod( env, util->jutil, mid, nBadWords, jwords, jdict );
     deleteLocalRefs( env, jwords, jdict, DELETE_NO_REF );
@@ -855,8 +855,8 @@ and_dutil_informMove( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XP_S16 turn,
 {
     DUTIL_CBK_HEADER( "informMove",
                       "(JILjava/lang/String;Ljava/lang/String;)V" );
-    jstring jexpl = streamToJString( env, expl );
-    jstring jwords = !!words ? streamToJString( env, words ) : NULL;
+    jstring jexpl = streamToJString( env, expl, XP_FALSE );
+    jstring jwords = !!words ? streamToJString( env, words, XP_FALSE ) : NULL;
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, gr, turn, jexpl, jwords );
     deleteLocalRefs( env, jexpl, jwords, DELETE_NO_REF );
     DUTIL_CBK_TAIL();

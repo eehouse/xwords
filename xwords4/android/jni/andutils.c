@@ -494,7 +494,7 @@ makeByteArrayArray( JNIEnv* env, int siz )
 }
 
 jstring
-streamToJString( JNIEnv* env, XWStreamCtxt* stream )
+streamToJString( JNIEnv* env, XWStreamCtxt* stream, XP_Bool destroy )
 {
     int len = stream_getSize( stream );
     XP_UCHAR buf[1 + len];
@@ -502,6 +502,10 @@ streamToJString( JNIEnv* env, XWStreamCtxt* stream )
     buf[len] = '\0';
 
     jstring jstr = (*env)->NewStringUTF( env, buf );
+
+    if ( destroy ) {
+        stream_destroy( stream );
+    }
 
     return jstr;
 }
