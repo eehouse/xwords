@@ -144,10 +144,12 @@ XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 XP_U16 countBits( XP_U32 mask );
 
 #ifdef XWFEATURE_BASE64
-void binToB64( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
+void binToB64( XP_UCHAR* b64, XP_U16* b64Len, const XP_U8* bin, XP_U16 binLen );
 void binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in );
-void b64ToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
-void b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in );
+/* return false on malformed base64 data. Malformed includes input length not
+   being a multiple of 4. */
+XP_Bool b64ToBin( XP_U8* bin, XP_U16* binLen, XP_UCHAR b64[], XP_U16 b64Len );
+XP_Bool b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in );
 #endif
 
 GameRef formatGR( XP_U32 gameID, DeviceRole role );

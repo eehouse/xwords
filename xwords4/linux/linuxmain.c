@@ -2491,9 +2491,52 @@ onDictGone( void* closure, const XP_UCHAR* dictName )
 }
 
 static void
+testOneStream( XW_DUtilCtxt* dutil, XWStreamCtxt* bin )
+{
+    XP_LOGFF( "bin stream size: %d", stream_getSize(bin) );
+    XWStreamPos binStart = stream_getPos( bin, POS_READ );
+
+    gchar* str64 = g_base64_encode( stream_getPtr(bin), stream_getSize(bin) );
+
+    XWStreamCtxt* b64 = dvc_makeStream( dutil );
+    binToB64Streams( b64, bin );
+    // stream_putU8( b64, '\0' );
+    XP_U16 b64Size = stream_getSize(b64);
+    XP_UCHAR b64Buf[1 + b64Size];
+    XWStreamPos pos = stream_getPos( b64, POS_READ );
+    stream_getBytes( b64, b64Buf, b64Size );
+    stream_setPos( b64, POS_READ, pos );
+    b64Buf[b64Size] = '\0';
+    XP_LOGFF( "b64 stream size: %d; str: %s", stream_getSize(b64), b64Buf );
+    XP_LOGFF( "str64 len : %ld; str: %s", strlen(str64), str64 );
+    XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) ); /* firing */
+    XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) );
+
+    XWStreamCtxt* binAgain = dvc_makeStream( dutil );
+    XP_ASSERT( b64ToBinStreams( binAgain, b64 ) );
+    XP_LOGFF( "binAgain stream size: %d", stream_getSize(binAgain) );
+
+    stream_setPos( bin, POS_READ, binStart );
+    XP_ASSERT( stream_getSize(bin) == stream_getSize(binAgain) );
+    XP_ASSERT( 0 == memcmp(stream_getPtr(bin), stream_getPtr(binAgain),
+                           stream_getSize(bin) ) );
+
+    g_free(str64);
+    stream_destroy( bin );
+    stream_destroy( binAgain );
+    stream_destroy( b64 );
+}
+
+static void
 testB64Streams( XW_DUtilCtxt* dutil )
 {
     LOG_FUNC();
+
+    /* Test super-short case */
+    XWStreamCtxt* bin = dvc_makeStream( dutil );
+    stream_putU8( bin, 0x7f );
+    testOneStream( dutil, bin );
+
     for ( int ii = 0; ii < 100; ++ii ) {
         XWStreamCtxt* bin = dvc_makeStream( dutil );
         int count = makeRandomInt() % 100;
@@ -2501,39 +2544,23 @@ testB64Streams( XW_DUtilCtxt* dutil )
             int val = makeRandomInt();
             stream_putU32( bin, val );
         }
-        XP_LOGFF( "bin stream size: %d", stream_getSize(bin) );
-        XWStreamPos binStart = stream_getPos( bin, POS_READ );
-
-        gchar* str64 = g_base64_encode( stream_getPtr(bin), stream_getSize(bin) );
-
-        XWStreamCtxt* b64 = dvc_makeStream( dutil );
-        binToB64Streams( b64, bin );
-        // stream_putU8( b64, '\0' );
-        XP_U16 b64Size = stream_getSize(b64);
-        XP_UCHAR b64Buf[1 + b64Size];
-        XWStreamPos pos = stream_getPos( b64, POS_READ );
-        stream_getBytes( b64, b64Buf, b64Size );
-        stream_setPos( b64, POS_READ, pos );
-        b64Buf[b64Size] = '\0';
-        XP_LOGFF( "b64 stream size: %d; str: %s", stream_getSize(b64), b64Buf );
-        XP_LOGFF( "str64 len : %ld; str: %s", strlen(str64), str64 );
-        XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) ); /* firing */
-        XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) );
-
-        XWStreamCtxt* binAgain = dvc_makeStream( dutil );
-        b64ToBinStreams( binAgain, b64 );
-        XP_LOGFF( "binAgain stream size: %d", stream_getSize(binAgain) );
-
-        stream_setPos( bin, POS_READ, binStart );
-        XP_ASSERT( stream_getSize(bin) == stream_getSize(binAgain) );
-        XP_ASSERT( 0 == memcmp(stream_getPtr(bin), stream_getPtr(binAgain),
-                               stream_getSize(bin) ) );
-
-        g_free(str64);
-        stream_destroy( bin );
-        stream_destroy( binAgain );
-        stream_destroy( b64 );
+        testOneStream( dutil, bin );
     }
+
+    /* Now some bad data */
+    for ( int ii = 0; ii < 10; ++ii ) {
+        XWStreamCtxt* bad = dvc_makeStream( dutil );
+        int count = 1 + (makeRandomInt() % 10);
+        for ( int jj = 0; jj < count; ++jj ) {
+            stream_putU32( bad, makeRandomInt() );
+        }
+        stream_putU8( bad, 0xFF ); /* Always illegal */
+        XWStreamCtxt* badOut = dvc_makeStream( dutil );
+        XP_ASSERT( !b64ToBinStreams( badOut, bad ) );
+        stream_destroy( bad );
+        stream_destroy( badOut );
+    }
+
     XP_LOGFF( "tests passed!!!" );
 }
 

@@ -666,22 +666,25 @@ binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in )
 /* Return false if illegal, e.g. contains bad characters.
  */
 
-static XP_U8
-findRank( XP_UCHAR ch )
+static XP_Bool
+findRank( XP_UCHAR ch, XP_U8* rankp )
 {
-    XP_U8 rank;
+    XP_Bool success;
     if ( ch == PADCHAR ) {
-        rank = 0;
+        success = XP_TRUE;
+        *rankp = 0;
     } else {
+        success = XP_FALSE;
         const XP_UCHAR* table = getSMSTable();
-        for ( rank = 0; rank < 64; ++rank ) {
+        for ( XP_U8 rank = 0; rank < 64; ++rank ) {
             if ( table[rank] == ch ) {
+                success = XP_TRUE;
+                *rankp = rank;
                 break;
             }
         }
-        XP_ASSERT( rank < 64 );
     }
-    return rank;
+    return success;
 }
 
 /* This function stolen from glib file glib/gbase64.c.  It's also GPL'd, so
@@ -689,60 +692,69 @@ findRank( XP_UCHAR ch )
  *
  * Also, need to check there's space before writing!  PENDING
  */
-void
-b64ToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
+XP_Bool
+b64ToBin( XP_U8* out, XP_U16* outlenp, XP_UCHAR b64in[], XP_U16 b64Len )
 {
-    const XP_UCHAR* inptr;
+    XP_Bool success = 0 == (b64Len % 4);
     XP_U8* outptr = out;
-    const XP_UCHAR* smsend = sms + smslen;
-    XP_U8 ch, rank;
-    XP_U8 last[2];
+    XP_U8 last[2] = {};
     unsigned int vv = 0;
-    int ii = 0;
 
-    inptr = sms;
-    last[0] = last[1] = 0;
-    while ( inptr < smsend ) {
-        ch = *inptr++;
-        rank = findRank( ch );
-
-        last[1] = last[0];
-        last[0] = ch;
-        vv = (vv<<6) | rank;
-        if ( ++ii == 4 ) {
-            *outptr++ = vv >> 16;
-            if (last[1] != PADCHAR ) {
-                *outptr++ = vv >> 8;
+    for ( int ii = 0; success && ii < b64Len; ++ii ) {
+        XP_U8 ch = b64in[ii];
+        XP_U8 rank;
+        if ( !findRank( ch, &rank ) ) {
+            success = XP_FALSE;
+        } else {
+            last[1] = last[0];
+            last[0] = ch;
+            vv = (vv<<6) | rank;
+            if ( 3 == (ii%4) ) {
+                *outptr++ = vv >> 16;
+                if (last[1] != PADCHAR ) {
+                    *outptr++ = vv >> 8;
+                }
+                if (last[0] != PADCHAR ) {
+                    *outptr++ = vv;
+                }
             }
-            if (last[0] != PADCHAR ) {
-                *outptr++ = vv;
-            }
-            ii = 0;
-	    }
+        }
     }
 
     XP_ASSERT( *outlenp >= (outptr - out) );
     *outlenp = outptr - out;
+    return success;
 } /* b64ToBin */
 
-void
+XP_Bool
 b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in )
 {
+    XWStreamPos startPosIn = stream_getPos( in, POS_READ );
+    XWStreamPos startPosOut = stream_getPos( out, POS_WRITE );
     const int MAX_CHUNK = 4 * 64; /* Must be multiple of 4 */
     const XP_U16 inSize = stream_getSize( in );
-    XP_ASSERT(0 == (inSize % 4) );
+    XP_Bool success = 0 == (inSize % 4);
 
-    for ( XP_U16 nRead = 0; nRead < inSize; ) {
+    for ( XP_U16 nRead = 0; success && nRead < inSize; ) {
         XP_U16 chunkSize = XP_MIN(MAX_CHUNK, inSize - nRead);
         XP_UCHAR inBuf[chunkSize];
         stream_getBytes( in, inBuf, chunkSize );
         /* bin output is always smaller than b64 input */
         XP_U16 outLen = chunkSize;
         XP_U8 outBuf[outLen];
-        b64ToBin( outBuf, &outLen, inBuf, chunkSize );
-        stream_putBytes( out, outBuf, outLen );
-        nRead += chunkSize;
+        success = b64ToBin( outBuf, &outLen, inBuf, chunkSize );
+        if ( success ) {
+            stream_putBytes( out, outBuf, outLen );
+            nRead += chunkSize;
+        }
     }
+
+    if ( !success ) {
+        XP_LOGFF( "bad input? resetting streams" );
+        stream_setPos( in, POS_READ, startPosIn );
+        stream_setPos( out, POS_WRITE, startPosOut );
+    }
+    return success;
 }
 
 #endif
