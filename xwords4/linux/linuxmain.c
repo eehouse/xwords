@@ -621,6 +621,7 @@ typedef enum {
     ,CMD_TESTPAT
     ,CMD_TESTSTR
 #endif
+    ,CMD_B64
     ,CMD_TESTSTARTSW
     ,CMD_TESTCONTAINS
     ,CMD_TESTENDS
@@ -777,6 +778,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_TESTSTR, true, "test-string",
        "string to be tested against test-pat; exit with non-0 if doesn't match" }
 #endif
+    ,{CMD_B64, false, "test-b64", "test the new bin<->b64 conversion code" }
     ,{CMD_TESTSTARTSW, true, "test-startsw", "use as 'start-with' for pattern"}
     ,{CMD_TESTCONTAINS, true, "test-contains", "use as 'contains' for pattern"}
     ,{CMD_TESTENDS, true, "test-endsw", "use as 'ends-with' for pattern"}
@@ -2488,6 +2490,53 @@ onDictGone( void* closure, const XP_UCHAR* dictName )
     dvc_onDictRemoved( params->dutil, NULL_XWE, shortName );
 }
 
+static void
+testB64Streams( XW_DUtilCtxt* dutil )
+{
+    LOG_FUNC();
+    for ( int ii = 0; ii < 100; ++ii ) {
+        XWStreamCtxt* bin = dvc_makeStream( dutil );
+        int count = makeRandomInt() % 100;
+        for ( int jj = 0; jj < count; ++jj ) {
+            int val = makeRandomInt();
+            stream_putU32( bin, val );
+        }
+        XP_LOGFF( "bin stream size: %d", stream_getSize(bin) );
+        XWStreamPos binStart = stream_getPos( bin, POS_READ );
+
+        gchar* str64 = g_base64_encode( stream_getPtr(bin), stream_getSize(bin) );
+
+        XWStreamCtxt* b64 = dvc_makeStream( dutil );
+        binToB64Streams( b64, bin );
+        // stream_putU8( b64, '\0' );
+        XP_U16 b64Size = stream_getSize(b64);
+        XP_UCHAR b64Buf[1 + b64Size];
+        XWStreamPos pos = stream_getPos( b64, POS_READ );
+        stream_getBytes( b64, b64Buf, b64Size );
+        stream_setPos( b64, POS_READ, pos );
+        b64Buf[b64Size] = '\0';
+        XP_LOGFF( "b64 stream size: %d; str: %s", stream_getSize(b64), b64Buf );
+        XP_LOGFF( "str64 len : %ld; str: %s", strlen(str64), str64 );
+        XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) ); /* firing */
+        XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) );
+
+        XWStreamCtxt* binAgain = dvc_makeStream( dutil );
+        b64ToBinStreams( binAgain, b64 );
+        XP_LOGFF( "binAgain stream size: %d", stream_getSize(binAgain) );
+
+        stream_setPos( bin, POS_READ, binStart );
+        XP_ASSERT( stream_getSize(bin) == stream_getSize(binAgain) );
+        XP_ASSERT( 0 == memcmp(stream_getPtr(bin), stream_getPtr(binAgain),
+                               stream_getSize(bin) ) );
+
+        g_free(str64);
+        stream_destroy( bin );
+        stream_destroy( binAgain );
+        stream_destroy( b64 );
+    }
+    XP_LOGFF( "tests passed!!!" );
+}
+
 int
 main( int argc, char** argv )
 {
@@ -2696,6 +2745,9 @@ main( int argc, char** argv )
             mainParams.iterTestPatStr = optarg;
             break;
 #endif
+        case CMD_B64:
+            testB64Streams( mainParams.dutil );
+            break;
         case CMD_TESTSTARTSW:
             mainParams.patStartW = optarg;
             break;

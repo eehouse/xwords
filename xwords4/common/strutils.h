@@ -145,7 +145,9 @@ XP_U16 countBits( XP_U32 mask );
 
 #ifdef XWFEATURE_BASE64
 void binToB64( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
-XP_Bool b64ToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
+void binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in );
+void b64ToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
+void b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in );
 #endif
 
 GameRef formatGR( XP_U32 gameID, DeviceRole role );

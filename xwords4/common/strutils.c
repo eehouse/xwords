@@ -634,7 +634,7 @@ binToB64( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
         bitsToChars( &in[inConsumed], validBytes, out, &outlen );
         XP_ASSERT( outlen <= *outlenp );
 
-        inConsumed += 3;
+        inConsumed += validBytes;
         if ( inConsumed >= inlen ) {
             break;
         }
@@ -644,6 +644,24 @@ binToB64( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
     *outlenp = outlen;
     XP_ASSERT( *outlenp >= inlen );
 } /* binToB64 */
+
+void
+binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in )
+{
+    const XP_U16 inSize = stream_getSize(in);
+    const int MAX_CHUNK = 3 * 128; /* Must be multiple of 3 */
+    for ( XP_U16 nRead = 0; nRead < inSize; ) {
+        XP_U16 inlen = XP_MIN(inSize-nRead, MAX_CHUNK);
+        XP_U8 inBuf[inlen];
+        stream_getBytes( in, inBuf, inlen );
+        XP_U16 outlen = 4 + ((inlen * 4) / 3);
+        XP_UCHAR outBuf[outlen];
+        binToB64( outBuf, &outlen, inBuf, inlen );
+        /* binToB64() adds a null byte, but it's not in outlen */
+        stream_putBytes( out, outBuf, outlen );
+        nRead += inlen;
+    }
+}
 
 /* Return false if illegal, e.g. contains bad characters.
  */
@@ -671,7 +689,7 @@ findRank( XP_UCHAR ch )
  *
  * Also, need to check there's space before writing!  PENDING
  */
-XP_Bool
+void
 b64ToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 {
     const XP_UCHAR* inptr;
@@ -705,9 +723,27 @@ b64ToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
 
     XP_ASSERT( *outlenp >= (outptr - out) );
     *outlenp = outptr - out;
-
-    return XP_TRUE;
 } /* b64ToBin */
+
+void
+b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in )
+{
+    const int MAX_CHUNK = 4 * 64; /* Must be multiple of 4 */
+    const XP_U16 inSize = stream_getSize( in );
+    XP_ASSERT(0 == (inSize % 4) );
+
+    for ( XP_U16 nRead = 0; nRead < inSize; ) {
+        XP_U16 chunkSize = XP_MIN(MAX_CHUNK, inSize - nRead);
+        XP_UCHAR inBuf[chunkSize];
+        stream_getBytes( in, inBuf, chunkSize );
+        /* bin output is always smaller than b64 input */
+        XP_U16 outLen = chunkSize;
+        XP_U8 outBuf[outLen];
+        b64ToBin( outBuf, &outLen, inBuf, chunkSize );
+        stream_putBytes( out, outBuf, outLen );
+        nRead += chunkSize;
+    }
+}
 
 #endif
 

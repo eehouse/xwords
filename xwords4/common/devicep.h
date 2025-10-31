@@ -23,7 +23,6 @@
 
 #include "device.h"
 
-XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
 void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
                       XWStreamCtxt* stream );
 void dvc_removeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] );

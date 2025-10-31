@@ -111,4 +111,8 @@ void dvc_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              const CommsAddrRec* from );
 void dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
 void dvc_onDictRemoved( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
+
+/* To avoid making mempool "public" */
+XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
+
 #endif
