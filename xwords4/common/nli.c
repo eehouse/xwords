@@ -404,49 +404,135 @@ nli_makeInviteData( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     /* Generate URL compatible with Android NetLaunchInfo.makeLaunchUri() */
 
     UrlParamState state = {};
-    urlParamToStream( stream, &state, "iso", "%s", nli->isoCodeStr );
+    urlParamToStream( stream, &state, "iso", UPT_STRING, nli->isoCodeStr );
 
     XP_LangCode lc;
     if ( haveLocaleToLc(nli->isoCodeStr, &lc) ) {
-        urlParamToStream( stream, &state, "lang", "%d", lc );
+        urlParamToStream( stream, &state, "lang", UPT_U8, lc );
     }
     
     /* Total players */
-    urlParamToStream( stream, &state, "np", "%d", nli->nPlayersT );
+    urlParamToStream( stream, &state, "np", UPT_U8, nli->nPlayersT );
 
     /* Here players */
-    urlParamToStream( stream, &state, "nh", "%d", nli->nPlayersH );
+    urlParamToStream( stream, &state, "nh", UPT_U8, nli->nPlayersH );
 
     /* Game ID */
-    urlParamToStream( stream, &state, "gid", "%d", nli->gameID );
+    urlParamToStream( stream, &state, "gid", UPT_U32, nli->gameID );
 
     /* Force channel */
-    urlParamToStream( stream, &state, "fc", "%d", nli->forceChannel );
+    urlParamToStream( stream, &state, "fc", UPT_U8, nli->forceChannel );
 
     /* Connection types */
-    urlParamToStream( stream, &state, "ad", "%d", nli->_conTypes );
+    urlParamToStream( stream, &state, "ad", UPT_U32, nli->_conTypes );
 
     /* Game name (URL encoded for special characters) */
-    urlParamToStream( stream, &state, "nm", "%s", nli->gameName );
+    urlParamToStream( stream, &state, "nm", UPT_STRING, nli->gameName );
 
     /* Dictionary name (URL encoded for special characters) */
-    urlParamToStream( stream, &state, "wl", "%s", nli->dict );
+    urlParamToStream( stream, &state, "wl", UPT_STRING, nli->dict );
 
     /* Duplicate mode */
     if ( nli->inDuplicateMode ) {
-        urlParamToStream( stream, &state, "du", "%d", 1 );
+        urlParamToStream( stream, &state, "du", UPT_U8, 1 );
     }
 
     /* Connection-specific parameters */
     if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
-        urlParamToStream( stream, &state, "btn", "%s", nli->btName );
+        urlParamToStream( stream, &state, "btn", UPT_STRING, nli->btName );
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
-        urlParamToStream( stream, &state, "phone", "%s", nli->phone );
+        urlParamToStream( stream, &state, "phone", UPT_STRING, nli->phone );
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
-        urlParamToStream( stream, &state, "r2id", "%s", nli->mqttDevID );
+        urlParamToStream( stream, &state, "r2id", UPT_STRING, nli->mqttDevID );
     }
+}
+
+XP_Bool
+nli_fromInviteData( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, NetLaunchInfo* nlip )
+{
+    XP_Bool success = XP_TRUE;
+    NetLaunchInfo nli = {};
+    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+
+    {
+        UrlDecodeIter iter = {.key = "ad", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U32, &nli._conTypes ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "nm", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.gameName ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "np", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.nPlayersT ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "nh", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.nPlayersH ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "gid", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U32, &nli.gameID ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "fc", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.forceChannel ) ) {
+            goto error;
+        }
+    }
+    {
+        UrlDecodeIter iter = {.key = "wl", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.dict ) ) {
+            goto error;
+        }
+    }
+
+    {
+        UrlDecodeIter iter = {.key = "du", .pos = startPos, };
+        urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.inDuplicateMode );
+    }
+
+    /* Connection-specific parameters */
+    if ( types_hasType( nli._conTypes, COMMS_CONN_BT ) ) {
+        UrlDecodeIter iter = {.key = "btn", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.btName ) ) {
+            goto error;
+        }
+    }
+    if ( types_hasType( nli._conTypes, COMMS_CONN_SMS ) ) {
+        UrlDecodeIter iter = {.key = "phone", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.phone ) ) {
+            goto error;
+        }
+    }
+    if ( types_hasType( nli._conTypes, COMMS_CONN_MQTT ) ) {
+        UrlDecodeIter iter = {.key = "r2id", .pos = startPos, };
+        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.mqttDevID ) ) {
+            goto error;
+        }
+    }
+
+    goto done;
+ error:
+    success = XP_FALSE;
+    stream_setPos( stream, POS_READ, startPos );
+ done:
+    if ( success ) {
+        *nlip = nli;
+    }
+    return success;
 }
 
 # ifdef DEBUG

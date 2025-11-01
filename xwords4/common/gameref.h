@@ -193,9 +193,6 @@ void gr_getAddrs( DUTIL_GR_XWE, CommsAddrRec addr[],
 XP_U16 gr_getChannelSeed( DUTIL_GR_XWE );
 XP_U16 gr_countPendingPackets( DUTIL_GR_XWE,
                                XP_Bool* quashed );
-XWStreamCtxt* gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
-                                       const XP_UCHAR* host, const XP_UCHAR* prefix
-                                       );
 XWStreamCtxt* gr_inviteUrl( DUTIL_GR_XWE, const XP_UCHAR* host,
                             const XP_UCHAR* prefix );
 void gr_getSelfAddr( DUTIL_GR_XWE, CommsAddrRec* addr );
@@ -217,6 +214,12 @@ void gr_setQuashed(DUTIL_GR_XWE, XP_Bool set);
 void gr_setDraw( DUTIL_GR_XWE, DrawCtx* dctx, XW_UtilCtxt* util );
 
 XP_Bool gr_isArchived( DUTIL_GR_XWE );
+
+XWStreamCtxt* gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
+                                       const XP_UCHAR* host,
+                                       const XP_UCHAR* prefix );
+void gr_parsePendingPackets( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                             XWStreamCtxt* stream );
 
 # ifdef DEBUG
 void gr_getStats( RELCONST DUTIL_GR_XWE, XWStreamCtxt* stream );

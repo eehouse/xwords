@@ -2743,6 +2743,9 @@ preProcess(
     case COMMS_CONN_NFC:
     case COMMS_CONN_MQTT:
         break;    /* nothing to grab?? */
+    case COMMS_CONN_NONE:
+        XP_LOGFF( "huh?" );
+        break;
     default:
         XP_ASSERT(0);
         break;
@@ -3092,12 +3095,12 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
 
 XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
-                           const CommsAddrRec* retAddr, CommsMsgState* state,
-                           const MsgCountState* mcs )
+                           /* retAddr will be null for NFC & QR code cases */
+                           const CommsAddrRec* retAddr,
+                           CommsMsgState* state, const MsgCountState* mcs )
 {
     XP_Bool messageValid = XP_FALSE;
     WITH_MUTEX(&comms->mutex);
-    XP_ASSERT( !!retAddr );     /* for now */
     XP_MEMSET( state, 0, sizeof(*state) );
 #ifdef DEBUG
     state->comms = comms;
@@ -3120,7 +3123,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
     /*              ConnType2Str( addrType ) ); */
     } else {
 #ifdef DEBUG
-        if (0 == (comms->selfAddr._conTypes & retAddr->_conTypes)) {
+        if (!!retAddr && 0 == (comms->selfAddr._conTypes & retAddr->_conTypes)) {
             COMMS_LOGFF( "not expecting %s messages (but proceeding)",
                          ConnType2Str( addrType ) );
         }
@@ -3566,11 +3569,7 @@ rememberChannelAddress( CommsCtxt* comms, const XP_PlayerAddr channelNo,
             logAddrComms( comms, &rec->addr, "new" );
             XP_ASSERT( rec->rr.hostID == hostID );
         } else {
-            COMMS_LOGFF( "storing addr with _conTypes %x",
-                         addr->_conTypes );
-            XP_MEMSET( &rec->addr, 0, sizeof(rec->addr) );
-            rec->addr._conTypes = comms->selfAddr._conTypes;
-            // addr_setTypes( &recs->addr, addr_getTypes( &comms->selfAddr ) );
+            COMMS_LOGFF( "No addr, so NOT storing" );
         }
     }
     listRecs( comms, "leaving rememberChannelAddress()" );
@@ -3848,7 +3847,7 @@ countAddrRecs( const CommsCtxt* comms )
 XP_Bool
 addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 {
-    XP_Bool result = types_iter( addr->_conTypes, typp, state );
+    XP_Bool result = !!addr && types_iter( addr->_conTypes, typp, state );
     return result;
 }
 
@@ -3930,7 +3929,7 @@ addr_getType( const CommsAddrRec* addr )
         typ = COMMS_CONN_NONE;
     }
     XP_ASSERT( !addr_iter( addr, &typ, &st ) ); /* shouldn't be a second */
-    // XP_LOGF( "%s(%p) => %s", __func__, addr, ConnType2Str( typ ) );
+    // XP_LOGFF( "(%p) => %s", addr, ConnType2Str( typ ) );
     return typ;
 }
 

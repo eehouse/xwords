@@ -52,6 +52,8 @@ void nli_setGameName( NetLaunchInfo* nli, const XP_UCHAR* gameName );
 void nli_setMQTTDevID( NetLaunchInfo* nli, const MQTTDevID* mqttDevID );
 void nli_setPhone( NetLaunchInfo* nli, const XP_UCHAR* phone );
 void nli_makeInviteData( const NetLaunchInfo* nli, XWStreamCtxt* stream );
+XP_Bool nli_fromInviteData( XW_DUtilCtxt* dutil, XWStreamCtxt* stream,
+                            NetLaunchInfo* nli );
 
 #ifdef XWFEATURE_NLI_FROM_ARGV
 XP_Bool nli_fromArgv( MPFORMAL NetLaunchInfo* nlip, int argc, const char** argv );

@@ -19,7 +19,7 @@
 #include <endian.h>
 #include <inttypes.h>
 
-#include "device.h"
+#include "devicep.h"
 #include "xwarray.h"
 #include "dllist.h"
 #include "comtypes.h"
@@ -1184,6 +1184,57 @@ dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 }
 
 void
+dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
+              const XP_UCHAR* host, const XP_UCHAR* prefix)
+{
+    XWStreamCtxt* stream = dvc_makeStream( duc );
+    stream_putBytes( stream, buf, len );
+
+    XP_UCHAR start[64];
+    dvc_formatUrl( start, VSIZE(start), host, prefix );
+    XP_Bool good = matchFromStream( stream, (XP_U8*)start, XP_STRLEN(start) );
+    if ( good ) {
+        XP_U8 got;
+        good = stream_gotU8( stream, &got ) && got == '?';
+    }
+
+    /* Now look at params to see what it is */
+    if ( good ) {
+        NetLaunchInfo nli;
+        if ( nli_fromInviteData( duc, stream, &nli ) ) {
+            GameRef gr = gmgr_addForInvite( duc, xwe, GROUP_DEFAULT, &nli );
+            XP_LOGFF( "created " GR_FMT " for:", gr );
+            LOGNLI( &nli );
+        } else {
+            XP_LOGFF( "looking beyond '?'" );
+            XP_U32 gameID;
+            UrlDecodeIter gidIter = {.key = "gid"};
+            UrlDecodeIter msgsIter = {.key = "msgs"};
+            while ( urlDecodeFromStream( duc, stream, &gidIter, UPT_U32, &gameID ) ) {
+                XWStreamCtxt* msgs = NULL;
+                if ( urlDecodeFromStream( duc, stream, &msgsIter, UPT_STREAM, &msgs ) ) {
+                    XP_ASSERT( !!msgs );
+
+                    GameRef grs[4];
+                    XP_U16 nRefs = VSIZE(grs);
+                    gmgr_getForGID( duc, xwe, gameID, grs, &nRefs );
+                    for ( int ii = 0; ii < nRefs; ++ii ) {
+                        XWStreamPos pos = stream_getPos( msgs, POS_READ );
+                        gr_parsePendingPackets( duc, xwe, grs[ii], msgs );
+                        stream_setPos( msgs, POS_READ, pos );
+                    }
+                    stream_destroy( msgs );
+                }
+            }
+        }
+    } else {
+        XP_LOGFF( "bad start to URL" );
+    }
+
+    stream_destroy( stream );
+}
+
+void
 dvc_onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const XP_UCHAR* phone, XP_U16 mtu )
 {
@@ -1747,13 +1798,23 @@ XWStreamCtxt*
 dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host, const XP_UCHAR* prefix )
 {
     XWStreamCtxt* stream = dvc_makeStream(dutil);
+    XP_UCHAR buf[64];
+    dvc_formatUrl( buf, VSIZE(buf), host, prefix );
+    stream_catString( stream, buf );
+    return stream;
+}
+
+void
+dvc_formatUrl( XP_UCHAR buf[], XP_U16 bufLen,
+               const XP_UCHAR* host, const XP_UCHAR* prefix )
+{
     if ( !host ) {
         host = "eehouse.org";
     }
     if ( !prefix ) {
         prefix = "/andd/";
     }
-
-    stream_catf( stream, "https://%s%s", host, prefix );
-    return stream;
+    XP_U16 len = XP_SNPRINTF( buf, bufLen-1, "https://%s%s", host, prefix );
+    XP_ASSERT( len < bufLen );
 }
+

@@ -47,5 +47,7 @@ bool gtkask_confirm( GtkWidget* parent, const gchar *message );
 bool gtkask_radios( GtkWidget* parent, const gchar *message,
                     const AskPair* buttxts, int* chosen );
 
+gchar* gtkask_gettext( GtkWidget* parent, const gchar* message );
+
 #endif
 #endif /* PLATFORM_GTK */

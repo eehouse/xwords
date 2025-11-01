@@ -34,5 +34,7 @@ void dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
 
 XWStreamCtxt* dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host,
                             const XP_UCHAR* prefix );
+void dvc_formatUrl( XP_UCHAR buf[], XP_U16 bufLen, const XP_UCHAR* host,
+                    const XP_UCHAR* prefix );
 
 #endif

@@ -82,6 +82,14 @@ qr_draw_callback(GtkWidget* widget, cairo_t* cr, gpointer user_data)
     return TRUE;
 }
 
+static void
+copy_button_clicked( GtkWidget* XP_UNUSED(widget), gpointer closure )
+{
+    QRThingState* state = (QRThingState*)closure;
+    GtkClipboard* clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
+    gtk_clipboard_set_text( clipboard, state->str, strlen(state->str) );
+}
+
 QRThingState*
 mkQRThing( GtkWidget** widgetp, const XP_UCHAR* str, XP_U16 len )
 {
@@ -102,6 +110,9 @@ mkQRThing( GtkWidget** widgetp, const XP_UCHAR* str, XP_U16 len )
 
     gchar* label = g_strdup_printf("Copy %s", state->str);
     GtkWidget* button = gtk_button_new_with_label( label );
+    g_signal_connect( button, "clicked",
+                      G_CALLBACK(copy_button_clicked), state );
+
     g_free( label );
     gtk_container_add(GTK_CONTAINER(vbox), button);
 

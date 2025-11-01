@@ -64,6 +64,9 @@ void dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 void dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );
+void dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf,
+                   XP_U16 len, const XP_UCHAR* host, const XP_UCHAR* prefix );
+
 void dvc_onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
                              const XP_UCHAR* phone, XP_U16 mtu );
 void dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
@@ -91,6 +94,9 @@ XP_U8 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv env );
 void dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 
+/* I want stream creation out of the public API eventually... */
+XWStreamCtxt* dvc_makeStream( XW_DUtilCtxt* dutil );
+
 GameRef dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                             XWStreamCtxt* stream, const CurGameInfo* gi,
                             XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp);
@@ -104,9 +110,6 @@ void dvc_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
 
 void dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts );
 
-void dvc_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                            const CommsAddrRec* from, const XP_U8* buf,
-                            XP_U16 len );
 void dvc_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                              const CommsAddrRec* from );
 void dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );

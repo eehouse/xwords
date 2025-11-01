@@ -22,6 +22,10 @@
 
 #include "gtkask.h"
 
+typedef struct _AskState {
+    GtkWidget* entry;
+} AskState;
+
 static gint
 timer_func( gpointer data )
 {
@@ -45,10 +49,11 @@ gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
 }
 
 gint
-gtkask_timeout( GtkWidget* parent, const gchar* message,
-                GtkButtonsType buttons, const AskPair* buttxts,
-                uint32_t timeoutMS )
+gtkask_impl( GtkWidget* parent, const gchar* message,
+             GtkButtonsType buttons, const AskPair* buttxts,
+             uint32_t timeoutMS, gchar** txtResult )
 {
+    AskState state = {};
     guint src = 0;
     GtkWidget* dlg = gtk_message_dialog_new( (GtkWindow*)parent, 
                                              GTK_MESSAGE_QUESTION,
@@ -65,7 +70,20 @@ gtkask_timeout( GtkWidget* parent, const gchar* message,
         ++buttxts;
     }
 
+    if ( !!txtResult ) {
+        GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+        state.entry = gtk_entry_new();
+        gtk_box_pack_start( GTK_BOX(content), state.entry, FALSE, TRUE, 0 );
+    }
+
+    gtk_widget_show_all( dlg );
     gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
+
+    if ( !!txtResult && GTK_RESPONSE_OK == response ) {
+        const gchar* txt = gtk_entry_get_text( GTK_ENTRY(state.entry) );
+        *txtResult = g_strdup( txt );
+    }
+
     gtk_widget_destroy( dlg );
 
     if ( 0 != src ) {
@@ -74,7 +92,23 @@ gtkask_timeout( GtkWidget* parent, const gchar* message,
 
     LOG_RETURNF( "%d", response );
     return response;
-} /* gtkask_timeout */
+} /* gtkask_impl */
+
+gchar*
+gtkask_gettext( GtkWidget* parent, const gchar* message )
+{
+    gchar* txt = NULL;
+    gtkask_impl( parent, message, GTK_BUTTONS_OK_CANCEL, NULL, 0, &txt );
+    return txt;
+}
+
+gint
+gtkask_timeout( GtkWidget* parent, const gchar* message,
+                GtkButtonsType buttons, const AskPair* buttxts,
+                uint32_t timeoutMS )
+{
+    return gtkask_impl(parent, message, buttons, buttxts, timeoutMS, NULL );
+}
 
 bool
 gtkask_confirm( GtkWidget* parent, const gchar *message )

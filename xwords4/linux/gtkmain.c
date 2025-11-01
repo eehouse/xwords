@@ -1156,6 +1156,17 @@ handle_mqttid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
     gtk_clipboard_set_text( clipboard, devIDStr, strlen(devIDStr) );
 }
 
+static void
+handle_getUrl( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    gchar* txt = gtkask_gettext( apg->window, "Paste URL here" );
+    if ( !!txt ) {
+        LaunchParams* params = apg->cag.params;
+        dvc_parseUrl( params->dutil, NULL_XWE, txt, strlen(txt), NULL, NULL );
+        g_free( txt );
+    }
+}
+
 #ifdef XWFEATURE_DEVICE_STORES
 /* static void */
 /* onGameProc( GameRef gr, XWEnv XP_UNUSED(xwe), void* closure ) */
@@ -1398,6 +1409,7 @@ makeGamesWindow( GtkAppGlobals* apg )
 #endif
     (void)createAddItem( netMenu, "copy mqtt devid",
                          (GCallback)handle_mqttid_to_clip, apg );
+    (void)createAddItem( netMenu, "Paste URL", (GCallback)handle_getUrl, apg );
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 

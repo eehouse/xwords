@@ -1374,6 +1374,7 @@ gr_countPendingPackets( DUTIL_GR_XWE, XP_Bool* quashed )
 typedef struct _GotPacketState {
     XW_DUtilCtxt* duc;
     XWStreamCtxt* stream;
+    int count;
 } GotPacketState;
 
 static void
@@ -1385,6 +1386,7 @@ gotPacketProc( const XP_U8* buf, XP_U16 len, void* closure )
     }
     stream_putU32VL( gps->stream, len );
     stream_putBytes( gps->stream, buf, len );
+    ++gps->count;
 }
 
 XWStreamCtxt*
@@ -1398,21 +1400,41 @@ gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
         comms_getPendingPacketsFor( gd->comms, xwe, addr, gotPacketProc, &gps );
 
         if ( !!gps.stream ) {
+            XWStreamCtxt* msgs = dvc_makeStream( duc );
+            stream_putU32VL( msgs, gps.count );
+            stream_getFromStream( msgs, gps.stream, stream_getSize(gps.stream) );
+            stream_destroy( gps.stream );
+
             result = dvc_beginUrl( duc, host, prefix );
             XP_U32 gid = gr_getGameID( gr );
-            stream_catf( result, "gid=%X&msgs=", gid );
+            UrlParamState state = {};
+            urlParamToStream( result, &state, "gid", UPT_U32, gid );
 
-            XP_U16 binLen = stream_getSize( gps.stream );
-            XP_UCHAR out[3 + (binLen*2)];
-            XP_U16 outLen = VSIZE(out);
-            binToB64( out, &outLen, stream_getPtr(gps.stream), binLen );
-            stream_catString( result, out );
-
-            stream_destroy( gps.stream );
+            XWStreamCtxt* b64Stream = dvc_makeStream( duc );
+            binToB64Streams( b64Stream, msgs );
+            urlParamToStream( result, &state, "msgs", UPT_STREAM, b64Stream );
+            stream_destroy( b64Stream );
+            stream_destroy( msgs );
         }
     }
     GR_HEADER_END();
     return result;
+}
+
+void
+gr_parsePendingPackets( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                        XWStreamCtxt* stream )
+{
+    XWStreamCtxt* msgs = dvc_makeStream( duc );
+    b64ToBinStreams( msgs, stream );
+    XP_U32 count = stream_getU32VL( msgs );
+    for ( int ii = 0; ii < count; ++ii ) {
+        XP_U32 len = stream_getU32VL( msgs );
+        XP_U8 msg[len];
+        stream_getBytes( msgs, msg, len );
+        gr_onMessageReceived( duc, gr, xwe, NULL, msg, len, NULL );
+    }
+    stream_destroy( msgs );
 }
 
 XWStreamCtxt*

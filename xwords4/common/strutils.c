@@ -21,6 +21,7 @@
 #include "xwstream.h"
 #include "mempool.h"
 #include "xptypes.h"
+#include "device.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -166,18 +167,85 @@ moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
     // XP_LOGF( "%s(): tiles: %s", __func__, buf );
 }
 
+/* URL encoding for JNI-safe string parameters.
+ * Encodes characters that need to be percent-encoded in URL parameters.
+ */
+static void
+urlEncodeToStream( XWStreamCtxt* stream, UrlParamType typ, va_list* ap )
+{
+    const char* specials = "!*'();:@&=+$,/?#[]%";
+
+    XP_UCHAR numBuf[16];
+    XWStreamCtxt* inStream = NULL;
+    const XP_UCHAR* str = NULL;
+
+    switch ( typ ) {
+    case UPT_U8:
+    case UPT_U32: {
+        XP_U32 tmp = va_arg( *ap, XP_U32 );
+        XP_ASSERT( typ == UPT_U32 || tmp <= 0xFF );
+        XP_SNPRINTF( numBuf, VSIZE(numBuf), "%d", tmp );
+        str = numBuf;
+    }
+        break;
+    case UPT_STRING:
+        str = va_arg( *ap, const XP_UCHAR* );
+        break;
+    case UPT_STREAM:
+        inStream = va_arg( *ap, XWStreamCtxt* );
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+
+    for ( XP_U16 ii = 0; ; ++ii ) {
+        XP_U8 ch;
+        if ( !!str ) {
+            ch = str[ii];
+        } else if ( !stream_gotU8( inStream, &ch ) ) {
+            break;
+        }
+        if ( !ch ) {
+            break;
+        } else if ( ch <= 32 || ch >= 127 || strchr(specials, ch)) {
+            XP_UCHAR buf[4];
+            XP_U16 len = XP_SNPRINTF( buf, VSIZE(buf), "%%%02X", (unsigned char)ch );
+            XP_ASSERT( len == 3 );
+            stream_putBytes( stream, buf, len );
+        } else {
+            stream_putU8( stream, ch );
+        }
+    }
+}
+
 void
 urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* key,
-                  const XP_UCHAR* fmt, ... )
+                  UrlParamType typ, ... )
 {
-    XP_ASSERT( strchr(fmt, '%') );
-    XP_UCHAR val[128];
     va_list ap;
-    va_start( ap, fmt );
-    vsnprintf( val, sizeof(val), fmt, ap );
+    va_start( ap, typ );
+
+    XP_Bool haveData;
+    switch ( typ ) {
+    case UPT_U8:
+    case UPT_U32:
+        haveData = XP_TRUE; break;
+    case UPT_STRING: {
+        const XP_UCHAR* param = va_arg( ap, const XP_UCHAR*);
+        haveData = '\0' != ((XP_UCHAR*)param)[0];
+    }
+        break;
+    case UPT_STREAM: {
+        XWStreamCtxt* param = va_arg( ap, XWStreamCtxt*);
+        haveData = 0 != stream_getSize(param);
+    }
+        break;
+    default:
+        XP_ASSERT(0);
+    }
     va_end( ap );
 
-    if ( '\0' != val[0] ) {
+    if ( haveData ) {
         const char* prefix;
         if ( !state->firstDone ) {
             state->firstDone = XP_TRUE;
@@ -189,7 +257,10 @@ urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* ke
         stream_catString( stream, key );
         stream_catString( stream, "=" );
 
-        urlEncodeToStream( stream, val );
+        va_list ap;
+        va_start( ap, typ );
+        urlEncodeToStream( stream, typ, &ap );
+        va_end( ap );
     } else {
         XP_LOGFF( "nothing to print for key %s", key );
     }
@@ -323,6 +394,28 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
     }
     stream_putBytes( stream, str, len );
 } /* putStringToStream */
+
+XP_Bool
+matchFromStream( XWStreamCtxt* stream, const XP_U8* bytes, XP_U16 nBytes )
+{
+    XP_Bool found = XP_TRUE;
+    XWStreamPos start = stream_getPos( stream, POS_READ );
+    for ( int ii = 0; found && ii < nBytes; ++ii ) {
+        XP_U8 byte;
+        if ( !stream_gotU8( stream, &byte ) ) {
+            XP_LOGFF( "early end of stream at indx=%d", ii );
+            found = XP_FALSE;
+        } else if ( byte != bytes[ii] ) {
+            XP_LOGFF( "mismatch at indx=%d", ii );
+            found = XP_FALSE;
+        }
+    }
+
+    if ( !found ) {
+        stream_setPos( stream, POS_READ, start );
+    }
+    return found;
+}
 
 XP_Bool
 stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr )
@@ -864,27 +957,171 @@ log_devid( const MQTTDevID* devID, const XP_UCHAR* tag )
 }
 #endif
 
-/* URL encoding for JNI-safe string parameters.
- * Encodes characters that need to be percent-encoded in URL parameters.
- */
-void
-urlEncodeToStream( XWStreamCtxt* stream, const XP_UCHAR* input )
+static XP_Bool
+decodeUntil( XW_DUtilCtxt* duc, XWStreamCtxt* stream, XP_U8 sought,
+             UrlParamType typ, va_list* app )
 {
-    const char* specials = "!*'();:@&=+$,/?#[]%";
+    XP_U8* outU8 = NULL;
+    XP_U32* outU32 = NULL;
+    XWStreamCtxt** streamP = NULL;
+    XP_UCHAR* outStr = NULL;
+    int outStrIndex = 0;
 
-    for ( XP_U16 ii = 0; ; ++ii ) {
-        char ch = input[ii];
-        if ( !ch ) {
+    switch ( typ ) {
+    case UPT_U8:
+        outU8 = va_arg( *app, XP_U8* );
+        break;
+    case UPT_U32:
+        outU32 = va_arg( *app, XP_U32* );
+        break;
+    case UPT_STREAM:
+        streamP = va_arg( *app, XWStreamCtxt** );
+        break;
+    case UPT_STRING:
+        outStr = va_arg( *app, XP_UCHAR* );
+        break;
+    default:
+        XP_ASSERT(0);           /* firing */
+    }
+
+    XP_Bool success = XP_TRUE;
+    XP_UCHAR numBuf[16];
+    int numIndx = 0;
+    XP_U8 got;
+    while ( success && stream_gotU8( stream, &got ) ) {
+        if ( got == sought ) {
             break;
-        } else if ( ch <= 32 || ch >= 127 || strchr(specials, ch)) {
-            XP_UCHAR buf[4];
-            XP_U16 len = XP_SNPRINTF( buf, VSIZE(buf), "%%%02X", (unsigned char)ch );
-            XP_ASSERT( len == 3 );
-            stream_putBytes( stream, buf, len );
-        } else {
-            stream_putU8( stream, ch );
+        } else if ( got == '%' ) {
+            /* Get the next: it's an error if they're missing */
+            XP_U8 buf[3];
+            if ( !stream_gotBytes( stream, buf, 2 ) ) {
+                XP_LOGFF( "premature end??" );
+                success = XP_FALSE;
+                break;
+            }
+            buf[2] = '\0';
+            int tmp;
+            int nGot = sscanf( (char*)buf, "%02X", &tmp );
+            if ( 1 != nGot ) {
+                XP_LOGFF( "bad hex format in '%s'?", buf );
+                success = XP_FALSE;
+                break;
+            }
+            XP_ASSERT( tmp <= 0xFF );
+            got = (XP_U8)tmp;
+        }
+
+        /* Now we have one converted byte. Save appropriately*/
+        switch ( typ ) {
+        case UPT_U8:
+        case UPT_U32:
+            numBuf[numIndx++] = got;
+            break;
+        case UPT_STRING:
+            outStr[outStrIndex++] = got;
+            outStr[outStrIndex] = '\0';
+            // stream_putU8( ((XWStreamCtxt*)out), got );
+            break;
+        case UPT_STREAM:
+            if ( !*streamP ) {
+                *streamP = dvc_makeStream( duc );
+            }
+            stream_putU8( *streamP, got );
+            break;
+        default:
+            XP_ASSERT(0);
         }
     }
+
+    if ( success ) {
+        switch ( typ ) {
+        case UPT_U8:
+        case UPT_U32: {
+            XP_U32 num;
+            numBuf[numIndx] = '\0';
+            sscanf( numBuf, "%d", &num );
+            if ( !!outU32 ) {
+                *outU32 = num;
+            } else if ( !!outU8 ) {
+                XP_ASSERT( num <= 0xFF );
+                *outU8 = (XP_U8)num;
+            } else {
+                XP_ASSERT(0);
+            }
+        }
+            break;
+        case UPT_STREAM:
+        case UPT_STRING:
+            XP_LOGFF( "nothing to do for string/stream ");
+            break;
+         default:
+            XP_ASSERT(0);
+            break;
+        }
+    }
+
+    return success;
+} /* decodeUntil */
+
+static XP_Bool
+getUntil( XWStreamCtxt* stream, XP_UCHAR sought, XP_U8 buf[], XP_U16* bufLen )
+{
+    XP_Bool success = XP_FALSE;
+    XP_U8 got;
+    int index = 0;
+    while ( stream_gotU8( stream, &got ) ) {
+        if ( sought == got ) {
+            success = XP_TRUE;
+            if ( !!bufLen ) {
+                *bufLen = index;
+            }
+            break;
+        } else if ( !!buf ) {
+            buf[index++] = got;
+            XP_ASSERT( index < *bufLen );
+        }
+    }
+    return success;
+}
+
+XP_Bool
+urlDecodeFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
+                     UrlDecodeIter* iter, UrlParamType typ, ... )
+{
+    XP_Bool found = XP_FALSE;
+    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+    if ( iter->pos ) {
+        stream_setPos( stream, POS_READ, iter->pos );
+    }
+
+    for ( ; ; ) {
+        XP_U8 key[32] = {};
+        XP_U16 keyLen = VSIZE(key);
+        if ( !getUntil( stream, '=', key, &keyLen ) ) {
+            break;
+        } else {
+            key[keyLen] = '\0';
+            if ( 0 == XP_MEMCMP( key, iter->key, keyLen ) ) {
+                XP_LOGFF( "matched key %s", key );
+                va_list ap;
+                va_start( ap, typ );
+                found = decodeUntil( duc, stream, '&', typ, &ap );
+                va_end( ap );
+                break;
+            } else {
+                XP_LOGFF( "matched some other key? %s", key );
+                getUntil( stream, '&', NULL, 0 );
+            }
+        }
+    }
+
+    if ( found ) {
+        ++iter->count;
+        iter->pos = stream_getPos( stream, POS_READ );
+    } else {
+        stream_setPos( stream, POS_READ, startPos );
+    }
+    return found;
 }
 
 #ifdef CPLUS

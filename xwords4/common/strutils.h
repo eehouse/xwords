@@ -48,6 +48,13 @@ void moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi,
 /* XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits ); */
 /* void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num ); */
 
+typedef enum {
+    UPT_U8,
+    UPT_U32,
+    UPT_STRING,
+    UPT_STREAM,
+} UrlParamType;
+
 typedef struct _UrlParamState {
     XP_Bool firstDone;
 #ifdef DEBUG
@@ -55,10 +62,25 @@ typedef struct _UrlParamState {
     XP_U32 guard2;
 #endif
 } UrlParamState;
-void urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* key,
-                       const XP_UCHAR* fmt, ... );
-/* URL encoding for JNI-safe string parameters */
-void urlEncodeToStream( XWStreamCtxt* stream, const XP_UCHAR* input );
+void urlParamToStream( XWStreamCtxt* stream, UrlParamState* state,
+                       const XP_UCHAR* key, UrlParamType typ, ... );
+
+typedef struct _UrlDecodeIter {
+    const XP_UCHAR* key;
+    int count;
+    XWStreamPos pos;
+} UrlDecodeIter;
+XP_Bool urlDecodeFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
+                             UrlDecodeIter* iter, UrlParamType typ, ... );
+
+typedef struct _URLKey {
+    XP_UCHAR txt[16];
+} URLKey;
+typedef struct _URLParamIter {
+    const XP_UCHAR* key;
+} URLParamIter;
+XP_Bool urlParamsFromStream( XWStreamCtxt* stream, URLParamIter* iter,
+                             URLKey* key, XWStreamCtxt** val );
 
 XP_UCHAR* p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #ifdef MEM_DEBUG
@@ -87,6 +109,7 @@ XP_U16 stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len
 #endif
 
 void stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str );
+XP_Bool matchFromStream( XWStreamCtxt* stream, const XP_U8* bytes, XP_U16 nBytes );
 
 XP_Bool stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr );
 XP_Bool stream_gotU32( XWStreamCtxt* stream, XP_U32* ptr );
