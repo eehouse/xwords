@@ -472,6 +472,15 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         }
     }
 
+    suspend fun getPendingPacketsFor(context: Context, addr: CommsAddrRec)
+        : String? {
+        val (host, prefix) = NetUtils.getHostAndPrefix(context)
+        val result = Device.await {
+            gr_getPendingPacketsFor(jniState, gr, addr, host, prefix)
+        } as String?
+        return result
+    }
+
     suspend fun safeToOpen(): Boolean {
         return 0 == failedOpenCount()
     }
@@ -686,6 +695,10 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         private external fun gr_isArchived(jniState: Long, gr: Long): Boolean
         @JvmStatic
         private external fun gr_setCollapsed(jniState: Long, gr: Long, collapsed: Boolean)
+        @JvmStatic
+        private external fun gr_getPendingPacketsFor(jniState: Long, gr: Long,
+                                                     addr: CommsAddrRec, host: String,
+                                                     prefix: String): String?
         @JvmStatic
         private external fun gr_failedOpenCount(jniState: Long, gr: Long): Int
         @JvmStatic

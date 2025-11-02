@@ -73,6 +73,7 @@ enum class DlgID {
     MQTT_PEERS,
     KACONFIG,
     CONVERT_GAMES,
+    QR_CODES,
     ;
 
     private var m_addToStack: Boolean

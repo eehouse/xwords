@@ -339,6 +339,8 @@ class BoardDelegate(delegator: Delegator) :
 //                 ab.create()
 //             }
 
+            DlgID.QR_CODES -> QRCodesView.makeDialog(mActivity, mGR!!)
+
             DlgID.GET_DEVID -> {
                 val et = inflate(R.layout.edittext) as EditText
                 ab.setTitle(R.string.title_pasteDevid)
@@ -1290,6 +1292,7 @@ class BoardDelegate(delegator: Delegator) :
                             mGR!!.setQuashed(false)
                         }
                     }
+                    R.id.netstat_qrcode -> showDialogFragment(DlgID.QR_CODES)
                     else -> handled = false
                 }
                 handled

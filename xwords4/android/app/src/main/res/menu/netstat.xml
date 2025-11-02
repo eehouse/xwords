@@ -16,4 +16,7 @@
   <item android:id="@+id/netstat_unquash"
         android:title="@string/menu_unquash"
         />
+  <item android:id="@+id/netstat_qrcode"
+        android:title="@string/menu_qrcode"
+        />
 </menu>

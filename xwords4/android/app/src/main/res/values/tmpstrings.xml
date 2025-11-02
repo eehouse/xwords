@@ -50,4 +50,6 @@
 
   <string name="games_menu_convert">Convert games</string>
 
+  <string name="menu_qrcode">Show QRCode</string>
+
 </resources>

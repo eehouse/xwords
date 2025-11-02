@@ -19,8 +19,6 @@
 package org.eehouse.android.xw4
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import android.widget.CheckBox
@@ -31,13 +29,9 @@ import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.view.doOnAttach
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
@@ -241,45 +235,13 @@ class InviteView(context: Context, aset: AttributeSet?) :
 
     private fun startQRCodeThread() {
         mGR?.let { gr ->
+            val iv = findViewById<ImageView>(R.id.qr_view)
+            val tv =
+                if (BuildConfig.NON_RELEASE) findViewById<TextView>(R.id.qr_url)
+                else null
             launch {
                 gr.inviteUrl(context).also { url ->
-                    val qrSize =
-                        if (mExpanded) QRCODE_SIZE_LARGE
-                        else QRCODE_SIZE_SMALL
-                    val bitmap = Bitmap.createBitmap(
-                        qrSize, qrSize,
-                        Bitmap.Config.ARGB_8888
-                    )
-                    try {
-                        val multiFormatWriter = MultiFormatWriter()
-                        val bitMatrix = multiFormatWriter.encode(
-                            url, BarcodeFormat.QR_CODE,
-                            qrSize, qrSize
-                        )
-
-                        for (ii in 0 until qrSize) {
-                            for (jj in 0 until qrSize) {
-                                val color =
-                                    if (bitMatrix[ii, jj]) {Color.BLACK}
-                                    else {Color.WHITE}
-                                bitmap.setPixel(ii, jj, color)
-                            }
-                            yield()
-                        }
-                    } catch (we: WriterException) {
-                        Log.ex(TAG, we)
-                    }
-
-                    findViewById<ImageView>(R.id.qr_view).let { iv ->
-                        iv.setImageBitmap(bitmap)
-                        if (BuildConfig.NON_RELEASE) {
-                            findViewById<TextView>(R.id.qr_url).let { tv ->
-                                tv.visibility = VISIBLE
-                                tv.text = url
-                            }
-                        }
-                        scrollTo(0, iv.top)
-                    }
+                    Utils.writeQRCode(this@InviteView, url, mExpanded, iv, tv)
                 }
             }
         }
@@ -289,7 +251,5 @@ class InviteView(context: Context, aset: AttributeSet?) :
         private val TAG: String = InviteView::class.java.simpleName
         private val KEY_SORTBY_DATE = TAG + "/sortby_date"
         private val KEY_EXPANDED = TAG + ":expanded"
-        private const val QRCODE_SIZE_SMALL = 320
-        private const val QRCODE_SIZE_LARGE = QRCODE_SIZE_SMALL * 2
     }
 }

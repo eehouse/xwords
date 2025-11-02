@@ -2174,6 +2174,28 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1setCollapsed
     DVC_HEADER_END();
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_GameRef_gr_1getPendingPacketsFor
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jobject jaddr,
+  jstring jhost, jstring jprefix )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+
+    const char* host = (*env)->GetStringUTFChars( env, jhost, NULL );
+    const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+    CommsAddrRec destAddr = getJAddrRec( env, jaddr );
+    XWStreamCtxt* stream = gr_getPendingPacketsFor( DUTIL_GR_ENV, &destAddr,
+                                                    host, prefix );
+    if ( !!stream ) {
+        result = streamToJString( env, stream, XP_TRUE );
+    }
+    (*env)->ReleaseStringUTFChars( env, jhost, host );
+    (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1failedOpenCount
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr)

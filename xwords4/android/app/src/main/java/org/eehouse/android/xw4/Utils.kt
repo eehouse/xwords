@@ -30,6 +30,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
@@ -46,15 +48,15 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
 
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
@@ -71,7 +73,14 @@ import java.security.NoSuchAlgorithmException
 import java.util.Formatter
 import java.util.Locale
 import java.util.Random
+
 import kotlin.math.min
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 import org.eehouse.android.xw4.Channels.ID
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
@@ -90,6 +99,9 @@ object Utils {
     private const val HIDDEN_PREFS = "xwprefs_hidden"
     private const val FIRST_VERSION_KEY = "FIRST_VERSION_KEY"
     private const val SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY"
+
+    private const val QRCODE_SIZE_SMALL = 320
+    private const val QRCODE_SIZE_LARGE = QRCODE_SIZE_SMALL * 2
 
     private val sDefaultChannel = ID.GAME_EVENT
 
@@ -745,6 +757,43 @@ object Utils {
         if (null != button) {
             button.isEnabled = enable
         }
+    }
+
+    suspend fun writeQRCode(parent: View, url: String, expanded: Boolean,
+                            view: ImageView, tv: TextView?) {
+        val qrSize =
+            if (expanded) QRCODE_SIZE_LARGE
+            else QRCODE_SIZE_SMALL
+        val bitmap = Bitmap.createBitmap(
+            qrSize, qrSize,
+            Bitmap.Config.ARGB_8888
+        )
+        try {
+            val multiFormatWriter = MultiFormatWriter()
+            val bitMatrix = multiFormatWriter.encode(
+                url, BarcodeFormat.QR_CODE,
+                qrSize, qrSize
+            )
+
+            for (ii in 0 until qrSize) {
+                for (jj in 0 until qrSize) {
+                    val color =
+                        if (bitMatrix[ii, jj]) {Color.BLACK}
+                        else {Color.WHITE}
+                    bitmap.setPixel(ii, jj, color)
+                }
+                yield()
+            }
+        } catch (we: WriterException) {
+            Log.ex(TAG, we)
+        }
+
+        view.setImageBitmap(bitmap)
+        tv?.let {
+            it.visibility = View.VISIBLE
+            it.text = url
+        }
+        parent.scrollTo(0, view.top)
     }
 
     fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
