@@ -62,28 +62,30 @@ object BleNetwork {
         mServiceUUID = Device.getUUID()
         Log.d(TAG, "UUID: $mServiceUUID")
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        Assert.assertTrueNR(mBluetoothAdapter.isMultipleAdvertisementSupported)
 
-        // Setup GATT server (Peripheral role)
-        val mgr = context.getSystemService(Context. BLUETOOTH_SERVICE) as BluetoothManager
-        mGattServer = mgr.openGattServer(context, gattServerCallback)
+        // This will fail when e.g. in airplane mode
+        if (mBluetoothAdapter.isMultipleAdvertisementSupported) {
+            // Setup GATT server (Peripheral role)
+            val mgr = context.getSystemService(Context. BLUETOOTH_SERVICE) as BluetoothManager
+            mGattServer = mgr.openGattServer(context, gattServerCallback)
 
-        val writeChar = BluetoothGattCharacteristic(
-            WRITE_CHAR_UUID,
-            BluetoothGattCharacteristic.PROPERTY_WRITE,
-            BluetoothGattCharacteristic.PERMISSION_WRITE
-        )
-        BluetoothGattService(mServiceUUID,
-                             BluetoothGattService.SERVICE_TYPE_PRIMARY).let {
-            service ->
-            service.addCharacteristic(writeChar)
-            mGattServer?.addService(service)
+            val writeChar = BluetoothGattCharacteristic(
+                WRITE_CHAR_UUID,
+                BluetoothGattCharacteristic.PROPERTY_WRITE,
+                BluetoothGattCharacteristic.PERMISSION_WRITE
+            )
+            BluetoothGattService(mServiceUUID,
+                                 BluetoothGattService.SERVICE_TYPE_PRIMARY).let {
+                service ->
+                service.addCharacteristic(writeChar)
+                mGattServer?.addService(service)
+            }
+
+            // Start scanning to discover peers
+            // Log.d(TAG, "starting scan")
+            // mBluetoothAdapter.bluetoothLeScanner.startScan(scanCallback)
+            // scan(context)
         }
-
-        // Start scanning to discover peers
-        // Log.d(TAG, "starting scan")
-        // mBluetoothAdapter.bluetoothLeScanner.startScan(scanCallback)
-        // scan(context)
     }
 
     fun addScanListener(context: Context, listener: ScanListener) {
