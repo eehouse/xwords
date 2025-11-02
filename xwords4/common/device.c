@@ -1183,7 +1183,7 @@ dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     parseBTPacket( dutil, xwe, buf, len, fromName, fromAddr );
 }
 
-void
+XP_Bool
 dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
               const XP_UCHAR* host, const XP_UCHAR* prefix)
 {
@@ -1206,6 +1206,7 @@ dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
             XP_LOGFF( "created " GR_FMT " for:", gr );
             LOGNLI( &nli );
         } else {
+            good = XP_FALSE;
             XP_LOGFF( "looking beyond '?'" );
             XP_U32 gameID;
             UrlDecodeIter gidIter = {.key = "gid"};
@@ -1213,6 +1214,7 @@ dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
             while ( urlDecodeFromStream( duc, stream, &gidIter, UPT_U32, &gameID ) ) {
                 XWStreamCtxt* msgs = NULL;
                 if ( urlDecodeFromStream( duc, stream, &msgsIter, UPT_STREAM, &msgs ) ) {
+                    good = XP_TRUE;
                     XP_ASSERT( !!msgs );
 
                     GameRef grs[4];
@@ -1232,6 +1234,7 @@ dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
     }
 
     stream_destroy( stream );
+    return good;
 }
 
 void

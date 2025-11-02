@@ -18,6 +18,7 @@
  */
 package org.eehouse.android.xw4.jni
 
+import android.content.Context
 import android.net.Uri
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
@@ -36,6 +37,7 @@ import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
+import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode
 
@@ -211,6 +213,14 @@ object Device {
         }
     }
 
+    suspend fun parseUrl(context: Context, uri: Uri): Boolean {
+        val (host, prefix) = NetUtils.getHostAndPrefix(context)
+        val result = await {
+            dvc_parseUrl(m_ptrGlobals, uri.toString(), host, prefix)
+        } as Boolean
+        return result
+    }
+
     fun onBLEMtuChanged(addr: String, newBTU: Int) {
         post( Priority.NETWORK ) {
             dvc_onBLEMtuChanged(m_ptrGlobals, addr, newBTU)
@@ -341,6 +351,9 @@ object Device {
     @JvmStatic
     private external fun dvc_parseBTPacket(jniState: Long, fromName: String?,
                                            fromMac: String?, packet: ByteArray)
+    @JvmStatic
+    private external fun dvc_parseUrl(jniState: Long, url: String,
+                                      host: String, prefix: String): Boolean
     @JvmStatic
     private external fun dvc_onBLEMtuChanged(jniState: Long, addr: String,
                                              newBTU:Int )

@@ -2444,6 +2444,15 @@ class GamesListDelegate(delegator: Delegator) :
         return handled
     } // startNewNetGame
 
+    private suspend fun tryNewURL(intent: Intent): Boolean {
+        val result =
+            intent.data?.let { url ->
+                Device.parseUrl(mActivity, url)
+            } ?: false
+        Log.d(TAG, "tryNewURL(${intent.data}) => $result")
+        return result
+    }
+
     private fun loadConfig(intent: Intent): Boolean {
         var success = false
         val data = intent.data
@@ -2826,6 +2835,7 @@ class GamesListDelegate(delegator: Delegator) :
                 || downloadDictUpgrade(intent)
                 || loadConfig(intent)
                 || startNewNetGame(intent)
+                || tryNewURL(intent)
                 || startHasGameID(intent)
                 || startRematch(intent)
                 || startConfig(intent)

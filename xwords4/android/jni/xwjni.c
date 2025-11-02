@@ -2266,6 +2266,26 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseSMSPacket
     DVC_HEADER_END();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1parseUrl
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jurl,
+  jstring jhost, jstring jprefix )
+{
+    jboolean result;
+    DVC_HEADER(jniGlobalPtr);
+    const char* host = (*env)->GetStringUTFChars( env, jhost, NULL );
+    const char* prefix = (*env)->GetStringUTFChars( env, jprefix, NULL );
+    const char* url = (*env)->GetStringUTFChars( env, jurl, NULL );
+
+    result = dvc_parseUrl( globalState->dutil, env, url, strlen(url), host, prefix );
+
+    (*env)->ReleaseStringUTFChars( env, jhost, host );
+    (*env)->ReleaseStringUTFChars( env, jprefix, prefix );
+    (*env)->ReleaseStringUTFChars( env, jurl, url );
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1onTimerFired
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint jkey )

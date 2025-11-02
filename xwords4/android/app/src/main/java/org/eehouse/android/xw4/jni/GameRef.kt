@@ -336,9 +336,7 @@ class GameRef(val gr: Long): Parcelable, Serializable {
 
     suspend fun inviteUrl(context: Context): String {
         Log.d(TAG, "inviteUrl()")
-        var host: String? = LocUtils.getString(context, R.string.invite_host)
-        host = NetUtils.forceHost(host)
-        val prefix = LocUtils.getString(context, R.string.invite_prefix)!!
+        val (host, prefix) = NetUtils.getHostAndPrefix(context)
 
         val result = Device.await {
             gr_inviteUrl(jniState, gr, host!!, prefix)

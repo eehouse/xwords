@@ -56,6 +56,13 @@ object NetUtils {
 
     const val k_PARAMS: String = "params"
 
+    fun getHostAndPrefix(context: Context): Pair<String, String> {
+        var host: String? = LocUtils.getString(context, R.string.invite_host)
+        host = forceHost(host)
+        val prefix = LocUtils.getString(context, R.string.invite_prefix)!!
+        return host!! to prefix
+    }
+
     fun makeProxySocket(
         context: Context,
         timeoutMillis: Int
