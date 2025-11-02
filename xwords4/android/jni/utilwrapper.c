@@ -829,7 +829,7 @@ and_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
 {
     DUTIL_CBK_HEADER( "getSelfAddr", "()L" PKG_PATH("jni/CommsAddrRec") ";" );
     jobject jaddr = (*env)->CallObjectMethod( env, dutil->jdutil, mid );
-    getJAddrRec( env, addr, jaddr );
+    *addr = getJAddrRec( env, jaddr );
     deleteLocalRef( env, jaddr );
     DUTIL_CBK_TAIL();
 }

@@ -104,7 +104,7 @@ jobject makeJSummaryRec( JNIEnv* env, jobject jsum, const GameSummary* gs,
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
 ConnTypeSetBits getTypesFromSet( JNIEnv* env, jobject jtypeset );
-void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
+CommsAddrRec getJAddrRec( JNIEnv* env, jobject jaddr );
 void setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
                         const char* fldName );
 jobject conTypesToJ( JNIEnv* env, ConnTypeSetBits types );

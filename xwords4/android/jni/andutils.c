@@ -732,10 +732,10 @@ getTypesFromSet( JNIEnv* env, jobject jtypeset )
 }
 
 /* Writes a java version of CommsAddrRec into a C one */
-void
-getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
+CommsAddrRec
+getJAddrRec( JNIEnv* env, jobject jaddr )
 {
-    XP_MEMSET( addr, 0, sizeof(*addr) );
+    CommsAddrRec addr = {};
     /* Iterate over types in the set in jaddr, and for each call
        addr_addType() and then copy in the types. */
     jobject jtypeset = getObjectField( env, jaddr, "conTypes",
@@ -744,45 +744,45 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
     ConnTypeSetBits conTypes = getTypesFromSet( env, jtypeset );
     CommsConnType typ;
     for ( XP_U32 state = 0; types_iter( conTypes, &typ, &state ); ) {
-        addr_addType( addr, typ );
+        addr_addType( &addr, typ );
 
         switch ( typ ) {
         case COMMS_CONN_RELAY:
 #ifdef XWFEATURE_RELAY
-            addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
-            getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
-                       VSIZE(addr->u.ip_relay.hostName) );
-            getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
-                       VSIZE(addr->u.ip_relay.invite) );
-            addr->u.ip_relay.seeksPublicRoom =
+            addr.u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
+            getString( env, jaddr, "ip_relay_hostName", addr.u.ip_relay.hostName,
+                       VSIZE(addr.u.ip_relay.hostName) );
+            getString( env, jaddr, "ip_relay_invite", addr.u.ip_relay.invite,
+                       VSIZE(addr.u.ip_relay.invite) );
+            addr.u.ip_relay.seeksPublicRoom =
                 getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
-            addr->u.ip_relay.advertiseRoom =
+            addr.u.ip_relay.advertiseRoom =
                 getBool( env, jaddr, "ip_relay_advertiseRoom" );
 
 #endif
             break;
         case COMMS_CONN_SMS:
-            getString( env, jaddr, "sms_phone", addr->u.sms.phone,
-                       VSIZE(addr->u.sms.phone) );
-            // XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
-            addr->u.sms.port = getInt( env, jaddr, "sms_port" );
+            getString( env, jaddr, "sms_phone", addr.u.sms.phone,
+                       VSIZE(addr.u.sms.phone) );
+            // XP_LOGF( "%s: got SMS; phone=%s", __func__, addr.u.sms.phone );
+            addr.u.sms.port = getInt( env, jaddr, "sms_port" );
             break;
         case COMMS_CONN_BT:
-            getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
-                       VSIZE(addr->u.bt.hostName) );
-            getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
-                       VSIZE(addr->u.bt.btAddr.chars) );
+            getString( env, jaddr, "bt_hostName", addr.u.bt.hostName,
+                       VSIZE(addr.u.bt.hostName) );
+            getString( env, jaddr, "bt_btAddr", addr.u.bt.btAddr.chars,
+                       VSIZE(addr.u.bt.btAddr.chars) );
             break;
         case COMMS_CONN_P2P:
-            getString( env, jaddr, "p2p_addr", addr->u.p2p.mac_addr,
-                       VSIZE(addr->u.p2p.mac_addr) );
+            getString( env, jaddr, "p2p_addr", addr.u.p2p.mac_addr,
+                       VSIZE(addr.u.p2p.mac_addr) );
             break;
         case COMMS_CONN_NFC:
             break;
         case COMMS_CONN_MQTT: {
             XP_UCHAR buf[32];
             getString( env, jaddr, "mqtt_devID", buf, VSIZE(buf) );
-            sscanf( buf, MQTTDevID_FMT, &addr->u.mqtt.devID );
+            sscanf( buf, MQTTDevID_FMT, &addr.u.mqtt.devID );
         }
             break;
         default:
@@ -790,6 +790,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         }
     }
     deleteLocalRef( env, jtypeset );
+    return addr;
 }
 
 jint

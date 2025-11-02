@@ -1147,9 +1147,9 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1newFor
     makeGI( env, dutil, &gi, jgi );
 
     CommsAddrRec* addrp = NULL;
-    CommsAddrRec invitee = {};
+    CommsAddrRec invitee;
     if ( !!jinvitee ) {
-        getJAddrRec( env, &invitee, jinvitee );
+        invitee = getJAddrRec( env, jinvitee );
         addrp = &invitee;
     }
 
@@ -1812,8 +1812,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1invite
 {
     LOG_FUNC();
     DVC_HEADER(jniGlobalPtr);
-    CommsAddrRec destAddr;
-    getJAddrRec( env, &destAddr, jaddr );
+    CommsAddrRec destAddr = getJAddrRec( env, jaddr );
     NetLaunchInfo nli;
     loadNLI( env, &nli, jnli );
 
