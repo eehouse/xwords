@@ -2435,7 +2435,7 @@ class GamesListDelegate(delegator: Delegator) :
                 MultiService.getMissingDictData(mActivity, intent)
             } else {
                 intent.data?.let {
-                    NetLaunchInfo(mActivity, it)
+                    NetLaunchInfo.makeFrom(mActivity, it)
                 }
             }
         if (null != nli && nli.isValid) {

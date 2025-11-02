@@ -200,10 +200,9 @@ class NetLaunchInfo : Serializable {
                                 isoCodeStr = Device.lcToLocale(lang).toString()
                             }
                         }
-                        Assert.assertTrueNR(null != isoCodeStr) // firing
-
-                        val np = data.getQueryParameter(TOTPLAYERS_KEY)
-                        nPlayersT = Integer.decode(np)
+                        data.getQueryParameter(TOTPLAYERS_KEY)?.let {
+                            nPlayersT = Integer.decode(it)
+                        }
                         val nh = data.getQueryParameter(HEREPLAYERS_KEY)
                         nPlayersH = if (nh == null) 1 else Integer.decode(nh)
                         pval = data.getQueryParameter(GID_KEY)
