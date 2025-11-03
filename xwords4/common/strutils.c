@@ -22,6 +22,7 @@
 #include "mempool.h"
 #include "xptypes.h"
 #include "device.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -264,6 +265,196 @@ urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* ke
     } else {
         XP_LOGFF( "nothing to print for key %s", key );
     }
+}
+
+static XP_Bool
+getUntil( XWStreamCtxt* stream, XP_UCHAR sought, XP_U8 buf[], XP_U16* bufLen )
+{
+    XP_Bool success = XP_FALSE;
+    XP_U8 got;
+    int index = 0;
+    while ( stream_gotU8( stream, &got ) ) {
+        if ( sought == got ) {
+            success = XP_TRUE;
+            if ( !!bufLen ) {
+                *bufLen = index;
+            }
+            break;
+        } else if ( !!buf ) {
+            buf[index++] = got;
+            XP_ASSERT( index < *bufLen );
+        }
+    }
+    return success;
+}
+
+static XP_Bool
+decodeUntil( XW_DUtilCtxt* duc, XWStreamCtxt* stream, XP_U8 sought,
+             UrlParamType typ, va_list* app )
+{
+    XP_U8* outU8 = NULL;
+    XP_U32* outU32 = NULL;
+    XWStreamCtxt** streamP = NULL;
+    XP_UCHAR* outStr = NULL;
+    int outLen;
+    int outStrIndex = 0;
+
+    switch ( typ ) {
+    case UPT_U8:
+        outU8 = va_arg( *app, XP_U8* );
+        break;
+    case UPT_U32:
+        outU32 = va_arg( *app, XP_U32* );
+        break;
+    case UPT_STREAM:
+        streamP = va_arg( *app, XWStreamCtxt** );
+        break;
+    case UPT_STRING:
+        outStr = va_arg( *app, XP_UCHAR* );
+        outLen = va_arg( *app, int );
+        XP_ASSERT( outLen < 64 );
+        break;
+    default:
+        XP_ASSERT(0);           /* firing */
+    }
+
+    XP_Bool success = XP_TRUE;
+    XP_UCHAR numBuf[16];
+    int numIndx = 0;
+    XP_U8 got;
+    while ( success && stream_gotU8( stream, &got ) ) {
+        if ( got == sought ) {
+            break;
+        } else if ( got == '%' ) {
+            /* Get the next: it's an error if they're missing */
+            XP_U8 buf[3];
+            if ( !stream_gotBytes( stream, buf, 2 ) ) {
+                XP_LOGFF( "premature end??" );
+                success = XP_FALSE;
+                break;
+            }
+            buf[2] = '\0';
+            int tmp;
+            int nGot = sscanf( (char*)buf, "%02X", &tmp );
+            if ( 1 != nGot ) {
+                XP_LOGFF( "bad hex format in '%s'?", buf );
+                success = XP_FALSE;
+                break;
+            }
+            XP_ASSERT( tmp <= 0xFF );
+            got = (XP_U8)tmp;
+        }
+
+        /* Now we have one converted byte. Save appropriately*/
+        switch ( typ ) {
+        case UPT_U8:
+        case UPT_U32:
+            numBuf[numIndx++] = got;
+            break;
+        case UPT_STRING:
+            if ( outStrIndex+1 >= outLen ) {
+                success = XP_FALSE;
+            } else {
+                outStr[outStrIndex++] = got;
+            }
+            break;
+        case UPT_STREAM:
+            if ( !*streamP ) {
+                *streamP = dvc_makeStream( duc );
+            }
+            stream_putU8( *streamP, got );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+
+    if ( success ) {
+        switch ( typ ) {
+        case UPT_U8:
+        case UPT_U32: {
+            XP_U32 num;
+            numBuf[numIndx] = '\0';
+            sscanf( numBuf, "%d", &num );
+            if ( !!outU32 ) {
+                *outU32 = num;
+            } else if ( !!outU8 ) {
+                XP_ASSERT( num <= 0xFF );
+                *outU8 = (XP_U8)num;
+            } else {
+                XP_ASSERT(0);
+            }
+        }
+            break;
+        case UPT_STREAM:
+            // XP_LOGFF( "nothing to do for string/stream ");
+            break;
+        case UPT_STRING:
+            outStr[outStrIndex] = '\0';
+            break;
+         default:
+            XP_ASSERT(0);
+            break;
+        }
+    }
+
+    return success;
+} /* decodeUntil */
+
+static XP_Bool
+urlDecodeFromStreamAP( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
+                       UrlDecodeIter* iter, UrlParamType typ, va_list* ap )
+{
+    XP_Bool found = XP_FALSE;
+    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+    if ( iter->pos ) {
+        stream_setPos( stream, POS_READ, iter->pos );
+    }
+
+    for ( ; ; ) {
+        XP_U8 key[32] = {};
+        XP_U16 keyLen = VSIZE(key);
+        if ( !getUntil( stream, '=', key, &keyLen ) ) {
+            break;
+        } else {
+            key[keyLen] = '\0';
+            if ( 0 == XP_MEMCMP( key, iter->key, keyLen ) ) {
+                XP_LOGFF( "matched key %s", key );
+                /* va_list ap; */
+                /* va_start( ap, typ ); */
+                found = decodeUntil( duc, stream, '&', typ, ap );
+                /* va_end( ap ); */
+                break;
+            } else {
+                XP_LOGFF( "matched some other key? %s", key );
+                getUntil( stream, '&', NULL, 0 );
+            }
+        }
+    }
+
+    if ( found ) {
+        ++iter->count;
+        iter->pos = stream_getPos( stream, POS_READ );
+    } else {
+        stream_setPos( stream, POS_READ, startPos );
+    }
+    return found;
+}
+
+XP_Bool
+urlParamFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
+                    const XP_UCHAR* key, UrlParamType typ, ... )
+{
+    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+
+    UrlDecodeIter iter = { .key = key, };
+    va_list ap;
+    va_start( ap, typ );
+    XP_Bool success = urlDecodeFromStreamAP( duc, stream, &iter, typ, &ap );
+    va_end( ap );
+
+    stream_setPos( stream, POS_READ, startPos );
+    return success;
 }
 
 void
@@ -957,170 +1148,15 @@ log_devid( const MQTTDevID* devID, const XP_UCHAR* tag )
 }
 #endif
 
-static XP_Bool
-decodeUntil( XW_DUtilCtxt* duc, XWStreamCtxt* stream, XP_U8 sought,
-             UrlParamType typ, va_list* app )
-{
-    XP_U8* outU8 = NULL;
-    XP_U32* outU32 = NULL;
-    XWStreamCtxt** streamP = NULL;
-    XP_UCHAR* outStr = NULL;
-    int outStrIndex = 0;
-
-    switch ( typ ) {
-    case UPT_U8:
-        outU8 = va_arg( *app, XP_U8* );
-        break;
-    case UPT_U32:
-        outU32 = va_arg( *app, XP_U32* );
-        break;
-    case UPT_STREAM:
-        streamP = va_arg( *app, XWStreamCtxt** );
-        break;
-    case UPT_STRING:
-        outStr = va_arg( *app, XP_UCHAR* );
-        break;
-    default:
-        XP_ASSERT(0);           /* firing */
-    }
-
-    XP_Bool success = XP_TRUE;
-    XP_UCHAR numBuf[16];
-    int numIndx = 0;
-    XP_U8 got;
-    while ( success && stream_gotU8( stream, &got ) ) {
-        if ( got == sought ) {
-            break;
-        } else if ( got == '%' ) {
-            /* Get the next: it's an error if they're missing */
-            XP_U8 buf[3];
-            if ( !stream_gotBytes( stream, buf, 2 ) ) {
-                XP_LOGFF( "premature end??" );
-                success = XP_FALSE;
-                break;
-            }
-            buf[2] = '\0';
-            int tmp;
-            int nGot = sscanf( (char*)buf, "%02X", &tmp );
-            if ( 1 != nGot ) {
-                XP_LOGFF( "bad hex format in '%s'?", buf );
-                success = XP_FALSE;
-                break;
-            }
-            XP_ASSERT( tmp <= 0xFF );
-            got = (XP_U8)tmp;
-        }
-
-        /* Now we have one converted byte. Save appropriately*/
-        switch ( typ ) {
-        case UPT_U8:
-        case UPT_U32:
-            numBuf[numIndx++] = got;
-            break;
-        case UPT_STRING:
-            outStr[outStrIndex++] = got;
-            outStr[outStrIndex] = '\0';
-            // stream_putU8( ((XWStreamCtxt*)out), got );
-            break;
-        case UPT_STREAM:
-            if ( !*streamP ) {
-                *streamP = dvc_makeStream( duc );
-            }
-            stream_putU8( *streamP, got );
-            break;
-        default:
-            XP_ASSERT(0);
-        }
-    }
-
-    if ( success ) {
-        switch ( typ ) {
-        case UPT_U8:
-        case UPT_U32: {
-            XP_U32 num;
-            numBuf[numIndx] = '\0';
-            sscanf( numBuf, "%d", &num );
-            if ( !!outU32 ) {
-                *outU32 = num;
-            } else if ( !!outU8 ) {
-                XP_ASSERT( num <= 0xFF );
-                *outU8 = (XP_U8)num;
-            } else {
-                XP_ASSERT(0);
-            }
-        }
-            break;
-        case UPT_STREAM:
-        case UPT_STRING:
-            XP_LOGFF( "nothing to do for string/stream ");
-            break;
-         default:
-            XP_ASSERT(0);
-            break;
-        }
-    }
-
-    return success;
-} /* decodeUntil */
-
-static XP_Bool
-getUntil( XWStreamCtxt* stream, XP_UCHAR sought, XP_U8 buf[], XP_U16* bufLen )
-{
-    XP_Bool success = XP_FALSE;
-    XP_U8 got;
-    int index = 0;
-    while ( stream_gotU8( stream, &got ) ) {
-        if ( sought == got ) {
-            success = XP_TRUE;
-            if ( !!bufLen ) {
-                *bufLen = index;
-            }
-            break;
-        } else if ( !!buf ) {
-            buf[index++] = got;
-            XP_ASSERT( index < *bufLen );
-        }
-    }
-    return success;
-}
-
 XP_Bool
 urlDecodeFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
                      UrlDecodeIter* iter, UrlParamType typ, ... )
 {
     XP_Bool found = XP_FALSE;
-    XWStreamPos startPos = stream_getPos( stream, POS_READ );
-    if ( iter->pos ) {
-        stream_setPos( stream, POS_READ, iter->pos );
-    }
-
-    for ( ; ; ) {
-        XP_U8 key[32] = {};
-        XP_U16 keyLen = VSIZE(key);
-        if ( !getUntil( stream, '=', key, &keyLen ) ) {
-            break;
-        } else {
-            key[keyLen] = '\0';
-            if ( 0 == XP_MEMCMP( key, iter->key, keyLen ) ) {
-                XP_LOGFF( "matched key %s", key );
-                va_list ap;
-                va_start( ap, typ );
-                found = decodeUntil( duc, stream, '&', typ, &ap );
-                va_end( ap );
-                break;
-            } else {
-                XP_LOGFF( "matched some other key? %s", key );
-                getUntil( stream, '&', NULL, 0 );
-            }
-        }
-    }
-
-    if ( found ) {
-        ++iter->count;
-        iter->pos = stream_getPos( stream, POS_READ );
-    } else {
-        stream_setPos( stream, POS_READ, startPos );
-    }
+    va_list ap;
+    va_start( ap, typ );
+    found = urlDecodeFromStreamAP( duc, stream, iter, typ, &ap );
+    va_end( ap );
     return found;
 }
 

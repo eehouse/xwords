@@ -72,6 +72,8 @@ typedef struct _UrlDecodeIter {
 } UrlDecodeIter;
 XP_Bool urlDecodeFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
                              UrlDecodeIter* iter, UrlParamType typ, ... );
+XP_Bool urlParamFromStream( XW_DUtilCtxt* dutil, XWStreamCtxt* stream,
+                            const XP_UCHAR* key, UrlParamType typ, ... );
 
 typedef struct _URLKey {
     XP_UCHAR txt[16];

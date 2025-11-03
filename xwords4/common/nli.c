@@ -452,85 +452,42 @@ nli_makeInviteData( const NetLaunchInfo* nli, XWStreamCtxt* stream )
 XP_Bool
 nli_fromInviteData( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, NetLaunchInfo* nlip )
 {
-    XP_Bool success = XP_TRUE;
     NetLaunchInfo nli = {};
     XWStreamPos startPos = stream_getPos( stream, POS_READ );
 
-    {
-        UrlDecodeIter iter = {.key = "ad", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U32, &nli._conTypes ) ) {
-            goto error;
+    XP_Bool success = 
+        urlParamFromStream( dutil, stream, "ad", UPT_U32, &nli._conTypes )
+        && urlParamFromStream( dutil, stream, "np", UPT_U8, &nli.nPlayersT )
+        && urlParamFromStream( dutil, stream, "nh", UPT_U8, &nli.nPlayersH )
+        && urlParamFromStream( dutil, stream, "gid", UPT_U32, &nli.gameID )
+        && urlParamFromStream( dutil, stream, "fc", UPT_U8, &nli.forceChannel )
+        && urlParamFromStream( dutil, stream, "wl", UPT_STRING, &nli.dict, VSIZE(nli.dict) )
+        ;
+
+    if ( success ) {
+        /* optional params */
+        urlParamFromStream( dutil, stream, "nm", UPT_STRING, &nli.gameName, VSIZE(nli.gameName) );
+        urlParamFromStream( dutil, stream, "du", UPT_U8, &nli.inDuplicateMode );
+
+        /* Connection-specific parameters */
+        if ( types_hasType( nli._conTypes, COMMS_CONN_BT ) ) { 
+            success = urlParamFromStream( dutil, stream, "btn", UPT_STRING,
+                                          &nli.btName, VSIZE(nli.btName) );
         }
-    }
-    {
-        UrlDecodeIter iter = {.key = "nm", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.gameName ) ) {
-            goto error;
+        if ( success && types_hasType( nli._conTypes, COMMS_CONN_SMS ) ) {
+            success = urlParamFromStream( dutil, stream, "phone", UPT_STRING,
+                                          &nli.phone, VSIZE(nli.phone) );
         }
-    }
-    {
-        UrlDecodeIter iter = {.key = "np", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.nPlayersT ) ) {
-            goto error;
-        }
-    }
-    {
-        UrlDecodeIter iter = {.key = "nh", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.nPlayersH ) ) {
-            goto error;
-        }
-    }
-    {
-        UrlDecodeIter iter = {.key = "gid", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U32, &nli.gameID ) ) {
-            goto error;
-        }
-    }
-    {
-        UrlDecodeIter iter = {.key = "fc", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_U8, &nli.forceChannel ) ) {
-            goto error;
-        }
-    }
-    {
-        UrlDecodeIter iter = {.key = "wl", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.dict ) ) {
-            goto error;
+        if ( success && types_hasType( nli._conTypes, COMMS_CONN_MQTT ) ) {
+            success = urlParamFromStream( dutil, stream, "r2id", UPT_STRING,
+                                          &nli.mqttDevID, VSIZE(nli.mqttDevID) );
         }
     }
 
-    {
-        UrlDecodeIter iter = {.key = "du", .pos = startPos, };
-        urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.inDuplicateMode );
-    }
-
-    /* Connection-specific parameters */
-    if ( types_hasType( nli._conTypes, COMMS_CONN_BT ) ) {
-        UrlDecodeIter iter = {.key = "btn", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.btName ) ) {
-            goto error;
-        }
-    }
-    if ( types_hasType( nli._conTypes, COMMS_CONN_SMS ) ) {
-        UrlDecodeIter iter = {.key = "phone", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.phone ) ) {
-            goto error;
-        }
-    }
-    if ( types_hasType( nli._conTypes, COMMS_CONN_MQTT ) ) {
-        UrlDecodeIter iter = {.key = "r2id", .pos = startPos, };
-        if ( !urlDecodeFromStream( dutil, stream, &iter, UPT_STRING, &nli.mqttDevID ) ) {
-            goto error;
-        }
-    }
-
-    goto done;
- error:
-    success = XP_FALSE;
-    stream_setPos( stream, POS_READ, startPos );
- done:
     if ( success ) {
         *nlip = nli;
+    } else {
+        stream_setPos( stream, POS_READ, startPos );
     }
     return success;
 }
