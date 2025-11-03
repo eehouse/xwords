@@ -4842,8 +4842,8 @@ ctrl_endGame( CtrlrCtxt* ctrlr, XWEnv xwe )
 
 void
 ctrl_inviteeName( const CtrlrCtxt* ctrlr,
-                    XWEnv xwe, XP_U16 playerPosn,
-                    XP_UCHAR* buf, XP_U16* bufLen )
+                  XWEnv xwe, XP_U16 playerPosn,
+                  XP_UCHAR* buf, XP_U16* bufLen )
 {
     int nameIndx = 0;
     for ( int ii = 0; ii <= playerPosn; ++ii ) {

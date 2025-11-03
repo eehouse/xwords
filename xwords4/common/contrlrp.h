@@ -116,8 +116,8 @@ XP_Bool ctrl_commitTrade( CtrlrCtxt* ctrlr, XWEnv xwe,
 void ctrl_endGame( CtrlrCtxt* ctrlr, XWEnv xwe );
 
 void ctrl_inviteeName( const CtrlrCtxt* ctrlr,
-                         XWEnv xwe, XP_U16 channelNo,
-                         XP_UCHAR* buf, XP_U16* bufLen );
+                       XWEnv xwe, XP_U16 channelNo,
+                       XP_UCHAR* buf, XP_U16* bufLen );
 
 /* called when running as either client or server */
 XP_Bool ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
