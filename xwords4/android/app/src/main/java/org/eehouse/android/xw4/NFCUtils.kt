@@ -155,7 +155,7 @@ object NFCUtils {
         }
         Log.d(
             TAG, "unformatMsgs() => %s (len=%d)", result,
-            result?.size ?: 0
+            result.size
         )
         return result
     }
@@ -482,7 +482,7 @@ object NFCUtils {
                 if (0 < thisLen) {
                     // Log.d( TAG, "writing %d bytes starting from offset %d",
                     //        thisLen, offset );
-                    baos.write(msg, offset, thisLen)
+                    msg?.let { baos.write(it, offset, thisLen) }
                     offset += thisLen
                 }
                 val tmp = baos.toByteArray()
@@ -720,7 +720,7 @@ object NFCUtils {
         companion object {
             fun init(activity: Activity, procs: Procs, devID: Int): Wrapper? {
                 var instance: Wrapper? = null
-                if (nfcAvail(activity)!![1]) {
+                if (nfcAvail(activity)[1]) {
                     instance = Wrapper(activity, procs, devID)
                 }
                 // Log.d(TAG, "Wrapper.init(devID=%d) => %s", devID, instance)
