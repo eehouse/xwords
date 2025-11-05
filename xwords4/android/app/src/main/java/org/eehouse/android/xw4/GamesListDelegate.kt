@@ -2430,13 +2430,9 @@ class GamesListDelegate(delegator: Delegator) :
 
     private fun startNewNetGame(nli: NetLaunchInfo): Boolean {
         var handled = nli.isValid
-
         if ( handled ) {
-            launch {
-                GameMgr.addForInvite(nli)
-            }
+            GameMgr.addForInvite(nli)
         }
-
         return handled
     } // startNewNetGame
 
@@ -2604,20 +2600,6 @@ class GamesListDelegate(delegator: Delegator) :
             handled = true
         }
         return handled
-    }
-
-    private fun tryInviteIntent(intent: Intent): Boolean {
-        var result = false
-        getFromIntent(intent)?.let {
-            val nli = NetLaunchInfo.makeFrom(mActivity, it)
-            if (null != nli && nli.isValid) {
-                startNewNetGame(nli)
-                result = true
-            } else {
-                Assert.failDbg()
-            }
-        }
-        return result
     }
 
     private fun tryKAConfigIntent(intent: Intent): Boolean {
@@ -2852,7 +2834,6 @@ class GamesListDelegate(delegator: Delegator) :
                 || startRematch(intent)
                 || startConfig(intent)
                 || tryAlert(intent)
-                || tryInviteIntent(intent)
                 || tryKAConfigIntent(intent)
 
             Log.d(TAG, "tryStartsFromIntent() => handled: %b", handled)
@@ -3010,18 +2991,6 @@ class GamesListDelegate(delegator: Delegator) :
         startActivity(intent)
     }
 
-    private fun getFromIntent(intent: Intent): ByteArray? {
-        var result: ByteArray? = null
-
-        val action = intent.action
-        if (INVITE_ACTION == action) {
-            result = intent.getByteArrayExtra(INVITE_DATA)
-        }
-
-        // Log.d( TAG, "getFromIntent() => %s", result );
-        return result
-    }
-
     inner class GameViewHolder(val mGameListElem: GameListElem):
         RecyclerView.ViewHolder(mGameListElem),
         View.OnClickListener, View.OnAttachStateChangeListener
@@ -3170,8 +3139,6 @@ class GamesListDelegate(delegator: Delegator) :
 
         // private const val CONFIG_ROWID_EXTRA = "conf_rowid"
         private const val CONFIG_GAMEREF_EXTRA = "conf_gr"
-        private const val INVITE_ACTION = "org.eehouse.action_invite"
-        private const val INVITE_DATA = "data_invite"
 
         private const val ALERT_MSG = "alert_msg"
         private const val WITH_EMAIL = "with_email"
@@ -3270,27 +3237,6 @@ class GamesListDelegate(delegator: Delegator) :
             val intent = makeSelfIntent(context)
                 .putExtra(ALERT_MSG, msg)
             return intent
-        }
-
-        fun postReceivedInvite(context: Context, data: ByteArray) {
-            val intent = makeSelfIntent(context)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-            populateInviteIntent(context, intent, data)
-            context.startActivity(intent)
-        }
-
-        private fun populateInviteIntent(
-            context: Context, intent: Intent,
-            data: ByteArray
-        ) {
-            val nli = NetLaunchInfo.makeFrom(context, data)
-            if (null != nli) {
-                intent.setAction(INVITE_ACTION)
-                    .putExtra(INVITE_DATA, data)
-            } else {
-                Assert.failDbg()
-            }
         }
 
         fun openGame(context: Context, data: Uri?) {

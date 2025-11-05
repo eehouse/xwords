@@ -149,12 +149,13 @@ object GameMgr {
         } as Boolean
     }
 
-    suspend fun addForInvite(nli: NetLaunchInfo): GameRef? {
-        val gr = Device.await {
+    // gmgr_addForInvite() returns a GameRef, but that would require this be a
+    // suspend. Until we need to use the result, let's not do that.
+    fun addForInvite(nli: NetLaunchInfo) {
+        Device.post {
             val jniState = Device.ptrGlobals()
             gmgr_addForInvite(jniState, nli)
-        } as Long
-        return if (gr == 0L) null else GameRef(gr)
+        }
     }
 
     fun clearThumbnails() {

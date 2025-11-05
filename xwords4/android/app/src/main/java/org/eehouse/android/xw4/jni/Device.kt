@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
-import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode

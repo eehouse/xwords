@@ -48,6 +48,7 @@ import kotlin.math.min
 import org.eehouse.android.xw4.NFCUtils.Wrapper.Procs
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.loc.LocUtils
 
 object NFCUtils {
@@ -193,7 +194,9 @@ object NFCUtils {
             val body = MsgsStore.split(msg, typ)
             when (typ[0]) {
                 MESSAGE -> Device.parseNFCPacket(gameID[0], body)
-                INVITE -> GamesListDelegate.postReceivedInvite(context, body)
+                INVITE -> NetLaunchInfo.makeFrom(context, body)?.let {
+                    GameMgr.addForInvite(it)
+                }
                 REPLY -> when (body[0]) {
                              // PENDING Don't enable this until deviceID is being
                              REPLY_NOGAME ->
