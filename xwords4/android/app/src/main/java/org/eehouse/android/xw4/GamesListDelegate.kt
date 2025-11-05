@@ -490,292 +490,300 @@ class GamesListDelegate(delegator: Delegator) :
     private var mAdapter: GamesViewAdapter? = null
 
     override fun makeDialog(alert: DBAlert, vararg params: Any?): Dialog? {
-        var dialog: Dialog? = null
         val lstnr: DialogInterface.OnClickListener
         val lstnr2: DialogInterface.OnClickListener
 
         val dlgID = alert.dlgID
         Log.d(TAG, "makeDialog($dlgID)")
-        when (dlgID) {
-            DlgID.WARN_NODICT_GENERIC,
-            DlgID.WARN_NODICT_INVITED,
-            DlgID.WARN_NODICT_SUBST -> {
-                val gr = params[0] as GameRef
-                val gi = params[1] as CurGameInfo
-                val missingDictName = params[2] as String
-                val missingDictLang = gi.isoCode()!!
+        val dialog =
+            when (dlgID) {
+                DlgID.WARN_NODICT_GENERIC,
+                DlgID.WARN_NODICT_INVITED,
+                DlgID.WARN_NODICT_SUBST -> {
+                    val gr = params[0] as GameRef
+                    val gi = params[1] as CurGameInfo
+                    val missingDictName = params[2] as String
+                    val missingDictLang = gi.isoCode()!!
 
-                lstnr = DialogInterface.OnClickListener { dlg, item ->
-                    DwnldDelegate.downloadDictInBack(
-                        mActivity, missingDictLang, missingDictName,
-                        this@GamesListDelegate)
+                    lstnr = DialogInterface.OnClickListener { dlg, item ->
+                        DwnldDelegate.downloadDictInBack(
+                            mActivity, missingDictLang, missingDictName,
+                            this@GamesListDelegate)
+                    }
+                    val langName =
+                        DictLangCache.getLangNameForISOCode(mActivity, missingDictLang)
+                    val locLang = langName
+                    val gameName = gi.gameName
+                    val message =
+                        if (DlgID.WARN_NODICT_GENERIC == dlgID) {
+                            getString(R.string.no_dict_fmt, gameName, locLang)
+                        } else if (DlgID.WARN_NODICT_INVITED == dlgID) {
+                            getString(
+                                R.string.invite_dict_missing_body_noname_fmt,
+                                null, missingDictName, locLang
+                            )
+                        } else {
+                            // WARN_NODICT_SUBST
+                            getString(
+                                R.string.no_dict_subst_fmt, gameName,
+                                missingDictName, locLang
+                            )
+                        }
+
+                    val ab = makeAlertBuilder()
+                        .setTitle(R.string.no_dict_title)
+                        .setMessage(message)
+                        .setPositiveButton(android.R.string.cancel, null)
+                        .setNegativeButton(R.string.button_download, lstnr)
+
+                    if (DlgID.WARN_NODICT_SUBST == dlgID) {
+                        val neuLstnr = DialogInterface.OnClickListener { dlg, item ->
+                            showDialogFragment(
+                                DlgID.SHOW_SUBST, gr,
+                                missingDictName, missingDictLang
+                            )
+                        }
+                        ab.setNeutralButton(R.string.button_substdict, neuLstnr)
+                    } else if (DlgID.WARN_NODICT_GENERIC == dlgID) {
+                        val neuLstnr = DialogInterface.OnClickListener { dlg, item ->
+                            val grs = Array<GameRef>(1){gr}
+                            deleteNamedIfConfirmed(grs, false)
+                        }
+                        ab.setNeutralButton(R.string.button_delete_game, neuLstnr)
+                    }
+                    ab.create()
                 }
-                val langName =
-                    DictLangCache.getLangNameForISOCode(mActivity, missingDictLang)
-                val locLang = langName
-                val gameName = gi.gameName
-                val message =
-                    if (DlgID.WARN_NODICT_GENERIC == dlgID) {
-                        getString(R.string.no_dict_fmt, gameName, locLang)
-                    } else if (DlgID.WARN_NODICT_INVITED == dlgID) {
-                        getString(
-                            R.string.invite_dict_missing_body_noname_fmt,
-                            null, missingDictName, locLang
-                        )
-                    } else {
-                        // WARN_NODICT_SUBST
-                        getString(
-                            R.string.no_dict_subst_fmt, gameName,
-                            missingDictName, locLang
-                        )
-                    }
 
-                val ab = makeAlertBuilder()
-                    .setTitle(R.string.no_dict_title)
-                    .setMessage(message)
-                    .setPositiveButton(android.R.string.cancel, null)
-                    .setNegativeButton(R.string.button_download, lstnr)
+                DlgID.SHOW_SUBST -> {
+                    val gr = params[0] as GameRef
+                    val missingDict = params[1] as String
+                    val isoCode = params[2] as ISOCode
 
-                if (DlgID.WARN_NODICT_SUBST == dlgID) {
-                    val neuLstnr = DialogInterface.OnClickListener { dlg, item ->
-                        showDialogFragment(
-                            DlgID.SHOW_SUBST, gr,
-                            missingDictName, missingDictLang
-                        )
-                    }
-                    ab.setNeutralButton(R.string.button_substdict, neuLstnr)
-                } else if (DlgID.WARN_NODICT_GENERIC == dlgID) {
-                    val neuLstnr = DialogInterface.OnClickListener { dlg, item ->
-                        val grs = Array<GameRef>(1){gr}
-                        deleteNamedIfConfirmed(grs, false)
-                    }
-                    ab.setNeutralButton(R.string.button_delete_game, neuLstnr)
-                }
-                dialog = ab.create()
-            }
-
-            DlgID.SHOW_SUBST -> {
-                val gr = params[0] as GameRef
-                val missingDict = params[1] as String
-                val isoCode = params[2] as ISOCode
-
-                val sameLangDicts =
-                    DictLangCache.getHaveLangCounts(mActivity, isoCode)
-                lstnr = DialogInterface.OnClickListener { dlg, which ->
-                    val pos = (dlg as AlertDialog)
-                        .listView
-                        .getCheckedItemPosition()
-                    var newDict = sameLangDicts[pos]
-                    newDict = DictLangCache.stripCount(newDict!!)
-                    launch {
-                        if (gr.replaceDicts(missingDict, newDict)) {
-                            launchGameIf()
+                    val sameLangDicts =
+                        DictLangCache.getHaveLangCounts(mActivity, isoCode)
+                    lstnr = DialogInterface.OnClickListener { dlg, which ->
+                        val pos = (dlg as AlertDialog)
+                            .listView
+                            .getCheckedItemPosition()
+                        var newDict = sameLangDicts[pos]
+                        newDict = DictLangCache.stripCount(newDict!!)
+                        launch {
+                            if (gr.replaceDicts(missingDict, newDict)) {
+                                launchGameIf()
+                            }
                         }
                     }
+                    makeAlertBuilder()
+                        .setTitle(R.string.subst_dict_title)
+                        .setPositiveButton(R.string.button_substdict, lstnr)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setSingleChoiceItems(sameLangDicts, 0, null)
+                        .create()
                 }
-                dialog = makeAlertBuilder()
-                    .setTitle(R.string.subst_dict_title)
-                    .setPositiveButton(R.string.button_substdict, lstnr)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setSingleChoiceItems(sameLangDicts, 0, null)
-                    .create()
-            }
 
-            DlgID.RENAME_GAME -> {
-                val gr = params[0] as GameRef
-                val namer = buildRenamer(gr)
-                lstnr = DialogInterface.OnClickListener { dlg, item ->
-                    gr.setGameName(namer.name)
+                DlgID.RENAME_GAME -> {
+                    val gr = params[0] as GameRef
+                    val namer = buildRenamer(gr)
+                    lstnr = DialogInterface.OnClickListener { dlg, item ->
+                        gr.setGameName(namer.name)
+                    }
+                    buildNamerDlg(namer, lstnr, null, DlgID.RENAME_GAME)
                 }
-                dialog = buildNamerDlg(namer, lstnr, null, DlgID.RENAME_GAME)
-            }
 
-            DlgID.SET_MQTTID -> {
-                val view = buildRenamer(null, R.string.set_devid_title)
-                dialog = makeAlertBuilder()
-                    .setView(view)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(android.R.string.ok) { dlg, item ->
-                        val newID = view.name
-                        view.launch {
-                            withContext(Dispatchers.Main) {
-                                val madeIt = Device.setMQTTDevID(newID)
-                                if (madeIt) {
-                                    makeOkOnlyBuilder(R.string.reboot_after_setFmt, newID)
-                                        .setAction(Action.RESTART)
-                                        .show()
-                                } else {
-                                    makeOkOnlyBuilder(R.string.badMQTTDevIDFmt, newID)
-                                        .show()
+                DlgID.SET_MQTTID -> {
+                    val view = buildRenamer(null, R.string.set_devid_title)
+                    makeAlertBuilder()
+                        .setView(view)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(android.R.string.ok) { dlg, item ->
+                            val newID = view.name
+                            view.launch {
+                                withContext(Dispatchers.Main) {
+                                    val madeIt = Device.setMQTTDevID(newID)
+                                    if (madeIt) {
+                                        makeOkOnlyBuilder(R.string.reboot_after_setFmt, newID)
+                                            .setAction(Action.RESTART)
+                                            .show()
+                                    } else {
+                                        makeOkOnlyBuilder(R.string.badMQTTDevIDFmt, newID)
+                                            .show()
+                                    }
                                 }
                             }
                         }
-                    }
-                    .create()
-            }
-
-            DlgID.KACONFIG -> {
-                val view = inflate(R.layout.kaconfig_view)
-                dialog = makeAlertBuilder()
-                    .setTitle(R.string.kaservice_title)
-                    .setView(view)
-                    .setIcon(R.drawable.kanotify)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .create()
-            }
-
-            DlgID.RENAME_GROUP -> {
-                val grp = params[0] as GroupRef
-                val name = params[1] as String
-                val namer = buildRenamer(name, R.string.rename_group_label)
-                lstnr = DialogInterface.OnClickListener { dlg, item ->
-                    val self = curThis()
-                    val name = namer.name
-                    grp.setGroupName(name)
+                        .create()
                 }
-                dialog = buildNamerDlg(namer, lstnr, null, DlgID.RENAME_GROUP)
-            }
 
-            DlgID.BACKUP_LOADSTORE -> {
-                val uri = if (0 == params.size) null else Uri.parse(params[0] as String)
-                dialog = mkLoadStoreDlg(uri)
-            }
-
-            DlgID.NEW_GROUP -> {
-                val namer = buildRenamer("", R.string.newgroup_label)
-                lstnr = DialogInterface.OnClickListener { dlg, item ->
-                    val name = namer.name
-                    val hasName = DBUtils.getGroup(mActivity, name)
-                    if (DBUtils.GROUPID_UNSPEC == hasName) {
-                        launch { GameMgr.addGroup(name) }
-
-                        // DBUtils.addGroup(mActivity, name)
-                        // mkListAdapter()
-                        // showNewGroupIf()
-                    } else {
-                        makeOkOnlyBuilder(
-                            R.string.duplicate_group_name_fmt,
-                            name
-                        ).show()
-                    }
+                DlgID.KACONFIG -> {
+                    val view = inflate(R.layout.kaconfig_view)
+                    makeAlertBuilder()
+                        .setTitle(R.string.kaservice_title)
+                        .setView(view)
+                        .setIcon(R.drawable.kanotify)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .create()
                 }
-                lstnr2 = DialogInterface.OnClickListener { dlg, item -> curThis().showNewGroupIf() }
-                dialog = buildNamerDlg(namer, lstnr, lstnr2, DlgID.RENAME_GROUP)
-            }
 
-            DlgID.CHANGE_GROUP -> {
-                val games = params[0] as Array<GameRef>
-                val namesMap = params[1] as GameMgr.GroupsNames
-                var indx = 0
-                for ( ii in 0..< namesMap.names.size) {
-                    val one = namesMap.refs[ii]
-                    if (one == m_mySIS!!.groupSelItem) {
-                        indx = ii
-                        break
+                DlgID.RENAME_GROUP -> {
+                    val grp = params[0] as GroupRef
+                    val name = params[1] as String
+                    val namer = buildRenamer(name, R.string.rename_group_label)
+                    lstnr = DialogInterface.OnClickListener { dlg, item ->
+                        val self = curThis()
+                        val name = namer.name
+                        grp.setGroupName(name)
                     }
+                    buildNamerDlg(namer, lstnr, null, DlgID.RENAME_GROUP)
                 }
-                dialog = makeAlertBuilder()
-                    .setTitle(R.string.change_group)
-                    .setSingleChoiceItems(
-                        namesMap.names, indx
-                    ) { dlgi, item ->
-                        m_mySIS!!.groupSelItem = item
-                        enableMoveGroupButton(dlgi)
-                    }
-                    .setPositiveButton(
-                        R.string.button_move
-                    ) { dlg, item ->
-                        val gid = namesMap.refs[m_mySIS!!.groupSelItem]
-                        GameMgr.moveGames(GroupRef(gid), games)
-                    }
-                    .setNeutralButton(
-                        R.string.button_newgroup
-                    ) { dlg, item ->
-                        m_mySIS!!.moveAfterNewGroup = games
-                        showDialogFragment(DlgID.NEW_GROUP)
-                    }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .create()
-                dialog.setOnShowListener(OnShowListener { dlg -> enableMoveGroupButton(dlg) })
-            }
 
-            DlgID.GET_NAME -> {
-                val layout = inflate(R.layout.dflt_name) as LinearLayout
-                val etext = layout.findViewById<EditText>(R.id.name_edit)
-                etext.setText(CommonPrefs.getDefaultPlayerName(
-                                  mActivity, 0, true))
-                alert.setOnDismissListener(
-                    object:OnDismissListener {
-                        override fun onDismissed(frag: XWDialogFragment) {
-                            var name = etext.text.toString()
-                            if (0 == name.length) {
-                                name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
-                            } else {
-                                CommonPrefs.setDefaultPlayerName(mActivity, name)
-                            }
-                            makeThenLaunchOrConfigure()
+                DlgID.BACKUP_LOADSTORE -> {
+                    val uri = if (0 == params.size) null else Uri.parse(params[0] as String)
+                    mkLoadStoreDlg(uri)
+                }
+
+                DlgID.NEW_GROUP -> {
+                    val namer = buildRenamer("", R.string.newgroup_label)
+                    lstnr = DialogInterface.OnClickListener { dlg, item ->
+                        val name = namer.name
+                        val hasName = DBUtils.getGroup(mActivity, name)
+                        if (DBUtils.GROUPID_UNSPEC == hasName) {
+                            launch { GameMgr.addGroup(name) }
+
+                            // DBUtils.addGroup(mActivity, name)
+                            // mkListAdapter()
+                            // showNewGroupIf()
+                        } else {
+                            makeOkOnlyBuilder(
+                                R.string.duplicate_group_name_fmt,
+                                name
+                            ).show()
                         }
-                    })
-                dialog = makeAlertBuilder()
-                    .setTitle(R.string.default_name_title)
-                    .setMessage(R.string.default_name_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .setView(layout)
-                    .create()
-            }
-
-            DlgID.GAMES_LIST_NEWGAME -> {
-                val solo = params[0] as Boolean
-                dialog = mkNewGameDialog(solo)
-                if (!solo && mHaveKnowns) {
-                    makeNotAgainBuilder(
-                        R.string.key_na_quicknetgame,
-                        R.string.not_again_quicknetgame
-                    )
-                        .setTitle(R.string.new_feature_title)
-                        .show()
-                }
-            }
-
-            DlgID.GAMES_LIST_NAME_REMATCH -> {
-                val extras = JSONObject(params[0] as String)
-                val view = LocUtils.inflate(mActivity, R.layout.rematch_config)
-                    as RematchConfigView
-
-                var iconResID = R.drawable.ic_sologame
-                val gr = GameRef(extras.optLong(REMATCH_GAMEREF_EXTRA, 0))
-                val archiveAfter = extras.optBoolean(REMATCH_ARCHIVEAFTER_EXTRA, false)
-                val deleteAfter = extras.optBoolean(REMATCH_DELAFTER_EXTRA, false)
-
-                view.configure(gr, this)
-                val solo = extras.optBoolean(REMATCH_IS_SOLO, true)
-                if (!solo) {
-                    iconResID = R.drawable.ic_multigame
-                }
-
-                dialog = makeAlertBuilder()
-                    .setView(view)
-                    .setTitle(R.string.button_rematch)
-                    .setIcon(iconResID)
-                    .setPositiveButton(android.R.string.ok) { dlg, item ->
-                        startRematchWithName(
-                            extras,
-                            view.getGR(),
-                            view.getName(),
-                            view.getRematchOrder(), // here?
-                            true, archiveAfter, deleteAfter
-                        )
                     }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .create()
-            }
+                    lstnr2 = DialogInterface.OnClickListener { dlg, item -> curThis().showNewGroupIf() }
+                    buildNamerDlg(namer, lstnr, lstnr2, DlgID.RENAME_GROUP)
+                }
 
-            DlgID.CONVERT_GAMES -> {
-                dialog = GameConvertView.makeDialog(mActivity)
-            }
+                DlgID.CHANGE_GROUP -> {
+                    val games = params[0] as Array<GameRef>
+                    val namesMap = params[1] as GameMgr.GroupsNames
+                    var indx = 0
+                    for ( ii in 0..< namesMap.names.size) {
+                        val one = namesMap.refs[ii]
+                        if (one == m_mySIS!!.groupSelItem) {
+                            indx = ii
+                            break
+                        }
+                    }
+                    val dialog = makeAlertBuilder()
+                        .setTitle(R.string.change_group)
+                        .setSingleChoiceItems(
+                            namesMap.names, indx
+                        ) { dlgi, item ->
+                            m_mySIS!!.groupSelItem = item
+                            enableMoveGroupButton(dlgi)
+                        }
+                        .setPositiveButton(
+                            R.string.button_move
+                        ) { dlg, item ->
+                            val gid = namesMap.refs[m_mySIS!!.groupSelItem]
+                            GameMgr.moveGames(GroupRef(gid), games)
+                        }
+                        .setNeutralButton(
+                            R.string.button_newgroup
+                        ) { dlg, item ->
+                            m_mySIS!!.moveAfterNewGroup = games
+                            showDialogFragment(DlgID.NEW_GROUP)
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .create()
+                    dialog.setOnShowListener(OnShowListener { dlg -> enableMoveGroupButton(dlg) })
+                    dialog
+                }
 
-            else -> dialog = super.makeDialog(alert, *params)
-        }
+                DlgID.GET_NAME -> {
+                    val layout = inflate(R.layout.dflt_name) as LinearLayout
+                    val etext = layout.findViewById<EditText>(R.id.name_edit)
+                    etext.setText(CommonPrefs.getDefaultPlayerName(
+                                      mActivity, 0, true))
+                    alert.setOnDismissListener(
+                        object:OnDismissListener {
+                            override fun onDismissed(frag: XWDialogFragment) {
+                                var name = etext.text.toString()
+                                if (0 == name.length) {
+                                    name = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
+                                } else {
+                                    CommonPrefs.setDefaultPlayerName(mActivity, name)
+                                }
+                                makeThenLaunchOrConfigure()
+                            }
+                        })
+                    makeAlertBuilder()
+                        .setTitle(R.string.default_name_title)
+                        .setMessage(R.string.default_name_message)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setView(layout)
+                        .create()
+                }
+
+                DlgID.GAMES_LIST_NEWGAME -> {
+                    val solo = params[0] as Boolean
+                    val dialog = mkNewGameDialog(solo)
+                    if (!solo && mHaveKnowns) {
+                        makeNotAgainBuilder(
+                            R.string.key_na_quicknetgame,
+                            R.string.not_again_quicknetgame
+                        )
+                            .setTitle(R.string.new_feature_title)
+                            .show()
+                    }
+                    dialog
+                }
+
+                DlgID.GAMES_LIST_NAME_REMATCH -> {
+                    val extras = JSONObject(params[0] as String)
+                    val view = LocUtils.inflate(mActivity, R.layout.rematch_config)
+                        as RematchConfigView
+
+                    var iconResID = R.drawable.ic_sologame
+                    val gr = GameRef(extras.optLong(REMATCH_GAMEREF_EXTRA, 0))
+                    val archiveAfter = extras.optBoolean(REMATCH_ARCHIVEAFTER_EXTRA, false)
+                    val deleteAfter = extras.optBoolean(REMATCH_DELAFTER_EXTRA, false)
+
+                    view.configure(gr, this)
+                    val solo = extras.optBoolean(REMATCH_IS_SOLO, true)
+                    if (!solo) {
+                        iconResID = R.drawable.ic_multigame
+                    }
+
+                    makeAlertBuilder()
+                        .setView(view)
+                        .setTitle(R.string.button_rematch)
+                        .setIcon(iconResID)
+                        .setPositiveButton(android.R.string.ok) { dlg, item ->
+                            startRematchWithName(
+                                extras,
+                                view.getGR(),
+                                view.getName(),
+                                view.getRematchOrder(), // here?
+                                true, archiveAfter, deleteAfter
+                            )
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .create()
+                }
+
+                DlgID.QR_CODES -> {
+                    val gr = params[0] as GameRef
+                    Log.d(TAG, "making for $gr")
+                    QRCodesView.makeDialog(mActivity, gr)
+                }
+
+                DlgID.CONVERT_GAMES -> {
+                    GameConvertView.makeDialog(mActivity)
+                }
+
+                else -> super.makeDialog(alert, *params)
+            }
         return dialog
     } // makeDialog
 
@@ -1912,6 +1920,7 @@ class GamesListDelegate(delegator: Delegator) :
                 enable = (isMultiGame
                               && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled(mActivity)))
             }
+            Utils.setItemVisible(menu, R.id.games_game_messages, enable )
             Utils.setItemVisible(menu, R.id.games_game_netstats, isMultiGame)
             Utils.setItemVisible(menu, R.id.games_game_copy, !isMultiGame)
             enable = (isMultiGame && BuildConfig.NON_RELEASE
@@ -2051,7 +2060,9 @@ class GamesListDelegate(delegator: Delegator) :
         var dropSels = false
 
         when (itemID) {
-            R.id.games_game_hide -> {}//DBUtils.hideGames(mActivity, selRowIDs[0])
+            R.id.games_game_hide -> {//DBUtils.hideGames(mActivity, selRowIDs[0])
+                Assert.failDbg()
+            }
             R.id.games_game_delete -> deleteIfConfirmed(selRowIDs, false)
             R.id.games_game_rematch -> BoardDelegate.setupRematchFor(mActivity, selRowIDs[0])
             R.id.games_game_config -> GameConfigDelegate.editForResult(
@@ -2087,6 +2098,7 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_game_reset -> doConfirmReset(selRowIDs)
             R.id.games_game_rename -> showDialogFragment(DlgID.RENAME_GAME, selRowIDs[0])
             R.id.games_game_netstats -> onStatusClicked(selRowIDs[0])
+            R.id.games_game_messages -> showDialogFragment(DlgID.QR_CODES, selRowIDs[0])
             R.id.games_game_relaypage -> {
                 // val summary = GameUtils.getSummary(mActivity, selRowIDs[0])!!
                 // NetUtils.copyAndLaunchGamePage(mActivity, summary.gameID)
@@ -2449,7 +2461,7 @@ class GamesListDelegate(delegator: Delegator) :
             intent.data?.let { url ->
                 Device.parseUrl(mActivity, url)
             } ?: false
-        Log.d(TAG, "tryNewURL(${intent.data}) => $result")
+        Log.d(TAG, "tryNewURL(%s)) => %s", intent.data, result)
         return result
     }
 

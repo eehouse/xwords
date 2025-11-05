@@ -52,4 +52,6 @@
 
   <string name="menu_qrcode">Show QRCode</string>
 
+  <string name="list_item_messages">Pending messages</string>
+
 </resources>

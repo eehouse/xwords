@@ -25,6 +25,9 @@
     <item android:id="@+id/games_game_netstats"
           android:title="@string/list_item_netstats"
           />
+    <item android:id="@+id/games_game_messages"
+          android:title="@string/list_item_messages"
+          />
     <!-- Debug only -->
     <item android:id="@+id/games_game_relaypage"
           android:title="@string/list_item_relaypage"

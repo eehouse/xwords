@@ -83,6 +83,7 @@ open class MultiMsgSink @JvmOverloads constructor(
         addr: CommsAddrRec, typ: CommsConnType,
         gameID: Int, timestamp: Int
     ): Int {
+        Assert.failDbg()
         var nSent = -1
         when (typ) {
             CommsConnType.COMMS_CONN_RELAY -> nSent = sendViaRelay(buf, msgID, gameID)
@@ -126,6 +127,7 @@ open class MultiMsgSink @JvmOverloads constructor(
             addr: CommsAddrRec, typ: CommsConnType,
             nli: NetLaunchInfo, timestamp: Int
         ): Boolean {
+            Assert.failDbg()
             Log.d(TAG, "sendInvite(to=%s, typ=%s, nli=%s)", addr, typ, nli)
             var success = false
             val means: InviteMeans? = null
