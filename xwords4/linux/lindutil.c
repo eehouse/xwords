@@ -441,6 +441,20 @@ linux_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static XP_S16
+linux_dutil_sendViaNFC( XW_DUtilCtxt* duc, XWEnv xwe,
+                        const XP_U8* buf, XP_U16 len,
+                        XP_U32 gameID )
+{
+    XP_ASSERT(0);   /* This should never get called...  */
+    XP_USE(duc);
+    XP_USE(xwe);
+    XP_USE(buf);
+    XP_USE(len);
+    XP_USE(gameID);
+    return -1;
+}
+
+static XP_S16
 linux_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                         const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* phone, XP_U16 port )
@@ -616,6 +630,7 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
     SET_PROC(startMQTTListener);
     SET_PROC(sendViaMQTT);
     SET_PROC(sendViaBT);
+    SET_PROC(sendViaNFC);
     SET_PROC(sendViaNBS);
     SET_PROC(onKnownPlayersChange);
     SET_PROC(onGameChanged);

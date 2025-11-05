@@ -40,6 +40,7 @@ import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 
 object Device {
     private val TAG: String = Device::class.java.simpleName
@@ -213,6 +214,13 @@ object Device {
         }
     }
 
+    fun parseNFCPacket(gameID: Int, packet: ByteArray) {
+        val from = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
+        post( Priority.NETWORK ) {
+            dvc_parsePacketFor(m_ptrGlobals, gameID, packet, from)
+        }
+    }
+
     suspend fun parseUrl(context: Context, uri: Uri): Boolean {
         val (host, prefix) = NetUtils.getHostAndPrefix(context)
         val result = await {
@@ -351,6 +359,9 @@ object Device {
     @JvmStatic
     private external fun dvc_parseBTPacket(jniState: Long, fromName: String?,
                                            fromMac: String?, packet: ByteArray)
+    @JvmStatic
+    private external fun dvc_parsePacketFor(jniState: Long, gameID: Int,
+                                            packet: ByteArray, from: CommsAddrRec)
     @JvmStatic
     private external fun dvc_parseUrl(jniState: Long, url: String,
                                       host: String, prefix: String): Boolean

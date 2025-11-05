@@ -47,6 +47,7 @@ import org.eehouse.android.xw4.GamesListDelegate
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.MQTTUtils
 import org.eehouse.android.xw4.NBSProto
+import org.eehouse.android.xw4.NFCUtils
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
@@ -370,6 +371,10 @@ class DUtilCtxt() {
     fun sendViaNBS(msg: ByteArray, phone: String, port: Int) {
         Log.d(TAG, "sendViaNBS($msg, $phone, $port)")
         NBSProto.sendPacket(mContext, msg, phone)
+    }
+
+    fun sendViaNFC(msg: ByteArray, gameID: Int) {
+        /*(void)*/NFCUtils.addMsgFor(msg, gameID);
     }
 
     fun onGameGoneReceived(gameID: Int, from: CommsAddrRec) {

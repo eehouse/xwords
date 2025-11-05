@@ -30,15 +30,7 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Build
 import android.text.TextUtils
-import org.eehouse.android.xw4.DBUtils.getIntFor
-import org.eehouse.android.xw4.DBUtils.getRowIDsFor
-import org.eehouse.android.xw4.DBUtils.setIntFor
-import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
-import org.eehouse.android.xw4.DbgUtils.hexDump
-import org.eehouse.android.xw4.NFCUtils.Wrapper.Procs
-import org.eehouse.android.xw4.jni.CommsAddrRec
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
-import org.eehouse.android.xw4.loc.LocUtils
+
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -52,6 +44,11 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 import kotlin.math.min
+
+import org.eehouse.android.xw4.NFCUtils.Wrapper.Procs
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.loc.LocUtils
 
 object NFCUtils {
     private val TAG = NFCUtils::class.java.getSimpleName()
@@ -126,7 +123,10 @@ object NFCUtils {
                 Assert.failDbg()
             }
         }
-        Log.d(TAG, "formatMsgs(gameID=%d) => %s", gameID, hexDump(result))
+        result?.let {
+            Log.d(TAG, "formatMsgs(gameID=%X) => %s", gameID,
+                  DbgUtils.hexDump(it))
+        }
         return result
     }
 
@@ -181,11 +181,10 @@ object NFCUtils {
         return MsgToken(sMsgsStore, gameID)
     }
 
-    @JvmOverloads
     fun receiveMsgs(context: Context, data: ByteArray, offset: Int = 0) {
         // Log.d( TAG, "receiveMsgs(gameID=%d, %s, offset=%d)", gameID,
         //        DbgUtils.hexDump(data), offset );
-        assertOnUIThread(false)
+        DbgUtils.assertOnUIThread(false)
         val gameID = intArrayOf(0)
         val msgs = unformatMsgs(data, offset, gameID)
         // val helper = if ( 0 == msgs.size ) null else NFCServiceHelper(context)
@@ -193,19 +192,7 @@ object NFCUtils {
             val typ = byteArrayOf(0)
             val body = MsgsStore.split(msg, typ)
             when (typ[0]) {
-                MESSAGE -> {
-                    val rowids = getRowIDsFor(context, gameID[0])
-                    if (0 == rowids.size) {
-                        addReplyFor(byteArrayOf(REPLY_NOGAME), gameID[0])
-                    } else {
-                        for (rowid in rowids) {
-                            val sink = MultiMsgSink(context, rowid)
-                            // helper!!.receiveMessage(rowid, sink, body)
-                            Log.d(TAG, "got message; now what???")
-                        }
-                    }
-                }
-
+                MESSAGE -> Device.parseNFCPacket(gameID[0], body)
                 INVITE -> GamesListDelegate.postReceivedInvite(context, body)
                 REPLY -> when (body[0]) {
                              // PENDING Don't enable this until deviceID is being
@@ -435,12 +422,16 @@ object NFCUtils {
                         baos.write(sParts!![ii])
                     }
                     sParts = null
-                    result = baos.toByteArray()
+                    baos.toByteArray().also {
+                        if ( 0 < it.size ) {
+                            result = it
+                        }
+                    }
                     latestAck = sMsgID
                     if (0 != sMsgID) {
                         Log.d(
                             TAG, "reassemble(): done reassembling msgID=%d: %s",
-                            sMsgID, hexDump(result)
+                            sMsgID, DbgUtils.hexDump(result)
                         )
                     }
                 }
@@ -457,7 +448,7 @@ object NFCUtils {
         val length = msg?.size ?: 0
         val msgID = if (0 == length) 0 else nextMsgID
         if (0 < msgID) {
-            Log.d(TAG, "wrapMsg(%s); msgID=%d", hexDump(msg), msgID)
+            Log.d(TAG, "wrapMsg(${DbgUtils.hexDump(msg)}); msgID=$msgID")
         }
         val count = 1 + length / (maxLen - HEADER_SIZE)
         val result = arrayOfNulls<ByteArray>(count)
@@ -526,10 +517,10 @@ object NFCUtils {
     fun getNFCDevID(context: Context): Int {
         synchronized(sNFCDevID) {
             if (0 == sNFCDevID[0]) {
-                var devid = getIntFor(context, NFC_DEVID_KEY, 0)
+                var devid = DBUtils.getIntFor(context, NFC_DEVID_KEY, 0)
                 while (0 == devid) {
                     devid = Utils.nextRandomInt()
-                    setIntFor(context, NFC_DEVID_KEY, devid)
+                    DBUtils.setIntFor(context, NFC_DEVID_KEY, devid)
                 }
                 sNFCDevID[0] = devid
             }
@@ -589,8 +580,8 @@ object NFCUtils {
                 if (!isDuplicate) {
                     msgs.add(full)
                     nowHaveData = 0 < msgs.size
-                    // Log.d(TAG, "addMsgFor(gameID=%d): added %s; now have %d msgs",
-                    //       gameID, hexDump(msg), msgs.size)
+                    // Log.d(TAG, "addMsgFor(gameID=$gameID): added ${msg.size} "
+                    // + "bytes; now have ${msgs.size} msgs")
                 }
             }
             reportHaveData(gameID, nowHaveData)
@@ -599,15 +590,19 @@ object NFCUtils {
 
         internal fun getMsgsFor(gameID: Int): Array<ByteArray>? {
             Assert.assertFalse(gameID == 0)
-            var result: Array<ByteArray>? = null
-            synchronized(mMsgMap) {
-                if (mMsgMap.containsKey(gameID)) {
-                    val msgs: List<ByteArray> = mMsgMap[gameID]!!
-                    result = msgs.toTypedArray<ByteArray>()
+            val result =
+                synchronized(mMsgMap) {
+                    if (mMsgMap.containsKey(gameID)) {
+                        val msgs: List<ByteArray> = mMsgMap[gameID]!!
+                        msgs.toTypedArray<ByteArray>()
+                    } else null
                 }
-            }
-            // Log.d(TAG, "getMsgsFor(gameID=%d) => %d msgs", gameID,
-            //       if (result == null) 0 else result!!.size)
+            // result?.let {
+            //     val msgCount = it.size
+            //     if ( 0 < msgCount ) {
+            //         Log.d(TAG, "getMsgsFor(gameID=%X) => $msgCount", gameID)
+            //     }
+            // }
             return result
         }
 
@@ -659,10 +654,8 @@ object NFCUtils {
             fun split(msg: ByteArray?, headerOut: ByteArray): ByteArray {
                 headerOut[0] = msg!![0]
                 val result = Arrays.copyOfRange(msg, 1, msg.size)
-                Log.d(
-                    TAG, "split(%s) => %d/%s", hexDump(msg),
-                    headerOut[0], hexDump(result)
-                )
+                Log.d(TAG, "split(%s) => %d/%s", DbgUtils.hexDump(msg),
+                      headerOut[0], DbgUtils.hexDump(result))
                 return result
             }
         }
@@ -687,7 +680,6 @@ object NFCUtils {
             return mBytes
         }
 
-        @JvmOverloads
         fun matchesFrom(src: ByteArray, offset: Int = 0): Boolean {
             var result = offset + mBytes.size <= src.size
             var ii = 0
@@ -723,7 +715,7 @@ object NFCUtils {
                 if (nfcAvail(activity)[1]) {
                     instance = Wrapper(activity, procs, devID)
                 }
-                // Log.d(TAG, "Wrapper.init(devID=%d) => %s", devID, instance)
+                // Log.d(TAG, "Wrapper.init(devID=$devID) => $instance")
                 return instance
             }
 
@@ -758,7 +750,7 @@ object NFCUtils {
         override fun onHaveDataChanged(haveData: Boolean) {
             if (mHaveData != haveData) {
                 mHaveData = haveData
-                // Log.d(TAG, "onHaveDataChanged(): mHaveData now %b", mHaveData)
+                // Log.d(TAG, "onHaveDataChanged(): mHaveData changed to $mHaveData (gameID=%X)", mGameID)
                 interruptThread()
             }
         }
@@ -861,18 +853,21 @@ object NFCUtils {
             if (statusOK) {
                 val offset = HEX_STR.STATUS_SUCCESS.length()
                 if (HEX_STR.CMD_MSG_PART.matchesFrom(response, offset)) {
-                    val all = reassemble(
+                    reassemble(
                         mActivity, response,
                         offset + HEX_STR.CMD_MSG_PART.length()
-                    )
-                    Log.d(TAG, "receiveAny(%s) => %b", hexDump(response), statusOK)
-                    if (null != all) {
-                        addToMsgThread(mActivity, all)
+                    )?.let {
+                        val size = it.size
+                        if ( 0 < size ) {
+                            Log.d(TAG, "receiveAny(): got $size bytes" );
+                            addToMsgThread(mActivity, it)
+                        }
                     }
+                    // Log.d(TAG, "receiveAny(%s) => %b", hexDump(response), statusOK)
                 }
             }
             if (!statusOK) {
-                Log.d(TAG, "receiveAny(%s) => %b", hexDump(response), statusOK)
+                Log.d(TAG, "receiveAny(%s) => %b", DbgUtils.hexDump(response), statusOK)
             }
             return statusOK
         }
@@ -961,21 +956,6 @@ object NFCUtils {
                     Log.d(TAG, "stopReadModeThread(): %s", ex)
                 }
             }
-        }
-    }
-
-    private class NFCServiceHelper internal constructor(val mContext: Context) :
-        XWServiceHelper(mContext) {
-        private val mAddr = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
-        public override fun postNotification(device: String?, gameID: Int, rowid: Long) {
-            val body = LocUtils.getString(mContext, R.string.new_game_body)
-            // GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
-            Assert.failDbg()
-        }
-
-        fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
-            Log.d(TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.size)
-            receiveMessage(rowid, sink, msg, mAddr)
         }
     }
 }

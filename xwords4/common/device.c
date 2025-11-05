@@ -560,6 +560,16 @@ sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
     }
 }
 
+static void
+sendMsgsViaNFC( XW_DUtilCtxt* dutil, XWEnv xwe,
+               const SendMsgsPacket* const packets, XP_U32 gameID )
+{
+    for ( SendMsgsPacket* packet = (SendMsgsPacket*)packets;
+          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
+        dutil_sendViaNFC( dutil, xwe, packet->buf, packet->len, gameID );
+    }
+}
+
 XP_S16
 dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
               const SendMsgsPacket* const packets,
@@ -578,7 +588,7 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
         sendMsgViaNBS( dutil, xwe, packets, addr, gameID );
         break;
     case COMMS_CONN_NFC:
-        XP_LOGFF( "Nothing to do for NFC" );
+        sendMsgsViaNFC( dutil, xwe, packets, gameID );
         break;
     case COMMS_CONN_BT:
         sendMsgsViaBT( dutil, xwe, packets, addr, gameID );
@@ -1235,6 +1245,18 @@ dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
 
     stream_destroy( stream );
     return good;
+}
+
+void
+dvc_parsePacketFor( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                    const XP_U8* msg, XP_U16 len, const CommsAddrRec* from )
+{
+    GameRef grs[4];
+    XP_U16 nRefs = VSIZE(grs);
+    gmgr_getForGID( duc, xwe, gameID, grs, &nRefs );
+    for ( int ii = 0; ii < nRefs; ++ii ) {
+        gr_onMessageReceived( duc, grs[ii], xwe, from, msg, len, NULL );
+    }
 }
 
 void

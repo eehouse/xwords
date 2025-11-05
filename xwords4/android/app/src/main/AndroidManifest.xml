@@ -192,7 +192,8 @@
              android:foregroundServiceType="dataSync"
              />
 
-    <service android:name="NFCCardService" android:exported="true"
+    <service android:name="NFCCardService"
+             android:exported="true"
              android:permission="android.permission.BIND_NFC_SERVICE"
              >
       <intent-filter>

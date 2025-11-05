@@ -41,7 +41,7 @@ class NFCCardService : HostApduService() {
         // Log.d( TAG, "processCommandApdu(%s)", DbgUtils.hexDump(apdu ) );
         var resStr = HEX_STR.STATUS_FAILED
         var isAidCase = false
-        if (null != apdu) {
+        apdu?.let { apdu ->
             if (HEX_STR.CMD_MSG_PART.matchesFrom(apdu)) {
                 resStr = HEX_STR.STATUS_SUCCESS
                 val all = NFCUtils.reassemble(this, apdu, HEX_STR.CMD_MSG_PART)

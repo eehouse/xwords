@@ -2257,6 +2257,22 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseBTPacket
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1parsePacketFor
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint gameID,
+  jbyteArray jmsg, jobject jaddr )
+{
+    DVC_HEADER(jniGlobalPtr);
+    CommsAddrRec from = getJAddrRec( env, jaddr );
+    XP_U16 len = (*env)->GetArrayLength( env, jmsg );
+    jbyte* buf = (*env)->GetByteArrayElements( env, jmsg, NULL );
+
+    dvc_parsePacketFor( globalState->dutil, env, gameID, buf, len, &from );
+
+    (*env)->ReleaseByteArrayElements( env, jmsg, buf, 0 );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1onBLEMtuChanged
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname, jint mtu )
 {

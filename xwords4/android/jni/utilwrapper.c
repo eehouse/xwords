@@ -1100,6 +1100,19 @@ and_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf,
     return -1;
 }
 
+static XP_S16
+and_dutil_sendViaNFC( XW_DUtilCtxt* duc, XWEnv xwe,
+                      const XP_U8* buf, XP_U16 len,
+                      XP_U32 gameID )
+{
+    DUTIL_CBK_HEADER( "sendViaNFC", "([BI)V" );
+    jbyteArray jmsg = makeByteArray( env, len, (jbyte*)buf );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, jmsg, gameID );
+    deleteLocalRef( env, jmsg );
+    DUTIL_CBK_TAIL();
+    return -1;
+}
+
 static void
 and_dutil_onKnownPlayersChange( XW_DUtilCtxt* duc, XWEnv xwe )
 {
@@ -1260,6 +1273,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(sendViaMQTT);
     SET_DPROC(sendViaBT);
     SET_DPROC(sendViaNBS);
+    SET_DPROC(sendViaNFC);
     SET_DPROC(onKnownPlayersChange);
     SET_DPROC(onGameChanged);
     SET_DPROC(getCommonPrefs);
