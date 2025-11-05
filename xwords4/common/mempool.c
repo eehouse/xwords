@@ -354,7 +354,7 @@ mpool_freep( MemPoolCtx* mpool, void** ptr, const char* file,
 
 #define STREAM_OR_LOG(stream,buf) \
     if ( !!stream ) { \
-        stream_catString( stream, buf ); \
+        strm_catString( stream, buf ); \
     } else { \
         XP_LOGF( "%s", buf ); \
     } \

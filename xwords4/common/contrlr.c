@@ -22,7 +22,6 @@
 #include "util.h"
 #include "model.h"
 #include "comms.h"
-#include "memstream.h"
 #include "gamep.h"
 #include "states.h"
 #include "util.h"
@@ -449,114 +448,114 @@ static void
 getNV( XWStreamCtxt* stream, CtrlrNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 ii;
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
 
     XP_ASSERT( 0 == nv->flags );
     if ( STREAM_VERS_REMATCHORDER <= version ) {
-        nv->flags = stream_getU32VL( stream );
+        nv->flags = strm_getU32VL( stream );
     }
 
     if ( STREAM_VERS_DICTNAME <= version ) {
-        nv->lastMoveTime = stream_getU32( stream );
+        nv->lastMoveTime = strm_getU32( stream );
     }
     if ( STREAM_VERS_DUPLICATE <= version ) {
-        nv->dupTimerExpires = stream_getU32( stream );
+        nv->dupTimerExpires = strm_getU32( stream );
     }
 
     if ( version < STREAM_VERS_HOST_SAVES_TOSHOW ) {
         /* no longer used */
-        (void)stream_getBits( stream, 3 ); /* was npassesinrow */
+        (void)strm_getBits( stream, 3 ); /* was npassesinrow */
     }
 
-    nv->nDevices = (XP_U8)stream_getBits( stream, NDEVICES_NBITS );
+    nv->nDevices = (XP_U8)strm_getBits( stream, NDEVICES_NBITS );
     if ( version > STREAM_VERS_41B4 ) {
         ++nv->nDevices;
     }
 
     XP_ASSERT( XWSTATE_LAST <= 1<<4 );
-    nv->gameState = (XW_State)stream_getBits( stream, XWSTATE_NBITS );
+    nv->gameState = (XW_State)strm_getBits( stream, XWSTATE_NBITS );
     XP_LOGFF( "read state: %s", getStateStr(nv->gameState) );
     if ( version >= STREAM_VERS_HOST_SAVES_TOSHOW && version < STREAM_VERS_BIGGERGI ) {
-        stream_getBits( stream, XWSTATE_NBITS );
+        strm_getBits( stream, XWSTATE_NBITS );
     }
 
-    nv->currentTurn = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
+    nv->currentTurn = (XP_S8)strm_getBits( stream, NPLAYERS_NBITS ) - 1;
     if ( STREAM_VERS_DICTNAME <= version ) {
-        nv->quitter = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
+        nv->quitter = (XP_S8)strm_getBits( stream, NPLAYERS_NBITS ) - 1;
     }
-    nv->pendingRegistrations = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
+    nv->pendingRegistrations = (XP_U8)strm_getBits( stream, NPLAYERS_NBITS );
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
         nv->addresses[ii].channelNo =
-            (XP_PlayerAddr)stream_getBits( stream, 16 );
+            (XP_PlayerAddr)strm_getBits( stream, 16 );
 #ifdef STREAM_VERS_BIGBOARD
         nv->addresses[ii].streamVersion = STREAM_VERS_BIGBOARD <= version ?
-            stream_getBits( stream, 8 ) : STREAM_SAVE_PREVWORDS;
+            strm_getBits( stream, 8 ) : STREAM_SAVE_PREVWORDS;
 #endif
     }
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_SAVE_PREVWORDS < version ) {
-        nv->streamVersion = stream_getU8 ( stream );
+        nv->streamVersion = strm_getU8 ( stream );
     }
     /* XP_LOGFF( "read streamVersion: 0x%x", nv->streamVersion ); */
 #endif
 
     if ( version >= STREAM_VERS_DUPLICATE ) {
         for ( ii = 0; ii < nPlayers; ++ii ) {
-            nv->dupTurnsMade[ii] = stream_getBits( stream, 1 );
+            nv->dupTurnsMade[ii] = strm_getBits( stream, 1 );
             // XP_LOGFF( "dupTurnsMade[%d]: %d", ii, nv->dupTurnsMade[ii] );
-            nv->dupTurnsForced[ii] = stream_getBits( stream, 1 );
+            nv->dupTurnsForced[ii] = strm_getBits( stream, 1 );
         }
-        nv->dupTurnsSent = stream_getBits( stream, 1 );
+        nv->dupTurnsSent = strm_getBits( stream, 1 );
     }
 } /* getNV */
 
 static void
 putNV( XWStreamCtxt* stream, const CtrlrNonvolatiles* nv, XP_U16 nPlayers )
 {
-    stream_putU32VL( stream, nv->flags );
-    stream_putU32( stream, nv->lastMoveTime );
-    stream_putU32( stream, nv->dupTimerExpires );
+    strm_putU32VL( stream, nv->flags );
+    strm_putU32( stream, nv->lastMoveTime );
+    strm_putU32( stream, nv->dupTimerExpires );
 
     /* number of players is upper limit on device count */
-    stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
+    strm_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
 
     XP_ASSERT( XWSTATE_LAST <= 1<<4 );
-    stream_putBits( stream, XWSTATE_NBITS, nv->gameState );
+    strm_putBits( stream, XWSTATE_NBITS, nv->gameState );
     XP_LOGFF( "wrote state: %s", getStateStr(nv->gameState) );
 
     /* +1: make -1 (NOTURN) into a positive number */
     XP_ASSERT( -1 <= nv->currentTurn && nv->currentTurn < MAX_NUM_PLAYERS );
-    stream_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
-    stream_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
-    stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
+    strm_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
+    strm_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
+    strm_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        stream_putBits( stream, 16, nv->addresses[ii].channelNo );
+        strm_putBits( stream, 16, nv->addresses[ii].channelNo );
 #ifdef STREAM_VERS_BIGBOARD
-        stream_putBits( stream, 8, nv->addresses[ii].streamVersion );
+        strm_putBits( stream, 8, nv->addresses[ii].streamVersion );
 #endif
     }
 #ifdef STREAM_VERS_BIGBOARD
-    stream_putU8( stream, nv->streamVersion );
+    strm_putU8( stream, nv->streamVersion );
     /* XP_LOGFF( "wrote streamVersion: 0x%x", nv->streamVersion ); */
 #endif
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        stream_putBits( stream, 1, nv->dupTurnsMade[ii] );
-        stream_putBits( stream, 1, nv->dupTurnsForced[ii] );
+        strm_putBits( stream, 1, nv->dupTurnsMade[ii] );
+        strm_putBits( stream, 1, nv->dupTurnsForced[ii] );
     }
-    stream_putBits( stream, 1, nv->dupTurnsSent );
+    strm_putBits( stream, 1, nv->dupTurnsSent );
 } /* putNV */
 
 static XWStreamCtxt*
 readStreamIf( CtrlrCtxt* ctrlr, XWStreamCtxt* in )
 {
     XWStreamCtxt* result = NULL;
-    XP_U16 len = stream_getU16( in );
+    XP_U16 len = strm_getU16( in );
     if ( 0 < len ) {
         result = mkCtrlrStream0( ctrlr );
-        stream_getFromStream( result, in, len );
+        strm_getFromStream( result, in, len );
     }
     return result;
 }
@@ -564,12 +563,12 @@ readStreamIf( CtrlrCtxt* ctrlr, XWStreamCtxt* in )
 static void
 writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
 {
-    XP_U16 len = !!src ? stream_getSize( src ) : 0;
-    stream_putU16( dest, len );
+    XP_U16 len = !!src ? strm_getSize( src ) : 0;
+    strm_putU16( dest, len );
     if ( 0 < len ) {
-        XWStreamPos pos = stream_getPos( src, POS_READ );
-        stream_getFromStream( dest, src, len );
-        (void)stream_setPos( src, POS_READ, pos );
+        XWStreamPos pos = strm_getPos( src, POS_READ );
+        strm_getFromStream( dest, src, len );
+        (void)strm_setPos( src, POS_READ, pos );
     }
 }
 
@@ -628,12 +627,12 @@ ctrl_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
                        CommsCtxt* comms, XW_UtilCtxt** utilp, XP_U16 nPlayers )
 {
     CtrlrCtxt* ctrlr;
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
 
     ctrlr = ctrl_make( xwe, model, comms, utilp );
     getNV( stream, &ctrlr->nv, nPlayers );
     
-    if ( stream_getBits(stream, 1) != 0 ) {
+    if ( strm_getBits(stream, 1) != 0 ) {
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
 #endif
@@ -643,9 +642,9 @@ ctrl_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         CtrlrPlayer* player = &ctrlr->srvPlyrs[ii];
 
-        player->deviceIndex = stream_getU8( stream );
+        player->deviceIndex = strm_getU8( stream );
 
-        if ( stream_getU8( stream ) != 0 ) {
+        if ( strm_getU8( stream ) != 0 ) {
             player->engine = engine_makeFromStream( xwe, utilp, stream );
         }
     }
@@ -655,7 +654,7 @@ ctrl_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
          || XP_TRUE
 #endif
          ) { 
-        ctrlr->lastMoveSource = (XP_U16)stream_getBits( stream, 2 );
+        ctrlr->lastMoveSource = (XP_U16)strm_getBits( stream, 2 );
     }
 
     if ( version >= STREAM_SAVE_PREVMOVE ) {
@@ -696,7 +695,7 @@ ctrl_writeToStream( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
 
     putNV( stream, &ctrlr->nv, nPlayers );
 
-    stream_putBits( stream, 1, ctrlr->pool != NULL );
+    strm_putBits( stream, 1, ctrlr->pool != NULL );
     if ( ctrlr->pool != NULL ) {
         pool_writeToStream( ctrlr->pool, stream );
     }
@@ -704,15 +703,15 @@ ctrl_writeToStream( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         const CtrlrPlayer* player = &ctrlr->srvPlyrs[ii];
 
-        stream_putU8( stream, player->deviceIndex );
+        strm_putU8( stream, player->deviceIndex );
 
-        stream_putU8( stream, (XP_U8)(player->engine != NULL) );
+        strm_putU8( stream, (XP_U8)(player->engine != NULL) );
         if ( player->engine != NULL ) {
             engine_writeToStream( player->engine, stream );
         }
     }
 
-    stream_putBits( stream, 2, ctrlr->lastMoveSource );
+    strm_putBits( stream, 2, ctrlr->lastMoveSource );
 
     writeStreamIf( stream, ctrlr->nv.prevMoveStream );
     writeStreamIf( stream, ctrlr->nv.prevWordsStream );
@@ -720,8 +719,8 @@ ctrl_writeToStream( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
     if ( ctrlr->vol.gi->deviceRole == ROLE_ISGUEST
          && 2 < nPlayers ) {
         XP_U16 len = ctrlr->nv.rematch.addrsLen;
-        stream_putU32VL( stream, len );
-        stream_putBytes( stream, ctrlr->nv.rematch.addrs, len );
+        strm_putU32VL( stream, len );
+        strm_putBytes( stream, ctrlr->nv.rematch.addrs, len );
     }
 
     if ( 0 != (ctrlr->nv.flags & MASK_HAVE_RIP_INFO) ) {
@@ -871,7 +870,7 @@ addMQTTDevIDIf( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 static void
 readMQTTDevID( CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
 {
-    if ( 0 < stream_getSize( stream ) ) {
+    if ( 0 < strm_getSize( stream ) ) {
         XP_UCHAR buf[32];
         stringFromStreamHere( stream, buf, VSIZE(buf) );
 
@@ -880,7 +879,7 @@ readMQTTDevID( CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
             if ( ctrlr->nv.skipMQTTAdd ) {
                 SRVR_LOGFF( "skipMQTTAdd: %s", boolToStr(ctrlr->nv.skipMQTTAdd) );
             } else {
-                XP_PlayerAddr channelNo = stream_getAddress( stream );
+                XP_PlayerAddr channelNo = strm_getAddress( stream );
                 comms_addMQTTDevID( ctrlr->vol.comms, channelNo, &devID );
             }
         }
@@ -923,10 +922,10 @@ loadRemoteRI( const CtrlrCtxt* ctrlr, const CurGameInfo* XP_UNUSED_DBG(gi),
               RematchInfo* rip )
 {
     XWStreamCtxt* tmpStream = mkCtrlrStream( ctrlr, ctrlr->nv.streamVersion );
-    stream_putBytes( tmpStream, ctrlr->nv.rematch.addrs, ctrlr->nv.rematch.addrsLen );
+    strm_putBytes( tmpStream, ctrlr->nv.rematch.addrs, ctrlr->nv.rematch.addrsLen );
 
     ri_fromStream( rip, tmpStream, ctrlr );
-    stream_destroy( tmpStream );
+    strm_destroy( tmpStream );
 
     /* Now find the unaddressed host and add its address */
     XP_ASSERT( rip->nPlayers == gi->nPlayers );
@@ -942,7 +941,7 @@ addGuestAddrsIf( const CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 sendee,
 {
     SRVR_LOGFF("(sendee: %d)", sendee );
     XP_ASSERT( amHost( ctrlr ) );
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     XP_ASSERT( version == ctrlr->nv.streamVersion );
     if ( STREAM_VERS_REMATCHADDRS <= version
          /* Not needed for two-device games */
@@ -971,11 +970,11 @@ addGuestAddrsIf( const CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 sendee,
             skipIt = XP_TRUE;
         }
         if ( !skipIt ) {
-            XP_U16 len = stream_getSize( tmpStream );
-            stream_putU32VL( stream, len );
-            stream_putBytes( stream, stream_getPtr(tmpStream), len );
+            XP_U16 len = strm_getSize( tmpStream );
+            strm_putU32VL( stream, len );
+            strm_putBytes( stream, strm_getPtr(tmpStream), len );
         }
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 }
 
@@ -983,17 +982,17 @@ static void
 readGuestAddrs( CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_U8 streamVersion )
 {
     SRVR_LOGFFV( "version: 0x%X", streamVersion );
-    if ( STREAM_VERS_REMATCHADDRS <= streamVersion && 0 < stream_getSize(stream) ) {
-        XP_U16 len = ctrlr->nv.rematch.addrsLen = stream_getU32VL( stream );
+    if ( STREAM_VERS_REMATCHADDRS <= streamVersion && 0 < strm_getSize(stream) ) {
+        XP_U16 len = ctrlr->nv.rematch.addrsLen = strm_getU32VL( stream );
         SRVR_LOGFFV( "rematch.addrsLen: %d", ctrlr->nv.rematch.addrsLen );
         if ( 0 < len ) {
             XP_ASSERT( !ctrlr->nv.rematch.addrs );
             ctrlr->nv.rematch.addrs = XP_MALLOC( ctrlr->mpool, len );
-            stream_getBytes( stream, ctrlr->nv.rematch.addrs, len );
+            strm_getBytes( stream, ctrlr->nv.rematch.addrs, len );
             SRVR_LOGFFV( "loaded %d bytes of rematch.addrs", len );
 #ifdef DEBUG
             XWStreamCtxt* tmpStream = mkCtrlrStream( ctrlr, streamVersion );
-            stream_putBytes( tmpStream, ctrlr->nv.rematch.addrs,
+            strm_putBytes( tmpStream, ctrlr->nv.rematch.addrs,
                              ctrlr->nv.rematch.addrsLen );
 
             if ( STREAM_VERS_REMATCHORDER <= streamVersion ) {
@@ -1004,14 +1003,14 @@ readGuestAddrs( CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_U8 streamVersion )
                     logAddr( ctrlr->vol.dutil, &ri.addrs[ii], __func__ );
                 }
             } else {
-                while ( 0 < stream_getSize(tmpStream) ) {
+                while ( 0 < strm_getSize(tmpStream) ) {
                     CommsAddrRec addr = {};
                     addrFromStream( &addr, tmpStream );
                     SRVR_LOGFFV( "got an address" );
                     logAddr( ctrlr->vol.dutil, &addr, __func__ );
                 }
             }
-            stream_destroy( tmpStream );
+            strm_destroy( tmpStream );
 #endif
         }
     }
@@ -1033,7 +1032,7 @@ ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe )
         XP_ASSERT( nPlayers > 0 );
         XP_U16 localPlayers = gi_countLocalPlayers( gi, XP_FALSE);
         XP_ASSERT( 0 < localPlayers );
-        stream_putBits( stream, NPLAYERS_NBITS, localPlayers );
+        strm_putBits( stream, NPLAYERS_NBITS, localPlayers );
 
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
@@ -1045,7 +1044,7 @@ ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe )
                 continue;
             }
 
-            stream_putBits( stream, 1, LP_IS_ROBOT(lp) ); /* better not to
+            strm_putBits( stream, 1, LP_IS_ROBOT(lp) ); /* better not to
                                                              send this */
             /* The first nPlayers players are the ones we'll use.  The local flag
                doesn't matter when for ROLE_ISGUEST. */
@@ -1054,12 +1053,12 @@ ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe )
             if ( len > MAX_NAME_LEN ) {
                 len = MAX_NAME_LEN;
             }
-            stream_putBits( stream, NAME_LEN_NBITS, len );
-            stream_putBytes( stream, name, len );
+            strm_putBits( stream, NAME_LEN_NBITS, len );
+            strm_putBytes( stream, name, len );
             SRVR_LOGFFV( "wrote local name %s", name );
         }
 #ifdef STREAM_VERS_BIGBOARD
-        stream_putU8( stream, CUR_STREAM_VERS );
+        strm_putU8( stream, CUR_STREAM_VERS );
 #endif
         closeAndSend( ctrlr, xwe, stream );
     } else {
@@ -1078,8 +1077,8 @@ sendChatTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, const XP_UCHAR* msg,
         XWStreamCtxt* stream = messageStreamWithHeader( ctrlr, devIndex,
                                                         XWPROTO_CHAT );
         stringToStream( stream, msg );
-        stream_putU8( stream, from );
-        stream_putU32( stream, timestamp );
+        strm_putU8( stream, from );
+        strm_putU32( stream, timestamp );
         closeAndSend( ctrlr, xwe, stream );
     } else {
         SRVR_LOGFF( "dropping chat %s; queue too full?", msg );
@@ -1124,15 +1123,15 @@ receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
 {
     XP_UCHAR* msg = stringFromStream( ctrlr->mpool, incoming );
     XP_S16 from = -1;
-    if ( 1 <= stream_getSize( incoming ) ) {
-        from = stream_getU8( incoming );
+    if ( 1 <= strm_getSize( incoming ) ) {
+        from = strm_getU8( incoming );
         if ( ctrlr->vol.gi->players[from].isLocal ) { /* fail.... */
             from = -1;          /* means it's wrong/unknown */
         }
     }
 
-    XP_U32 timestamp = sizeof(timestamp) <= stream_getSize( incoming )
-        ? stream_getU32( incoming ) : 0;
+    XP_U32 timestamp = sizeof(timestamp) <= strm_getSize( incoming )
+        ? strm_getU32( incoming ) : 0;
     if ( amHost( ctrlr ) ) {
         XP_U16 sourceClientIndex = getIndexForStream( ctrlr, incoming );
         sendChatToClientsExcept( ctrlr, xwe, sourceClientIndex, msg, from,
@@ -1193,7 +1192,7 @@ setStreamVersion( CtrlrCtxt* ctrlr, XWEnv xwe )
         XWStreamCtxt* tmp = mkCtrlrStream( ctrlr, streamVersion );
         gi_writeToStream( tmp, gip );
         CurGameInfo tmpGi = gi_readFromStream2( tmp );
-        stream_destroy( tmp );
+        strm_destroy( tmp );
         /* If downgrading forced tray size change, model needs to know. BUT:
            the guest would have to be >two years old now for this to happen. */
         if ( oldTraySize != tmpGi.traySize || oldBingoMin != tmpGi.bingoMin ) {
@@ -1238,7 +1237,7 @@ handleRegistrationMsg( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
     LOG_FUNC();
 
     /* code will have already been consumed */
-    playersInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
+    playersInMsg = (XP_U16)strm_getBits( stream, NPLAYERS_NBITS );
     XP_ASSERT( playersInMsg > 0 );
 
     if ( ctrlr->nv.pendingRegistrations < playersInMsg ) {
@@ -1273,8 +1272,8 @@ handleRegistrationMsg( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 
     if ( success ) {
 #ifdef STREAM_VERS_BIGBOARD
-        if ( 0 < stream_getSize(stream) ) {
-            XP_U8 streamVersion = stream_getU8( stream );
+        if ( 0 < strm_getSize(stream) ) {
+            XP_U8 streamVersion = strm_getU8( stream );
             if ( streamVersion >= STREAM_VERS_BIGBOARD ) {
                 SRVR_LOGFF( "setting addresses[%d] streamVersion to 0x%x "
                             "(CUR_STREAM_VERS is 0x%x)",
@@ -1322,7 +1321,7 @@ dupe_setupShowTrade( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 nTiles )
     XP_SNPRINTF( buf, VSIZE(buf), fmt, nTiles );
 
     XWStreamCtxt* stream = mkCtrlrStream0( ctrlr );
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 
     ctrlr->nv.prevMoveStream = stream;
     ctrlr->vol.showPrevMove = XP_TRUE;
@@ -1358,7 +1357,7 @@ dupe_setupShowMove( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16* scores )
                 ++nDone;
                 XP_UCHAR buf[128];
                 XP_SNPRINTF( buf, VSIZE(buf), fmt, gi->players[ii].name, scores[ii] );
-                stream_catString( stream, buf );
+                strm_catString( stream, buf );
             }
         }
         lastMax = thisMax;
@@ -1372,13 +1371,13 @@ dupe_setupShowMove( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16* scores )
 static void
 addDupeStuffMark( XWStreamCtxt* stream, DUPE_STUFF typ )
 {
-    stream_putBits( stream, 3, typ );
+    strm_putBits( stream, 3, typ );
 }
 
 static DUPE_STUFF
 getDupeStuffMark( XWStreamCtxt* stream )
 {
-    return (DUPE_STUFF)stream_getBits( stream, 3 );
+    return (DUPE_STUFF)strm_getBits( stream, 3 );
 }
 
 /* Called on ctrlr when client has sent a message giving its local players'
@@ -1390,11 +1389,11 @@ dupe_handleClientMoves( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
     ModelCtxt* model = ctrlr->vol.model;
     XP_Bool success = XP_TRUE;
 
-    XP_U16 movesInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
+    XP_U16 movesInMsg = (XP_U16)strm_getBits( stream, NPLAYERS_NBITS );
     SRVR_LOGFF( "reading %d moves", movesInMsg );
     for ( XP_U16 ii = 0; success && ii < movesInMsg; ++ii ) {
-        XP_U16 turn = (XP_U16)stream_getBits( stream, PLAYERNUM_NBITS );
-        XP_Bool forced = (XP_Bool)stream_getBits( stream, 1 );
+        XP_U16 turn = (XP_U16)strm_getBits( stream, PLAYERNUM_NBITS );
+        XP_Bool forced = (XP_Bool)strm_getBits( stream, 1 );
 
         model_resetCurrentTurn( model, xwe, turn );
         success = model_makeTurnFromStream( model, xwe, turn, stream );
@@ -1602,7 +1601,7 @@ dupe_handleCtrlrMoves( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
     XP_ASSERT( newTiles.nTiles <= moveInfo.nTiles );
     XP_ASSERT( pool_containsTiles( ctrlr->pool, &newTiles ) );
 
-    XP_U16 nScores = stream_getBits( stream, NPLAYERS_NBITS );
+    XP_U16 nScores = strm_getBits( stream, NPLAYERS_NBITS );
     XP_U16 scores[MAX_NUM_PLAYERS];
     XP_ASSERT( nScores <= MAX_NUM_PLAYERS );
     scoresFromStream( stream, nScores, scores );
@@ -1693,10 +1692,9 @@ static XWStreamCtxt*
 mkCtrlrStream( const CtrlrCtxt* ctrlr, XP_U8 version )
 {
     XWStreamCtxt* stream =
-        mem_stream_make_raw( MPPARM(ctrlr->mpool)
-                             dutil_getVTManager(ctrlr->vol.dutil) );
+        strm_make_raw( MPPARM_NOCOMMA(ctrlr->mpool) );
     XP_ASSERT( !!stream );
-    stream_setVersion( stream, version );
+    strm_setVersion( stream, version );
     return stream;
 } /* mkCtrlrStream */
 
@@ -1706,7 +1704,7 @@ setOrReplace( XWStreamCtxt** loc, XWStreamCtxt* stream )
 {
     if ( !!*loc ) {
         XP_LOGFF( "dropping stream -- fix this" );
-        stream_destroy( *loc );
+        strm_destroy( *loc );
     }
     *loc = stream;
 }
@@ -1796,7 +1794,7 @@ makeRobotMove( CtrlrCtxt* ctrlr, XWEnv xwe )
                                                    nTrayTiles );
                 XP_SNPRINTF( buf, sizeof(buf), str, nTrayTiles );
 
-                stream_catString( stream, buf );
+                strm_catString( stream, buf );
                 XP_ASSERT( !ctrlr->nv.prevMoveStream );
                 ctrlr->nv.prevMoveStream = stream;
             }
@@ -1913,20 +1911,20 @@ showPrevScore( CtrlrCtxt* ctrlr, XWEnv xwe, XP_S16 prevTurn )
     str = buf;
 
     XWStreamCtxt* stream = mkCtrlrStream0( ctrlr );
-    stream_catString( stream, str );
+    strm_catString( stream, str );
 
     XWStreamCtxt* prevStream = ctrlr->nv.prevMoveStream;
     if ( !!prevStream ) {
         ctrlr->nv.prevMoveStream = NULL;
 
-        XP_U16 len = stream_getSize( prevStream );
-        stream_putBytes( stream, stream_getPtr( prevStream ), len );
-        stream_destroy( prevStream );
+        XP_U16 len = strm_getSize( prevStream );
+        strm_putBytes( stream, strm_getPtr( prevStream ), len );
+        strm_destroy( prevStream );
     }
 
     dutil_informMove( dutil, xwe, ctrlr->vol.gr, prevTurn, stream,
                       ctrlr->nv.prevWordsStream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     destroyStreamIf( &ctrlr->nv.prevWordsStream );
 } /* showPrevScore */
@@ -2093,7 +2091,7 @@ ctrl_addIdle( CtrlrCtxt* ctrlr, XWEnv xwe )
 static XP_S8
 getIndexForStream( const CtrlrCtxt* ctrlr, const XWStreamCtxt* stream )
 {
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
+    XP_PlayerAddr channelNo = strm_getAddress( stream );
     return getIndexForDevice( ctrlr, channelNo );
 }
 
@@ -2143,7 +2141,7 @@ findOrderedSlot( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
 {
     LOG_FUNC();
     const CurGameInfo* gi = ctrlr->vol.gi;
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
+    XP_PlayerAddr channelNo = strm_getAddress( stream );
     CommsAddrRec guestAddr;
     const CommsCtxt* comms = ctrlr->vol.comms;
     comms_getChannelAddr( comms, channelNo, &guestAddr );
@@ -2202,10 +2200,10 @@ registerRemotePlayer( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         XP_ASSERT( ROLE_ISHOST == gi.deviceRole );
         LocalPlayer* lp = &gi.players[turn];
         /* get data from stream */
-        lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
-        XP_U16 nameLen = stream_getBits( stream, NAME_LEN_NBITS );
+        lp->robotIQ = 1 == strm_getBits( stream, 1 )? 1 : 0;
+        XP_U16 nameLen = strm_getBits( stream, NAME_LEN_NBITS );
         XP_UCHAR name[nameLen + 1];
-        stream_getBytes( stream, name, nameLen );
+        strm_getBytes( stream, name, nameLen );
         name[nameLen] = '\0';
         SRVR_LOGFF( "read remote name: %s", name );
 
@@ -2213,7 +2211,7 @@ registerRemotePlayer( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 
         gr_setGI( ctrlr->vol.dutil, ctrlr->vol.gr, xwe, &gi );
 
-        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_PlayerAddr channelNo = strm_getAddress( stream );
         deviceIndex = getIndexForDevice( ctrlr, channelNo );
 
         --ctrlr->nv.pendingRegistrations;
@@ -2273,16 +2271,16 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 #endif
 
         /* version; any dependencies here? */
-        XP_U8 streamVersion = stream_getU8( stream );
+        XP_U8 streamVersion = strm_getU8( stream );
         SRVR_LOGFF( "set streamVersion to 0x%X", streamVersion );
-        stream_setVersion( stream, streamVersion );
+        strm_setVersion( stream, streamVersion );
         if ( STREAM_VERS_NINETILES > streamVersion ) {
             model_forceStack7Tiles( ctrlr->vol.model );
         }
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         XP_U32 gameID = streamVersion < STREAM_VERS_REMATCHORDER
-            ? stream_getU32( stream ) : 0;
+            ? strm_getU32( stream ) : 0;
         CurGameInfo myNewGI = gi_readFromStream2( stream );
         XP_ASSERT( gameID == 0 || gameID == myNewGI.gameID );
         gameID = myNewGI.gameID;
@@ -2315,7 +2313,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         }
 #endif
 
-        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_PlayerAddr channelNo = strm_getAddress( stream );
         XP_ASSERT( channelNo != 0 );
         ctrlr->nv.addresses[0].channelNo = channelNo;
         SRVR_LOGFF( "assigning channelNo %x for 0", channelNo );
@@ -2376,7 +2374,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         readMQTTDevID( ctrlr, stream );
-        readGuestAddrs( ctrlr, stream, stream_getVersion( stream ) );
+        readGuestAddrs( ctrlr, stream, strm_getVersion( stream ) );
 
         syncPlayers( ctrlr );
 
@@ -2438,13 +2436,13 @@ sendInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe )
 
 #ifdef STREAM_VERS_BIGBOARD
         XP_ASSERT( 0 < streamVersion );
-        stream_putU8( stream, streamVersion );
+        strm_putU8( stream, streamVersion );
 #else
-        stream_putU8( stream, CUR_STREAM_VERS );
+        strm_putU8( stream, CUR_STREAM_VERS );
 #endif
 
         if ( streamVersion < STREAM_VERS_REMATCHORDER ) {
-            stream_putU32( stream, gameID );
+            strm_putU32( stream, gameID );
         }
 
         CurGameInfo localGI;
@@ -2502,8 +2500,8 @@ bwsToStream( XWStreamCtxt* stream, const BadWordsState* bws )
 {
     const XP_U16 nWords = bws->bwi.nWords;
 
-    stream_putBits( stream, 4, nWords );
-    if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
+    strm_putBits( stream, 4, nWords );
+    if ( STREAM_VERS_DICTNAME <= strm_getVersion( stream ) ) {
         stringToStream( stream, bws->dictName );
     }
     for ( int ii = 0; ii < nWords; ++ii ) {
@@ -2515,11 +2513,11 @@ bwsToStream( XWStreamCtxt* stream, const BadWordsState* bws )
 static void
 bwsFromStream( MPFORMAL XWStreamCtxt* stream, BadWordsState* bws )
 {
-    XP_U16 nWords = stream_getBits( stream, 4 );
+    XP_U16 nWords = strm_getBits( stream, 4 );
     XP_ASSERT( nWords < VSIZE(bws->bwi.words) - 1 );
 
     bws->bwi.nWords = nWords;
-    if ( STREAM_VERS_DICTNAME <= stream_getVersion( stream ) ) {
+    if ( STREAM_VERS_DICTNAME <= strm_getVersion( stream ) ) {
         bws->dictName = stringFromStream( mpool, stream );
     }
     for ( int ii = 0; ii < nWords; ++ii ) {
@@ -2585,9 +2583,8 @@ messageStreamWithHeader( const CtrlrCtxt* ctrlr, XP_U16 devIndex, XW_Proto code 
 {
     XP_PlayerAddr channelNo = ctrlr->nv.addresses[devIndex].channelNo;
 
-    VTableMgr* vtmgr = dutil_getVTManager( ctrlr->vol.dutil );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(ctrlr->mpool) vtmgr );
-    stream_setAddress( stream, channelNo );
+    XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(ctrlr->mpool) );
+    strm_setAddress( stream, channelNo );
     PRINTCODE( "making", code );
 
     writeProto( ctrlr, stream, code );
@@ -2599,7 +2596,7 @@ static void
 closeAndSend( const CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 {
     comms_send( ctrlr->vol.comms, xwe, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 static void
@@ -2611,12 +2608,12 @@ sendBadWordMsgs( CtrlrCtxt* ctrlr, XWEnv xwe )
         XWStreamCtxt* stream = 
             messageStreamWithHeader( ctrlr, ctrlr->lastMoveSource,
                                      XWPROTO_BADWORD_INFO );
-        stream_putBits( stream, PLAYERNUM_NBITS, ctrlr->nv.currentTurn );
+        strm_putBits( stream, PLAYERNUM_NBITS, ctrlr->nv.currentTurn );
 
         bwsToStream( stream, &ctrlr->bws );
 
         /* XP_U32 hash = model_getHash( ctrlr->vol.model ); */
-        /* stream_putU32( stream, hash ); */
+        /* strm_putU32( stream, hash ); */
         /* XP_LOGFF( "wrote hash: %X", hash ); */
 
         closeAndSend( ctrlr, xwe, stream );
@@ -2912,10 +2909,10 @@ getPlayerTime( CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_U16 turn )
     const CurGameInfo* gi = ctrlr->vol.gi;
     if ( gi->timerEnabled ) {
         XP_U32 secondsUsed;
-        if ( STREAM_VERS_BIGGERGI <= stream_getVersion(stream) ) {
-            secondsUsed = stream_getU32VL( stream );
+        if ( STREAM_VERS_BIGGERGI <= strm_getVersion(stream) ) {
+            secondsUsed = strm_getU32VL( stream );
         } else {
-            secondsUsed = stream_getU16( stream );
+            secondsUsed = strm_getU16( stream );
         }
         model_setSecondsUsed( ctrlr->vol.model, turn, secondsUsed );
     }
@@ -3098,36 +3095,36 @@ sendMoveTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
     XWStreamCtxt* stream = messageStreamWithHeader( ctrlr, devIndex, code );
 
 #ifdef STREAM_VERS_BIGBOARD
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     if ( STREAM_VERS_BIGBOARD <= version ) {
         XP_ASSERT( version == ctrlr->nv.streamVersion );
         XP_U32 hash = model_getHash( model );
 #ifdef DEBUG_HASHING
         SRVR_LOGFF( "adding hash %X", (unsigned int)hash );
 #endif
-        stream_putU32( stream, hash );
+        strm_putU32( stream, hash );
     }
 #endif
 
-    stream_putBits( stream, PLAYERNUM_NBITS, turn ); /* who made the move */
+    strm_putBits( stream, PLAYERNUM_NBITS, turn ); /* who made the move */
 
     traySetToStream( stream, newTiles );
 
-    stream_putBits( stream, 1, isTrade );
+    strm_putBits( stream, 1, isTrade );
 
     if ( isTrade ) {
         traySetToStream( stream, tradedTiles );
     } else {
-        stream_putBits( stream, 1, legal );
+        strm_putBits( stream, 1, legal );
 
         model_currentMoveToStream( model, turn, stream );
 
         XP_U32 secondsUsed = model_getSecondsUsed( model, turn );
         if ( gi->timerEnabled ) {
             if ( STREAM_VERS_BIGGERGI <= version ) {
-                stream_putU32VL( stream, secondsUsed );
+                strm_putU32VL( stream, secondsUsed );
             } else {
-                stream_putU16( stream, secondsUsed );
+                strm_putU16( stream, secondsUsed );
             }
             SRVR_LOGFFV( "wrote secondsUsed for player %d: %d",
                          turn, secondsUsed );
@@ -3137,7 +3134,7 @@ sendMoveTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, XP_U16 turn,
 
         if ( !legal ) {
             XP_ASSERT( ctrlr->bws.bwi.nWords > 0 );
-            stream_putBits( stream, PLAYERNUM_NBITS, turn );
+            strm_putBits( stream, PLAYERNUM_NBITS, turn );
             bwsToStream( stream, &ctrlr->bws );
         }
     }
@@ -3157,8 +3154,8 @@ readMoveInfo( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
     XP_Bool isTrade;
 
 #ifdef STREAM_VERS_BIGBOARD
-    if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
-        XP_U32 hashReceived = stream_getU32( stream );
+    if ( STREAM_VERS_BIGBOARD <= strm_getVersion( stream ) ) {
+        XP_U32 hashReceived = strm_getU32( stream );
         success = model_hashMatches( ctrlr->vol.model, hashReceived )
             || model_popToHash( ctrlr->vol.model, xwe, hashReceived, ctrlr->pool );
 
@@ -3173,18 +3170,18 @@ readMoveInfo( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
     }
 #endif
     if ( success ) {
-        XP_U16 whoMoved = stream_getBits( stream, PLAYERNUM_NBITS );
+        XP_U16 whoMoved = strm_getBits( stream, PLAYERNUM_NBITS );
         traySetFromStream( stream, newTiles );
         success = pool_containsTiles( ctrlr->pool, newTiles );
         XP_ASSERT( success );
         if ( success ) {
-            isTrade = stream_getBits( stream, 1 );
+            isTrade = strm_getBits( stream, 1 );
 
             if ( isTrade ) {
                 traySetFromStream( stream, tradedTiles );
                 SRVR_LOGFFV( "got trade of %d tiles", tradedTiles->nTiles );
             } else {
-                legalMove = stream_getBits( stream, 1 );
+                legalMove = strm_getBits( stream, 1 );
                 success = model_makeTurnFromStream( ctrlr->vol.model, 
                                                     xwe, whoMoved, stream );
                 getPlayerTime( ctrlr, stream, whoMoved );
@@ -3228,7 +3225,7 @@ makeTradeReportIf( CtrlrCtxt* ctrlr, XWEnv xwe, const TrayTileSet* tradedTiles )
         XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
                      tradedTiles->nTiles );
         stream = mkCtrlrStream0( ctrlr );
-        stream_catString( stream, tradeBuf );
+        strm_catString( stream, tradeBuf );
     }
     return stream;
 } /* makeTradeReportIf */
@@ -3509,9 +3506,9 @@ sendStreamToDev( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 dev, XW_Proto code,
                  XWStreamCtxt* data )
 {
     XWStreamCtxt* stream = messageStreamWithHeader( ctrlr, dev, code );
-    const XP_U16 dataLen = stream_getSize( data );
-    const XP_U8* dataPtr = stream_getPtr( data );
-    stream_putBytes( stream, dataPtr, dataLen );
+    const XP_U16 dataLen = strm_getSize( data );
+    const XP_U8* dataPtr = strm_getPtr( data );
+    strm_putBytes( stream, dataPtr, dataLen );
     closeAndSend( ctrlr, xwe, stream );
 }
 
@@ -3543,8 +3540,7 @@ dupe_makeAndReportTrade( CtrlrCtxt* ctrlr, XWEnv xwe )
 
     if ( ctrlr->vol.gi->deviceRole == ROLE_ISHOST ) {
         XWStreamCtxt* tmpStream =
-            mem_stream_make_raw( MPPARM(ctrlr->mpool)
-                                 dutil_getVTManager(ctrlr->vol.dutil) );
+            strm_make_raw( MPPARM_NOCOMMA(ctrlr->mpool) );
 
         addDupeStuffMark( tmpStream, DUPE_STUFF_TRADES_CTRLR );
 
@@ -3556,7 +3552,7 @@ dupe_makeAndReportTrade( CtrlrCtxt* ctrlr, XWEnv xwe )
             sendStreamToDev( ctrlr, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 
     dupe_resetTimer( ctrlr, xwe );
@@ -3574,17 +3570,16 @@ dupe_transmitPause( CtrlrCtxt* ctrlr, XWEnv xwe, DupPauseType typ, XP_U16 turn,
     if ( gi->deviceRole != ROLE_STANDALONE ) {
         XP_Bool amClient = ROLE_ISGUEST == gi->deviceRole;
         XWStreamCtxt* tmpStream =
-            mem_stream_make_raw( MPPARM(ctrlr->mpool)
-                             dutil_getVTManager(ctrlr->vol.dutil) );
+            strm_make_raw( MPPARM_NOCOMMA(ctrlr->mpool) );
 
         addDupeStuffMark( tmpStream, DUPE_STUFF_PAUSE );
 
-        stream_putBits( tmpStream, 1, amClient );
-        stream_putBits( tmpStream, 2, typ );
+        strm_putBits( tmpStream, 1, amClient );
+        strm_putBits( tmpStream, 2, typ );
         if ( AUTOPAUSED != typ ) {
-            stream_putBits( tmpStream, PLAYERNUM_NBITS, turn );
+            strm_putBits( tmpStream, PLAYERNUM_NBITS, turn );
         }
-        stream_putU32( tmpStream, ctrlr->nv.dupTimerExpires );
+        strm_putU32( tmpStream, ctrlr->nv.dupTimerExpires );
         if ( AUTOPAUSED != typ ) {
             stringToStream( tmpStream, msg );
         }
@@ -3598,7 +3593,7 @@ dupe_transmitPause( CtrlrCtxt* ctrlr, XWEnv xwe, DupPauseType typ, XP_U16 turn,
                 }
             }
         }
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 }
 
@@ -3606,20 +3601,20 @@ static XP_Bool
 dupe_receivePause( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 {
     LOG_FUNC();
-    XP_Bool isClient = (XP_Bool)stream_getBits( stream, 1 );
+    XP_Bool isClient = (XP_Bool)strm_getBits( stream, 1 );
     XP_Bool accept = isClient == amHost( ctrlr );
     if ( accept ) {
         const CurGameInfo* gi = ctrlr->vol.gi;
-        DupPauseType pauseType = (DupPauseType)stream_getBits( stream, 2 );
+        DupPauseType pauseType = (DupPauseType)strm_getBits( stream, 2 );
         XP_S16 turn = -1;
         if ( AUTOPAUSED != pauseType ) {
-            turn = (XP_S16)stream_getBits( stream, PLAYERNUM_NBITS );
+            turn = (XP_S16)strm_getBits( stream, PLAYERNUM_NBITS );
             XP_ASSERT( 0 <= turn );
         } else {
             dupe_clearState( ctrlr );
         }
 
-        setDupTimerExpires( ctrlr, xwe, (XP_S32)stream_getU32( stream ) );
+        setDupTimerExpires( ctrlr, xwe, (XP_S32)strm_getU32( stream ) );
 
         XP_UCHAR* msg = NULL;
         if ( AUTOPAUSED != pauseType ) {
@@ -3701,10 +3696,9 @@ dupe_commitAndReportMove( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 winner,
 
     if ( ctrlr->vol.gi->deviceRole == ROLE_ISHOST ) {
         XWStreamCtxt* tmpStream =
-            mem_stream_make_raw( MPPARM(ctrlr->mpool)
-                                 dutil_getVTManager(ctrlr->vol.dutil) );
+            strm_make_raw( MPPARM_NOCOMMA(ctrlr->mpool) );
         /* tilesNBits, in moveInfoToStream(), needs version */
-        stream_setVersion( tmpStream, ctrlr->nv.streamVersion );
+        strm_setVersion( tmpStream, ctrlr->nv.streamVersion );
 
         addDupeStuffMark( tmpStream, DUPE_STUFF_MOVES_CTRLR );
 
@@ -3712,7 +3706,7 @@ dupe_commitAndReportMove( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 winner,
         traySetToStream( tmpStream, &newTiles );
 
         /* Now write all the scores */
-        stream_putBits( tmpStream, NPLAYERS_NBITS, nPlayers );
+        strm_putBits( tmpStream, NPLAYERS_NBITS, nPlayers );
         scoresToStream( tmpStream, nPlayers, scores );
 
         /* Send it to each one */
@@ -3720,7 +3714,7 @@ dupe_commitAndReportMove( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 winner,
             sendStreamToDev( ctrlr, xwe, dev, XWPROTO_DUPE_STUFF, tmpStream );
         }
 
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 
     dupe_resetTimer( ctrlr, xwe );
@@ -3810,15 +3804,15 @@ dupe_checkTurns( CtrlrCtxt* ctrlr, XWEnv xwe )
             addDupeStuffMark( stream, DUPE_STUFF_MOVE_CLIENT );
 
             /* XP_U32 hash = model_getHash( ctrlr->vol.model ); */
-            /* stream_putU32( stream, hash ); */
+            /* strm_putU32( stream, hash ); */
 
             XP_U16 localCount = gi_countLocalPlayers( ctrlr->vol.gi, XP_FALSE );
             SRVR_LOGFF( "writing %d moves", localCount );
-            stream_putBits( stream, NPLAYERS_NBITS, localCount );
+            strm_putBits( stream, NPLAYERS_NBITS, localCount );
             for ( XP_U16 ii = 0; ii < ctrlr->vol.gi->nPlayers; ++ii ) {
                 if ( ctrlr->vol.gi->players[ii].isLocal ) {
-                    stream_putBits( stream, PLAYERNUM_NBITS, ii );
-                    stream_putBits( stream, 1, ctrlr->nv.dupTurnsForced[ii] );
+                    strm_putBits( stream, PLAYERNUM_NBITS, ii );
+                    strm_putBits( stream, 1, ctrlr->nv.dupTurnsForced[ii] );
                     model_currentMoveToStream( ctrlr->vol.model, ii, stream );
                     SRVR_LOGFF( "wrote move %d ", ii );
                 }
@@ -4436,13 +4430,13 @@ getRematchInfoImpl( const CtrlrCtxt* ctrlr, XWEnv xwe, CurGameInfo* newGI,
 
             XWStreamCtxt* stream = mkCtrlrStream( ctrlr,
                                                    ctrlr->nv.streamVersion );
-            stream_putBytes( stream, ctrlr->nv.rematch.addrs,
+            strm_putBytes( stream, ctrlr->nv.rematch.addrs,
                              ctrlr->nv.rematch.addrsLen );
-            while ( 0 < stream_getSize( stream ) ) {
+            while ( 0 < strm_getSize( stream ) ) {
                 XP_ASSERT( nAddrs < VSIZE(addrs) );
                 addrFromStream( &addrs[nAddrs++], stream );
             }
-            stream_destroy( stream );
+            strm_destroy( stream );
 
             int nextRemote = 0;
             for ( int ii = 0; success && ii < newGI->nPlayers; ++ii ) {
@@ -4657,7 +4651,7 @@ ri_toStream( XWStreamCtxt* stream, const RematchInfo* rip,
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         XP_S8 indx = rip->addrIndices[ii];
         if ( RIP_LOCAL_INDX != indx ) {
-            stream_putBits( stream, PLAYERNUM_NBITS, indx );
+            strm_putBits( stream, PLAYERNUM_NBITS, indx );
         }
     }
 
@@ -4678,7 +4672,7 @@ ri_fromStream( RematchInfo* rip, XWStreamCtxt* stream,
         if ( gi->players[ii].isLocal ) {
             rip->addrIndices[ii] = RIP_LOCAL_INDX;
         } else {
-            XP_U16 indx = stream_getBits( stream, PLAYERNUM_NBITS );
+            XP_U16 indx = strm_getBits( stream, PLAYERNUM_NBITS );
             rip->addrIndices[ii] = indx;
             if ( indx > rip->nAddrs ) {
                 rip->nAddrs = indx;
@@ -4783,7 +4777,7 @@ static void
 putQuitter( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_S16 quitter )
 {
     if ( STREAM_VERS_DICTNAME <= ctrlr->nv.streamVersion ) {
-        stream_putU8( stream, quitter );
+        strm_putU8( stream, quitter );
     }
 }
 
@@ -4791,7 +4785,7 @@ static void
 getQuitter( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_S8* quitter )
 {
     *quitter = STREAM_VERS_DICTNAME <= ctrlr->nv.streamVersion
-            ? stream_getU8( stream ) : -1;
+            ? strm_getU8( stream ) : -1;
 }
 
 /* Somebody wants to end the game.
@@ -4939,7 +4933,7 @@ handleIllegalWord( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming )
 {
     BadWordsState bws = {{}};
 
-    (void)stream_getBits( incoming, PLAYERNUM_NBITS );
+    (void)strm_getBits( incoming, PLAYERNUM_NBITS );
     bwsFromStream( MPPARM(ctrlr->mpool) incoming, &bws );
 
     badWordMoveUndoAndTellUser( ctrlr, xwe, &bws );
@@ -4973,9 +4967,9 @@ sendUndoTo( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 devIndex, XP_U16 nUndone,
 
     stream = messageStreamWithHeader( ctrlr, devIndex, code );
 
-    stream_putU16( stream, nUndone );
-    stream_putU16( stream, lastUndone );
-    stream_putU32( stream, newHash );
+    strm_putU16( stream, nUndone );
+    strm_putU16( stream, lastUndone );
+    strm_putU32( stream, newHash );
 
     closeAndSend( ctrlr, xwe, stream );
 } /* sendUndoTo */
@@ -5003,13 +4997,13 @@ reflectUndos( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream, XW_Proto code )
     ModelCtxt* model = ctrlr->vol.model;
     XP_Bool success = XP_TRUE;
 
-    nUndone = stream_getU16( stream );
-    lastUndone = stream_getU16( stream );
+    nUndone = strm_getU16( stream );
+    lastUndone = strm_getU16( stream );
     XP_U32 newHash = 0;
-    if ( 0 < stream_getSize( stream ) ) {
-        newHash = stream_getU32( stream );
+    if ( 0 < strm_getSize( stream ) ) {
+        newHash = strm_getU32( stream );
     }
-    XP_ASSERT( 0 == stream_getSize( stream ) );
+    XP_ASSERT( 0 == strm_getSize( stream ) );
 
     if ( 0 == newHash ) {
         success = model_undoLatestMoves( model, xwe, ctrlr->pool, nUndone, &turn,
@@ -5105,31 +5099,31 @@ writeProto( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XW_Proto proto )
 #ifdef STREAM_VERS_BIGBOARD
     XP_ASSERT( ctrlr->nv.streamVersion > 0 );
     if ( STREAM_SAVE_PREVWORDS < ctrlr->nv.streamVersion ) {
-        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
-        stream_putBits( stream, 8, ctrlr->nv.streamVersion );
+        strm_putBits( stream, XWPROTO_NBITS, XWPROTO_NEW_PROTO );
+        strm_putBits( stream, 8, ctrlr->nv.streamVersion );
     }
-    stream_setVersion( stream, ctrlr->nv.streamVersion );
+    strm_setVersion( stream, ctrlr->nv.streamVersion );
 #else
     XP_USE(ctrlr);
 #endif
-    stream_putBits( stream, XWPROTO_NBITS, proto );
+    strm_putBits( stream, XWPROTO_NBITS, proto );
 }
 
 static XW_Proto
 readProto( CtrlrCtxt* ctrlr, XWStreamCtxt* stream )
 {
-    XW_Proto proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+    XW_Proto proto = (XW_Proto)strm_getBits( stream, XWPROTO_NBITS );
     XP_U8 version = STREAM_SAVE_PREVWORDS; /* version prior to fmt change */
 #ifdef STREAM_VERS_BIGBOARD
     if ( XWPROTO_NEW_PROTO == proto ) {
-        version = stream_getBits( stream, 8 );
-        proto = (XW_Proto)stream_getBits( stream, XWPROTO_NBITS );
+        version = strm_getBits( stream, 8 );
+        proto = (XW_Proto)strm_getBits( stream, XWPROTO_NBITS );
     }
     ctrlr->nv.streamVersion = version;
 #else
     XP_USE(ctrlr);
 #endif
-    stream_setVersion( stream, version );
+    strm_setVersion( stream, version );
     return proto;
 }
 
@@ -5232,7 +5226,6 @@ ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
     } /* switch */
 
     XP_ASSERT( isHost == amHost( ctrlr ) ); /* caching value is ok? */
-    stream_close( incoming );
 
     SRVR_LOGFF( "=> %s (code=%s)", boolToStr(accepted), codeToStr(code) );
     // XP_ASSERT( accepted );      /* do not commit!!! */
@@ -5257,7 +5250,7 @@ ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
     dict = model_getDictionary( ctrlr->vol.model );
     langName = dict_getLangName( dict );
     XP_SNPRINTF( buf, sizeof(buf), fmt, langName );
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 
     nChars = dict_numTileFaces( dict );
     XP_U16 boardSize = ctrlr->vol.gi->boardSize;
@@ -5283,16 +5276,16 @@ ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
                          faces, count, value );
-            stream_catString( stream, buf );
+            strm_catString( stream, buf );
         }
 
         if ( ++tile >= nChars ) {
             break;
         } else if ( count > 0 ) {
             if ( ++nPrinted % nCols == 0 ) {
-                stream_catString( stream, XP_CR );
+                strm_catString( stream, XP_CR );
             } else {
-                stream_catString( stream, (void*)"   " );
+                strm_catString( stream, (void*)"   " );
             }
         }
     }
@@ -5323,8 +5316,8 @@ ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
                                                            STRD_REMAINS_HEADER,
                                                            nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
-        stream_catString( stream, buf );
-        stream_catString( stream, "\n\n" );
+        strm_catString( stream, buf );
+        strm_catString( stream, "\n\n" );
 
         XP_MEMSET( counts, 0, sizeof(counts) );
         model_countAllTrayTiles( ctrlr->vol.model, counts, player );
@@ -5362,9 +5355,9 @@ ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
         fmt = dutil_getUserQuantityString( ctrlr->vol.dutil, xwe, STRD_REMAINS_EXPL,
                                            nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
 
-        stream_catString( stream, cntsBuf );
+        strm_catString( stream, cntsBuf );
     }
 } /* ctrl_formatRemainingTiles */
 
@@ -5434,9 +5427,9 @@ printPlayer( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream, XP_U16 index,
                  scores->arr[index], model_getPlayerScore( model, index ),
                  tmpbuf, timeStr );
     if ( 0 < place ) {
-        stream_catString( stream, XP_CR );
+        strm_catString( stream, XP_CR );
     }
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 } /* printPlayer */
 #endif
 
@@ -5540,9 +5533,9 @@ ctrl_writeFinalScores( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         }
 
         if ( 1 < place ) {
-            stream_catString( stream, XP_CR );
+            strm_catString( stream, XP_CR );
         }
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
 
         /* Don't consider this one next time around */
         scores.arr[thisIndex] = IMPOSSIBLY_LOW_SCORE;

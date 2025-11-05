@@ -256,8 +256,8 @@ gmgr_gameExists( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
 GameRef
 gmgr_figureGR( XWStreamCtxt* stream )
 {
-    XP_U8 strVersion = stream_getU8( stream );
-    stream_setVersion( stream, strVersion );
+    XP_U8 strVersion = strm_getU8( stream );
+    strm_setVersion( stream, strVersion );
     CurGameInfo gi = gi_readFromStream2( stream );
     GameRef gr = formatGR( gi.gameID, gi.deviceRole );
     return gr;
@@ -682,9 +682,9 @@ storeGroupRef( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )
     KeyStore ks;
     mkKeys( gr, &ks, KEY_GRP );
     XWStreamCtxt* stream = dvc_makeStream( duc );
-    stream_putU16( stream, grp );
+    strm_putU16( stream, grp );
     dvc_storeStream( duc, xwe, ks.keys, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
     XP_LOGFF( "stored group %d for game " GR_FMT, grp, gr );
 }
 
@@ -836,8 +836,8 @@ gmgr_loadGroupRef( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
     XWStreamCtxt* stream = dvc_loadStream( duc, xwe, ks.keys );
     GroupRef grp = 0;
     if ( !!stream ) {
-        grp = stream_getU16( stream );
-        stream_destroy( stream );
+        grp = strm_getU16( stream );
+        strm_destroy( stream );
     } else {
         XP_LOGFF( "nothing found for gr " GR_FMT, gr );
     }
@@ -852,7 +852,7 @@ gmgr_saveGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
     KeyStore ks;
     mkKeys( gr, &ks, KEY_GI );
     dvc_storeStream( duc, xwe, ks.keys, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 void
@@ -864,13 +864,13 @@ gmgr_saveStreams( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
     if ( !!*commsStream ) {
         mkKeys( gr, &ks, KEY_COMMS );
         dvc_storeStream( duc, xwe, ks.keys, *commsStream );
-        stream_destroy( *commsStream );
+        strm_destroy( *commsStream );
         *commsStream = NULL;
     }
 
     mkKeys( gr, &ks, KEY_DATA );
     dvc_storeStream( duc, xwe, ks.keys, *dataStream );
-    stream_destroy( *dataStream );
+    strm_destroy( *dataStream );
     *dataStream = NULL;
 
     gr_saveSucceeded( duc, gr, xwe, saveToken );
@@ -941,7 +941,7 @@ onGotGIKey( const XP_UCHAR* key, void* closure, XWEnv xwe )
     /* dutil_loadStream( lgs->dutil, lgs->xwe, key, stream ); */
     /* // GameRef gr = */
     /* makeFromGIStream( lgs->dutil, lgs->xwe, stream ); */
-    /* stream_destroy( stream ); */
+    /* strm_destroy( stream ); */
     // insertGr( lgs->dutil, gr, NULL );
 }
 
@@ -1145,8 +1145,8 @@ loadGroupData( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
         stringFromStreamHere( stream, name, VSIZE(name) );
         grps = addGroup( duc, xwe, grp, name );
 
-        collapsed = stream_getU8( stream );
-        stream_destroy( stream );
+        collapsed = strm_getU8( stream );
+        strm_destroy( stream );
 
         grps->collapsed = !collapsed; /* so will trigger load of nGames */
     }
@@ -1173,14 +1173,14 @@ loadGroups( XW_DUtilCtxt* duc, XWEnv xwe, GameMgrState* gs )
     const XP_UCHAR* keys[] = { KEY_GROUPS, KEY_IDS, NULL };
     XWStreamCtxt* stream = dvc_loadStream( duc, xwe, keys );
     if ( !!stream ) {
-        XP_U32 count = stream_getU32VL( stream );
+        XP_U32 count = strm_getU32VL( stream );
         XP_LOGFF( "loading %d groups", count );
         for ( int ii = 0; ii < count; ++ii ) {
-            XP_U8 gid = stream_getU8( stream );
+            XP_U8 gid = strm_getU8( stream );
             XP_ASSERT( 0 < gid );
             loadGroupData( duc, xwe, gid );
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
     } else {
         GroupRef grp = 1;
         const XP_UCHAR* groupName =
@@ -1198,15 +1198,15 @@ storeGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupState* grps )
     {
         XWStreamCtxt* stream = dvc_makeStream( duc );
         stringToStream( stream, grps->name );
-        stream_putU8( stream, grps->collapsed );
+        strm_putU8( stream, grps->collapsed );
         XP_U32 nGames = numGames( grps );
-        stream_putU32VL( stream, nGames );
+        strm_putU32VL( stream, nGames );
 
         XP_UCHAR buf[8];
         XP_SNPRINTF( buf, VSIZE(buf), "%d", grps->grp );
         const XP_UCHAR* keys[] = { KEY_GROUPS, buf, KEY_SUM, NULL };
         dvc_storeStream( duc, xwe, keys, stream );
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
     XP_LOGFF( "stored group with id %d", grps->grp );
 }
@@ -1234,7 +1234,7 @@ storeGroupID( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
     GroupState* grps = (GroupState*)elem;
     XP_ASSERT( (0xFF & grps->grp) == grps->grp );
     XP_ASSERT( 0 < grps->grp );
-    stream_putU8( stream, grps->grp );
+    strm_putU8( stream, grps->grp );
     XP_LOGFF( "stored group with id %d", grps->grp );
     return FEA_OK;
 }
@@ -1245,13 +1245,13 @@ storeGroups( XW_DUtilCtxt* duc, XWEnv xwe, XP_Bool deleteAfter )
     /* First, the array of group IDs */
     XWStreamCtxt* stream = dvc_makeStream( duc );
     GameMgrState* gs = duc->gameMgrState;
-    stream_putU32VL( stream, arr_length(gs->groups) );
+    strm_putU32VL( stream, arr_length(gs->groups) );
     XP_LOGFF( "storing %d groups", arr_length(gs->groups) );
     arr_map( gs->groups, xwe, storeGroupID, stream );
     const XP_UCHAR* keys[] = { KEY_GROUPS, KEY_IDS, NULL };
     dvc_storeStream( duc, xwe, keys, stream );
 
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     /* now let each write its summary data */
     SumStoreState sss = { .duc = duc, .deleteAfter = deleteAfter};
@@ -1268,9 +1268,9 @@ loadGamesOnce( XW_DUtilCtxt* duc, XWEnv xwe )
             const XP_UCHAR* keys[] = { KEY_GAMEMGR, KEY_STATE, NULL };
             XWStreamCtxt* stream = dvc_loadStream( duc, xwe, keys );
             if ( !!stream ) {
-                gs->defaultGrp = stream_getU8(stream);
-                stream_gotU8( stream, &gs->archiveGrp );
-                stream_destroy( stream );
+                gs->defaultGrp = strm_getU8(stream);
+                strm_gotU8( stream, &gs->archiveGrp );
+                strm_destroy( stream );
             }
         }
         
@@ -1650,11 +1650,11 @@ saveGMStateProc( XW_DUtilCtxt* duc, XWEnv xwe, void* XP_UNUSED(closure),
         if ( gs->saveStatePending ) {
             gs->saveStatePending = XP_FALSE;
             XWStreamCtxt* stream = dvc_makeStream( duc );
-            stream_putU8( stream, gs->defaultGrp );
-            stream_putU8( stream, gs->archiveGrp );
+            strm_putU8( stream, gs->defaultGrp );
+            strm_putU8( stream, gs->archiveGrp );
             const XP_UCHAR* keys[] = { KEY_GAMEMGR, KEY_STATE, NULL };
             dvc_storeStream( duc, xwe, keys, stream );
-            stream_destroy( stream );
+            strm_destroy( stream );
 
             storeGroups( duc, xwe, XP_FALSE );
         }

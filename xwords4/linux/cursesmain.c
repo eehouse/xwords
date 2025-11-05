@@ -56,7 +56,6 @@
 #include "xwstream.h"
 #include "xwstate.h"
 #include "strutils.h"
-#include "memstream.h"
 #include "util.h"
 #include "dbgutil.h"
 #include "linuxsms.h"
@@ -393,15 +392,14 @@ showThumb( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     LaunchParams* params = aGlobals->cag.params;
     GameRef gr = cgl_getSel( aGlobals->gameList );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
+    XWStreamCtxt* stream = dvc_makeStream( params->dutil );
     if ( gr_getThumbData( params->dutil, gr, NULL_XWE, stream ) ) {
         XP_UCHAR* str = strFromStream( stream );
         ca_informf( aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
                     gr, str );
         free( str );
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     return true;
 }
@@ -873,7 +871,7 @@ fireCursesTimer( CursesAppGlobals* globals )
 /*                         XWStreamCtxt* inboundS; */
 /*                         redraw = XP_FALSE; */
 
-/*                         inboundS = stream_from_msgbuf( &globals->cGlobals,  */
+/*                         inboundS = strm_from_msgbuf( &globals->cGlobals,  */
 /*                                                        buf, nBytes ); */
 /*                         if ( !!inboundS ) { */
 /*                             if ( comms_checkIncomingStream( */
@@ -882,7 +880,7 @@ fireCursesTimer( CursesAppGlobals* globals )
 /*                                 redraw = server_receiveMessage(  */
 /*                                                                globals->cGlobals.game.server, inboundS ); */
 /*                             } */
-/*                             stream_destroy( inboundS ); */
+/*                             strm_destroy( inboundS ); */
 /*                         } */
                 
 /*                         /\* if there's something to draw resulting from the */
@@ -1039,7 +1037,7 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
 /*     XWStreamCtxt* stream; */
 /*     XP_UCHAR* text; */
 
-/*     stream = mem_stream_make_raw( MPPARM(globals->cGlobals.util->mpool) */
+/*     stream = mem_strm_make_raw( MPPARM(globals->cGlobals.util->mpool) */
 /*                                   globals->cGlobals.params->vtMgr ); */
 /*     board_formatRemainingTiles( globals->cGlobals.game.board, stream ); */
 
@@ -1058,7 +1056,7 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
 /*     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure; */
 /*     LaunchParams* params = globals->cGlobals.params; */
 
-/*     XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) params->vtMgr, */
+/*     XWStreamCtxt* stream = mem_strm_make( MPPARM(uc->mpool) params->vtMgr, */
 /*                                             &globals->cGlobals, channelNo, */
 /*                                             sendOnClose ); */
 /*     return stream; */

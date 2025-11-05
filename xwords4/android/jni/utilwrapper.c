@@ -556,7 +556,7 @@ and_util_formatPauseHistory( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream,
                                                 turn, secsPrev, secsCur, jmsg );
 
     const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
-    stream_catString( stream, jchars );
+    strm_catString( stream, jchars );
     (*env)->ReleaseStringUTFChars( env, jresult, jchars );
     deleteLocalRefs( env, jresult, jmsg, DELETE_NO_REF );
     UTIL_CBK_TAIL();

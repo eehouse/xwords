@@ -26,7 +26,6 @@
 #include "pool.h"
 #include "game.h"
 #include "dbgutil.h"
-#include "memstream.h"
 #include "strutils.h"
 #include "chatp.h"
 #include "LocalizedStrIncludes.h"
@@ -128,9 +127,9 @@ model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                       const DictionaryCtxt* dict, const PlayerDicts* dicts,
                       XW_UtilCtxt** utilp )
 {
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     XP_U32 flags = STREAM_VERS_BIGGERGI <= version
-        ? stream_getU32VL(stream) : 0;
+        ? strm_getU32VL(stream) : 0;
     XP_ASSERT( HAVE_CHAT_BIT == (flags | HAVE_CHAT_BIT) ); /* no other bits set */
 
     XP_ASSERT( !!dict || !!dicts );
@@ -139,15 +138,15 @@ model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     if ( 0 ) {
 #ifdef STREAM_VERS_BIGBOARD
     } else if ( STREAM_VERS_BIGBOARD <= version ) {
-        nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS_5 );
+        nCols = (XP_U16)strm_getBits( stream, NUMCOLS_NBITS_5 );
 #endif
     } else {
-        nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS_4 );
-        (void)stream_getBits( stream, NUMCOLS_NBITS_4 );
+        nCols = (XP_U16)strm_getBits( stream, NUMCOLS_NBITS_4 );
+        (void)strm_getBits( stream, NUMCOLS_NBITS_4 );
     }
     XP_ASSERT( MAX_COLS >= nCols );
 
-    XP_U16 nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
+    XP_U16 nPlayers = (XP_U16)strm_getBits( stream, NPLAYERS_NBITS );
 
     ModelCtxt* model = model_make( xwe, dict, dicts, utilp, nCols );
     model->nPlayers = nPlayers;
@@ -155,12 +154,12 @@ model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     ModelVolatiles* vol = &model->vol;
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= version ) {
-        vol->nBonuses = stream_getBits( stream, 7 );
+        vol->nBonuses = strm_getBits( stream, 7 );
         if ( 0 < vol->nBonuses ) {
             vol->bonuses = XP_MALLOC( vol->mpool,
                                       vol->nBonuses * sizeof( vol->bonuses[0] ));
             for ( int ii = 0; ii < vol->nBonuses; ++ii ) {
-                vol->bonuses[ii] = stream_getBits( stream, 4 );
+                vol->bonuses[ii] = strm_getBits( stream, 4 );
             }
         }
     }
@@ -201,23 +200,23 @@ model_writeToStream( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream )
     if ( cht_haveToWrite( vol->chat ) ) {
         flags |= HAVE_CHAT_BIT;
     }
-    stream_putU32VL( stream, flags );
+    strm_putU32VL( stream, flags );
 
 #ifdef STREAM_VERS_BIGBOARD
-    XP_ASSERT( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) );
-    stream_putBits( stream, NUMCOLS_NBITS_5, model->nCols );
+    XP_ASSERT( STREAM_VERS_BIGBOARD <= strm_getVersion( stream ) );
+    strm_putBits( stream, NUMCOLS_NBITS_5, model->nCols );
 #else
-    stream_putBits( stream, NUMCOLS_NBITS_4, model->nCols );
-    stream_putBits( stream, NUMCOLS_NBITS_4, model->nRows );
+    strm_putBits( stream, NUMCOLS_NBITS_4, model->nCols );
+    strm_putBits( stream, NUMCOLS_NBITS_4, model->nRows );
 #endif
 
     /* we have two bits for nPlayers, so range must be 0..3, not 1..4 */
-    stream_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
+    strm_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
 
 #ifdef STREAM_VERS_BIGBOARD
-    stream_putBits( stream, 7, vol->nBonuses );
+    strm_putBits( stream, 7, vol->nBonuses );
     for ( int ii = 0; ii < vol->nBonuses; ++ii ) {
-        stream_putBits( stream, 4, vol->bonuses[ii] );
+        strm_putBits( stream, 4, vol->bonuses[ii] );
     }
 #endif
 
@@ -268,7 +267,7 @@ model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream )
         }
         buf[len++] = '\n';
         buf[len] = '\0';
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
     }
 }
 #endif
@@ -1222,7 +1221,7 @@ model_currentMoveToStream( const ModelCtxt* model, XP_S16 turn,
     XP_ASSERT( turn >= 0 );
     XP_S16 numTiles = model->players[turn].nPending;
 
-    stream_putBits( stream, tilesNBits(stream), numTiles );
+    strm_putBits( stream, tilesNBits(stream), numTiles );
 
     while ( numTiles-- ) {
         Tile tile;
@@ -1232,10 +1231,10 @@ model_currentMoveToStream( const ModelCtxt* model, XP_S16 turn,
         model_getCurrentMoveTile( model, turn, &numTiles, &tile,
                                   &col, &row, &isBlank );
         XP_ASSERT( numTiles >= 0 );
-        stream_putBits( stream, TILE_NBITS, tile );
-        stream_putBits( stream, nColsNBits, col );
-        stream_putBits( stream, nColsNBits, row );
-        stream_putBits( stream, 1, isBlank );
+        strm_putBits( stream, TILE_NBITS, tile );
+        strm_putBits( stream, nColsNBits, col );
+        strm_putBits( stream, nColsNBits, row );
+        strm_putBits( stream, 1, isBlank );
     }
 } /* model_currentMoveToStream */
 
@@ -1260,7 +1259,7 @@ model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
 
     model_resetCurrentTurn( model, xwe, playerNum );
 
-    XP_U16 numTiles = (XP_U16)stream_getBits( stream, tilesNBits(stream) );
+    XP_U16 numTiles = (XP_U16)strm_getBits( stream, tilesNBits(stream) );
     XP_LOGFF( "numTiles=%d", numTiles );
 
     Tile tileFaces[numTiles];
@@ -1272,10 +1271,10 @@ model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
 
     XP_Bool success = XP_TRUE;
     for ( XP_U16 ii = 0; success && ii < numTiles; ++ii ) {
-        tileFaces[ii] = (Tile)stream_getBits( stream, TILE_NBITS );
-        cols[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
-        rows[ii] = (XP_U16)stream_getBits( stream, nColsNBits );
-        isBlanks[ii] = stream_getBits( stream, 1 );
+        tileFaces[ii] = (Tile)strm_getBits( stream, TILE_NBITS );
+        cols[ii] = (XP_U16)strm_getBits( stream, nColsNBits );
+        rows[ii] = (XP_U16)strm_getBits( stream, nColsNBits );
+        isBlanks[ii] = strm_getBits( stream, 1 );
 
         if ( isBlanks[ii] ) {
             moveTiles[ii] = blank;
@@ -2371,7 +2370,7 @@ notifyDictListeners( ModelCtxt* model, XWEnv xwe, XP_S16 playerNum,
 static void
 printString( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
-    stream_catString( stream, str );
+    strm_catString( stream, str );
 } /* printString */
 
 static XP_UCHAR*
@@ -2579,15 +2578,14 @@ copyStack( const ModelCtxt* model, StackCtxt* destStack,
            const StackCtxt* srcStack )
 {
     XWStreamCtxt* stream =
-        mem_stream_make_raw( MPPARM(model->vol.mpool)
-                             dutil_getVTManager(model->vol.dutil) );
+        strm_make_raw( MPPARM_NOCOMMA(model->vol.mpool) );
 
-    stream_setVersion( stream, stack_getVersion(srcStack) );
+    strm_setVersion( stream, stack_getVersion(srcStack) );
     stack_writeToStream( srcStack, stream );
     stack_loadFromStream( destStack, stream );
     XP_ASSERT( stack_getVersion(destStack) == stack_getVersion( srcStack ) );
 
-    stream_destroy( stream );
+    strm_destroy( stream );
 } /* copyStack */
 
 static ModelCtxt*
@@ -2713,9 +2711,9 @@ static void
 appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
 {
     if ( 0 < (*counter)++ ) {
-        stream_putU8( stream, '\n' );
+        strm_putU8( stream, '\n' );
     }
-    stream_catString( stream, word );
+    strm_catString( stream, word );
 }
 
 static void
@@ -2821,7 +2819,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
         XP_LOGFF( "nWords: %d", lwtInfo.nWords );
         found = 0 < lwtInfo.nWords;
     }
-    stream_putU8( stream, '\0' ); /* null-terminate for good luck */
+    strm_putU8( stream, '\0' ); /* null-terminate for good luck */
 
     model_destroy( tmpModel, xwe );
     return found;
@@ -2924,29 +2922,29 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    pc->curMoveValid = stream_getBits( stream, 1 );
+    pc->curMoveValid = strm_getBits( stream, 1 );
 
     traySetFromStream( stream, &pc->trayTiles );
 
     const XP_U16 nTileBits = tilesNBits(stream);
-    pc->nPending = (XP_U8)stream_getBits( stream, nTileBits );
+    pc->nPending = (XP_U8)strm_getBits( stream, nTileBits );
     if ( STREAM_VERS_NUNDONE <= version ) {
-        pc->nUndone = (XP_U8)stream_getBits( stream, nTileBits );
+        pc->nUndone = (XP_U8)strm_getBits( stream, nTileBits );
     } else {
         XP_ASSERT( 0 == pc->nUndone );
     }
     XP_ASSERT( 0 == pc->dividerLoc );
     if ( STREAM_VERS_MODELDIVIDER <= version ) {
-        pc->dividerLoc = stream_getBits( stream, nTileBits );
+        pc->dividerLoc = strm_getBits( stream, nTileBits );
     }
 
     XP_U16 nTiles = pc->nPending + pc->nUndone;
     for ( PendingTile* pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
-        pt->col = (XP_U8)stream_getBits( stream, nColsNBits );
-        pt->row = (XP_U8)stream_getBits( stream, nColsNBits );
+        pt->col = (XP_U8)strm_getBits( stream, nColsNBits );
+        pt->row = (XP_U8)strm_getBits( stream, nColsNBits );
 
         XP_U16 nBits = (version <= STREAM_VERS_RELAY) ? 6 : 7;
-        pt->tile = (Tile)stream_getBits( stream, nBits );
+        pt->tile = (Tile)strm_getBits( stream, nBits );
     }
 
 } /* loadPlayerCtxt */
@@ -2966,20 +2964,20 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    stream_putBits( stream, 1, pc->curMoveValid );
+    strm_putBits( stream, 1, pc->curMoveValid );
 
     traySetToStream( stream, &pc->trayTiles );
 
     XP_U16 nBits = tilesNBits( stream );
-    stream_putBits( stream, nBits, pc->nPending );
-    stream_putBits( stream, nBits, pc->nUndone );
-    stream_putBits( stream, nBits, pc->dividerLoc );
+    strm_putBits( stream, nBits, pc->nPending );
+    strm_putBits( stream, nBits, pc->nUndone );
+    strm_putBits( stream, nBits, pc->dividerLoc );
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
-        stream_putBits( stream, nColsNBits, pt->col );
-        stream_putBits( stream, nColsNBits, pt->row );
-        stream_putBits( stream, 7, pt->tile );
+        strm_putBits( stream, nColsNBits, pt->col );
+        strm_putBits( stream, nColsNBits, pt->row );
+        strm_putBits( stream, 7, pt->tile );
     }
 } /* writePlayerCtxt */
 

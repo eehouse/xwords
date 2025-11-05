@@ -60,10 +60,10 @@ pool_make( MPFORMAL_NOCOMMA )
 void
 pool_writeToStream( PoolContext* pool, XWStreamCtxt* stream )
 {
-    stream_putU16( stream, pool->numTilesLeft );
-    stream_putU16( stream, pool->numFaces );
-    stream_putBytes( stream, pool->lettersLeft, 
-                     (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
+    strm_putU16( stream, pool->numTilesLeft );
+    strm_putU16( stream, pool->numFaces );
+    strm_putBytes( stream, pool->lettersLeft,
+                   (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
 } /* pool_writeToStream */
 
 PoolContext*
@@ -71,12 +71,12 @@ pool_makeFromStream( MPFORMAL XWStreamCtxt* stream )
 {
     PoolContext* pool = pool_make( MPPARM_NOCOMMA(mpool) );
 
-    pool->numTilesLeft = stream_getU16( stream );
-    pool->numFaces = stream_getU16( stream );
+    pool->numTilesLeft = strm_getU16( stream );
+    pool->numFaces = strm_getU16( stream );
     pool->lettersLeft = (XP_U8*)
         XP_MALLOC( mpool, pool->numFaces * sizeof(pool->lettersLeft[0]) );
-    stream_getBytes( stream, pool->lettersLeft, 
-                     (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
+    strm_getBytes( stream, pool->lettersLeft,
+                   (XP_U16)(pool->numFaces * sizeof(pool->lettersLeft[0])) );
 
     return pool;
 } /* pool_makeFromStream */

@@ -70,9 +70,7 @@
 #include "gtkaskgo.h"
 #include "gtknetst.h"
 #include "linuxdict.h"
-/* #include "undo.h" */
 #include "gtkdraw.h"
-#include "memstream.h"
 #include "gamesdb.h"
 #include "mqttcon.h"
 
@@ -735,12 +733,11 @@ tile_values_impl( GtkGameGlobals* globals, bool full )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
     XWStreamCtxt* stream = 
-        mem_stream_make( MPPARM(cGlobals->params->mpool)
-                         cGlobals->params->vtMgr,
-                         CHANNEL_NONE );
+        strm_make( MPPARM(cGlobals->params->mpool)
+                   CHANNEL_NONE );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE, stream, 5, full );
-    stream_putU8( stream, '\n' );
+    strm_putU8( stream, '\n' );
     catAndClose( stream );
 } /* tile_values */
 
@@ -769,9 +766,8 @@ dump_board( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     // ModelCtxt* model =  gr_getGame(globals->cGlobals.gr)->model;
     CommonGlobals* cGlobals = &globals->cGlobals;
     XWStreamCtxt* stream = 
-        mem_stream_make( MPPARM(cGlobals->params->mpool)
-                         cGlobals->params->vtMgr,
-                         CHANNEL_NONE );
+        strm_make( MPPARM(cGlobals->params->mpool)
+                   CHANNEL_NONE );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_writeToTextStream( dutil, cGlobals->gr, NULL_XWE, stream );
     catAndClose( stream );
@@ -924,10 +920,7 @@ handle_commstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     GameRef gr = cGlobals->gr;
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     if ( gr_haveComms(dutil, gr, NULL_XWE) ) {
-        XWStreamCtxt* stream = 
-            mem_stream_make( MPPARM(cGlobals->params->mpool)
-                             cGlobals->params->vtMgr,
-                             CHANNEL_NONE );
+        XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil);
         gr_getStats( dutil, gr, NULL_XWE, stream );
         catAndClose( stream );
     }
@@ -939,9 +932,7 @@ static void
 handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->params->mpool)
-                                            cGlobals->params->vtMgr, 
-                                            CHANNEL_NONE );
+    XWStreamCtxt* stream = dvc_makeStream(cGlobals->params->dutil);
     mpool_stats( cGlobals->params->mpool, stream );
     catAndClose( stream );
 } /* handle_memstats */
@@ -1373,12 +1364,11 @@ send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
 
 #ifdef DEBUG
         {
-            XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                                        cGlobals->params->vtMgr );
+            XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil );
             nli_saveToStream( &nli, stream );
             NetLaunchInfo tmp;
             nli_makeFromStream( &tmp, stream );
-            stream_destroy( stream );
+            strm_destroy( stream );
             XP_ASSERT( 0 == memcmp( &nli, &tmp, sizeof(nli) ) );
         }
 #endif
@@ -1666,13 +1656,12 @@ gtkShowFinalScores( GtkGameGlobals* globals, XP_Bool ignoreTimeout )
     const CommonGlobals* cGlobals = &globals->cGlobals;
     LaunchParams* params = cGlobals->params;
 
-    stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                  params->vtMgr );
+    stream = dvc_makeStream( params->dutil );
     XW_DUtilCtxt* dutil = params->dutil;
     gr_writeFinalScores( dutil, cGlobals->gr, NULL_XWE, stream );
 
     text = strFromStream( stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     XP_U16 timeout = (ignoreTimeout || cGlobals->manualFinal)
         ? 0 : params->askTimeout;
@@ -1878,13 +1867,12 @@ gtk_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                  cGlobals->params->vtMgr );
+    stream = dvc_makeStream( cGlobals->params->dutil );
     
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE, stream );
     text = strFromStream( stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
     free( text );
@@ -1964,7 +1952,7 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* wo
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
     GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
-    const XP_U8* bytes = stream_getPtr( words );
+    const XP_U8* bytes = strm_getPtr( words );
     gchar* msg = g_strdup_printf( "words for lookup:\n%s",
                                   (XP_UCHAR*)bytes );
     gtktell( globals->window, msg );
@@ -1976,9 +1964,9 @@ static void
 gtk_util_informWordsBlocked( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 nBadWords,
                              XWStreamCtxt* words, const XP_UCHAR* dict )
 {
-    XP_U16 len = stream_getSize( words );
+    XP_U16 len = strm_getSize( words );
     XP_UCHAR buf[len];
-    stream_getBytes( words, buf, len );
+    strm_getBytes( words, buf, len );
     buf[len-1] = '\0';          /* overwrite \n */
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
     GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
@@ -2029,9 +2017,9 @@ gtk_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream
     /* char* question; */
     /* XP_Bool freeMe = XP_FALSE; */
 
-    XP_U16 len = stream_getSize( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_ASSERT( len <= VSIZE(cGlobals->question) );
-    stream_getBytes( stream, cGlobals->question, len );
+    strm_getBytes( stream, cGlobals->question, len );
     cGlobals->question[len] = '\0';
     (void)g_idle_add( ask_move, globals );
 } /* gtk_util_userQuery */
@@ -2600,8 +2588,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 
     CommonGlobals* cGlobals = &globals->cGlobals;
     // cGlobals->rowid = rowid;
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                                params->vtMgr );
+    XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil );
     XP_Bool loaded = gdb_loadGame( stream, pDb, NULL, rowid );
     if ( loaded ) {
         XW_DUtilCtxt* dutil = params->dutil;
@@ -2618,7 +2605,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
             // game_dispose( &cGlobals->game, NULL_XWE );
         }
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
     LOG_RETURNF( "%s", boolToStr(loaded) );
     return loaded;
 }

@@ -58,7 +58,7 @@
 #include "enginep.h"
 #include "util.h"
 #include "mempool.h" /* debug only */
-#include "memstream.h"
+#include "xwstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
 
@@ -224,7 +224,7 @@ board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
                       XP_U16 nPlayers )
 {
     BoardCtxt* board;
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     XP_U16 nColsNBits;
 #ifdef STREAM_VERS_BIGBOARD
     nColsNBits = 16 > model_numCols(model) ? NUMCOLS_NBITS_4 : NUMCOLS_NBITS_5;
@@ -236,27 +236,26 @@ board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
     board_setCallbacks( board, xwe );
 
     if ( version >= STREAM_VERS_4YOFFSET) {
-        board->sd[SCROLL_H].offset = (XP_U16)stream_getBits( stream, nColsNBits );
-        board->zoomCount = (XP_U16)stream_getBits( stream, nColsNBits );
+        board->sd[SCROLL_H].offset = (XP_U16)strm_getBits( stream, nColsNBits );
+        board->zoomCount = (XP_U16)strm_getBits( stream, nColsNBits );
     }
     board->sd[SCROLL_V].offset = (XP_U16)
-        stream_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : nColsNBits );
-    board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
-    board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
-    board->showColors = (XP_Bool)stream_getBits( stream, 1 );
+        strm_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : nColsNBits );
+    board->isFlipped = (XP_Bool)strm_getBits( stream, 1 );
+    board->gameOver = (XP_Bool)strm_getBits( stream, 1 );
+    board->showColors = (XP_Bool)strm_getBits( stream, 1 );
     if ( version < STREAM_VERS_NOEMPTYDICT ) {
-        (void)stream_getBits( stream, 1 );
+        (void)strm_getBits( stream, 1 );
     }
 
     if ( version >= STREAM_VERS_KEYNAV ) {
-        board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+        board->focussed = (BoardObjectType)strm_getBits( stream, 2 );
 #ifdef KEYBOARD_NAV
-        board->focusHasDived = (BoardObjectType)stream_getBits( stream, 1 );
+        board->focusHasDived = (BoardObjectType)strm_getBits( stream, 1 );
         board->scoreCursorLoc = (XP_U8)
-            stream_getBits( stream, (version < STREAM_VERS_MODEL_NO_DICT? 2:3));
+            strm_getBits( stream, (version < STREAM_VERS_MODEL_NO_DICT? 2:3));
 #else
-        (void)stream_getBits( stream, 
-                              version < STREAM_VERS_MODEL_NO_DICT? 3:4 );
+        (void)strm_getBits( stream, version < STREAM_VERS_MODEL_NO_DICT? 3:4 );
 #endif
     }
 
@@ -265,46 +264,46 @@ board_makeFromStream( XWEnv xwe, XWStreamCtxt* stream, ModelCtxt* model,
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         PerTurnInfo* pti = &board->pti[ii];
         BoardArrow* arrow = &pti->boardArrow;
-        arrow->col = (XP_U8)stream_getBits( stream, nColsNBits );
-        arrow->row = (XP_U8)stream_getBits( stream, nColsNBits );
-        arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
-        arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
+        arrow->col = (XP_U8)strm_getBits( stream, nColsNBits );
+        arrow->row = (XP_U8)strm_getBits( stream, nColsNBits );
+        arrow->vert = (XP_Bool)strm_getBits( stream, 1 );
+        arrow->visible = (XP_Bool)strm_getBits( stream, 1 );
 
         if ( STREAM_VERS_MODELDIVIDER > version ) {
-            (void)stream_getBits( stream, NTILES_NBITS_7 );
+            (void)strm_getBits( stream, NTILES_NBITS_7 );
         }
         XP_U16 nBits = STREAM_VERS_NINETILES <= version ? MAX_TRAY_TILES : 7;
-        pti->traySelBits = (TileBit)stream_getBits( stream, nBits );
-        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
+        pti->traySelBits = (TileBit)strm_getBits( stream, nBits );
+        pti->tradeInProgress = (XP_Bool)strm_getBits( stream, 1 );
 
         if ( version >= STREAM_VERS_KEYNAV ) {
 #ifdef KEYBOARD_NAV
-            pti->bdCursor.col = stream_getBits( stream, 4 );
-            pti->bdCursor.row = stream_getBits( stream, 4 );
-            pti->trayCursorLoc = stream_getBits( stream, 3 );
+            pti->bdCursor.col = strm_getBits( stream, 4 );
+            pti->bdCursor.row = strm_getBits( stream, 4 );
+            pti->trayCursorLoc = strm_getBits( stream, 3 );
 #else
-            (void)stream_getBits( stream, 4+4+3 );
+            (void)strm_getBits( stream, 4+4+3 );
 #endif
         }
 
 #ifdef XWFEATURE_SEARCHLIMIT
         if ( version >= STREAM_VERS_41B4 ) {
-            pti->hasHintRect = stream_getBits( stream, 1 );
+            pti->hasHintRect = strm_getBits( stream, 1 );
         } else {
             pti->hasHintRect = XP_FALSE;
         }
         if ( pti->hasHintRect ) {
-            pti->limits.left = stream_getBits( stream, 4 );
-            pti->limits.top = stream_getBits( stream, 4 );
-            pti->limits.right = stream_getBits( stream, 4 );
-            pti->limits.bottom =  stream_getBits( stream, 4 );
+            pti->limits.left = strm_getBits( stream, 4 );
+            pti->limits.top = strm_getBits( stream, 4 );
+            pti->limits.right = strm_getBits( stream, 4 );
+            pti->limits.bottom =  strm_getBits( stream, 4 );
         }
 #endif
     }
 
-    board->selPlayer = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
+    board->selPlayer = (XP_U8)strm_getBits( stream, PLAYERNUM_NBITS );
     board->selInfo = &board->pti[board->selPlayer];
-    board->trayVisState = (XW_TrayVisState)stream_getBits( stream, 2 );
+    board->trayVisState = (XW_TrayVisState)strm_getBits( stream, 2 );
 
     return board;
 } /* board_makeFromStream */
@@ -338,18 +337,18 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     nColsNBits = NUMCOLS_NBITS_4;
 #endif
 
-    stream_putBits( stream, nColsNBits, board->sd[SCROLL_H].offset );
-    stream_putBits( stream, nColsNBits, board->zoomCount );
-    stream_putBits( stream, nColsNBits, board->sd[SCROLL_V].offset );
-    stream_putBits( stream, 1, board->isFlipped );
-    stream_putBits( stream, 1, board->gameOver );
-    stream_putBits( stream, 1, board->showColors );
-    stream_putBits( stream, 2, board->focussed );
+    strm_putBits( stream, nColsNBits, board->sd[SCROLL_H].offset );
+    strm_putBits( stream, nColsNBits, board->zoomCount );
+    strm_putBits( stream, nColsNBits, board->sd[SCROLL_V].offset );
+    strm_putBits( stream, 1, board->isFlipped );
+    strm_putBits( stream, 1, board->gameOver );
+    strm_putBits( stream, 1, board->showColors );
+    strm_putBits( stream, 2, board->focussed );
 #ifdef KEYBOARD_NAV
-    stream_putBits( stream, 1, board->focusHasDived );
-    stream_putBits( stream, 3, board->scoreCursorLoc );
+    strm_putBits( stream, 1, board->focusHasDived );
+    strm_putBits( stream, 3, board->scoreCursorLoc );
 #else
-    stream_putBits( stream, 4, 0 );
+    strm_putBits( stream, 4, 0 );
 #endif
 
     XP_ASSERT( !!board->ctrlr );
@@ -358,36 +357,36 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
     for ( int ii = 0; ii < nPlayers; ++ii ) {
         const PerTurnInfo* pti = &board->pti[ii];
         const BoardArrow* arrow = &pti->boardArrow;
-        stream_putBits( stream, nColsNBits, arrow->col );
-        stream_putBits( stream, nColsNBits, arrow->row );
-        stream_putBits( stream, 1, arrow->vert );
-        stream_putBits( stream, 1, arrow->visible );
+        strm_putBits( stream, nColsNBits, arrow->col );
+        strm_putBits( stream, nColsNBits, arrow->row );
+        strm_putBits( stream, 1, arrow->vert );
+        strm_putBits( stream, 1, arrow->visible );
 
-        XP_ASSERT( CUR_STREAM_VERS == stream_getVersion(stream) );
-        stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
-        stream_putBits( stream, 1, pti->tradeInProgress );
+        XP_ASSERT( CUR_STREAM_VERS == strm_getVersion(stream) );
+        strm_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
+        strm_putBits( stream, 1, pti->tradeInProgress );
 
 #ifdef KEYBOARD_NAV
-        stream_putBits( stream, 4, pti->bdCursor.col );
-        stream_putBits( stream, 4, pti->bdCursor.row );
-        stream_putBits( stream, 3, pti->trayCursorLoc );
+        strm_putBits( stream, 4, pti->bdCursor.col );
+        strm_putBits( stream, 4, pti->bdCursor.row );
+        strm_putBits( stream, 3, pti->trayCursorLoc );
 #else
-        stream_putBits( stream, 4+4+3, 0 );
+        strm_putBits( stream, 4+4+3, 0 );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        stream_putBits( stream, 1, pti->hasHintRect );
+        strm_putBits( stream, 1, pti->hasHintRect );
         if ( pti->hasHintRect ) {
-            stream_putBits( stream, 4, pti->limits.left );
-            stream_putBits( stream, 4, pti->limits.top );
-            stream_putBits( stream, 4, pti->limits.right );
-            stream_putBits( stream, 4, pti->limits.bottom );
+            strm_putBits( stream, 4, pti->limits.left );
+            strm_putBits( stream, 4, pti->limits.top );
+            strm_putBits( stream, 4, pti->limits.right );
+            strm_putBits( stream, 4, pti->limits.bottom );
         }
 #endif
     }
 
-    stream_putBits( stream, PLAYERNUM_NBITS, board->selPlayer );
-    stream_putBits( stream, 2, board->trayVisState );
+    strm_putBits( stream, PLAYERNUM_NBITS, board->selPlayer );
+    strm_putBits( stream, 2, board->trayVisState );
 } /* board_writeToStream */
 
 void
@@ -1147,14 +1146,13 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
             XP_Bool legal = turnConfirmed;
             
             if ( !legal ) {
-                stream = mem_stream_make_raw( MPPARM(board->mpool)
-                                              dutil_getVTManager(board->dutil) );
+                stream = strm_make_raw( MPPARM_NOCOMMA(board->mpool) );
 
                 XP_U16 stringCode = board->gi->inDuplicateMode
                     ? STR_SUBMIT_CONFIRM : STR_COMMIT_CONFIRM;
                 const XP_UCHAR* str = dutil_getUserString( board->dutil, xwe,
                                                            stringCode );
-                stream_catString( stream, str );
+                strm_catString( stream, str );
 
                 XP_Bool warn = util_getGI(*board->utilp)->phoniesAction == PHONIES_WARN;
                 WordNotifierInfo info;
@@ -1383,8 +1381,7 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                                        NULL, NULL, NULL );
             if ( listWords ) {
                 XWStreamCtxt* stream =
-                    mem_stream_make_raw( MPPARM(board->mpool)
-                                         dutil_getVTManager(board->dutil) );
+                    strm_make_raw( MPPARM_NOCOMMA(board->mpool) );
                 listWords = model_listWordsThrough( board->model, xwe, modelCol, modelRow,
                                                     board->selPlayer, stream );
                 if ( listWords ) {
@@ -1393,7 +1390,7 @@ timerFiredForPen( BoardCtxt* board, XWEnv xwe )
                         dragDropEnd( board, xwe, board->penDownX, board->penDownY, NULL );
                     }
                 }
-                stream_destroy( stream );
+                strm_destroy( stream );
             }
 #endif
             if ( !listWords ) {

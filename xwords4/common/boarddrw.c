@@ -56,7 +56,6 @@
 #include "enginep.h"
 #include "util.h"
 #include "mempool.h" /* debug only */
-#include "memstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
 

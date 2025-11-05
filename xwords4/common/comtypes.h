@@ -294,6 +294,7 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 typedef struct XW_DUtilCtxt XW_DUtilCtxt;
+typedef struct MemPoolCtx MemPoolCtx;
 typedef uint64_t GLItemRef;     /* games list item: group or game */
 typedef uint64_t GameRef;
 typedef uint16_t GroupRef;
@@ -587,7 +588,7 @@ typedef struct _MutexState {
 #define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
 #define XP_LOGLOC() XP_LOGF( "%s(), line %d", __func__, __LINE__ )
 #define LOG_POS(strm) XP_LOGF( "%s(); line %d; read_pos: %X", __func__, __LINE__, \
-                               stream_getPos((strm), POS_READ) )
+                               strm_getPos((strm), POS_READ) )
 
 /* The idea is that an individual .c file needing logging when being debugged
    but not wanting to flood the logs in the normal case uses XP_LOGFFV in

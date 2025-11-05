@@ -22,7 +22,6 @@
 #include "mempool.h"
 #include "xwstream.h"
 #include "movestak.h"
-#include "memstream.h"
 #include "strutils.h"
 #include "dbgutil.h"
 
@@ -86,7 +85,7 @@ XP_U16
 stack_getVersion( const StackCtxt* stack )
 {
     XP_ASSERT( !!stack->data );
-    return stream_getVersion( stack->data );
+    return strm_getVersion( stack->data );
 }
 
 #ifdef STREAM_VERS_HASHSTREAM
@@ -95,7 +94,7 @@ stack_getHash( const StackCtxt* stack )
 {
     XP_U32 hash = 0;
     if ( !!stack->data ) {
-        hash = stream_getHash( stack->data, stack->top );
+        hash = strm_getHash( stack->data, stack->top );
     }
     return hash;
 } /* stack_getHash */
@@ -145,9 +144,9 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
      * first bit's set, the stream was created by code that assumes 3 bits for
      * the moveType field.
      */
-    XP_U16 nBytes = stream_getU16( stream );
+    XP_U16 nBytes = strm_getU16( stream );
     if ( (HAVE_FLAGS_MASK & nBytes) != 0 ) {
-        stack->flags = stream_getU8( stream );
+        stack->flags = strm_getU8( stream );
         stack->typeBits = 3;
     } else {
         XP_ASSERT( 0 == stack->flags );
@@ -157,18 +156,18 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 
     if ( nBytes > 0 ) {
         XP_U8 stackVersion = STREAM_VERS_NINETILES - 1;
-        if ( STREAM_VERS_NINETILES <= stream_getVersion(stream) ) {
-            stackVersion = stream_getU8( stream );
+        if ( STREAM_VERS_NINETILES <= strm_getVersion(stream) ) {
+            stackVersion = strm_getU8( stream );
             XP_LOGFF( "read stackVersion: %d from stream", stackVersion );
             XP_ASSERT( stackVersion <= CUR_STREAM_VERS );
         }
-        stack->highWaterMark = stream_getU16( stream );
-        stack->nEntries = stream_getU16( stream );
-        stack->top = stream_getU32( stream );
-        stack->data = mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
+        stack->highWaterMark = strm_getU16( stream );
+        stack->nEntries = strm_getU16( stream );
+        stack->top = strm_getU32( stream );
+        stack->data = strm_make_raw( MPPARM_NOCOMMA(stack->mpool) );
 
-        stream_getFromStream( stack->data, stream, nBytes );
-        stream_setVersion( stack->data, stackVersion );
+        strm_getFromStream( stack->data, stream, nBytes );
+        strm_setVersion( stack->data, stackVersion );
     } else {
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
@@ -184,30 +183,30 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
     XWStreamPos oldPos = START_OF_STREAM;
 
     /* XP_LOGF( "%s(): writing stream; hash: %X", __func__, hash ); */
-    /* XP_U32 hash = stream_getHash( data, START_OF_STREAM, XP_TRUE ); */
+    /* XP_U32 hash = strm_getHash( data, START_OF_STREAM, XP_TRUE ); */
 
     if ( !!data ) {
-        oldPos = stream_setPos( data, POS_READ, START_OF_STREAM );
-        nBytes = stream_getSize( data );
+        oldPos = strm_setPos( data, POS_READ, START_OF_STREAM );
+        nBytes = strm_getSize( data );
     }
 
     XP_ASSERT( 0 == (HAVE_FLAGS_MASK & nBytes) ); /* under 32K? I hope so */
-    stream_putU16( stream, nBytes | (stack->typeBits == 3 ? HAVE_FLAGS_MASK : 0) );
+    strm_putU16( stream, nBytes | (stack->typeBits == 3 ? HAVE_FLAGS_MASK : 0) );
     if ( stack->typeBits == 3 ) {
-        stream_putU8( stream, stack->flags );
+        strm_putU8( stream, stack->flags );
     }
 
     if ( nBytes > 0 ) {
-        if ( STREAM_VERS_NINETILES <= stream_getVersion(stream) ) {
-            stream_putU8( stream, stream_getVersion(data) );
+        if ( STREAM_VERS_NINETILES <= strm_getVersion(stream) ) {
+            strm_putU8( stream, strm_getVersion(data) );
         }
-        stream_putU16( stream, stack->highWaterMark );
-        stream_putU16( stream, stack->nEntries );
-        stream_putU32( stream, stack->top );
+        strm_putU16( stream, stack->highWaterMark );
+        strm_putU16( stream, stack->nEntries );
+        strm_putU32( stream, stack->top );
 
-        stream_getFromStream( stream, data, nBytes );
+        strm_getFromStream( stream, data, nBytes );
         /* in case it'll be used further */
-        (void)stream_setPos( data, POS_READ, oldPos );
+        (void)strm_setPos( data, POS_READ, oldPos );
     }
     CLEAR_DIRTY( stack );
 } /* stack_writeToStream */
@@ -216,15 +215,14 @@ StackCtxt*
 stack_copy( const StackCtxt* stack )
 {
     StackCtxt* newStack = NULL;
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(stack->mpool)
-                                                stack->vtmgr );
+    XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(stack->mpool) );
     stack_writeToStream( stack, stream );
 
     newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr,
                            stack->nPlayers, stack->inDuplicateMode );
     stack_loadFromStream( newStack, stream );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
-    stream_destroy( stream );
+    strm_destroy( stream );
     return newStack;
 }
 
@@ -237,25 +235,25 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
     XWStreamCtxt* stream = stack->data;
     if ( !stream ) {
         stream = stack->data =
-            mem_stream_make_raw( MPPARM(stack->mpool) stack->vtmgr );
+            strm_make_raw( MPPARM_NOCOMMA(stack->mpool) );
         XP_U16 version = 0 == (stack->flags & VERS_7TILES_BIT)
             ? CUR_STREAM_VERS : STREAM_VERS_NINETILES - 1;
-        stream_setVersion( stream, version );
+        strm_setVersion( stream, version );
         stack->typeBits = stack->inDuplicateMode ? 3 : 2;     /* the new size */
         XP_ASSERT( 0 == (~VERS_7TILES_BIT & stack->flags) );
     }
 
-    XWStreamPos oldLoc = stream_setPos( stream, POS_WRITE, stack->top );
+    XWStreamPos oldLoc = strm_setPos( stream, POS_WRITE, stack->top );
 
-    stream_putBits( stream, stack->typeBits, entry->moveType );
-    stream_putBits( stream, 2, entry->playerNum );
+    strm_putBits( stream, stack->typeBits, entry->moveType );
+    strm_putBits( stream, 2, entry->playerNum );
 
     switch( entry->moveType ) {
     case MOVE_TYPE:
         moveInfoToStream( stream, &entry->u.move.moveInfo, stack->bitsPerTile );
         traySetToStream( stream, &entry->u.move.newTiles );
         if ( stack->inDuplicateMode ) {
-            stream_putBits( stream, NPLAYERS_NBITS, entry->u.move.dup.nScores );
+            strm_putBits( stream, NPLAYERS_NBITS, entry->u.move.dup.nScores );
             scoresToStream( stream, entry->u.move.dup.nScores, entry->u.move.dup.scores );
         }
         break;
@@ -277,8 +275,8 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
         traySetToStream( stream, &entry->u.trade.newTiles );
         break;
     case PAUSE_TYPE:
-        stream_putBits( stream, 2, entry->u.pause.pauseType );
-        stream_putU32( stream, entry->u.pause.when );
+        strm_putBits( stream, 2, entry->u.pause.pauseType );
+        strm_putU32( stream, entry->u.pause.when );
         stringToStream( stream, entry->u.pause.msg );
         break;
     default:
@@ -287,7 +285,7 @@ pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
-    stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
+    stack->top = strm_setPos( stream, POS_WRITE, oldLoc );
     SET_DIRTY( stack );
 } /* pushEntryImpl */
 
@@ -328,15 +326,15 @@ readEntry( const StackCtxt* stack, StackEntry* entry )
 {
     XWStreamCtxt* stream = stack->data;
 
-    entry->moveType = (StackMoveType)stream_getBits( stream, stack->typeBits );
-    entry->playerNum = (XP_U8)stream_getBits( stream, 2 );
+    entry->moveType = (StackMoveType)strm_getBits( stream, stack->typeBits );
+    entry->playerNum = (XP_U8)strm_getBits( stream, 2 );
 
     switch( entry->moveType ) {
     case MOVE_TYPE:
         moveInfoFromStream( stream, &entry->u.move.moveInfo, stack->bitsPerTile );
         traySetFromStream( stream, &entry->u.move.newTiles );
         if ( stack->inDuplicateMode ) {
-            entry->u.move.dup.nScores = stream_getBits( stream, NPLAYERS_NBITS );
+            entry->u.move.dup.nScores = strm_getBits( stream, NPLAYERS_NBITS );
             scoresFromStream( stream, entry->u.move.dup.nScores, entry->u.move.dup.scores );
         }
         break;
@@ -356,8 +354,8 @@ readEntry( const StackCtxt* stack, StackEntry* entry )
         break;
 
     case PAUSE_TYPE:
-        entry->u.pause.pauseType = (DupPauseType)stream_getBits( stream, 2 );
-        entry->u.pause.when = stream_getU32( stream );
+        entry->u.pause.pauseType = (DupPauseType)strm_getBits( stream, 2 );
+        entry->u.pause.when = strm_getU32( stream );
         entry->u.pause.msg = stringFromStream( stack->mpool, stream );
         break;
 
@@ -479,7 +477,7 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 nn )
 {
     XP_U16 ii;
     
-    stream_setPos( stack->data, POS_READ, START_OF_STREAM );
+    strm_setPos( stack->data, POS_READ, START_OF_STREAM );
     for ( ii = 0; ii < nn; ++ii ) {
         StackEntry dummy;
         readEntry( stack, &dummy );
@@ -487,7 +485,7 @@ setCacheReadyFor( StackCtxt* stack, XP_U16 nn )
     }
 
     stack->cacheNext = nn;
-    stack->cachedPos = stream_getPos( stack->data, POS_READ );
+    stack->cachedPos = strm_getPos( stack->data, POS_READ );
 
     return XP_TRUE;
 } /* setCacheReadyFor */
@@ -514,13 +512,13 @@ stack_getNthEntry( StackCtxt* stack, const XP_U16 nn, StackEntry* entry )
     }
 
     if ( found ) {
-        XWStreamPos oldPos = stream_setPos( stack->data, POS_READ, 
-                                            stack->cachedPos );
+        XWStreamPos oldPos = strm_setPos( stack->data, POS_READ,
+                                          stack->cachedPos );
 
         readEntry( stack, entry );
         entry->moveNum = (XP_U8)nn;
 
-        stack->cachedPos = stream_setPos( stack->data, POS_READ, oldPos );
+        stack->cachedPos = strm_setPos( stack->data, POS_READ, oldPos );
         ++stack->cacheNext;
 
         /* XP_LOGF( "%s(%d) (typ=%s, player=%d, num=%d)", __func__, nn, */

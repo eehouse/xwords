@@ -332,16 +332,15 @@ getSnapData( LaunchParams* params, GameRef gr )
 {
     GdkPixbuf* result = NULL;
     XW_DUtilCtxt* dutil = params->dutil;
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
+    XWStreamCtxt* stream = dvc_makeStream( params->dutil );
     if ( gr_getThumbData( dutil, gr, NULL_XWE, stream ) ) {
         GInputStream* istr =
-            g_memory_input_stream_new_from_data( stream_getPtr(stream),
-                                                 stream_getSize(stream), NULL );
+            g_memory_input_stream_new_from_data( strm_getPtr(stream),
+                                                 strm_getSize(stream), NULL );
         result = gdk_pixbuf_new_from_stream( istr, NULL, NULL );
         g_object_unref( istr );
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
     return result;
 }
 
@@ -550,8 +549,7 @@ checkConvertImpl( GtkAppGlobals* apg, XP_Bool doAll )
     for ( GSList* iter = games; !!iter && !done; iter = iter->next ) {
         sqlite3_int64 rowid = *(sqlite3_int64*)iter->data;
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                    params->vtMgr );
+        XWStreamCtxt* stream = dvc_makeStream( params->dutil );
         DeviceRole role;
         GameRef gr = 0;
         if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
@@ -560,7 +558,7 @@ checkConvertImpl( GtkAppGlobals* apg, XP_Bool doAll )
 
             gr = gmgr_convertGame( dutil, NULL_XWE, grp, name, stream );
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
         /* exit after first success */
         if ( !doAll && !!gr ) {
             break;
@@ -881,8 +879,7 @@ getCounts( GtkAppGlobals* apg, int* nToConvert, int* nToDelete )
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64 rowid = *(sqlite3_int64*)iter->data;
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                    params->vtMgr );
+        XWStreamCtxt* stream = dvc_makeStream( params->dutil );
         DeviceRole role;
         if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
             GameRef gr = gmgr_figureGR( stream );
@@ -895,7 +892,7 @@ getCounts( GtkAppGlobals* apg, int* nToConvert, int* nToDelete )
                 ++*nToConvert;
             }
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
     gdb_freeGamesList( games );
 }

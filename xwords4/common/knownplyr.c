@@ -26,6 +26,7 @@
 #include "xwarray.h"
 #include "xwmutex.h"
 #include "timers.h"
+#include "device.h"
 
 typedef struct _KnownPlayer {
     XP_U32 newestMod;
@@ -48,8 +49,8 @@ static void getPlayersImpl( const KPState* state, XWEnv xwe,
 static void
 loadFromStream( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state, XWStreamCtxt* stream )
 {
-    while ( 0 < stream_getSize( stream ) ) {
-        XP_U32 newestMod = stream_getU32( stream );
+    while ( 0 < strm_getSize( stream ) ) {
+        XP_U32 newestMod = strm_getU32( stream );
         XP_UCHAR buf[64];
         stringFromStreamHere( stream, buf, VSIZE(buf) );
 
@@ -68,16 +69,15 @@ loadStateLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     if ( NULL == state ) {
         dutil->kpCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
         state->players = arr_make( dutil->mpool, PtrCmpProc, NULL );
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
-                                                    dutil_getVTManager(dutil) );
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
         dutil_loadStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
-        if ( 0 < stream_getSize( stream ) ) {
-            XP_U8 vers = stream_getU8( stream );
-            stream_setVersion( stream, vers );
+        if ( 0 < strm_getSize( stream ) ) {
+            XP_U8 vers = strm_getU8( stream );
+            strm_setVersion( stream, vers );
             loadFromStream( dutil, xwe, state, stream );
         }
 
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
     XP_ASSERT( !state->inUse );
     state->inUse = XP_TRUE;
@@ -89,7 +89,7 @@ saveProc( void* dl, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
     KnownPlayer* kp = (KnownPlayer*)dl;
-    stream_putU32( stream, kp->newestMod );
+    strm_putU32( stream, kp->newestMod );
     stringToStream( stream, kp->name );
     addrToStream( stream, &kp->addr );
     return FEA_OK;
@@ -117,15 +117,14 @@ static void
 saveState( XW_DUtilCtxt* dutil, XWEnv xwe, KPState* state )
 {
     if ( state->dirty ) {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
-                                                    dutil_getVTManager(dutil) );
-        stream_setVersion( stream, CUR_STREAM_VERS );
-        stream_putU8( stream, CUR_STREAM_VERS );
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
+        strm_setVersion( stream, CUR_STREAM_VERS );
+        strm_putU8( stream, CUR_STREAM_VERS );
 
         arr_map( state->players, xwe, saveProc, stream );
 
         dutil_storeStream( dutil, xwe, KNOWN_PLAYERS_KEY, stream );
-        stream_destroy( stream );
+        strm_destroy( stream );
         state->dirty = XP_FALSE;
 
         scheduleOnChanged( dutil, xwe );

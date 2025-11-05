@@ -208,9 +208,9 @@ static void
 headerToStream( XWStreamCtxt* stream, CHUNK_CMD cmd, XP_U16 port, XP_U32 gameID )
 {
     // XP_LOGFF( "(cmd: %s; gameID: %X)", cmd2Str(cmd), gameID );
-    stream_putU8( stream, SMS_PROTO_VERSION_JAVA );
-    stream_putU16( stream, port );
-    stream_putU8( stream, cmd );
+    strm_putU8( stream, SMS_PROTO_VERSION_JAVA );
+    strm_putU16( stream, port );
+    strm_putU8( stream, cmd );
     switch ( cmd ) {
     case NONE:
         XP_ASSERT(0);
@@ -218,7 +218,7 @@ headerToStream( XWStreamCtxt* stream, CHUNK_CMD cmd, XP_U16 port, XP_U32 gameID 
     case INVITE:
         break;
     default:
-        stream_putU32( stream, gameID );
+        strm_putU32( stream, gameID );
     }
 }
 
@@ -228,17 +228,17 @@ headerFromStream( XWStreamCtxt* stream, CHUNK_CMD* cmd, XP_U16* port, XP_U32* ga
     XP_Bool success = XP_FALSE;
     XP_U8 tmp;
 
-    if ( stream_gotU8( stream, &tmp )
+    if ( strm_gotU8( stream, &tmp )
          && tmp == SMS_PROTO_VERSION_JAVA
-         && stream_gotU16( stream, port )
-         && stream_gotU8( stream, &tmp ) ) {
+         && strm_gotU16( stream, port )
+         && strm_gotU8( stream, &tmp ) ) {
         *cmd = tmp;
         switch( *cmd ) {
         case INVITE:
             success = XP_TRUE;
             break;
         default:
-            success = stream_gotU32( stream, gameID );
+            success = strm_gotU32( stream, gameID );
             break;
         }
     }
@@ -371,20 +371,20 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
     WITH_MUTEX( &state->mutex );
 
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
-    stream_putBytes( stream, data, len );
+    strm_putBytes( stream, data, len );
 
     XP_U8 proto;
-    if ( stream_gotU8( stream, &proto ) ) {
+    if ( strm_gotU8( stream, &proto ) ) {
         switch ( proto ) {
         case SMS_PROTO_VERSION_JAVA: {
             XP_U8 msgID, indx, count;
-            if ( stream_gotU8( stream, &msgID )
-                 && stream_gotU8( stream, &indx )
-                 && stream_gotU8( stream, &count )
+            if ( strm_gotU8( stream, &msgID )
+                 && strm_gotU8( stream, &indx )
+                 && strm_gotU8( stream, &count )
                  && indx < count ) {
-                XP_U16 len = stream_getSize( stream );
+                XP_U16 len = strm_getSize( stream );
                 XP_U8 buf[len];
-                stream_getBytes( stream, buf, len );
+                strm_getBytes( stream, buf, len );
                 addMessage( state, xwe, fromPhone, msgID, indx, count, buf, len );
                 result = completeMsgs( state, xwe, result, fromPhone, wantPort, msgID );
                 savePartials( state, xwe );
@@ -393,21 +393,21 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
             break;
         case SMS_PROTO_VERSION_COMBO: {
             XP_U8 oneLen, msgID;
-            while ( stream_gotU8( stream, &oneLen )
-                    && stream_gotU8( stream, &msgID ) ) {
+            while ( strm_gotU8( stream, &oneLen )
+                    && strm_gotU8( stream, &msgID ) ) {
                 XP_U8 tmp[oneLen];
-                stream_getBytes( stream, tmp, oneLen );
+                strm_getBytes( stream, tmp, oneLen );
 
                 XWStreamCtxt* msgStream = dvc_makeStream( state->dutil );
-                stream_putBytes( msgStream, tmp, oneLen );
+                strm_putBytes( msgStream, tmp, oneLen );
 
                 XP_U32 gameID;
                 XP_U16 port;
                 CHUNK_CMD cmd;
                 if ( headerFromStream( msgStream, &cmd, &port, &gameID ) ) {
-                    XP_U16 msgLen = stream_getSize( msgStream );
+                    XP_U16 msgLen = strm_getSize( msgStream );
                     XP_U8 buf[msgLen];
-                    if ( stream_gotBytes( msgStream, buf, msgLen ) ) {
+                    if ( strm_gotBytes( msgStream, buf, msgLen ) ) {
                         if ( port == wantPort ) {
                             ChunkMsgLoc msg = { .len = msgLen,
                                                 .cmd = cmd,
@@ -422,7 +422,7 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
                         }
                     }
                 }
-                stream_destroy( msgStream );
+                strm_destroy( msgStream );
             }
         }
             break;
@@ -433,7 +433,7 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
         }
     }
 
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
     logResult( state, xwe, result, __func__ );
@@ -563,14 +563,14 @@ addToOutRec( MsgChunker* state, ToPhoneEntry* entry, CHUNK_CMD cmd,
     ToPhoneRec* rec = entry->rec;
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     headerToStream( stream, cmd, port, gameID );
-    stream_putBytes( stream, buf, buflen );
+    strm_putBytes( stream, buf, buflen );
 
     MsgRec* mRec = XP_CALLOC( state->mpool, sizeof(*mRec) );
-    XP_U16 len = stream_getSize( stream );
+    XP_U16 len = strm_getSize( stream );
     mRec->msgNet.len = len;
     mRec->msgNet.data = XP_MALLOC( state->mpool, len );
-    XP_MEMCPY( mRec->msgNet.data, stream_getPtr(stream), len );
-    stream_destroy( stream );
+    XP_MEMCPY( mRec->msgNet.data, strm_getPtr(stream), len );
+    strm_destroy( stream );
 
     mRec->createSeconds = nowSeconds;
 
@@ -719,17 +719,17 @@ savePartialProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
     const FromPhoneRec* rec = (FromPhoneRec*)elem;
     stringToStream( stream, rec->phone );
-    stream_putU8( stream, rec->nMsgIDs );
+    strm_putU8( stream, rec->nMsgIDs );
     for ( int jj = 0; jj < rec->nMsgIDs; ++jj ) {
         MsgIDRec* mir = &rec->msgIDRecs[jj];
-        stream_putU16( stream, mir->msgID );
-        stream_putU8( stream, mir->count );
+        strm_putU16( stream, mir->msgID );
+        strm_putU8( stream, mir->count );
 
         /* There's an array here. It may be sparse. Save a len of 0 */
         for ( int kk = 0; kk < mir->count; ++kk ) {
             int len = mir->parts[kk].len;
-            stream_putU8( stream, len );
-            stream_putBytes( stream, mir->parts[kk].data, len );
+            strm_putU8( stream, len );
+            strm_putBytes( stream, mir->parts[kk].data, len );
         }
     }
     return FEA_OK;
@@ -739,13 +739,13 @@ static void
 savePartials( MsgChunker* state, XWEnv xwe )
 {
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
-    stream_putU8( stream, PARTIALS_FORMAT );
+    strm_putU8( stream, PARTIALS_FORMAT );
 
     XP_U16 nFrom = arr_length(state->fromPhoneRecs);
-    stream_putU8( stream, nFrom );
+    strm_putU8( stream, nFrom );
     arr_map( state->fromPhoneRecs, xwe, savePartialProc, stream );
 
-    XP_U16 newSize = stream_getSize( stream );
+    XP_U16 newSize = strm_getSize( stream );
     if ( state->lastStoredSize == 2 && newSize == 2 ) {
         XP_LOGFF( "not storing empty again" );
     } else {
@@ -753,7 +753,7 @@ savePartials( MsgChunker* state, XWEnv xwe )
         state->lastStoredSize = newSize;
     }
 
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     LOG_RETURN_VOID();
 } /* savePartials */
@@ -764,31 +764,31 @@ restorePartials( MsgChunker* state, XWEnv xwe )
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
 
     dutil_loadStream( state->dutil, xwe, KEY_PARTIALS, stream );
-    if ( stream_getSize( stream ) >= 1
-         && PARTIALS_FORMAT == stream_getU8( stream ) ) {
-        int nFromPhones = stream_getU8( stream );
+    if ( strm_getSize( stream ) >= 1
+         && PARTIALS_FORMAT == strm_getU8( stream ) ) {
+        int nFromPhones = strm_getU8( stream );
         for ( int ii = 0; ii < nFromPhones; ++ii ) {
             XP_UCHAR phone[32];
             (void)stringFromStreamHere( stream, phone, VSIZE(phone) );
-            int nMsgIDs = stream_getU8( stream );
+            int nMsgIDs = strm_getU8( stream );
             /* XP_LOGF( "%s(): got %d message records for phone %s", __func__, */
             /*          nMsgIDs, phone ); */
             for ( int jj = 0; jj < nMsgIDs; ++jj ) {
-                XP_U16 msgID = stream_getU16( stream );
-                int count = stream_getU8( stream );
+                XP_U16 msgID = strm_getU16( stream );
+                int count = strm_getU8( stream );
                 /* XP_LOGF( "%s(): got %d records for msgID %d", __func__, count, msgID ); */
                 for ( int kk = 0; kk < count; ++kk ) {
-                    int len = stream_getU8( stream );
+                    int len = strm_getU8( stream );
                     if ( 0 < len ) {
                         XP_U8 buf[len];
-                        stream_getBytes( stream, buf, len );
+                        strm_getBytes( stream, buf, len );
                         addMessage( state, xwe, phone, msgID, kk, count, buf, len );
                     }
                 }
             }
         }
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 static ChunkMsgArray*
@@ -818,20 +818,20 @@ completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr, const XP_UCHAR* 
     if ( haveAll ) {
         XWStreamCtxt* stream = dvc_makeStream( state->dutil );
         for ( int ii = 0; ii < rec->count; ++ii ) {
-            stream_putBytes( stream, rec->parts[ii].data, rec->parts[ii].len );
+            strm_putBytes( stream, rec->parts[ii].data, rec->parts[ii].len );
         }
 
         XP_U32 gameID;
         XP_U16 port;
         CHUNK_CMD cmd;
         if ( headerFromStream( stream, &cmd, &port, &gameID ) ) {
-            XP_U16 len = stream_getSize( stream );
+            XP_U16 len = strm_getSize( stream );
             ChunkMsgLoc msg = { .len = len,
                               .cmd = cmd,
                               .gameID = gameID,
                               .data = XP_MALLOC( state->mpool, len ),
             };
-            if ( stream_gotBytes( stream, msg.data, len ) && port == wantPort ) {
+            if ( strm_gotBytes( stream, msg.data, len ) && port == wantPort ) {
                 arr = appendLocMsg( state, arr, &msg );
             } else {
                 XP_LOGFF( "expected port %d, got %d", wantPort, port );
@@ -839,7 +839,7 @@ completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr, const XP_UCHAR* 
                 XP_ASSERT(0);   /* This happening? */
             }
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
 
         freeMsgIDRec( state, xwe, rec, fromPhoneIndex, msgIDIndex );
     }

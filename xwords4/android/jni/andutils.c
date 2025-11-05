@@ -25,6 +25,7 @@
 #include "paths.h"
 
 #include "comtypes.h"
+#include "device.h"
 #include "xwstream.h"
 #include "strutils.h"
 #include "dbgutil.h"
@@ -385,10 +386,10 @@ makeByteArray( JNIEnv* env, int siz, const jbyte* vals )
 jbyteArray
 streamToBArray( JNIEnv* env, XWStreamCtxt* stream )
 {
-    int nBytes = stream_getSize( stream );
+    int nBytes = strm_getSize( stream );
     jbyteArray result = (*env)->NewByteArray( env, nBytes );
     jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
-    stream_getBytes( stream, jelems, nBytes );
+    strm_getBytes( stream, jelems, nBytes );
     (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
     return result;
 }
@@ -496,15 +497,15 @@ makeByteArrayArray( JNIEnv* env, int siz )
 jstring
 streamToJString( JNIEnv* env, XWStreamCtxt* stream, XP_Bool destroy )
 {
-    int len = stream_getSize( stream );
+    int len = strm_getSize( stream );
     XP_UCHAR buf[1 + len];
-    stream_getBytes( stream, buf, len );
+    strm_getBytes( stream, buf, len );
     buf[len] = '\0';
 
     jstring jstr = (*env)->NewStringUTF( env, buf );
 
     if ( destroy ) {
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
 
     return jstr;
@@ -908,8 +909,7 @@ setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli )
 XWStreamCtxt*
 and_tmp_stream( XW_DUtilCtxt* dutil )
 {
-    VTableMgr* vtMgr = dutil->vtMgr;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(dutil->mpool) vtMgr, 0 );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     return stream;
 }
 

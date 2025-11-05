@@ -559,14 +559,13 @@ dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
 #endif
 
 static XWStreamCtxt*
-streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
+streamFromJStream( MPFORMAL JNIEnv* env, jbyteArray jstream )
 {
     XP_ASSERT( !!jstream );
     int len = (*env)->GetArrayLength( env, jstream );
-    XWStreamCtxt* stream = mem_stream_make_sized( MPPARM(mpool) vtMgr,
-                                                  len, 0 );
+    XWStreamCtxt* stream = strm_make_sized( MPPARM(mpool) len, 0 );
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    stream_putBytes( stream, jelems, len );
+    strm_putBytes( stream, jelems, len );
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
     return stream;
 } /* streamFromJStream */
@@ -701,7 +700,7 @@ Java_org_eehouse_android_xw4_jni_TmpDict_dict_1getTilesInfo
     MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globalState->vtMgr, 0 );
+    XWStreamCtxt* stream = strm_make( MPPARM(mpool) 0 );
     dict_writeTilesInfo( dict, 15, stream );
     result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
@@ -1306,10 +1305,9 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1figureGR
     jlong result = 0;
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream =
-        streamFromJStream( MPPARM(globalState->dutil->mpool)
-                           env, globalState->vtMgr, jstream );
+        streamFromJStream( MPPARM(globalState->dutil->mpool) env, jstream );
     result = gmgr_figureGR( stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
     DVC_HEADER_END();
     return result;
 }
@@ -1346,14 +1344,13 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1convertGame
     jlong result = 0;
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream =
-        streamFromJStream( MPPARM(globalState->dutil->mpool)
-                           env, globalState->vtMgr, jstream );
+        streamFromJStream( MPPARM(globalState->dutil->mpool) env, jstream );
     const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
     GroupRef grp = (GroupRef)jgrp;
     GameRef gr = gmgr_convertGame( globalState->dutil, env, grp, name, stream );
     result = gr;
     (*env)->ReleaseStringUTFChars( env, jname, name );
-    stream_destroy( stream );
+    strm_destroy( stream );
     DVC_HEADER_END();
     return result;
 }
@@ -1771,7 +1768,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getThumbData
     if ( gr_getThumbData( DUTIL_GR_ENV, stream ) ) {
         result = streamToBArray( env, stream );
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
     DVC_HEADER_END();
     return result;
 }

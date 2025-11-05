@@ -479,11 +479,11 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
                                          NULL, NULL );
     if ( !!invite ) {
         GtkWidget* qrWidget;
-        const XP_UCHAR* str = (XP_UCHAR*)stream_getPtr(invite);
-        XP_U16 len = stream_getSize( invite );
+        const XP_UCHAR* str = (XP_UCHAR*)strm_getPtr(invite);
+        XP_U16 len = strm_getSize( invite );
         state.qrThing = mkQRThing( &qrWidget, str, len );
         gtk_box_pack_start( GTK_BOX(vbox), qrWidget, FALSE, TRUE, 0 );
-        stream_destroy( invite );
+        strm_destroy( invite );
     }
 
     /* buttons at the bottom */

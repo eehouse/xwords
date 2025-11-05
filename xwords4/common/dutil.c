@@ -35,8 +35,8 @@ static void
 super_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                          XWStreamCtxt* data )
 {
-    const void* ptr = stream_getPtr( data );
-    XP_U16 len = stream_getSize( data );
+    const void* ptr = strm_getPtr( data );
+    XP_U16 len = strm_getSize( data );
     dutil_storePtr( duc, xwe, key, (void*)ptr, len );
 }
 
@@ -53,7 +53,7 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
         void* buf = XP_MALLOC( duc->mpool, len );
         dutil_loadPtr( duc, xwe, key, buf, &len );
 
-        stream_putBytes( inOut, buf, len );
+        strm_putBytes( inOut, buf, len );
         XP_FREEP( duc->mpool, &buf );
     }
 }

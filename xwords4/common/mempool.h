@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-typedef struct MemPoolCtx MemPoolCtx;
+    // typedef struct MemPoolCtx MemPoolCtx;
 
 void mempool_dbg_init();
 void mempool_dbg_checkall();

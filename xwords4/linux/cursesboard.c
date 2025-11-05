@@ -37,6 +37,7 @@
 #include "dbgutil.h"
 #include "gamemgr.h"
 #include "curseschat.h"
+#include "device.h"
 
 typedef struct CursesBoardState {
     LaunchParams* params;
@@ -839,9 +840,9 @@ curses_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* str
     CursesBoardGlobals* globals = (CursesBoardGlobals*)
         globalsForUtil( uc, XP_FALSE );
     CommonGlobals* cGlobals = &globals->cGlobals;
-    XP_U16 len = stream_getSize( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_ASSERT( len <= VSIZE(cGlobals->question) );
-    stream_getBytes( stream, cGlobals->question, len );
+    strm_getBytes( stream, cGlobals->question, len );
     cGlobals->question[len] = '\0';
     (void)ADD_ONETIME_IDLE( ask_move, globals );
 } /* curses_util_not */
@@ -892,8 +893,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
         XP_UCHAR* text;
 
         CommonGlobals* cGlobals = &bGlobals->cGlobals;
-        stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                      cGlobals->params->vtMgr );
+        stream = dvc_makeStream( cGlobals->params->dutil );
         XW_DUtilCtxt* dutil = cGlobals->params->dutil;
         gr_writeFinalScores( dutil, cGlobals->gr, NULL_XWE, stream );
 
@@ -902,7 +902,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
         (void)ca_inform( bGlobals->boardWin, text );
 
         free( text );
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
 } /* cursesShowFinalScores */
 
@@ -1072,8 +1072,7 @@ curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                  cGlobals->params->vtMgr );
+    stream = dvc_makeStream( cGlobals->params->dutil );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE, stream );
 
@@ -1604,19 +1603,18 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                                cGlobals->params->vtMgr );
+    XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE,
                          stream, 5, XP_FALSE );
-    const XP_U8* data = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
+    const XP_U8* data = strm_getPtr( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_UCHAR buf[len + 1];
     XP_MEMCPY( buf, data, len );
     buf[len] = '\0';
 
     (void)ca_inform( bGlobals->boardWin, buf );
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     return XP_TRUE;
 }

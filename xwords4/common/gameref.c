@@ -153,13 +153,13 @@ loadCommsOnce(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         if ( ROLE_STANDALONE != gi->deviceRole ) {
             XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
             if ( !!stream ) {
-                XP_U8 strVersion = stream_getU8( stream );
+                XP_U8 strVersion = strm_getU8( stream );
                 XP_LOGFF( "strVersion: 0x%X", strVersion );
-                stream_setVersion( stream, strVersion );
+                strm_setVersion( stream, strVersion );
                 gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
                                                   gi->deviceRole != ROLE_ISGUEST,
                                                   gi->forceChannel );
-                stream_destroy( stream );
+                strm_destroy( stream );
             } else {
                 XP_Bool isClient = ROLE_ISGUEST == gi->deviceRole;
                 const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
@@ -229,15 +229,15 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
             if ( !gi_isValid(gi) ) {
                 XWStreamCtxt* stream = gmgr_loadGI( duc, xwe, gr );
                 XP_ASSERT( !!stream );
-                XP_U8 strVersion = stream_getU8( stream );
+                XP_U8 strVersion = strm_getU8( stream );
                 XP_LOGFF( "strVersion: 0x%X", strVersion );
-                stream_setVersion( stream, strVersion );
+                strm_setVersion( stream, strVersion );
 
                 gi_readFromStream( stream, gi );
                 XP_ASSERT( gi_isValid(gi) );
                 XP_ASSERT( gi->gameID == (gr & 0xFFFFFFFF) );
                 XP_ASSERT( gi->created );
-                stream_destroy( stream );
+                strm_destroy( stream );
                 LOG_GI( gi, __func__ );
             }
         }
@@ -249,7 +249,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
                 if ( !!stream ) {
                     if ( gotSumFromStream( &gd->sum, stream ) ) {
                     }
-                    stream_destroy( stream );
+                    strm_destroy( stream );
                 }
             }
         }
@@ -364,8 +364,8 @@ schedule_draw( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 void
 gr_giToStream( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe, XWStreamCtxt* stream )
 {
-    stream_putU8( stream, CUR_STREAM_VERS );
-    stream_setVersion( stream, CUR_STREAM_VERS );
+    strm_putU8( stream, CUR_STREAM_VERS );
+    strm_setVersion( stream, CUR_STREAM_VERS );
     XP_Bool deleted;
     GameData* gd = gmgr_getForRef(duc, xwe, gr, &deleted);
     XP_ASSERT( !deleted );
@@ -382,17 +382,17 @@ gr_dataToStream( DUTIL_GR_XWE, XWStreamCtxt* commsStream,
 {
     GR_HEADER();
     if ( !!gd->comms ) {
-        XP_ASSERT( START_OF_STREAM == stream_getPos( commsStream, POS_READ ) );
-        stream_putU8( commsStream, CUR_STREAM_VERS );
-        stream_setVersion( commsStream, CUR_STREAM_VERS );
+        XP_ASSERT( START_OF_STREAM == strm_getPos( commsStream, POS_READ ) );
+        strm_putU8( commsStream, CUR_STREAM_VERS );
+        strm_setVersion( commsStream, CUR_STREAM_VERS );
         comms_writeToStream( gd->comms, commsStream, saveToken );
     } else {
         XP_ASSERT( !commsStream );
     }
 
-    XP_ASSERT( START_OF_STREAM == stream_getPos( stream, POS_READ ) );
-    stream_putU8( stream, CUR_STREAM_VERS );
-    stream_setVersion( stream, CUR_STREAM_VERS );
+    XP_ASSERT( START_OF_STREAM == strm_getPos( stream, POS_READ ) );
+    strm_putU8( stream, CUR_STREAM_VERS );
+    strm_setVersion( stream, CUR_STREAM_VERS );
 
     /* bad? having only comms set is now a thing!!! */
     XP_ASSERT( !!gd->model );
@@ -594,10 +594,10 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
 {
     const CurGameInfo* gi = &gd->gi;
     XP_ASSERT( gi_isValid(gi) );
-    XP_ASSERT( START_OF_STREAM == stream_getPos( *streamp, POS_READ ) );
-    XP_U8 strVersion = stream_getU8( *streamp );
+    XP_ASSERT( START_OF_STREAM == strm_getPos( *streamp, POS_READ ) );
+    XP_U8 strVersion = strm_getU8( *streamp );
     XP_LOGFF( "strVersion: 0x%X", strVersion );
-    stream_setVersion( *streamp, strVersion );
+    strm_setVersion( *streamp, strVersion );
 
     XP_ASSERT( gi->gameID );
     XP_ASSERT( gi->created );
@@ -632,7 +632,7 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
     }
 
  exit:
-    stream_destroy( *streamp );
+    strm_destroy( *streamp );
     *streamp = NULL;
     return;
 } /* loadData */
@@ -730,16 +730,16 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
                 const XP_UCHAR* gameName, XWStreamCtxt* stream )
 {
     LOG_FUNC();
-    XP_U8 strVersion = stream_getU8( stream );
+    XP_U8 strVersion = strm_getU8( stream );
     XP_LOGFF( "got strVersion: 0x%x", strVersion );
-    stream_setVersion( stream, strVersion );
+    strm_setVersion( stream, strVersion );
     GameRef gr;
     {
         CurGameInfo gi = gi_readFromStream2( stream );
         LOG_GI( &gi, __func__ );
 
         XP_U32 created = strVersion < STREAM_VERS_GICREATED
-            ? 0 : stream_getU32( stream );
+            ? 0 : strm_getU32( stream );
         if ( created && !gi.created ) {
             gi.created = created;
         }
@@ -765,9 +765,9 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
 
         XP_Bool hasComms;
         if ( strVersion < STREAM_VERS_GICREATED ) {
-            hasComms = stream_getU8( stream );
+            hasComms = strm_getU8( stream );
         } else {
-            XP_U8 flags = stream_getU8( stream );
+            XP_U8 flags = strm_getU8( stream );
             hasComms = flags & FLAG_HASCOMMS;
         }
 
@@ -1101,7 +1101,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
 {
     GR_HEADER_WITH(COMMS);
     XWStreamCtxt* stream = dvc_makeStream( duc );
-    stream_putBytes( stream, msgBuf, msgLen );
+    strm_putBytes( stream, msgBuf, msgLen );
 
     CommsMsgState commsState;
     XP_Bool result = comms_checkIncomingStream( gd->comms, xwe, stream, from,
@@ -1130,7 +1130,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
         ctrl_addIdle( gd->ctrlr, xwe );
     }
 
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     checkMessageCount( duc, xwe, gd );
 
@@ -1186,9 +1186,9 @@ loadThumbData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         XP_ASSERT( !gd->thumbData );
         gd->thumbData = dvc_makeStream( duc );
         draw_getThumbData( thumbDraw, xwe, gd->thumbData );
-        if ( 0 == stream_getSize(gd->thumbData) ) {
+        if ( 0 == strm_getSize(gd->thumbData) ) {
             XP_LOGFF( "got nothing from draw_getThumbData" );
-            stream_destroy( gd->thumbData );
+            strm_destroy( gd->thumbData );
             gd->thumbData = NULL;
         }
         draw_unref( thumbDraw, xwe );
@@ -1211,8 +1211,8 @@ gr_getThumbData( DUTIL_GR_XWE, XWStreamCtxt* stream )
         }
         result = !!gd->thumbData;
         if ( result ) {
-            stream_setPos( gd->thumbData, POS_READ, START_OF_STREAM );
-            stream_getFromStream( stream, gd->thumbData, stream_getSize(gd->thumbData) );
+            strm_setPos( gd->thumbData, POS_READ, START_OF_STREAM );
+            strm_getFromStream( stream, gd->thumbData, strm_getSize(gd->thumbData) );
         }
     }
     GR_HEADER_END();
@@ -1384,8 +1384,8 @@ gotPacketProc( const XP_U8* buf, XP_U16 len, void* closure )
     if ( !gps->stream ) {
         gps->stream = dvc_makeStream( gps->duc );
     }
-    stream_putU32VL( gps->stream, len );
-    stream_putBytes( gps->stream, buf, len );
+    strm_putU32VL( gps->stream, len );
+    strm_putBytes( gps->stream, buf, len );
     ++gps->count;
 }
 
@@ -1401,9 +1401,9 @@ gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
 
         if ( !!gps.stream ) {
             XWStreamCtxt* msgs = dvc_makeStream( duc );
-            stream_putU32VL( msgs, gps.count );
-            stream_getFromStream( msgs, gps.stream, stream_getSize(gps.stream) );
-            stream_destroy( gps.stream );
+            strm_putU32VL( msgs, gps.count );
+            strm_getFromStream( msgs, gps.stream, strm_getSize(gps.stream) );
+            strm_destroy( gps.stream );
 
             result = dvc_beginUrl( duc, host, prefix );
             XP_U32 gid = gr_getGameID( gr );
@@ -1413,8 +1413,8 @@ gr_getPendingPacketsFor( DUTIL_GR_XWE, const CommsAddrRec* addr,
             XWStreamCtxt* b64Stream = dvc_makeStream( duc );
             binToB64Streams( b64Stream, msgs );
             urlParamToStream( result, &state, "msgs", UPT_STREAM, b64Stream );
-            stream_destroy( b64Stream );
-            stream_destroy( msgs );
+            strm_destroy( b64Stream );
+            strm_destroy( msgs );
         }
     }
     GR_HEADER_END();
@@ -1427,14 +1427,14 @@ gr_parsePendingPackets( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
 {
     XWStreamCtxt* msgs = dvc_makeStream( duc );
     b64ToBinStreams( msgs, stream );
-    XP_U32 count = stream_getU32VL( msgs );
+    XP_U32 count = strm_getU32VL( msgs );
     for ( int ii = 0; ii < count; ++ii ) {
-        XP_U32 len = stream_getU32VL( msgs );
+        XP_U32 len = strm_getU32VL( msgs );
         XP_U8 msg[len];
-        stream_getBytes( msgs, msg, len );
+        strm_getBytes( msgs, msg, len );
         gr_onMessageReceived( duc, gr, xwe, NULL, msg, len, NULL );
     }
-    stream_destroy( msgs );
+    strm_destroy( msgs );
 }
 
 XWStreamCtxt*
@@ -2205,7 +2205,7 @@ saveSummary( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     XWStreamCtxt* stream = dvc_makeStream( duc );
     sumToStream( stream, &gd->sum, gd->gi.nPlayers );
     gmgr_storeSum( duc, xwe, gd->gr, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 static void
@@ -2266,31 +2266,31 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 static void
 sumToStream( XWStreamCtxt* stream, const GameSummary* sum, XP_U16 nPlayers )
 {
-    stream_putU8( stream, CUR_STREAM_VERS );
+    strm_putU8( stream, CUR_STREAM_VERS );
 
     XP_ASSERT( 0 < nPlayers && nPlayers <= 4 );
-    stream_putBits( stream, 2, nPlayers - 1 );
-    stream_putBits( stream, 1, sum->turnIsLocal );
-    stream_putBits( stream, 1, sum->gameOver );
-    stream_putBits( stream, 1, sum->quashed );
-    stream_putBits( stream, 1, sum->canRematch );
-    stream_putBits( stream, 1, sum->canOfferRO );
+    strm_putBits( stream, 2, nPlayers - 1 );
+    strm_putBits( stream, 1, sum->turnIsLocal );
+    strm_putBits( stream, 1, sum->gameOver );
+    strm_putBits( stream, 1, sum->quashed );
+    strm_putBits( stream, 1, sum->canRematch );
+    strm_putBits( stream, 1, sum->canOfferRO );
 
-    stream_putBits( stream, 3, 1 + sum->turn );
-    stream_putBits( stream, 4, sum->missingPlayers ); /* it's a bit vector */
-    stream_putBits( stream, 2, sum->nMissing );
-    stream_putBits( stream, 2, sum->nInvited );
-    stream_putBits( stream, 1, sum->collapsed );
-    stream_putBits( stream, 1, sum->hasChat );
+    strm_putBits( stream, 3, 1 + sum->turn );
+    strm_putBits( stream, 4, sum->missingPlayers ); /* it's a bit vector */
+    strm_putBits( stream, 2, sum->nMissing );
+    strm_putBits( stream, 2, sum->nInvited );
+    strm_putBits( stream, 1, sum->collapsed );
+    strm_putBits( stream, 1, sum->hasChat );
 
-    stream_putU32VL( stream, sum->nPacketsPending );
-    stream_putU32( stream, sum->lastMoveTime );
-    stream_putU32( stream, sum->dupTimerExpires );
+    strm_putU32VL( stream, sum->nPacketsPending );
+    strm_putU32( stream, sum->lastMoveTime );
+    strm_putU32( stream, sum->dupTimerExpires );
     XP_ASSERT( -4 < sum->nMoves );
-    stream_putU32VL( stream, 4 + sum->nMoves );
+    strm_putU32VL( stream, 4 + sum->nMoves );
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        stream_putU16( stream, sum->scores.arr[ii] );
+        strm_putU16( stream, sum->scores.arr[ii] );
     }
 
     stringToStream( stream, sum->opponents );
@@ -2299,31 +2299,31 @@ sumToStream( XWStreamCtxt* stream, const GameSummary* sum, XP_U16 nPlayers )
 static XP_Bool
 gotSumFromStream( GameSummary* sump, XWStreamCtxt* stream )
 {
-    XP_ASSERT( START_OF_STREAM == stream_getPos( stream, POS_READ ) );
-    stream_setVersion( stream, stream_getU8(stream) );
+    XP_ASSERT( START_OF_STREAM == strm_getPos( stream, POS_READ ) );
+    strm_setVersion( stream, strm_getU8(stream) );
 
     GameSummary sum = {};
-    XP_U16 nPlayers = 1 + stream_getBits( stream, 2 );
-    sum.turnIsLocal = stream_getBits( stream, 1 );
-    sum.gameOver = stream_getBits( stream, 1 );
-    sum.quashed = stream_getBits( stream, 1 );
-    sum.canRematch = stream_getBits( stream, 1 );
-    sum.canOfferRO = stream_getBits( stream, 1 );
+    XP_U16 nPlayers = 1 + strm_getBits( stream, 2 );
+    sum.turnIsLocal = strm_getBits( stream, 1 );
+    sum.gameOver = strm_getBits( stream, 1 );
+    sum.quashed = strm_getBits( stream, 1 );
+    sum.canRematch = strm_getBits( stream, 1 );
+    sum.canOfferRO = strm_getBits( stream, 1 );
 
-    sum.turn = stream_getBits( stream, 3 ) - 1;
-    sum.missingPlayers = stream_getBits( stream, 4 );
-    sum.nMissing = stream_getBits( stream, 2 );
-    sum.nInvited = stream_getBits( stream, 2 );
-    sum.collapsed = stream_getBits( stream, 1 );
-    sum.hasChat = stream_getBits( stream, 1 );
+    sum.turn = strm_getBits( stream, 3 ) - 1;
+    sum.missingPlayers = strm_getBits( stream, 4 );
+    sum.nMissing = strm_getBits( stream, 2 );
+    sum.nInvited = strm_getBits( stream, 2 );
+    sum.collapsed = strm_getBits( stream, 1 );
+    sum.hasChat = strm_getBits( stream, 1 );
 
-    sum.nPacketsPending = stream_getU32VL( stream );
-    sum.lastMoveTime = stream_getU32( stream );
-    sum.dupTimerExpires = stream_getU32( stream );
-    sum.nMoves = stream_getU32VL( stream ) - 4;
+    sum.nPacketsPending = strm_getU32VL( stream );
+    sum.lastMoveTime = strm_getU32( stream );
+    sum.dupTimerExpires = strm_getU32( stream );
+    sum.nMoves = strm_getU32VL( stream ) - 4;
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        sum.scores.arr[ii] = stream_getU16( stream );
+        sum.scores.arr[ii] = strm_getU16( stream );
     }
 
     stringFromStreamHere( stream, sum.opponents, VSIZE(sum.opponents) );

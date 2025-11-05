@@ -709,11 +709,11 @@ curses_thumb_draw_getThumbData( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XWStreamC
     int offset = 0;
     for ( int row = 0; row < dctx->nCols; ++row ) {
         for ( int col = 0; col < dctx->nCols; ++col ) {
-            stream_putU8( stream, dctx->thumbBuf[offset++] );
+            strm_putU8( stream, dctx->thumbBuf[offset++] );
         }
-        stream_putU8( stream, '\n' );
+        strm_putU8( stream, '\n' );
     }
-    stream_putU8( stream, '\0' ); /* null-terminate */
+    strm_putU8( stream, '\0' ); /* null-terminate */
 }
 
 static XP_U16

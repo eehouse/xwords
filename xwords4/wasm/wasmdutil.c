@@ -233,8 +233,8 @@ wasm_dutil_storeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
         XP_LOGFF( "error from open(%s): %s", path, strerror(errno));
     }
     XP_ASSERT( fd != -1 );      /* firing */
-    const XP_U8* data = stream_getPtr( stream );
-    const XP_U16 len = stream_getSize( stream );
+    const XP_U8* data = strm_getPtr( stream );
+    const XP_U16 len = strm_getSize( stream );
     ssize_t nWritten = write( fd, data, len );
     // XP_LOGFF( "wrote %d bytes to path %s", nWritten, path );
     XP_ASSERT( nWritten == len );
@@ -257,7 +257,7 @@ wasm_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
         int fd = open(path, O_RDONLY);
         ssize_t nRead = read(fd, buf, statbuf.st_size);
         close( fd );
-        stream_putBytes( inOut, buf, statbuf.st_size );
+        strm_putBytes( inOut, buf, statbuf.st_size );
     } else {
         XP_LOGFF( "no file at %s", path );
     }

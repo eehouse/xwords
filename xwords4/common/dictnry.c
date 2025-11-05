@@ -754,7 +754,7 @@ dict_writeTilesInfo( const DictionaryCtxt* dict, XP_U16 boardSize, XWStreamCtxt*
         const XP_UCHAR* face = dict_getTileString( dict, tile );
         XP_UCHAR buf[32];
         XP_SNPRINTF( buf, VSIZE(buf), "%s\t%d\t%d\n", face, count, val );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
     }
 }
 
@@ -770,7 +770,7 @@ dict_writeToStream( const DictionaryCtxt* XP_UNUSED(dict),
     /* XP_UCHAR buf[64]; */
     /* XP_U16 nBytes; */
 
-    /* stream_putBits( stream, 6, dict->nFaces ); */
+    /* strm_putBits( stream, 6, dict->nFaces ); */
 
     /* XP_ASSERT(0);       /\* if this fires, need to fix for per-boardSize counts *\/ */
     /* for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) { */
@@ -790,12 +790,12 @@ dict_writeToStream( const DictionaryCtxt* XP_UNUSED(dict),
     /* maxCountBits = bitsForMax( maxCount ); */
     /* maxValueBits = bitsForMax( maxValue ); */
 
-    /* stream_putBits( stream, 3, maxCountBits ); /\* won't be bigger than 5 *\/ */
-    /* stream_putBits( stream, 3, maxValueBits ); */
+    /* strm_putBits( stream, 3, maxCountBits ); /\* won't be bigger than 5 *\/ */
+    /* strm_putBits( stream, 3, maxValueBits ); */
 
     /* for ( ii = 0; ii < dict->nFaces; ++ii ) { */
-    /*     stream_putBits( stream, maxCountBits, counts[ii] ); */
-    /*     stream_putBits( stream, maxValueBits, dict->values[ii] ); */
+    /*     strm_putBits( stream, maxCountBits, counts[ii] ); */
+    /*     strm_putBits( stream, maxValueBits, dict->values[ii] ); */
     /* } */
 
     /* /\* Stream format of the faces is unchanged: chars run together, which */
@@ -807,8 +807,8 @@ dict_writeToStream( const DictionaryCtxt* XP_UNUSED(dict),
 
     /* nBytes = sizeof(buf); */
     /* ucharsToNarrow( dict, buf, &nBytes ); */
-    /* stream_putU8( stream, nBytes ); */
-    /* stream_putBytes( stream, buf, nBytes ); */
+    /* strm_putU8( stream, nBytes ); */
+    /* strm_putBytes( stream, buf, nBytes ); */
 
     /* for ( nSpecials = ii = 0; ii < dict->nFaces; ++ii ) { */
     /*     const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii ); */
@@ -875,9 +875,9 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
     dict->destructor = common_destructor;
     dict->func_dict_getShortName = dict_getName; /* default */
 
-    nFaces = (XP_U8)stream_getBits( stream, 6 );
-    maxCountBits = (XP_U16)stream_getBits( stream, 3 );
-    maxValueBits = (XP_U16)stream_getBits( stream, 3 );
+    nFaces = (XP_U8)strm_getBits( stream, 6 );
+    maxCountBits = (XP_U16)strm_getBits( stream, 3 );
+    maxValueBits = (XP_U16)strm_getBits( stream, 3 );
 
     dict->nFaces = nFaces;
 
@@ -887,13 +887,13 @@ dict_loadFromStream( DictionaryCtxt* dict, XWEnv xwe, XWStreamCtxt* stream )
         = (XP_U8*)XP_MALLOC( dict->mpool, sizeof(dict->values[0]) * nFaces  );
 
     for ( ii = 0; ii < dict->nFaces; ++ii ) {
-        counts[ii] = (XP_U8)stream_getBits( stream, maxCountBits );
-        dict->values[ii] = (XP_U8)stream_getBits( stream, maxValueBits );
+        counts[ii] = (XP_U8)strm_getBits( stream, maxCountBits );
+        dict->values[ii] = (XP_U8)strm_getBits( stream, maxValueBits );
     }
 
-    nFaceBytes = (XP_U8)stream_getU8( stream );
+    nFaceBytes = (XP_U8)strm_getU8( stream );
     XP_ASSERT( nFaceBytes < VSIZE(utf8) );
-    stream_getBytes( stream, utf8, nFaceBytes );
+    strm_getBytes( stream, utf8, nFaceBytes );
     dict->isUTF8 = XP_TRUE;     /* need to communicate this in stream */
     dict_splitFaces( dict, xwe, utf8, nFaceBytes, nFaces );
 

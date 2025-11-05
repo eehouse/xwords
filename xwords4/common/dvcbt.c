@@ -56,8 +56,8 @@ sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     XWStreamCtxt* stream = dvc_makeStream( dutil );
     nli_saveToStream( nli, stream );
 
-    const XP_U8* ptr = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
+    const XP_U8* ptr = strm_getPtr( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_U16 waitSecs;
     const XP_Bool forceOld = XP_FALSE;
     ChunkMsgArray* arr
@@ -66,7 +66,7 @@ sendInviteViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                                  forceOld, &waitSecs );
     XP_ASSERT( !!arr || !forceOld );
     sendMsgs( dutil, xwe, arr, waitSecs, hostName, btAddr );
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 void
@@ -100,14 +100,14 @@ handleMsg( XW_DUtilCtxt* dutil, XWEnv xwe, ChunkMsgLoc* msg, const CommsAddrRec*
         break;
     case INVITE: {
         XWStreamCtxt* stream = dvc_makeStream( dutil );
-        stream_putBytes( stream, msg->data, msg->len );
+        strm_putBytes( stream, msg->data, msg->len );
         NetLaunchInfo nli = {};
         if ( nli_makeFromStream( &nli, stream ) ) {
             gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, &nli );
         } else {
             XP_ASSERT(0);
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
         break;
     default:

@@ -44,7 +44,7 @@ COMMON3 = \
 
 COMMON4 = \
 	$(COMMONOBJDIR)/dragdrpp.o \
-	$(COMMONOBJDIR)/memstream.o \
+	$(COMMONOBJDIR)/xwstream.o \
 	$(COMMONOBJDIR)/comms.o \
 	$(COMMONOBJDIR)/xwmutex.o \
 	$(COMMONOBJDIR)/nli.o \

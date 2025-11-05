@@ -410,27 +410,27 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
         guint nMsgs = g_slist_length( list );
         XP_ASSERT( 0 < nMsgs );
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr );
-        stream_putU16( stream, 1 ); /* number of relayIDs */
-        stream_catString( stream, relayID );
-        stream_putU8( stream, '\n' );
-        stream_putU16( stream, nMsgs );
+        XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(cGlobals->util->mpool)
+                                                  cGlobals->params->vtMgr );
+        strm_putU16( stream, 1 ); /* number of relayIDs */
+        strm_catString( stream, relayID );
+        strm_putU8( stream, '\n' );
+        strm_putU16( stream, nMsgs );
 
         int ii;
         for ( ii = 0; ii < nMsgs; ++ii ) {
             MsgRec* rec = g_slist_nth_data( list, ii );
-            stream_putU16( stream, rec->msglen );
-            stream_putBytes( stream, rec->msg, rec->msglen );
+            strm_putU16( stream, rec->msglen );
+            strm_putBytes( stream, rec->msg, rec->msglen );
 
             g_free( rec->msg );
             g_free( rec );
         }
         g_slist_free( list );
 
-        XP_U16 siz = stream_getSize( stream );
+        XP_U16 siz = strm_getSize( stream );
         /* XP_U8 buf[siz]; */
-        /* stream_getBytes( stream, buf, siz ); */
+        /* strm_getBytes( stream, buf, siz ); */
         XP_U16 tmp = XP_HTONS( siz );
 #ifdef DEBUG
         ssize_t nwritten = 
@@ -440,9 +440,9 @@ writeNoConnMsgs( CommonGlobals* cGlobals, int fd )
 #ifdef DEBUG
         nwritten = 
 #endif
-            write( fd, stream_getPtr( stream ), siz );
+            write( fd, strm_getPtr( stream ), siz );
         XP_ASSERT( nwritten == siz );
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
     g_list_free( keys );
     g_hash_table_unref( hash );

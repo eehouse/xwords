@@ -581,7 +581,7 @@ fillStreamFromBA( JNIEnv* env, jbyteArray jstream, XWStreamCtxt* out )
     int len = (*env)->GetArrayLength( env, jstream );
     XP_LOGFF( "len: %d", len );
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    stream_putBytes( out, jelems, len );
+    strm_putBytes( out, jelems, len );
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
 }
 

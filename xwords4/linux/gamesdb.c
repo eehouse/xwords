@@ -272,9 +272,9 @@ gdb_close( sqlite3* pDb )
 /* writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow, */
 /*                        const char* column ) */
 /* { */
-/*     XP_U16 strVersion = stream_getVersion( stream ); */
-/*     const XP_U8* data = stream_getPtr( stream ); */
-/*     gsize len = stream_getSize( stream ); */
+/*     XP_U16 strVersion = strm_getVersion( stream ); */
+/*     const XP_U8* data = strm_getPtr( stream ); */
+/*     gsize len = strm_getSize( stream ); */
 /*     return writeBlobColumnData( data, len, strVersion, pDb, curRow, column ); */
 /* } */
 
@@ -318,13 +318,13 @@ gdb_close( sqlite3* pDb )
 /*         gr_drawSnapshot( dutil, cGlobals->gameRef, NULL_XWE, (DrawCtx*)dctx, */
 /*                          SNAP_WIDTH, SNAP_HEIGHT ); */
 
-/*         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool) */
+/*         XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(cGlobals->util->mpool) */
 /*                                                     cGlobals->params->vtMgr ); */
 /*         getImage( dctx, stream ); */
 /*         removeSurface( dctx ); */
 /*         cGlobals->rowid = writeBlobColumnStream( stream, cGlobals->params->pDb, */
 /*                                                  cGlobals->rowid, "snap" ); */
-/*         stream_destroy( stream ); */
+/*         strm_destroy( stream ); */
 /*     } */
 
 /*     LOG_RETURN_VOID(); */
@@ -711,10 +711,10 @@ loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid,
             XP_U16 strVersion;
             XP_MEMCPY( &strVersion, ptr, sizeof(strVersion) );
             XP_ASSERT( strVersion <= CUR_STREAM_VERS );
-            stream_setVersion( stream, strVersion );
+            strm_setVersion( stream, strVersion );
             XP_ASSERT( size >= sizeof(strVersion) );
-            stream_putBytes( stream, ptr + sizeof(strVersion), 
-                             size - sizeof(strVersion) );
+            strm_putBytes( stream, ptr + sizeof(strVersion),
+                           size - sizeof(strVersion) );
         }
         if ( !!role ) {
             *role = sqlite3_column_int( ppStmt, 1 );

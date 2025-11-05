@@ -1402,13 +1402,13 @@ getSavedGame( Globals* globals, int gameID )
 
         XP_LOGFF( "gameID: %X", gameID );
         bool loaded = false;
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                    globals->vtMgr );
+        XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(globals->mpool)
+                                                  globals->vtMgr );
         char gameIDStr[16];
         formatGameID( gameIDStr, sizeof(gameIDStr), gameID );
         const XP_UCHAR* keys[] = {KEY_GAMES, gameIDStr, KEY_GAME, NULL};
         dutil_loadStream( globals->dutil, NULL_XWE, keys, stream );
-        if ( 0 < stream_getSize( stream ) ) {
+        if ( 0 < strm_getSize( stream ) ) {
             XP_ASSERT( !gs->util );
             gs->util = wasm_util_make( MPPARM(globals->mpool) &gs->gi,
                                        globals->dutil, gs );
@@ -1434,7 +1434,7 @@ getSavedGame( Globals* globals, int gameID )
             XP_FREE( globals->mpool, gs );
             gs = NULL;
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
     XP_LOGFF( "(%X) => %p", gameID, gs );
     return gs;
@@ -1677,13 +1677,13 @@ main_onGameMessage( Globals* globals, XP_U32 gameID,
 {
     GameState* gs = getSavedGame( globals, gameID );
     if ( !!gs ) {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
+        XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(gs->globals->mpool)
                                                     gs->globals->vtMgr );
-        stream_putBytes( stream, buf, len );
+        strm_putBytes( stream, buf, len );
         if ( game_receiveMessage( &gs->game, NULL_XWE, stream, from ) ) {
             updateScreen( gs, true );
         }
-        stream_destroy( stream );
+        strm_destroy( stream );
         if ( !globals->focussed && GRANTED == js_getHaveNotifyPerm() ) {
             GameSummary summary;
             game_summarize( &gs->game, &gs->gi, &summary );
@@ -1726,7 +1726,7 @@ void
 main_sendOnClose( XWStreamCtxt* stream, XWEnv env, void* closure )
 {
     CAST_GS(GameState*, gs, closure );
-    XP_LOGFF( "called with msg of len %d", stream_getSize(stream) );
+    XP_LOGFF( "called with msg of len %d", strm_getSize(stream) );
     (void)comms_send( gs->game.comms, NULL_XWE, stream );
 }
 
@@ -1761,12 +1761,12 @@ main_playerScoreHeld( GameState* gs, XP_U16 player )
 void
 main_showRemaining( GameState* gs )
 {
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
-                                                gs->globals->vtMgr );
+    XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(gs->globals->mpool)
+                                              gs->globals->vtMgr );
     board_formatRemainingTiles( gs->game.board, NULL_XWE, stream );
-    stream_putU8( stream, 0 );
-    call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-    stream_destroy( stream );
+    strm_putU8( stream, 0 );
+    call_alert( (const XP_UCHAR*)strm_getPtr( stream ) );
+    strm_destroy( stream );
 }
 
 static void
@@ -1852,12 +1852,12 @@ void
 main_showGameOver( GameState* gs )
 {
     if ( isVisible(gs) ) {
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(gs->globals->mpool)
+        XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(gs->globals->mpool)
                                                     gs->globals->vtMgr );
         server_writeFinalScores( gs->game.server, NULL_XWE, stream );
-        stream_putU8( stream, 0 );
-        call_alert( (const XP_UCHAR*)stream_getPtr( stream ) );
-        stream_destroy( stream );
+        strm_putU8( stream, 0 );
+        call_alert( (const XP_UCHAR*)strm_getPtr( stream ) );
+        strm_destroy( stream );
     }
 }
 
@@ -2029,8 +2029,8 @@ static void
 saveGame( GameState* gs )
 {
     Globals* globals = gs->globals;
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(globals->mpool)
-                                                     globals->vtMgr );
+    XWStreamCtxt* stream = mem_strm_make_raw( MPPARM(globals->mpool)
+                                              globals->vtMgr );
     game_saveToStream( &gs->game, &gs->gi, stream, ++gs->saveToken );
 
     GameSummary summary;
@@ -2040,7 +2040,7 @@ saveGame( GameState* gs )
     formatGameID( gameIDStr, sizeof(gameIDStr), gs->gi.gameID );
     const XP_UCHAR* keys[] = { KEY_GAMES, gameIDStr, KEY_GAME, NULL };
     dutil_storeStream( globals->dutil, NULL_XWE, keys, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
     game_saveSucceeded( &gs->game, NULL_XWE, gs->saveToken );
 
     keys[2] = KEY_SUMMARY;

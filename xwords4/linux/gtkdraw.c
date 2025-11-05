@@ -503,7 +503,7 @@ write_func( void *closure, const unsigned char *data,
             unsigned int length )
 {
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
-    stream_putBytes( stream, data, length );
+    strm_putBytes( stream, data, length );
     return CAIRO_STATUS_SUCCESS;
 }
 

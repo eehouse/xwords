@@ -77,9 +77,6 @@
 #include "xwarray.h"
 #include "xwmutex.h"
 #include "lindmgr.h"
-/* #include "commgr.h" */
-/* #include "compipe.h" */
-#include "memstream.h"
 #include "LocalizedStrIncludes.h"
 
 #define DEFAULT_PORT 10997
@@ -117,9 +114,8 @@ streamFromFile( CommonGlobals* cGlobals, char* name )
     }
     fclose( f );
 
-    stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                  cGlobals->params->vtMgr );
-    stream_putBytes( stream, buf, statBuf.st_size );
+    stream = dvc_makeStream( cGlobals->params->dutil );
+    strm_putBytes( stream, buf, statBuf.st_size );
     free( buf );
 
     return stream;
@@ -304,10 +300,10 @@ linuxOpenGame( CommonGlobals* cGlobals )
         opened = XP_TRUE;
 #else
     } else if ( !!params->pDb && 0 <= cGlobals->rowid ) {
-        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                      params->vtMgr );
+        stream = strm_make_raw( MPPARM(cGlobals->util->mpool)
+                                params->vtMgr );
         if ( !gdb_loadGame( stream, params->pDb, cGlobals->rowid ) ) {
-            stream_destroy( stream );
+            strm_destroy( stream );
             stream = NULL;
         }
 #endif
@@ -318,7 +314,7 @@ linuxOpenGame( CommonGlobals* cGlobals )
                                                 cGlobals->gi, NULL,
                                                 cGlobals->draw, &cGlobals->cp );
         LOG_GI( cGlobals->gi, __func__ );
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
 
     if ( !opened /* && canMakeFromGI( cGlobals->gi )*/ ) {
@@ -375,9 +371,8 @@ streamFromDB( CommonGlobals* cGlobals )
             XP_U8 buf[size];
             res = sqlite3_blob_read( ppBlob, buf, size, 0 );
             if ( SQLITE_OK == res ) {
-                stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                              params->vtMgr  );
-                stream_putBytes( stream, buf, size );
+                stream = dvc_makeStream( cGlobals->params->dutil );
+                strm_putBytes( stream, buf, size );
             }
         }
         sqlite3_blob_close( ppBlob );
@@ -419,9 +414,9 @@ writeToFile( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
     XP_U16 len;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;
 
-    len = stream_getSize( stream );
+    len = strm_getSize( stream );
     buf = malloc( len );
-    stream_getBytes( stream, buf, len );
+    strm_getBytes( stream, buf, len );
 
     fd = open( cGlobals->params->fileName, O_CREAT|O_TRUNC|O_WRONLY, 
                S_IRUSR|S_IWUSR );
@@ -449,15 +444,15 @@ catAndClose( XWStreamCtxt* stream )
     XP_U16 nBytes;
     char* buffer;
 
-    nBytes = stream_getSize( stream );
+    nBytes = strm_getSize( stream );
     buffer = malloc( nBytes + 1 );
-    stream_getBytes( stream, buffer, nBytes );
+    strm_getBytes( stream, buffer, nBytes );
     buffer[nBytes] = '\0';
 
     fprintf( stderr, "%s", buffer );
 
     free( buffer );
-    stream_destroy( stream );
+    strm_destroy( stream );
 } /* catOnClose */
 
 void
@@ -465,10 +460,9 @@ catGameHistory( LaunchParams* params, GameRef gr )
 {
     XW_DUtilCtxt* dutil = params->dutil;
     XP_Bool gameOver = gr_getGameIsOver( dutil, gr, NULL_XWE );
-    XWStreamCtxt* stream = 
-        mem_stream_make( MPPARM(dutil->mpool) params->vtMgr, CHANNEL_NONE );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     gr_writeGameHistory( dutil, gr, NULL_XWE, stream, gameOver );
-    stream_putU8( stream, '\n' );
+    strm_putU8( stream, '\n' );
     catAndClose( stream );
 } /* catGameHistory */
 
@@ -479,72 +473,28 @@ catFinalScores( LaunchParams* params, GameRef gr, XP_S16 quitter )
     const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
     XP_ASSERT( quitter < gi->nPlayers );
 
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
-                                            params->vtMgr,
-                                            CHANNEL_NONE );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     if ( -1 != quitter ) {
         XP_UCHAR buf[128];
         XP_SNPRINTF( buf, VSIZE(buf), "Player %s resigned\n",
                      gi->players[quitter].name );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
     }
     gr_writeFinalScores( dutil, gr, NULL_XWE, stream );
-    stream_putU8( stream, '\n' );
+    strm_putU8( stream, '\n' );
     catAndClose( stream );
 } /* printFinalScores */
 
 XP_UCHAR*
 strFromStream( XWStreamCtxt* stream )
 {
-    XP_U16 len = stream_getSize( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_UCHAR* buf = (XP_UCHAR*)malloc( len + 1 );
-    stream_getBytes( stream, buf, len );
+    strm_getBytes( stream, buf, len );
     buf[len] = '\0';
 
     return buf;
 } /* strFromStream */
-
-#ifndef XWFEATURE_DEVICE_STORES
-void
-linuxSaveGame( CommonGlobals* cGlobals )
-{
-    sqlite3* pDb = cGlobals->params->pDb;
-    if ( !!cGlobals->gr &&
-         (!!cGlobals->params->fileName || !!pDb) ) {
-        XP_Bool doSave = XP_TRUE;
-        XP_Bool newGame = !file_exists( cGlobals->params->fileName )
-            || -1 == cGlobals->rowid;
-        /* don't fail to save first time!  */
-        if ( 0 < cGlobals->params->saveFailPct && !newGame ) {
-            XP_U16 pct = XP_RANDOM() % 100;
-            doSave = pct >= cGlobals->params->saveFailPct;
-        }
-
-        if ( doSave ) {
-            MemStreamCloseCallback onClose = !!pDb? gdb_write : writeToFile;
-            XWStreamCtxt* outStream =
-                mem_stream_make_sized( MPPARM(cGlobals->util->mpool)
-                                       cGlobals->params->vtMgr, 
-                                       cGlobals->lastStreamSize,
-                                       0, onClose );
-
-            game_saveToStream( cGlobals->gr, cGlobals->gi, outStream,
-                               ++cGlobals->curSaveToken );
-            cGlobals->lastStreamSize = stream_getSize( outStream );
-            stream_destroy( outStream );
-
-            gr_saveSucceeded( dutil, cGlobals->gr, NULL_XWE, cGlobals->curSaveToken );
-
-            /* if ( !!pDb ) { */
-            /*     gdb_summarize( cGlobals ); */
-            /* } */
-            XP_LOGFF( "saved" );
-        } else {
-            XP_LOGFF( "simulating save failure" );
-        }
-    }
-} /* linuxSaveGame */
-#endif
 
 #if 0
 static void
@@ -566,7 +516,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                                              cGlobals->util, NULL /*draw*/,
                                              &cGlobals->cp, procs );
     XP_ASSERT( success );
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     unsigned short len;
     for ( ; ; ) {
@@ -586,11 +536,11 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
             XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
             break;
         }
-        stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                      params->vtMgr );
-        stream_putBytes( stream, buf, len );
+        stream = strm_make_raw( MPPARM(cGlobals->util->mpool)
+                                params->vtMgr );
+        strm_putBytes( stream, buf, len );
         (void)game_receiveMessage( cGlobals->gr, NULL_XWE, stream, NULL );
-        stream_destroy( stream );
+        strm_destroy( stream );
     }
 
     LOG_RETURN_VOID();
@@ -1312,13 +1262,13 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
             XWStreamCtxt* inboundS;
             XP_Bool redraw = XP_FALSE;
             
-            inboundS = stream_from_msgbuf( cGlobals, buf, nBytes );
+            inboundS = strm_from_msgbuf( cGlobals, buf, nBytes );
             if ( !!inboundS ) {
                 CommsAddrRec addr = {};
                 addr_addType( &addr, COMMS_CONN_RELAY );
                 redraw = game_receiveMessage( &cGlobals->game, NULL_XWE, inboundS, &addr );
 
-                stream_destroy( inboundS );
+                strm_destroy( inboundS );
             }
                 
             /* if there's something to draw resulting from the
@@ -1528,16 +1478,15 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
    information specific to our platform's comms layer (return address, say)
  */
 XWStreamCtxt*
-stream_from_msgbuf( CommonGlobals* cGlobals, const unsigned char* bufPtr, 
-                    XP_U16 nBytes )
+strm_from_msgbuf( CommonGlobals* cGlobals, const unsigned char* bufPtr,
+                  XP_U16 nBytes )
 {
     XWStreamCtxt* result;
-    result = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
-                                  cGlobals->params->vtMgr );
-    stream_putBytes( result, bufPtr, nBytes );
+    result = dvc_makeStream( cGlobals->params->dutil );
+    strm_putBytes( result, bufPtr, nBytes );
 
     return result;
-} /* stream_from_msgbuf */
+} /* strm_from_msgbuf */
 
 XP_Bool
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
@@ -1992,7 +1941,7 @@ linux_util_formatPauseHistory( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                          turn, msg );
         }
     }
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 }
 
 static void
@@ -2063,8 +2012,8 @@ testStreams( LaunchParams* params )
 {
     XP_USE(params);
 #if 0
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->dutil->mpool)
-                                                params->vtMgr );
+    XWStreamCtxt* stream = strm_make_raw( MPPARM(params->dutil->mpool)
+                                          params->vtMgr );
 
     XP_U32 nums[] = { 1, 4, 8, 200,
                       makeRandomInt(),
@@ -2076,18 +2025,18 @@ testStreams( LaunchParams* params )
     };
 
     for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
-        stream_putU32VL( stream, nums[ii] );
+        strm_putU32VL( stream, nums[ii] );
         XP_LOGFF( "put num[%d]: %d", ii, nums[ii] );
     }
 
     for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
-        XP_U32 num = stream_getU32VL( stream );
+        XP_U32 num = strm_getU32VL( stream );
         XP_USE(num);
         XP_LOGFF( "compariing num[%d]: %d with %d", ii, nums[ii], num );
         XP_ASSERT( num == nums[ii] );
     }
 
-    stream_destroy( stream );
+    strm_destroy( stream );
     XP_LOGFF( "OK!!" );
 #endif
 }
@@ -2493,38 +2442,38 @@ onDictGone( void* closure, const XP_UCHAR* dictName )
 static void
 testOneStream( XW_DUtilCtxt* dutil, XWStreamCtxt* bin )
 {
-    XP_LOGFF( "bin stream size: %d", stream_getSize(bin) );
-    XWStreamPos binStart = stream_getPos( bin, POS_READ );
+    XP_LOGFF( "bin stream size: %d", strm_getSize(bin) );
+    XWStreamPos binStart = strm_getPos( bin, POS_READ );
 
-    gchar* str64 = g_base64_encode( stream_getPtr(bin), stream_getSize(bin) );
+    gchar* str64 = g_base64_encode( strm_getPtr(bin), strm_getSize(bin) );
 
     XWStreamCtxt* b64 = dvc_makeStream( dutil );
     binToB64Streams( b64, bin );
-    // stream_putU8( b64, '\0' );
-    XP_U16 b64Size = stream_getSize(b64);
+    // strm_putU8( b64, '\0' );
+    XP_U16 b64Size = strm_getSize(b64);
     XP_UCHAR b64Buf[1 + b64Size];
-    XWStreamPos pos = stream_getPos( b64, POS_READ );
-    stream_getBytes( b64, b64Buf, b64Size );
-    stream_setPos( b64, POS_READ, pos );
+    XWStreamPos pos = strm_getPos( b64, POS_READ );
+    strm_getBytes( b64, b64Buf, b64Size );
+    strm_setPos( b64, POS_READ, pos );
     b64Buf[b64Size] = '\0';
-    XP_LOGFF( "b64 stream size: %d; str: %s", stream_getSize(b64), b64Buf );
+    XP_LOGFF( "b64 stream size: %d; str: %s", strm_getSize(b64), b64Buf );
     XP_LOGFF( "str64 len : %ld; str: %s", strlen(str64), str64 );
-    XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) ); /* firing */
-    XP_ASSERT( 0 == memcmp(str64, stream_getPtr(b64), stream_getSize(b64) ) );
+    XP_ASSERT( 0 == memcmp(str64, strm_getPtr(b64), strm_getSize(b64) ) ); /* firing */
+    XP_ASSERT( 0 == memcmp(str64, strm_getPtr(b64), strm_getSize(b64) ) );
 
     XWStreamCtxt* binAgain = dvc_makeStream( dutil );
     XP_ASSERT( b64ToBinStreams( binAgain, b64 ) );
-    XP_LOGFF( "binAgain stream size: %d", stream_getSize(binAgain) );
+    XP_LOGFF( "binAgain stream size: %d", strm_getSize(binAgain) );
 
-    stream_setPos( bin, POS_READ, binStart );
-    XP_ASSERT( stream_getSize(bin) == stream_getSize(binAgain) );
-    XP_ASSERT( 0 == memcmp(stream_getPtr(bin), stream_getPtr(binAgain),
-                           stream_getSize(bin) ) );
+    strm_setPos( bin, POS_READ, binStart );
+    XP_ASSERT( strm_getSize(bin) == strm_getSize(binAgain) );
+    XP_ASSERT( 0 == memcmp(strm_getPtr(bin), strm_getPtr(binAgain),
+                           strm_getSize(bin) ) );
 
     g_free(str64);
-    stream_destroy( bin );
-    stream_destroy( binAgain );
-    stream_destroy( b64 );
+    strm_destroy( bin );
+    strm_destroy( binAgain );
+    strm_destroy( b64 );
 }
 
 static void
@@ -2534,7 +2483,7 @@ testB64Streams( XW_DUtilCtxt* dutil )
 
     /* Test super-short case */
     XWStreamCtxt* bin = dvc_makeStream( dutil );
-    stream_putU8( bin, 0x7f );
+    strm_putU8( bin, 0x7f );
     testOneStream( dutil, bin );
 
     for ( int ii = 0; ii < 100; ++ii ) {
@@ -2542,7 +2491,7 @@ testB64Streams( XW_DUtilCtxt* dutil )
         int count = makeRandomInt() % 100;
         for ( int jj = 0; jj < count; ++jj ) {
             int val = makeRandomInt();
-            stream_putU32( bin, val );
+            strm_putU32( bin, val );
         }
         testOneStream( dutil, bin );
     }
@@ -2552,13 +2501,13 @@ testB64Streams( XW_DUtilCtxt* dutil )
         XWStreamCtxt* bad = dvc_makeStream( dutil );
         int count = 1 + (makeRandomInt() % 10);
         for ( int jj = 0; jj < count; ++jj ) {
-            stream_putU32( bad, makeRandomInt() );
+            strm_putU32( bad, makeRandomInt() );
         }
-        stream_putU8( bad, 0xFF ); /* Always illegal */
+        strm_putU8( bad, 0xFF ); /* Always illegal */
         XWStreamCtxt* badOut = dvc_makeStream( dutil );
         XP_ASSERT( !b64ToBinStreams( badOut, bad ) );
-        stream_destroy( bad );
-        stream_destroy( badOut );
+        strm_destroy( bad );
+        strm_destroy( badOut );
     }
 
     XP_LOGFF( "tests passed!!!" );

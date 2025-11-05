@@ -39,9 +39,9 @@ wasm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XWEnv xwe, XP_PlayerAddr channelN
 
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
     GameState* gs = wuctxt->closure;
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
-                                            gs->globals->vtMgr, gs,
-                                            channelNo, main_sendOnClose, NULL_XWE );
+    XWStreamCtxt* stream = mem_strm_make( MPPARM(uc->mpool)
+                                          gs->globals->vtMgr, gs,
+                                          channelNo, main_sendOnClose, NULL_XWE );
     return stream;
 }
 
@@ -219,9 +219,9 @@ wasm_util_notifyMove( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream )
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
     GameState* gs = wuctxt->closure;
 
-    XP_U16 len = stream_getSize( stream );
+    XP_U16 len = strm_getSize( stream );
     XP_UCHAR buf[len+1];
-    stream_getBytes( stream, buf, len );
+    strm_getBytes( stream, buf, len );
     buf[len] = '\0';
     main_query( gs, buf, query_proc_notifyMove, uc );
 }
@@ -299,9 +299,9 @@ wasm_util_informMove( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn,
                       XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     XWStreamCtxt* useMe = expl; /*!!words ? words : expl;*/
-    XP_U16 len = stream_getSize( useMe );
+    XP_U16 len = strm_getSize( useMe );
     XP_UCHAR buf[len+1];
-    stream_getBytes( useMe, buf, len );
+    strm_getBytes( useMe, buf, len );
     buf[len] = '\0';
 
     WasmUtilCtx* wuctxt = (WasmUtilCtx*)uc;
@@ -531,8 +531,8 @@ wasm_util_getDict( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
 static void
 wasm_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words )
 {
-    char* ptr = (char*)stream_getPtr(words);
-    const char* end = ptr + stream_getSize(words);
+    char* ptr = (char*)strm_getPtr(words);
+    const char* end = ptr + strm_getSize(words);
     while ( ptr < end ) {
         XP_LOGFF( "word: %s", (char*)ptr );
         ptr += 1 + strlen(ptr);

@@ -46,7 +46,7 @@ static void
 tilesToStream( XWStreamCtxt* stream, const Tile* tiles, XP_U16 nTiles )
 {
     while ( nTiles-- ) {
-        stream_putBits( stream, TILE_NBITS, *tiles++ );
+        strm_putBits( stream, TILE_NBITS, *tiles++ );
     }
 } /* tilesToStream */
 
@@ -54,7 +54,7 @@ void
 traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts )
 {
     XP_U16 nTiles = ts->nTiles;
-    stream_putBits( stream, tilesNBits(stream), nTiles );
+    strm_putBits( stream, tilesNBits(stream), nTiles );
     tilesToStream( stream, ts->tiles, nTiles );
 } /* traySetFromStream */
 
@@ -62,7 +62,7 @@ static void
 tilesFromStream( XWStreamCtxt* stream, Tile* tiles, XP_U16 nTiles )
 {
     while ( nTiles-- ) {
-        *tiles++ = (Tile)stream_getBits( stream, TILE_NBITS );
+        *tiles++ = (Tile)strm_getBits( stream, TILE_NBITS );
     }
 } /* tilesFromStream */
 
@@ -79,9 +79,9 @@ scoresToStream( XWStreamCtxt* stream, XP_U16 nScores, const XP_U16* scores )
         }
 
         XP_U16 bits = bitsForMax( maxScore );
-        stream_putBits( stream, 4, bits );
+        strm_putBits( stream, 4, bits );
         for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
-            stream_putBits( stream, bits, scores[ii] );
+            strm_putBits( stream, bits, scores[ii] );
         }
     }
 }
@@ -90,9 +90,9 @@ void
 scoresFromStream( XWStreamCtxt* stream, XP_U16 nScores, XP_U16* scores )
 {
     if ( 0 < nScores ) {
-        XP_U16 bits = (XP_U16)stream_getBits( stream, 4 );
+        XP_U16 bits = (XP_U16)strm_getBits( stream, 4 );
         for ( XP_U16 ii = 0; ii < nScores; ++ii ) {
-            scores[ii] = stream_getBits( stream, bits );
+            scores[ii] = strm_getBits( stream, bits );
         }
     }
 }
@@ -100,7 +100,7 @@ scoresFromStream( XWStreamCtxt* stream, XP_U16 nScores, XP_U16* scores )
 void
 traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts )
 {
-    XP_U16 nTiles = (XP_U16)stream_getBits( stream, tilesNBits( stream ) );
+    XP_U16 nTiles = (XP_U16)strm_getBits( stream, tilesNBits( stream ) );
     tilesFromStream( stream, ts->tiles, nTiles );
     ts->nTiles = (XP_U8)nTiles;
 } /* traySetFromStream */
@@ -124,20 +124,20 @@ moveInfoToStream( XWStreamCtxt* stream, const MoveInfo* mi, XP_U16 bitsPerTile )
 #endif
     assertSorted( mi );
 
-    stream_putBits( stream, tilesNBits( stream ), mi->nTiles );
-    stream_putBits( stream, NUMCOLS_NBITS_5, mi->commonCoord );
-    stream_putBits( stream, 1, mi->isHorizontal );
+    strm_putBits( stream, tilesNBits( stream ), mi->nTiles );
+    strm_putBits( stream, NUMCOLS_NBITS_5, mi->commonCoord );
+    strm_putBits( stream, 1, mi->isHorizontal );
 
     XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
     for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
-        stream_putBits( stream, NUMCOLS_NBITS_5, mi->tiles[ii].varCoord );
+        strm_putBits( stream, NUMCOLS_NBITS_5, mi->tiles[ii].varCoord );
 
         Tile tile = mi->tiles[ii].tile;
 #ifdef DEBUG
         /* offset += XP_SNPRINTF( &buf[offset], VSIZE(buf)-offset, "%x,", tile ); */
 #endif
-        stream_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
-        stream_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
+        strm_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
+        strm_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
     }
     // XP_LOGF( "%s(): tiles: %s", __func__, buf );
 }
@@ -149,14 +149,14 @@ moveInfoFromStream( XWStreamCtxt* stream, MoveInfo* mi, XP_U16 bitsPerTile )
     /* XP_UCHAR buf[64] = {}; */
     /* XP_U16 offset = 0; */
 #endif
-    mi->nTiles = stream_getBits( stream, tilesNBits( stream ) );
+    mi->nTiles = strm_getBits( stream, tilesNBits( stream ) );
     XP_ASSERT( mi->nTiles <= MAX_TRAY_TILES );
-    mi->commonCoord = stream_getBits( stream, NUMCOLS_NBITS_5 );
-    mi->isHorizontal = stream_getBits( stream, 1 );
+    mi->commonCoord = strm_getBits( stream, NUMCOLS_NBITS_5 );
+    mi->isHorizontal = strm_getBits( stream, 1 );
     for ( XP_U16 ii = 0; ii < mi->nTiles; ++ii ) {
-        mi->tiles[ii].varCoord = stream_getBits( stream, NUMCOLS_NBITS_5 );
-        Tile tile = stream_getBits( stream, bitsPerTile );
-        if ( 0 != stream_getBits( stream, 1 ) ) {
+        mi->tiles[ii].varCoord = strm_getBits( stream, NUMCOLS_NBITS_5 );
+        Tile tile = strm_getBits( stream, bitsPerTile );
+        if ( 0 != strm_getBits( stream, 1 ) ) {
             tile |= TILE_BLANK_BIT;
         }
         mi->tiles[ii].tile = tile;
@@ -203,7 +203,7 @@ urlEncodeToStream( XWStreamCtxt* stream, UrlParamType typ, va_list* ap )
         XP_U8 ch;
         if ( !!str ) {
             ch = str[ii];
-        } else if ( !stream_gotU8( inStream, &ch ) ) {
+        } else if ( !strm_gotU8( inStream, &ch ) ) {
             break;
         }
         if ( !ch ) {
@@ -212,9 +212,9 @@ urlEncodeToStream( XWStreamCtxt* stream, UrlParamType typ, va_list* ap )
             XP_UCHAR buf[4];
             XP_U16 len = XP_SNPRINTF( buf, VSIZE(buf), "%%%02X", (unsigned char)ch );
             XP_ASSERT( len == 3 );
-            stream_putBytes( stream, buf, len );
+            strm_putBytes( stream, buf, len );
         } else {
-            stream_putU8( stream, ch );
+            strm_putU8( stream, ch );
         }
     }
 }
@@ -238,7 +238,7 @@ urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* ke
         break;
     case UPT_STREAM: {
         XWStreamCtxt* param = va_arg( ap, XWStreamCtxt*);
-        haveData = 0 != stream_getSize(param);
+        haveData = 0 != strm_getSize(param);
     }
         break;
     default:
@@ -254,9 +254,9 @@ urlParamToStream( XWStreamCtxt* stream, UrlParamState* state, const XP_UCHAR* ke
         } else {
             prefix = "&";
         }
-        stream_catString( stream, prefix );
-        stream_catString( stream, key );
-        stream_catString( stream, "=" );
+        strm_catString( stream, prefix );
+        strm_catString( stream, key );
+        strm_catString( stream, "=" );
 
         va_list ap;
         va_start( ap, typ );
@@ -273,7 +273,7 @@ getUntil( XWStreamCtxt* stream, XP_UCHAR sought, XP_U8 buf[], XP_U16* bufLen )
     XP_Bool success = XP_FALSE;
     XP_U8 got;
     int index = 0;
-    while ( stream_gotU8( stream, &got ) ) {
+    while ( strm_gotU8( stream, &got ) ) {
         if ( sought == got ) {
             success = XP_TRUE;
             if ( !!bufLen ) {
@@ -322,13 +322,13 @@ decodeUntil( XW_DUtilCtxt* duc, XWStreamCtxt* stream, XP_U8 sought,
     XP_UCHAR numBuf[16];
     int numIndx = 0;
     XP_U8 got;
-    while ( success && stream_gotU8( stream, &got ) ) {
+    while ( success && strm_gotU8( stream, &got ) ) {
         if ( got == sought ) {
             break;
         } else if ( got == '%' ) {
             /* Get the next: it's an error if they're missing */
             XP_U8 buf[3];
-            if ( !stream_gotBytes( stream, buf, 2 ) ) {
+            if ( !strm_gotBytes( stream, buf, 2 ) ) {
                 XP_LOGFF( "premature end??" );
                 success = XP_FALSE;
                 break;
@@ -362,7 +362,7 @@ decodeUntil( XW_DUtilCtxt* duc, XWStreamCtxt* stream, XP_U8 sought,
             if ( !*streamP ) {
                 *streamP = dvc_makeStream( duc );
             }
-            stream_putU8( *streamP, got );
+            strm_putU8( *streamP, got );
             break;
         default:
             XP_ASSERT(0);
@@ -406,9 +406,9 @@ urlDecodeFromStreamAP( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
                        UrlDecodeIter* iter, UrlParamType typ, va_list* ap )
 {
     XP_Bool found = XP_FALSE;
-    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+    XWStreamPos startPos = strm_getPos( stream, POS_READ );
     if ( iter->pos ) {
-        stream_setPos( stream, POS_READ, iter->pos );
+        strm_setPos( stream, POS_READ, iter->pos );
     }
 
     for ( ; ; ) {
@@ -434,9 +434,9 @@ urlDecodeFromStreamAP( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
 
     if ( found ) {
         ++iter->count;
-        iter->pos = stream_getPos( stream, POS_READ );
+        iter->pos = strm_getPos( stream, POS_READ );
     } else {
-        stream_setPos( stream, POS_READ, startPos );
+        strm_setPos( stream, POS_READ, startPos );
     }
     return found;
 }
@@ -445,7 +445,7 @@ XP_Bool
 urlParamFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
                     const XP_UCHAR* key, UrlParamType typ, ... )
 {
-    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+    XWStreamPos startPos = strm_getPos( stream, POS_READ );
 
     UrlDecodeIter iter = { .key = key, };
     va_list ap;
@@ -453,7 +453,7 @@ urlParamFromStream( XW_DUtilCtxt* duc, XWStreamCtxt* stream,
     XP_Bool success = urlDecodeFromStreamAP( duc, stream, &iter, typ, &ap );
     va_end( ap );
 
-    stream_setPos( stream, POS_READ, startPos );
+    strm_setPos( stream, POS_READ, startPos );
     return success;
 }
 
@@ -496,19 +496,19 @@ static void
 signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num )
 {
     XP_Bool negative = num < 0;
-    stream_putBits( stream, 1, negative );
+    strm_putBits( stream, 1, negative );
     if ( negative ) {
         num *= -1;
     }
-    stream_putBits( stream, nBits, num );
+    strm_putBits( stream, nBits, num );
 } /* signedToStream */
 
 XP_S32
 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits )
 {
     XP_S32 result;
-    XP_Bool negative = stream_getBits( stream, 1 );
-    result = stream_getBits( stream, nBits );
+    XP_Bool negative = strm_getBits( stream, 1 );
+    result = strm_getBits( stream, nBits );
     if ( negative ) {
         result *= -1;
     }
@@ -523,9 +523,9 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #endif
                     )
 {
-    XP_U16 version = stream_getVersion( stream );
-    XP_U32 len = version < STREAM_VERS_NORELAY ? stream_getU8( stream )
-        : stream_getU32VL( stream );
+    XP_U16 version = strm_getVersion( stream );
+    XP_U32 len = version < STREAM_VERS_NORELAY ? strm_getU8( stream )
+        : strm_getU32VL( stream );
 
     XP_UCHAR* str = NULL;
     if ( 0 < len ) {
@@ -534,7 +534,7 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #else
         str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 );
 #endif
-        stream_getBytes( stream, str, len );
+        strm_getBytes( stream, str, len );
         str[len] = '\0';
     }
     return str;
@@ -547,10 +547,10 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 #endif
                           )
 {
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
 
-    XP_U32 len = version < STREAM_VERS_NORELAY ? stream_getU8( stream )
-        : stream_getU32VL( stream );
+    XP_U32 len = version < STREAM_VERS_NORELAY ? strm_getU8( stream )
+        : strm_getU32VL( stream );
     if ( len > 0 ) {
         if ( buflen < len ) {
             XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
@@ -560,7 +560,7 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
             /* better to leave stream in bad state than overwrite stack */
             len = buflen - 1;
         }
-        stream_getBytes( stream, buf, len );
+        strm_getBytes( stream, buf, len );
     }
     buf[len] = '\0';
     return len;
@@ -569,7 +569,7 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 void
 stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
 
     XP_U32 len = str == NULL? 0: XP_STRLEN( str );
     if ( version < STREAM_VERS_NORELAY ) {
@@ -579,21 +579,21 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
             XP_ASSERT(0);
             len = 0xFF;
         }
-        stream_putU8( stream, (XP_U8)len );
+        strm_putU8( stream, (XP_U8)len );
     } else {
-        stream_putU32VL( stream, len );
+        strm_putU32VL( stream, len );
     }
-    stream_putBytes( stream, str, len );
+    strm_putBytes( stream, str, len );
 } /* putStringToStream */
 
 XP_Bool
 matchFromStream( XWStreamCtxt* stream, const XP_U8* bytes, XP_U16 nBytes )
 {
     XP_Bool found = XP_TRUE;
-    XWStreamPos start = stream_getPos( stream, POS_READ );
+    XWStreamPos start = strm_getPos( stream, POS_READ );
     for ( int ii = 0; found && ii < nBytes; ++ii ) {
         XP_U8 byte;
-        if ( !stream_gotU8( stream, &byte ) ) {
+        if ( !strm_gotU8( stream, &byte ) ) {
             XP_LOGFF( "early end of stream at indx=%d", ii );
             found = XP_FALSE;
         } else if ( byte != bytes[ii] ) {
@@ -603,51 +603,10 @@ matchFromStream( XWStreamCtxt* stream, const XP_U8* bytes, XP_U16 nBytes )
     }
 
     if ( !found ) {
-        stream_setPos( stream, POS_READ, start );
+        strm_setPos( stream, POS_READ, start );
     }
     return found;
 }
-
-XP_Bool
-stream_gotU8( XWStreamCtxt* stream, XP_U8* ptr )
-{
-    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
-    if ( success ) {
-        *ptr = stream_getU8( stream );
-    }
-    return success;
-}
-
-XP_Bool
-stream_gotU16( XWStreamCtxt* stream, XP_U16* ptr )
-{
-    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
-    if ( success ) {
-        *ptr = stream_getU16( stream );
-    }
-    return success;
-}
-
-XP_Bool
-stream_gotU32( XWStreamCtxt* stream, XP_U32* ptr )
-{
-    XP_Bool success = sizeof(*ptr) <= stream_getSize( stream );
-    if ( success ) {
-        *ptr = stream_getU32( stream );
-    }
-    return success;
-}
-
-XP_Bool
-stream_gotBytes( XWStreamCtxt* stream, void* ptr, XP_U16 len )
-{
-    XP_Bool success = len <= stream_getSize( stream );
-    if ( success ) {
-        stream_getBytes( stream, ptr, len );
-    }
-    return success;
-}
-
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -730,7 +689,7 @@ finishHash( XP_U32 hash )
 XP_U16
 tilesNBits( const XWStreamCtxt* stream )
 {
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     XP_ASSERT( 0 < version );
     if ( 0 == version ) {
         XP_LOGFF( "version is 0" );
@@ -744,7 +703,7 @@ void
 destroyStreamIf( XWStreamCtxt** stream )
 {
     if ( !!*stream ) {
-        stream_destroy( *stream );
+        strm_destroy( *stream );
         *stream = NULL;
     }
 }
@@ -932,17 +891,17 @@ binToB64( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
 void
 binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in )
 {
-    const XP_U16 inSize = stream_getSize(in);
+    const XP_U16 inSize = strm_getSize(in);
     const int MAX_CHUNK = 3 * 128; /* Must be multiple of 3 */
     for ( XP_U16 nRead = 0; nRead < inSize; ) {
         XP_U16 inlen = XP_MIN(inSize-nRead, MAX_CHUNK);
         XP_U8 inBuf[inlen];
-        stream_getBytes( in, inBuf, inlen );
+        strm_getBytes( in, inBuf, inlen );
         XP_U16 outlen = 4 + ((inlen * 4) / 3);
         XP_UCHAR outBuf[outlen];
         binToB64( outBuf, &outlen, inBuf, inlen );
         /* binToB64() adds a null byte, but it's not in outlen */
-        stream_putBytes( out, outBuf, outlen );
+        strm_putBytes( out, outBuf, outlen );
         nRead += inlen;
     }
 }
@@ -1013,30 +972,30 @@ b64ToBin( XP_U8* out, XP_U16* outlenp, XP_UCHAR b64in[], XP_U16 b64Len )
 XP_Bool
 b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in )
 {
-    XWStreamPos startPosIn = stream_getPos( in, POS_READ );
-    XWStreamPos startPosOut = stream_getPos( out, POS_WRITE );
+    XWStreamPos startPosIn = strm_getPos( in, POS_READ );
+    XWStreamPos startPosOut = strm_getPos( out, POS_WRITE );
     const int MAX_CHUNK = 4 * 64; /* Must be multiple of 4 */
-    const XP_U16 inSize = stream_getSize( in );
+    const XP_U16 inSize = strm_getSize( in );
     XP_Bool success = 0 == (inSize % 4);
 
     for ( XP_U16 nRead = 0; success && nRead < inSize; ) {
         XP_U16 chunkSize = XP_MIN(MAX_CHUNK, inSize - nRead);
         XP_UCHAR inBuf[chunkSize];
-        stream_getBytes( in, inBuf, chunkSize );
+        strm_getBytes( in, inBuf, chunkSize );
         /* bin output is always smaller than b64 input */
         XP_U16 outLen = chunkSize;
         XP_U8 outBuf[outLen];
         success = b64ToBin( outBuf, &outLen, inBuf, chunkSize );
         if ( success ) {
-            stream_putBytes( out, outBuf, outLen );
+            strm_putBytes( out, outBuf, outLen );
             nRead += chunkSize;
         }
     }
 
     if ( !success ) {
         XP_LOGFF( "bad input? resetting streams" );
-        stream_setPos( in, POS_READ, startPosIn );
-        stream_setPos( out, POS_WRITE, startPosOut );
+        strm_setPos( in, POS_READ, startPosIn );
+        strm_setPos( out, POS_WRITE, startPosOut );
     }
     return success;
 }

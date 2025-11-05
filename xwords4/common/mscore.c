@@ -252,11 +252,10 @@ blockCheck( const WNParams* wnp, void* closure )
         if ( !bcs->silent ) {
             if ( NULL == bcs->stream ) {
                 bcs->stream =
-                    mem_stream_make_raw( MPPARM(bcs->model->vol.mpool)
-                                         dutil_getVTManager(bcs->model->vol.dutil));
+                    strm_make_raw( MPPARM_NOCOMMA(bcs->model->vol.mpool));
             }
-            stream_catString( bcs->stream, wnp->word );
-            stream_putU8( bcs->stream, '\n' );
+            strm_catString( bcs->stream, wnp->word );
+            strm_putU8( bcs->stream, '\n' );
         }
     }
 }
@@ -314,7 +313,7 @@ checkScoreMove( ModelCtxt* model, XWEnv xwe, XP_S16 turn, EngineCtxt* engine,
                     const DictionaryCtxt* dict = model_getPlayerDict( model, turn );
                     util_informWordsBlocked( *model->vol.utilp, xwe, bcs.nBadWords,
                                              bcs.stream, dict_getName( dict ) );
-                    stream_destroy( bcs.stream );
+                    strm_destroy( bcs.stream );
                 }
             } else {
                 score = tmpScore;
@@ -613,7 +612,7 @@ figureMoveScore( const ModelCtxt* model, XWEnv xwe, XP_U16 turn,
                 XP_SNPRINTF( buf, VSIZE(buf), bstr, gi->bingoMin );
                 bstr = buf;
             }
-            stream_catString( stream, bstr );
+            strm_catString( stream, bstr );
         }
     }
 
@@ -926,10 +925,10 @@ wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word,
                                      buf, sizeof(buf), NULL );
 
     if ( !!stream ) {
-        stream_putBytes( stream, buf, len );
+        strm_putBytes( stream, buf, len );
 
-        stream_putBytes( stream, fmtr->fullBuf, fmtr->bufLen );
-        stream_putU8( stream, ']' );
+        strm_putBytes( stream, fmtr->fullBuf, fmtr->bufLen );
+        strm_putU8( stream, ']' );
     }
 } /* wordScoreFormatterFinish */
 
@@ -950,7 +949,7 @@ formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore,
         }
         XP_ASSERT( XP_STRLEN(tmpBuf) < sizeof(tmpBuf) );
 
-        stream_catString( stream, tmpBuf );
+        strm_catString( stream, tmpBuf );
     }
 } /* formatWordScore */
 
@@ -963,7 +962,7 @@ formatSummary( XWStreamCtxt* stream, XWEnv xwe,
                  dutil_getUserString(model->vol.dutil, xwe, STRD_TURN_SCORE),
                  score );
     XP_ASSERT( XP_STRLEN(buf) < sizeof(buf) );
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 } /* formatSummary */
 
 #ifdef CPLUS

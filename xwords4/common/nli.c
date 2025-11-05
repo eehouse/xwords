@@ -173,12 +173,12 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     XP_LangCode code;
     XP_U8 version = haveLocaleToLc( nli->isoCodeStr, &code )
         ? NLI_VERSION_LC : NLI_VERSION_ISO;
-    stream_putU8( stream, version );
+    strm_putU8( stream, version );
 
-    stream_putU16( stream, nli->_conTypes );
+    strm_putU16( stream, nli->_conTypes );
     switch ( version ) {
     case NLI_VERSION_LC:
-        stream_putU16( stream, code );
+        strm_putU16( stream, code );
         break;
     case NLI_VERSION_ISO:
         stringToStream( stream, nli->isoCodeStr );
@@ -189,10 +189,10 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     }
     stringToStream( stream, nli->dict );
     stringToStream( stream, nli->gameName );
-    stream_putU8( stream, nli->nPlayersT );
-    stream_putU8( stream, nli->nPlayersH );
-    stream_putU32( stream, gameID( nli ) );
-    stream_putU8( stream, nli->forceChannel );
+    strm_putU8( stream, nli->nPlayersT );
+    strm_putU8( stream, nli->nPlayersH );
+    strm_putU32( stream, gameID( nli ) );
+    strm_putU8( stream, nli->forceChannel );
 
     if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
         stringToStream( stream, nli->room );
@@ -204,16 +204,16 @@ nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream )
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
         stringToStream( stream, nli->phone );
-        stream_putU8( stream, nli->isGSM );
-        stream_putU8( stream, nli->osType );
-        stream_putU32( stream, nli->osVers );
+        strm_putU8( stream, nli->isGSM );
+        strm_putU8( stream, nli->osType );
+        strm_putU32( stream, nli->osVers );
     }
     if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
         stringToStream( stream, nli->mqttDevID );
     }
 
-    stream_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
-    stream_putBits( stream, 1, nli->inDuplicateMode ? 1 : 0 );
+    strm_putBits( stream, 1, nli->remotesAreRobots ? 1 : 0 );
+    strm_putBits( stream, 1, nli->inDuplicateMode ? 1 : 0 );
 }
 
 XP_Bool 
@@ -222,12 +222,12 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     XP_Bool success = XP_TRUE;
     LOG_FUNC();
     XP_MEMSET( nli, 0, sizeof(*nli) );
-    XP_U16 version = stream_getU8( stream );
+    XP_U16 version = strm_getU8( stream );
     XP_LOGFF( "read version: %d", version );
 
-    nli->_conTypes = stream_getU16( stream );
+    nli->_conTypes = strm_getU16( stream );
     if ( version == NLI_VERSION_LC ) {
-        XP_LangCode lang = stream_getU16( stream );
+        XP_LangCode lang = strm_getU16( stream );
         const XP_UCHAR* isoCode = lcToLocale( lang );
         XP_ASSERT( !!isoCode );
         XP_STRNCPY( nli->isoCodeStr, isoCode, VSIZE(nli->isoCodeStr) );
@@ -240,17 +240,17 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     if ( success ) {
         stringFromStreamHere( stream, nli->dict, sizeof(nli->dict) );
         stringFromStreamHere( stream, nli->gameName, sizeof(nli->gameName) );
-        nli->nPlayersT = stream_getU8( stream );
-        nli->nPlayersH = stream_getU8( stream );
-        nli->gameID = stream_getU32( stream );
-        nli->forceChannel = stream_getU8( stream );
+        nli->nPlayersT = strm_getU8( stream );
+        nli->nPlayersH = strm_getU8( stream );
+        nli->gameID = strm_getU32( stream );
+        nli->forceChannel = strm_getU8( stream );
         XP_LOGFF( "read forceChannel: %X", nli->forceChannel );
 
         if ( types_hasType( nli->_conTypes, COMMS_CONN_RELAY ) ) {
             stringFromStreamHere( stream, nli->room, sizeof(nli->room) );
             stringFromStreamHere( stream, nli->inviteID, sizeof(nli->inviteID) );
             if ( version == 0 ) {
-                nli->devID = stream_getU32( stream );
+                nli->devID = strm_getU32( stream );
             }
         }
         if ( types_hasType( nli->_conTypes, COMMS_CONN_BT ) ) {
@@ -259,24 +259,24 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
         }
         if ( types_hasType( nli->_conTypes, COMMS_CONN_SMS ) ) {
             stringFromStreamHere( stream, nli->phone, sizeof(nli->phone) );
-            nli->isGSM = stream_getU8( stream );
-            nli->osType= stream_getU8( stream );
-            nli->osVers = stream_getU32( stream );
+            nli->isGSM = strm_getU8( stream );
+            nli->osType= strm_getU8( stream );
+            nli->osVers = strm_getU32( stream );
         }
         if ( types_hasType( nli->_conTypes, COMMS_CONN_MQTT ) ) {
             stringFromStreamHere( stream, nli->mqttDevID, sizeof(nli->mqttDevID) );
         }
 
-        if ( version > 0 && 0 < stream_getSize( stream ) ) {
-            nli->remotesAreRobots = 0 != stream_getBits( stream, 1 );
-            nli->inDuplicateMode = stream_getBits( stream, 1 );
+        if ( version > 0 && 0 < strm_getSize( stream ) ) {
+            nli->remotesAreRobots = 0 != strm_getBits( stream, 1 );
+            nli->inDuplicateMode = strm_getBits( stream, 1 );
             XP_LOGF( "%s(): remotesAreRobots: %d; inDuplicateMode: %d", __func__,
                      nli->remotesAreRobots, nli->inDuplicateMode );
         } else {
             nli->inDuplicateMode = XP_FALSE;
         }
 
-        XP_ASSERT( 0 == stream_getSize( stream ) );
+        XP_ASSERT( 0 == strm_getSize( stream ) );
         LOGNLI( nli );
     }
 
@@ -453,7 +453,7 @@ XP_Bool
 nli_fromInviteData( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, NetLaunchInfo* nlip )
 {
     NetLaunchInfo nli = {};
-    XWStreamPos startPos = stream_getPos( stream, POS_READ );
+    XWStreamPos startPos = strm_getPos( stream, POS_READ );
 
     XP_Bool success = 
         urlParamFromStream( dutil, stream, "ad", UPT_U32, &nli._conTypes )
@@ -487,7 +487,7 @@ nli_fromInviteData( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, NetLaunchInfo* nl
     if ( success ) {
         *nlip = nli;
     } else {
-        stream_setPos( stream, POS_READ, startPos );
+        strm_setPos( stream, POS_READ, startPos );
     }
     return success;
 }

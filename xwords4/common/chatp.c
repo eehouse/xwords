@@ -98,8 +98,8 @@ writeChatProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
     stringToStream( stream, ce->msg );
     XP_LOGFF( "wrote msg: %s", ce->msg );
     XP_ASSERT( 0 <= ce->from );
-    stream_putU8( stream, ce->from );
-    stream_putU32( stream, ce->timestamp );
+    strm_putU8( stream, ce->from );
+    strm_putU32( stream, ce->timestamp );
     return FEA_OK;
 }
 
@@ -125,41 +125,41 @@ cht_writeToStream( const ChatState* state, XWEnv xwe, XWStreamCtxt* stream )
 
         arr_map( state->entries, xwe, writeChatProc, tmpStream );
 
-        XP_U16 size = stream_getSize( tmpStream );
-        stream_putU32VL( stream, size );
-        stream_putBytes( stream, stream_getPtr(tmpStream), size );
+        XP_U16 size = strm_getSize( tmpStream );
+        strm_putU32VL( stream, size );
+        strm_putBytes( stream, strm_getPtr(tmpStream), size );
 
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 }
 
 void
 cht_loadFromStream( ChatState* chat, XWEnv xwe, XWStreamCtxt* stream )
 {
-    XP_U32 size = stream_getU32VL( stream ); /* size/count of 0 */
+    XP_U32 size = strm_getU32VL( stream ); /* size/count of 0 */
     XP_ASSERT( 0 == arr_length( chat->entries ) );
     XP_ASSERT( 0 < size );
     if ( 0 < size ) {
         XP_U8* bytes = XP_MALLOC( chat->mpool, size );
-        stream_getBytes( stream, bytes, size );
+        strm_getBytes( stream, bytes, size );
 
         XW_DUtilCtxt* dutil = util_getDevUtilCtxt(*chat->utilp);
         XWStreamCtxt* tmpStream = dvc_makeStream( dutil );
-        stream_putBytes( tmpStream, bytes, size );
+        strm_putBytes( tmpStream, bytes, size );
         XP_FREE( chat->mpool, bytes );
 
-        while ( 0 < stream_getSize(tmpStream) ) {
+        while ( 0 < strm_getSize(tmpStream) ) {
             XP_UCHAR* msg = stringFromStream( chat->mpool, tmpStream );
             if ( !!msg ) {
                 XP_LOGFF( "read msg: %s", msg );
-                XP_U8 from = stream_getU8( tmpStream );
-                XP_U32 timestamp = stream_getU32( tmpStream );
+                XP_U8 from = strm_getU8( tmpStream );
+                XP_U32 timestamp = strm_getU32( tmpStream );
                 addEntry( chat, xwe, msg, from, timestamp );
                 XP_FREE( chat->mpool, msg );
             }
         }
 
-        stream_destroy( tmpStream );
+        strm_destroy( tmpStream );
     }
 }
 

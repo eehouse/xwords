@@ -158,21 +158,21 @@ storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     XP_ASSERT( !!ss );
 
     XWStreamCtxt* stream = dvc_makeStream( dutil );
-    stream_putU8( stream, VERSION_1 );
-    stream_putU32( stream, ss->startTime );
+    strm_putU8( stream, VERSION_1 );
+    strm_putU32( stream, ss->startTime );
 
     if ( !!ss->statsVals ) {
         for ( int ii = 0; ii < STAT_NSTATS; ++ii ) {
             XP_U32 val = ss->statsVals[ii];
             if ( 0 != val ) {
-                stream_putU8( stream, ii );
-                stream_putU32VL( stream, val );
+                strm_putU8( stream, ii );
+                strm_putU32VL( stream, val );
             }
         }
     }
 
     dutil_storeStream( dutil, xwe, STATS_KEY, stream );
-    stream_destroy( stream );
+    strm_destroy( stream );
 }
 
 static void
@@ -188,18 +188,18 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     dutil_loadStream( dutil, xwe, STATS_KEY, stream );
 
     XP_U8 version;
-    if ( stream_gotU8( stream, &version ) ) {
+    if ( strm_gotU8( stream, &version ) ) {
         if ( VERSION_1 <= version ) {
-            ss->startTime = stream_getU32(stream);
+            ss->startTime = strm_getU32(stream);
         }
 
         XP_U8 stat;
-        while ( stream_gotU8( stream, &stat ) ) {
-            XP_U32 value = stream_getU32VL( stream );
+        while ( strm_gotU8( stream, &stat ) ) {
+            XP_U32 value = strm_getU32VL( stream );
             statsVals[stat] = value;
         }
     }
-    stream_destroy( stream );
+    strm_destroy( stream );
 
     if ( 0 == ss->startTime ) {
         ss->startTime = dutil_getCurSeconds( dutil, xwe );

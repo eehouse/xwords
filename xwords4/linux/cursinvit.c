@@ -274,12 +274,12 @@ launchQRInvite( CommonGlobals* cGlobals )
                                          NULL_XWE, NULL, NULL );
 
     if ( !!invite ) {
-        XP_U16 len = stream_getSize( invite );
+        XP_U16 len = strm_getSize( invite );
         XP_UCHAR buf[len+1];
-        stream_getBytes( invite, buf, len );
+        strm_getBytes( invite, buf, len );
         buf[len] = '\0';
         cursesShowQRDialog( buf, "Game Invitation QR Code" );
-        stream_destroy( invite );
+        strm_destroy( invite );
     }
 }
 

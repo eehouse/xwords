@@ -28,7 +28,6 @@
 #include "dutil.h"
 #include "game.h"
 #include "xwstream.h"
-#include "memstream.h"
 #include "xwrelay.h"
 #include "strutils.h"
 #include "dbgutil.h"
@@ -590,7 +589,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
 static void
 addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ )
 {
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
     switch( typ ) {
     case COMMS_CONN_NONE:
         break;
@@ -606,8 +605,8 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
     case COMMS_CONN_IP_DIRECT:
         stringFromStreamHere( stream, addrP->u.ip.hostName_ip,
                               sizeof(addrP->u.ip.hostName_ip) );
-        addrP->u.ip.ipAddr_ip = stream_getU32( stream );
-        addrP->u.ip.port_ip = stream_getU16( stream );
+        addrP->u.ip.ipAddr_ip = strm_getU32( stream );
+        addrP->u.ip.port_ip = strm_getU16( stream );
         break;
     case COMMS_CONN_RELAY: {
         IpRelay ip_relay = {};
@@ -616,11 +615,11 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
                                   sizeof(ip_relay.invite) );
             stringFromStreamHere( stream, ip_relay.hostName,
                                   sizeof(ip_relay.hostName) );
-            ip_relay.ipAddr = stream_getU32( stream );
-            ip_relay.port = stream_getU16( stream );
+            ip_relay.ipAddr = strm_getU32( stream );
+            ip_relay.port = strm_getU16( stream );
             if ( version >= STREAM_VERS_DICTLANG ) {
-                ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
-                ip_relay.advertiseRoom = stream_getBits( stream, 1 );
+                ip_relay.seeksPublicRoom = strm_getBits( stream, 1 );
+                ip_relay.advertiseRoom = strm_getBits( stream, 1 );
             }
 #ifdef XWFEATURE_RELAY
             XP_MEMCPY( &addrP->u.ip_relay, &ip_relay, sizeof(ip_relay) );
@@ -631,7 +630,7 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
     case COMMS_CONN_SMS:
         stringFromStreamHere( stream, addrP->u.sms.phone, 
                               sizeof(addrP->u.sms.phone) );
-        addrP->u.sms.port = stream_getU16( stream );
+        addrP->u.sms.port = strm_getU16( stream );
         break;
     case COMMS_CONN_P2P:
         stringFromStreamHere( stream, addrP->u.p2p.mac_addr,
@@ -640,7 +639,7 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
     case COMMS_CONN_NFC:
         break;
     case COMMS_CONN_MQTT:
-        stream_getBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
+        strm_getBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
         break;
     default:
         /* shut up, compiler */
@@ -652,8 +651,8 @@ void
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
     XP_MEMSET( addrP, 0, sizeof(*addrP) );
-    XP_U8 tmp = stream_getU8( stream );
-    XP_U16 version = stream_getVersion( stream );
+    XP_U8 tmp = strm_getU8( stream );
+    XP_U16 version = strm_getVersion( stream );
     XP_ASSERT( 0 < version );
     if ( STREAM_VERS_MULTIADDR > version && (COMMS_CONN_NONE != tmp) ) {
         tmp = 1 << (tmp - 1);
@@ -714,7 +713,7 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
 static XP_U16
 readChannelNo( const CommsCtxt* XP_UNUSED_DBG(comms), XWStreamCtxt* stream )
 {
-    XP_U16 tmp = stream_getU16( stream );
+    XP_U16 tmp = strm_getU16( stream );
     CNO_FMT(buf, tmp);
     COMMS_LOGFF( "=> %s", buf );
     return tmp; //  & CHANNEL_MASK;
@@ -723,8 +722,8 @@ readChannelNo( const CommsCtxt* XP_UNUSED_DBG(comms), XWStreamCtxt* stream )
 static void
 writeChannelNo( XWStreamCtxt* stream, XP_PlayerAddr channelNo )
 {
-    // stream_putU16( stream, channelNo & CHANNEL_MASK );
-    stream_putU16( stream, channelNo );
+    // strm_putU16( stream, channelNo & CHANNEL_MASK );
+    strm_putU16( stream, channelNo );
 }
 
 CommsCtxt* 
@@ -740,9 +739,9 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
 #endif
 
-    XP_U16 version = stream_getVersion( stream );
+    XP_U16 version = strm_getVersion( stream );
 
-    XP_U8 flags = stream_getU8( stream );
+    XP_U8 flags = strm_getU8( stream );
     if ( version < STREAM_VERS_GICREATED ) {
         flags = 0;
     }
@@ -759,8 +758,8 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     XP_U16 nPlayersHere, nPlayersTotal;
     if ( version >= STREAM_VERS_DEVIDS
          || addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
-        nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
-        nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
+        nPlayersHere = (XP_U16)strm_getBits( stream, 4 );
+        nPlayersTotal = (XP_U16)strm_getBits( stream, 4 );
     } else {
         nPlayersHere = 0;
         nPlayersTotal = 0;
@@ -778,32 +777,32 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     logAddrComms( comms, &selfAddr, __func__ );
     comms->flags = flags;
 
-    comms->connID = stream_getU32( stream );
+    comms->connID = strm_getU32( stream );
     XP_ASSERT( comms->streamVersion == 0 );
     if ( version >= STREAM_VERS_MSGSTREAMVERS ) {
-        comms->streamVersion = stream_getU16( stream );
+        comms->streamVersion = strm_getU16( stream );
     }
 
     comms->nextChannelNo = readChannelNo( comms, stream );
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
     } else {
-        comms->channelSeed = stream_getU16( stream );
+        comms->channelSeed = strm_getU16( stream );
     }
     if ( STREAM_VERS_COMMSBACKOFF <= version ) {
-        comms->resendBackoff = stream_getU16( stream );
-        comms->nextResend = stream_getU32( stream );
+        comms->resendBackoff = strm_getU16( stream );
+        comms->nextResend = strm_getU32( stream );
     }
     if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
-        comms->rr.myHostID = stream_getU8( stream );
+        comms->rr.myHostID = strm_getU8( stream );
         COMMS_LOGFFV( "loaded myHostID: %d", comms->rr.myHostID );
         stringFromStreamHere( stream, comms->rr.connName, 
                               sizeof(comms->rr.connName) );
     }
 
-    XP_U16 queueLen = stream_getU8( stream );
+    XP_U16 queueLen = strm_getU8( stream );
 
-    XP_U16 nAddrRecs = stream_getU8( stream );
+    XP_U16 nAddrRecs = strm_getU8( stream );
     COMMS_LOGFFV( "nAddrRecs: %d", nAddrRecs );
     AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
@@ -813,22 +812,22 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         addrFromStream( &rec->addr, stream );
 
         if ( STREAM_VERS_SMALLCOMMS <= version ) {
-            rec->nextMsgID = stream_getU32VL( stream );
-            rec->lastMsgSaved = rec->lastMsgRcd = stream_getU32VL( stream );
-            rec->flags = stream_getU16( stream );
+            rec->nextMsgID = strm_getU32VL( stream );
+            rec->lastMsgSaved = rec->lastMsgRcd = strm_getU32VL( stream );
+            rec->flags = strm_getU16( stream );
         } else {
-            rec->nextMsgID = stream_getU16( stream );
-            rec->lastMsgSaved = rec->lastMsgRcd = stream_getU16( stream );
+            rec->nextMsgID = strm_getU16( stream );
+            rec->lastMsgSaved = rec->lastMsgRcd = strm_getU16( stream );
         }
 #ifdef LOG_COMMS_MSGNOS
         COMMS_LOGFFV( "read lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii );
 #endif
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
-            rec->lastMsgAckd = stream_getU16( stream );
+            rec->lastMsgAckd = strm_getU16( stream );
         }
         rec->channelNo = readChannelNo( comms, stream );
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
-            rec->rr.hostID = stream_getU8( stream );
+            rec->rr.hostID = strm_getU8( stream );
         }
 
         // CNO_FMT( cbuf, rec->channelNo );
@@ -844,14 +843,14 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
 
         msg->channelNo = readChannelNo( comms, stream );
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
-            msg->msgID = stream_getU32VL( stream );
-            msg->smp.len = stream_getU32VL( stream );
+            msg->msgID = strm_getU32VL( stream );
+            msg->smp.len = strm_getU32VL( stream );
         } else {
-            msg->msgID = stream_getU32( stream );
-            msg->smp.len = stream_getU16( stream );
+            msg->msgID = strm_getU32( stream );
+            msg->smp.len = strm_getU16( stream );
         }
         if ( version >= STREAM_VERS_MSGTIMESTAMP ) {
-            msg->smp.createdStamp = stream_getU32( stream );
+            msg->smp.createdStamp = strm_getU32( stream );
         }
         if ( 0 == msg->smp.createdStamp ) {
             msg->smp.createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
@@ -862,10 +861,9 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         XP_U16 len = msg->smp.len;
         if ( 0 == len ) {
             XP_ASSERT( isServer );
-            XP_U32 nliLen = stream_getU32VL( stream );
-            XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                           dutil_getVTManager(comms->dutil));
-            stream_getFromStream( nliStream, stream, nliLen );
+            XP_U32 nliLen = strm_getU32VL( stream );
+            XWStreamCtxt* nliStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
+            strm_getFromStream( nliStream, stream, nliLen );
             NetLaunchInfo nli;
             if ( nli_makeFromStream( &nli, nliStream ) ) {
                 msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
@@ -874,10 +872,10 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
             } else {
                 XP_ASSERT(0);
             }
-            stream_destroy( nliStream );
+            strm_destroy( nliStream );
         } else {
             msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, len );
-            stream_getBytes( stream, (XP_U8*)msg->smp.buf, len );
+            strm_getBytes( stream, (XP_U8*)msg->smp.buf, len );
         }
         dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len, &msg->sb );
         XP_ASSERT( NULL == msg->smp.next );
@@ -897,7 +895,7 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
             if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->selfAddr, typ ) ) {
                 for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
-                    comms->disableds[typ][ii] = 0 != stream_getBits( stream, 1 );
+                    comms->disableds[typ][ii] = 0 != strm_getBits( stream, 1 );
                 }
             }
         }
@@ -1001,26 +999,26 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         break;
     case COMMS_CONN_IP_DIRECT:
         stringToStream( stream, addrP->u.ip.hostName_ip );
-        stream_putU32( stream, addrP->u.ip.ipAddr_ip );
-        stream_putU16( stream, addrP->u.ip.port_ip );
+        strm_putU32( stream, addrP->u.ip.ipAddr_ip );
+        strm_putU16( stream, addrP->u.ip.port_ip );
         break;
     case COMMS_CONN_RELAY:
-        if ( stream_getVersion( stream ) < STREAM_VERS_NORELAY ) {
+        if ( strm_getVersion( stream ) < STREAM_VERS_NORELAY ) {
             IpRelay ip_relay = {};
 #ifdef XWFEATURE_RELAY
             ip_relay = addrP->u.ip_relay;
 #endif
             stringToStream( stream, ip_relay.invite );
             stringToStream( stream, ip_relay.hostName );
-            stream_putU32( stream, ip_relay.ipAddr );
-            stream_putU16( stream, ip_relay.port );
-            stream_putBits( stream, 1, ip_relay.seeksPublicRoom );
-            stream_putBits( stream, 1, ip_relay.advertiseRoom );
+            strm_putU32( stream, ip_relay.ipAddr );
+            strm_putU16( stream, ip_relay.port );
+            strm_putBits( stream, 1, ip_relay.seeksPublicRoom );
+            strm_putBits( stream, 1, ip_relay.advertiseRoom );
         }
         break;
     case COMMS_CONN_SMS:
         stringToStream( stream, addrP->u.sms.phone );
-        stream_putU16( stream, addrP->u.sms.port );
+        strm_putU16( stream, addrP->u.sms.port );
         break;
     case COMMS_CONN_P2P:
         stringToStream( stream, addrP->u.p2p.mac_addr );
@@ -1029,7 +1027,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
         break;
     case COMMS_CONN_MQTT:
         XP_ASSERT( 0 != addrP->u.mqtt.devID );
-        stream_putBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
+        strm_putBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
         break;
     default:
         XP_LOGFF( "unexpected typ: %s", ConnType2Str(typ) );
@@ -1041,10 +1039,10 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ,
 void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
-    XP_ASSERT( 0 < stream_getVersion(stream) ); /* must be set already */
+    XP_ASSERT( 0 < strm_getVersion(stream) ); /* must be set already */
     ConnTypeSetBits conTypes = addrP->_conTypes;
     types_rmType( &conTypes, COMMS_CONN_RELAY );
-    stream_putU8( stream, conTypes );
+    strm_putU8( stream, conTypes );
 
     CommsConnType typ;
     for ( XP_U32 st = 0; types_iter( conTypes, &typ, &st ); ) {
@@ -1072,25 +1070,24 @@ elemToStream( MsgQueueElem* elem, void* closure )
 
         XWStreamCtxt* stream = e2sp->stream;
         writeChannelNo( stream, elem->channelNo );
-        stream_putU32VL( stream, elem->msgID );
+        strm_putU32VL( stream, elem->msgID );
 
-        stream_putU32VL( stream, elem->smp.len );
-        stream_putU32( stream, elem->smp.createdStamp );
+        strm_putU32VL( stream, elem->smp.len );
+        strm_putU32( stream, elem->smp.createdStamp );
         COMMS_LOGFFV( "writing msg elem with len %d and sum: %s",
                       elem->smp.len, elem->sb.buf );
         if ( 0 == elem->smp.len ) {
             XP_ASSERT( 0 == elem->msgID );
-            XWStreamCtxt* nliStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                           dutil_getVTManager(comms->dutil));
+            XWStreamCtxt* nliStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
             NetLaunchInfo nli;
             XP_MEMCPY( &nli, elem->smp.buf, sizeof(nli) );
             nli_saveToStream( &nli, nliStream );
-            XP_U16 nliLen = stream_getSize( nliStream );
-            stream_putU32VL( stream, nliLen );
-            stream_getFromStream( stream, nliStream, nliLen );
-            stream_destroy( nliStream );
+            XP_U16 nliLen = strm_getSize( nliStream );
+            strm_putU32VL( stream, nliLen );
+            strm_getFromStream( stream, nliStream, nliLen );
+            strm_destroy( nliStream );
         } else {
-            stream_putBytes( stream, elem->smp.buf, elem->smp.len );
+            strm_putBytes( stream, elem->smp.buf, elem->smp.len );
         }
     }
     return FEA_OK;
@@ -1105,35 +1102,34 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
 
     listRecs( comms, __func__ );
 
-    stream_setVersion( stream, CUR_STREAM_VERS );
+    strm_setVersion( stream, CUR_STREAM_VERS );
 
-    stream_putU8( stream, comms->flags );
+    strm_putU8( stream, comms->flags );
     logAddrComms( comms, &comms->selfAddr, __func__ );
     addrToStream( stream, &comms->selfAddr );
-    stream_putBits( stream, 4, comms->rr.nPlayersHere );
-    stream_putBits( stream, 4, comms->rr.nPlayersTotal );
+    strm_putBits( stream, 4, comms->rr.nPlayersHere );
+    strm_putBits( stream, 4, comms->rr.nPlayersTotal );
 
-    stream_putU32( stream, comms->connID );
-    stream_putU16( stream, comms->streamVersion );
+    strm_putU32( stream, comms->connID );
+    strm_putU16( stream, comms->streamVersion );
     writeChannelNo( stream, comms->nextChannelNo );
     XP_U16 channelSeed = comms_getChannelSeed( comms ); /* force creation */
-    stream_putU16( stream, channelSeed );
-    stream_putU16( stream, comms->resendBackoff );
-    stream_putU32( stream, comms->nextResend );
+    strm_putU16( stream, channelSeed );
+    strm_putU16( stream, comms->resendBackoff );
+    strm_putU32( stream, comms->nextResend );
     if ( addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY ) ) {
-        stream_putU8( stream, comms->rr.myHostID );
+        strm_putU8( stream, comms->rr.myHostID );
         COMMS_LOGFF( "stored myHostID: %d", comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
     }
 
     /* Next field is queueLen, but we don't know that until after we write the
        queue, since ACKs are not persisted. */
-    XWStreamCtxt* tmpStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                   dutil_getVTManager(comms->dutil));
-    stream_setVersion( tmpStream, CUR_STREAM_VERS );
+    XWStreamCtxt* tmpStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
+    strm_setVersion( tmpStream, CUR_STREAM_VERS );
 
     nAddrRecs = countAddrRecs(comms);
-    stream_putU8( tmpStream, (XP_U8)nAddrRecs );
+    strm_putU8( tmpStream, (XP_U8)nAddrRecs );
 
 #ifdef LOG_COMMS_MSGNOS
     int ii = 0;
@@ -1144,16 +1140,16 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
         logAddrComms( comms, addr, __func__ );
         addrToStream( tmpStream, addr );
 
-        stream_putU32VL( tmpStream, rec->nextMsgID );
-        stream_putU32VL( tmpStream, rec->lastMsgRcd );
-        stream_putU16( tmpStream, rec->flags );
+        strm_putU32VL( tmpStream, rec->nextMsgID );
+        strm_putU32VL( tmpStream, rec->lastMsgRcd );
+        strm_putU16( tmpStream, rec->flags );
 #ifdef LOG_COMMS_MSGNOS
         COMMS_LOGFF( "wrote lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii++ );
 #endif
-        stream_putU16( tmpStream, (XP_U16)rec->lastMsgAckd );
+        strm_putU16( tmpStream, (XP_U16)rec->lastMsgAckd );
         writeChannelNo( tmpStream, rec->channelNo );
         if ( addr_hasType( addr, COMMS_CONN_RELAY ) ) {
-            stream_putU8( tmpStream, rec->rr.hostID ); /* unneeded unless RELAY */
+            strm_putU8( tmpStream, rec->rr.hostID ); /* unneeded unless RELAY */
         }
     }
 
@@ -1163,16 +1159,16 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
 
     XP_ASSERT( e2sd.queueLen <= 255 );
     XP_ASSERT( e2sd.queueLen <= comms->queueLen );
-    stream_putU8( stream, (XP_U8)e2sd.queueLen );
-    stream_getFromStream( stream, tmpStream, stream_getSize(tmpStream) );
-    stream_destroy( tmpStream );
+    strm_putU8( stream, (XP_U8)e2sd.queueLen );
+    strm_getFromStream( stream, tmpStream, strm_getSize(tmpStream) );
+    strm_destroy( tmpStream );
 
     /* This writes 2 bytes instead of 1 if it were smarter. Not worth the work
      * to fix. */
     for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
         if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->selfAddr, typ ) ) {
             for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
-                stream_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
+                strm_putBits( stream, 1, comms->disableds[typ][ii] ? 1 : 0 );
             }
         }
     }
@@ -1489,35 +1485,34 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
 {
     CNO_FMT( cbuf, channelNo );
     COMMS_LOGFF( TAGFMT(%s), TAGPRMS, cbuf );
-    XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
+    XP_U16 streamSize = NULL == stream? 0 : strm_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
     MsgQueueElem* newElem = makeNewElem( comms, xwe, msgID, channelNo );
 
     XP_Bool useSmallHeader = !!rec && (COMMS_VERSION == rec->flags);
-    XWStreamCtxt* hdrStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                   dutil_getVTManager(comms->dutil));
+    XWStreamCtxt* hdrStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
     XP_ASSERT( 0L == comms->connID || comms->connID == util_getGI(*comms->utilp)->gameID );
     if ( !useSmallHeader ) {
         COMMS_LOGFF( TAGFMT() "putting connID %x", TAGPRMS, comms->connID );
-        stream_putU32( hdrStream, comms->connID );
+        strm_putU32( hdrStream, comms->connID );
     }
 
-    stream_putU16( hdrStream, channelNo );
+    strm_putU16( hdrStream, channelNo );
 
     if ( useSmallHeader ) {
         if ( 0 != msgID ) {     /* bit in flags says not there */
-            stream_putU32VL( hdrStream, msgID );
+            strm_putU32VL( hdrStream, msgID );
         }
-        stream_putU32VL( hdrStream, lastMsgSaved );
+        strm_putU32VL( hdrStream, lastMsgSaved );
 #if 0 && defined DEBUG
         /* Test receiver's ability to skip unexpected header fields */
-        stream_putU8( hdrStream, 0x01 );
-        stream_putU8( hdrStream, 0x02 );
-        stream_putU8( hdrStream, 0x03 );
+        strm_putU8( hdrStream, 0x01 );
+        strm_putU8( hdrStream, 0x02 );
+        strm_putU8( hdrStream, 0x03 );
 #endif
     } else {
-        stream_putU32( hdrStream, msgID );
-        stream_putU32( hdrStream, lastMsgSaved );
+        strm_putU32( hdrStream, msgID );
+        strm_putU32( hdrStream, lastMsgSaved );
     }
     COMMS_LOGFF( TAGFMT() "put lastMsgSaved: %d", TAGPRMS, lastMsgSaved );
     if ( !!rec ) {
@@ -1525,29 +1520,28 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
     }
 
     /* Now we'll use a third stream to combine them all */
-    XP_U16 headerLen = stream_getSize( hdrStream );
+    XP_U16 headerLen = strm_getSize( hdrStream );
     XP_U16 flags = makeFlags( comms, headerLen, msgID );
-    XWStreamCtxt* msgStream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                   dutil_getVTManager(comms->dutil));
+    XWStreamCtxt* msgStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
     if ( useSmallHeader ) {
         XP_ASSERT( HAS_VERSION_FLAG != flags );
     } else {
-        stream_putU16( msgStream, HAS_VERSION_FLAG );
+        strm_putU16( msgStream, HAS_VERSION_FLAG );
     }
-    stream_putU16( msgStream, flags );
+    strm_putU16( msgStream, flags );
 
-    stream_getFromStream( msgStream, hdrStream, stream_getSize(hdrStream) );
-    stream_destroy( hdrStream );
+    strm_getFromStream( msgStream, hdrStream, strm_getSize(hdrStream) );
+    strm_destroy( hdrStream );
 
     if ( 0 < streamSize ) {
-        stream_getFromStream( msgStream, stream, streamSize );
+        strm_getFromStream( msgStream, stream, streamSize );
     }
 
-    newElem->smp.len = stream_getSize( msgStream );
+    newElem->smp.len = strm_getSize( msgStream );
     XP_ASSERT( 0 < newElem->smp.len );
     newElem->smp.buf = (XP_U8*)XP_MALLOC( comms->mpool, newElem->smp.len );
-    stream_getBytes( msgStream, (XP_U8*)newElem->smp.buf, newElem->smp.len );
-    stream_destroy( msgStream );
+    strm_getBytes( msgStream, (XP_U8*)newElem->smp.buf, newElem->smp.len );
+    strm_destroy( msgStream );
 
     dutil_md5sum( comms->dutil, xwe, newElem->smp.buf, newElem->smp.len,
                   &newElem->sb );
@@ -1866,10 +1860,10 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S16 result = -1;
     WITH_MUTEX(&comms->mutex);
-    if ( 0 == stream_getSize(stream) ) {
+    if ( 0 == strm_getSize(stream) ) {
         COMMS_LOGFF( "dropping 0-len message" );
     } else {
-        XP_PlayerAddr channelNo = stream_getAddress( stream );
+        XP_PlayerAddr channelNo = strm_getAddress( stream );
         CNO_FMT( cbuf, channelNo );
         COMMS_LOGFF( "%s", cbuf );
         AddressRecord* rec = getRecordFor( comms, channelNo );
@@ -2443,7 +2437,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 
     set_relay_state( comms, xwe, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
-    XWHostID myHostID = stream_getU8( stream );
+    XWHostID myHostID = strm_getU8( stream );
     COMMS_LOGFF( "myHostID: %d", myHostID );
     if ( comms->rr.myHostID != myHostID ) {
         COMMS_LOGFF( "changing rr.myHostID from %x to %x",
@@ -2465,11 +2459,11 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                         comms->rr.nPlayersTotal, XP_FALSE );
     }
 
-    comms->rr.cookieID = stream_getU16( stream );
+    comms->rr.cookieID = strm_getU16( stream );
     XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
-    comms->rr.heartbeat = stream_getU16( stream );
-    nSought = (XP_U16)stream_getU8( stream );
-    nHere = (XP_U16)stream_getU8( stream );
+    comms->rr.heartbeat = strm_getU16( stream );
+    nSought = (XP_U16)strm_getU8( stream );
+    nHere = (XP_U16)strm_getU8( stream );
     if ( nSought == nHere ) {
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_ALLCONNECTED );
     }
@@ -2493,7 +2487,7 @@ got_connect_cmd( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 #endif
 
 #ifdef XWFEATURE_DEVID
-    DevIDType typ = stream_getU8( stream );
+    DevIDType typ = strm_getU8( stream );
     XP_UCHAR devID[MAX_DEVID_LEN + 1] = {};
     if ( ID_TYPE_NONE != typ ) {
         stringFromStreamHere( stream, devID, sizeof(devID) );
@@ -2526,7 +2520,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
     XWREASON relayErr;
 
     /* nothing for us to do here if not using relay */
-    XWRELAY_Cmd cmd = stream_getU8( stream );
+    XWRELAY_Cmd cmd = strm_getU8( stream );
     COMMS_LOGFF( "(%s)", relayCmdToStr( cmd ) );
     switch( cmd ) {
 
@@ -2540,7 +2534,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         break;
 
     case XWRELAY_ALLHERE:
-        srcID = (XWHostID)stream_getU8( stream );
+        srcID = (XWHostID)strm_getU8( stream );
         if ( comms->rr.myHostID != HOST_ID_NONE
              && comms->rr.myHostID != srcID ) {
             COMMS_LOGFF( "changing hostid from %d to %d",
@@ -2591,10 +2585,10 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_ALLCONNECTED );
         break;
     case XWRELAY_MSG_FROMRELAY:
-        cookieID = stream_getU16( stream );
+        cookieID = strm_getU16( stream );
     case XWRELAY_MSG_FROMRELAY_NOCONN:
-        srcID = stream_getU8( stream );
-        destID = stream_getU8( stream );
+        srcID = strm_getU8( stream );
+        destID = strm_getU8( stream );
         COMMS_LOGFF( "cookieID: %d; srcID: %x; destID: %x",
                      cookieID, srcID, destID );
         /* If these values don't check out, drop it */
@@ -2623,8 +2617,8 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         break;
 
     case XWRELAY_DISCONNECT_OTHER:
-        relayErr = stream_getU8( stream );
-        srcID = stream_getU8( stream );
+        relayErr = strm_getU8( stream );
+        srcID = strm_getU8( stream );
         COMMS_LOGFF( "host id %x disconnected", srcID );
         /* if we don't have connName then RECONNECTED is the wrong state to
            change to. */
@@ -2642,18 +2636,18 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
         break;
 
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
-        relayErr = stream_getU8( stream );
+        relayErr = strm_getU8( stream );
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_UNCONNECTED );
         util_userError( *comms->utilp, xwe, ERR_RELAY_BASE + relayErr );
         break;
 
     case XWRELAY_MSG_STATUS:
-        relayErr = stream_getU8( stream );
+        relayErr = strm_getU8( stream );
         (*comms->procs.rerror)( xwe, comms->procs.closure, relayErr );
         break;
 
     case XWRELAY_CONNECTDENIED: /* socket will get closed by relay */
-        relayErr = stream_getU8( stream );
+        relayErr = strm_getU8( stream );
         COMMS_LOGFF( "got reason: %s", XWREASON2Str( relayErr ) );
         set_relay_state( comms, xwe, COMMS_RELAYSTATE_DENIED );
 
@@ -2681,7 +2675,7 @@ relayPreProcess( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream, XWHostID* se
 static XP_Bool
 btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    BTIPMsgType typ = (BTIPMsgType)stream_getU8( stream );
+    BTIPMsgType typ = (BTIPMsgType)strm_getU8( stream );
     XP_Bool consumed = typ != BTIPMSG_DATA;
 
     if ( consumed ) {
@@ -3016,7 +3010,7 @@ getCheckChannelSeed( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff 
 {
     XP_Bool messageValid;
     WITH_MUTEX(&comms->mutex);
-    messageValid = stream_gotU16( stream, &stuff->channelNo );
+    messageValid = strm_gotU16( stream, &stuff->channelNo );
     if ( messageValid ) {
         XP_U16 channelSeed = comms_getChannelSeed( comms );
         XP_U16 flags = stuff->flags;
@@ -3047,14 +3041,14 @@ static XP_Bool
 parseBeefHeader( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
 {
     XP_Bool messageValid =
-        stream_gotU16( stream, &stuff->flags ) /* flags are the next short */
-        && stream_gotU32( stream, &stuff->connID );
+        strm_gotU16( stream, &stuff->flags ) /* flags are the next short */
+        && strm_gotU32( stream, &stuff->connID );
     COMMS_LOGFF( TAGFMT() "read connID (gameID) of %x", TAGPRMS, stuff->connID );
 
     messageValid = messageValid
         && getCheckChannelSeed( comms, stream, stuff )
-        && stream_gotU32( stream, &stuff->msgID )
-        && stream_gotU32( stream, &stuff->lastMsgRcd );
+        && strm_gotU32( stream, &stuff->msgID )
+        && strm_gotU32( stream, &stuff->lastMsgRcd );
 
     // LOG_RETURNF( "%s", boolToStr(messageValid) );
     return messageValid;
@@ -3068,24 +3062,23 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
     WITH_MUTEX(&comms->mutex);
     XP_U16 headerLen = stuff->flags >> HEADER_LEN_OFFSET;
     XP_ASSERT( 0 < headerLen );
-    XP_ASSERT( headerLen <= stream_getSize( msgStream ) );
-    if ( headerLen <= stream_getSize( msgStream ) ) {
+    XP_ASSERT( headerLen <= strm_getSize( msgStream ) );
+    if ( headerLen <= strm_getSize( msgStream ) ) {
         XWStreamCtxt* hdrStream =
-            mem_stream_make_raw( MPPARM(comms->mpool)
-                                 dutil_getVTManager(comms->dutil));
-        stream_getFromStream( hdrStream, msgStream, headerLen );
+            strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
+        strm_getFromStream( hdrStream, msgStream, headerLen );
         stuff->connID = 0 == (stuff->flags & NO_CONNID_BIT)
             ? util_getGI(*comms->utilp)->gameID : CONN_ID_NONE;
 
         if ( getCheckChannelSeed( comms, hdrStream, stuff ) ) {
             XP_ASSERT( stuff->msgID == 0 );
             if ( 0 == (stuff->flags & NO_MSGID_BIT) ) {
-                stuff->msgID = stream_getU32VL( hdrStream );
+                stuff->msgID = strm_getU32VL( hdrStream );
             }
-            stuff->lastMsgRcd = stream_getU32VL( hdrStream );
+            stuff->lastMsgRcd = strm_getU32VL( hdrStream );
             messageValid = XP_TRUE;
         }
-        stream_destroy( hdrStream );
+        strm_destroy( hdrStream );
     }
 
     // LOG_RETURNF( "%s", boolToStr(messageValid) );
@@ -3133,16 +3126,16 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
         XP_Bool usingRelay = XP_FALSE;
 #endif
 
-        XP_U16 initialLen = stream_getSize( stream );
+        XP_U16 initialLen = strm_getSize( stream );
 
         if ( !preProcess(
 #ifdef XWFEATURE_RELAY
                          comms, xwe , stream, &usingRelay, &senderID,
 #endif
                          retAddr ) ) {
-            state->len = stream_getSize( stream );
-            // stream_getPtr pts at base, but sum excludes relay header
-            const XP_U8* ptr = initialLen - state->len + stream_getPtr( stream );
+            state->len = strm_getSize( stream );
+            // strm_getPtr pts at base, but sum excludes relay header
+            const XP_U8* ptr = initialLen - state->len + strm_getPtr( stream );
             Md5SumBuf sb;
             dutil_md5sum( comms->dutil, xwe, ptr, state->len, &sb );
             XP_STRCAT( state->sum, sb.buf );
@@ -3150,7 +3143,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                          TAGPRMS, state->len, state->sum );
 
             HeaderStuff stuff = {};
-            messageValid = stream_gotU16( stream, &stuff.flags );
+            messageValid = strm_gotU16( stream, &stuff.flags );
 
             if ( messageValid ) {
                 /* If BEEF is next sender is using old format. Otherwise
@@ -3174,7 +3167,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             }
 
             AddressRecord* rec = NULL;
-            XP_U16 streamSize = stream_getSize( stream );  /* anything left? */
+            XP_U16 streamSize = strm_getSize( stream );  /* anything left? */
             if ( messageValid ) {
                 if ( stuff.connID == CONN_ID_NONE ) {
                     /* special case: initial message from client or server */
@@ -3201,7 +3194,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                              stuff.msgID, streamSize );
                 state->channelNo = stuff.channelNo;
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
-                stream_setAddress( stream, stuff.channelNo );
+                strm_setAddress( stream, stuff.channelNo );
                 messageValid = streamSize > 0;
                 resetBackoff( comms );
             }
@@ -3475,7 +3468,7 @@ statsProc( MsgQueueElem* elem, void* closure )
     XP_SNPRINTF( buf, sizeof(buf),
                  "msgID: " XP_LD ": channelNo=%.4X; len=%d\n",
                  elem->msgID, elem->channelNo, elem->smp.len );
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
     return FEA_OK;
 }
 
@@ -3489,7 +3482,7 @@ comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream )
                  (XP_UCHAR*)"role: %s; msg queue len: %d; quashed: %s;\n",
                  comms->isServer ? "host" : "guest",
                  comms->queueLen, boolToStr(QUASHED(comms)) );
-    stream_catString( stream, buf );
+    strm_catString( stream, buf );
 
     forEachElem( (CommsCtxt*)comms, statsProc, stream );
 
@@ -3497,17 +3490,17 @@ comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream )
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
                      (XP_UCHAR*)"Stats for channel %.4X msgs\n",
                      rec->channelNo );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
                      (XP_UCHAR*)"  Last sent: " XP_LD "; ",
                      rec->nextMsgID );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
                      (XP_UCHAR*)"last rcvd: %d\n",
                      rec->lastMsgRcd );
-        stream_catString( stream, buf );
+        strm_catString( stream, buf );
     }
     END_WITH_MUTEX();
 } /* comms_getStats */
@@ -3630,57 +3623,56 @@ logAddr( XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
 {
     if ( !!addr ) {
         char buf[128];
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
-                                                    dutil_getVTManager(dutil));
+        XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(dutil->mpool) );
         if ( !!caller ) {
             snprintf( buf, sizeof(buf), "called on %p from %s:\n",
                       addr, caller );
-            stream_catString( stream, buf );
+            strm_catString( stream, buf );
         }
 
         CommsConnType typ;
         XP_Bool first = XP_TRUE;
         for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
             if ( !first ) {
-                stream_catString( stream, "\n" );
+                strm_catString( stream, "\n" );
             }
 
             snprintf( buf, sizeof(buf), "* %s: ", ConnType2Str(typ) );
-            stream_catString( stream, buf );
+            strm_catString( stream, buf );
 
             switch( typ ) {
             case COMMS_CONN_RELAY:
 #ifdef XWFEATURE_RELAY
-                stream_catString( stream, "room: " );
-                stream_catString( stream, addr->u.ip_relay.invite );
-                stream_catString( stream, "; host: " );
-                stream_catString( stream, addr->u.ip_relay.hostName );
+                strm_catString( stream, "room: " );
+                strm_catString( stream, addr->u.ip_relay.invite );
+                strm_catString( stream, "; host: " );
+                strm_catString( stream, addr->u.ip_relay.hostName );
 #endif
                 break;
             case COMMS_CONN_SMS:
-                stream_catString( stream, "phone: " );
-                stream_catString( stream, addr->u.sms.phone );
-                stream_catString( stream, "; port: " );
+                strm_catString( stream, "phone: " );
+                strm_catString( stream, addr->u.sms.phone );
+                strm_catString( stream, "; port: " );
                 snprintf( buf, sizeof(buf), "%d", addr->u.sms.port );
-                stream_catString( stream, buf );
+                strm_catString( stream, buf );
                 break;
             case COMMS_CONN_BT:
-                stream_catString( stream, "host: " );
-                stream_catString( stream, addr->u.bt.hostName );
-                stream_catString( stream, "; addr: " );
-                stream_catString( stream, addr->u.bt.btAddr.chars );
+                strm_catString( stream, "host: " );
+                strm_catString( stream, addr->u.bt.hostName );
+                strm_catString( stream, "; addr: " );
+                strm_catString( stream, addr->u.bt.btAddr.chars );
                 break;
             case COMMS_CONN_P2P:
-                stream_catString( stream, "mac addr: " );
-                stream_catString( stream, addr->u.p2p.mac_addr );
+                strm_catString( stream, "mac addr: " );
+                strm_catString( stream, addr->u.p2p.mac_addr );
                 break;
             case COMMS_CONN_NFC:
                 break;
             case COMMS_CONN_MQTT: {
-                stream_catString( stream, "mqtt devID: " );
+                strm_catString( stream, "mqtt devID: " );
                 XP_UCHAR buf[32];
                 XP_SNPRINTF( buf, VSIZE(buf), MQTTDevID_FMT, addr->u.mqtt.devID );
-                stream_catString( stream, buf );
+                strm_catString( stream, buf );
             }
                 break;
             default:
@@ -3688,9 +3680,9 @@ logAddr( XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
             }
             first = XP_FALSE;
         }
-        stream_putU8( stream, '\0' );
-        XP_LOGFF( "%s", stream_getPtr( stream ) );
-        stream_destroy( stream );
+        strm_putU8( stream, '\0' );
+        XP_LOGFF( "%s", strm_getPtr( stream ) );
+        strm_destroy( stream );
     }
 }
 #endif
@@ -4023,11 +4015,10 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
                      void* data, int datalen )
 {
     COMMS_LOGFF( "(cmd=%s, destID=%x)", relayCmdToStr(cmd), destID );
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(comms->mpool)
-                                                dutil_getVTManager(comms->dutil) );
+    XWStreamCtxt* stream = mem_strm_make_raw( MPPARM_NOCOMMA(comms->mpool) );
     if ( stream != NULL ) {
         CommsAddrRec addr;
-        stream_putU8( stream, cmd );
+        strm_putU8( stream, cmd );
 
         comms_getAddr( comms, &addr );
 
@@ -4036,74 +4027,74 @@ relay_msg_to_stream( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID dest
             if ( COOKIE_ID_NONE == comms->rr.cookieID ) {
                 COMMS_LOGFF( "cookieID still 0; background send?" );
             }
-            stream_putU16( stream, comms->rr.cookieID );
+            strm_putU16( stream, comms->rr.cookieID );
         case XWRELAY_MSG_TORELAY_NOCONN:
             XP_ASSERT( 0 < comms->rr.myHostID );
-            stream_putU8( stream, comms->rr.myHostID );
+            strm_putU8( stream, comms->rr.myHostID );
             XP_ASSERT( 0 < destID );
-            stream_putU8( stream, destID );
+            strm_putU8( stream, destID );
             COMMS_LOGFF( "wrote ids src %d, dest %d", comms->rr.myHostID, destID );
             if ( data != NULL && datalen > 0 ) {
-                stream_putBytes( stream, data, datalen );
+                strm_putBytes( stream, data, datalen );
             }
             break;
         case XWRELAY_GAME_CONNECT:
-            stream_putU8( stream, XWRELAY_PROTO_VERSION );
-            stream_putU16( stream, INITIAL_CLIENT_VERS );
+            strm_putU8( stream, XWRELAY_PROTO_VERSION );
+            strm_putU16( stream, INITIAL_CLIENT_VERS );
             stringToStream( stream, addr.u.ip_relay.invite );
-            stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
-            stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
+            strm_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
+            strm_putU8( stream, addr.u.ip_relay.advertiseRoom );
             /* XP_ASSERT( cmd == XWRELAY_GAME_RECONNECT */
             /*            || comms->rr.myHostID == HOST_ID_NONE */
             /*            || comms->rr.myHostID == HOST_ID_SERVER ); */
             COMMS_LOGFF( "writing nPlayersHere: %d; nPlayersTotal: %d",
                          comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
-            stream_putU8( stream, comms->rr.nPlayersHere );
-            stream_putU8( stream, comms->rr.nPlayersTotal );
-            stream_putU16( stream, comms_getChannelSeed(comms) );
-            stream_putU8( stream, (*comms->utilp)->gameInfo->dictLang );
+            strm_putU8( stream, comms->rr.nPlayersHere );
+            strm_putU8( stream, comms->rr.nPlayersTotal );
+            strm_putU16( stream, comms_getChannelSeed(comms) );
+            strm_putU8( stream, (*comms->utilp)->gameInfo->dictLang );
             putDevID( comms, xwe, stream );
-            stream_putU8( stream, comms->forceChannel ); /* "clientIndx" on relay */
+            strm_putU8( stream, comms->forceChannel ); /* "clientIndx" on relay */
 
             set_relay_state( comms, xwe, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
         case XWRELAY_GAME_RECONNECT:
-            stream_putU8( stream, XWRELAY_PROTO_VERSION );
-            stream_putU16( stream, INITIAL_CLIENT_VERS );
+            strm_putU8( stream, XWRELAY_PROTO_VERSION );
+            strm_putU16( stream, INITIAL_CLIENT_VERS );
             stringToStream( stream, addr.u.ip_relay.invite );
-            stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
-            stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
-            stream_putU8( stream, comms->rr.myHostID );
+            strm_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
+            strm_putU8( stream, addr.u.ip_relay.advertiseRoom );
+            strm_putU8( stream, comms->rr.myHostID );
             XP_ASSERT( cmd == XWRELAY_GAME_RECONNECT
                        || comms->rr.myHostID == HOST_ID_NONE
                        || comms->rr.myHostID == HOST_ID_SERVER );
             COMMS_LOGFF( "writing nPlayersHere: %d; nPlayersTotal: %d",
                          comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
-            stream_putU8( stream, comms->rr.nPlayersHere );
-            stream_putU8( stream, comms->rr.nPlayersTotal );
-            stream_putU16( stream, comms_getChannelSeed(comms) );
-            stream_putU8( stream, (*comms->utilp)->gameInfo->dictLang );
+            strm_putU8( stream, comms->rr.nPlayersHere );
+            strm_putU8( stream, comms->rr.nPlayersTotal );
+            strm_putU16( stream, comms_getChannelSeed(comms) );
+            strm_putU8( stream, (*comms->utilp)->gameInfo->dictLang );
             stringToStream( stream, comms->rr.connName );
             putDevID( comms, xwe, stream );
             set_relay_state( comms, xwe, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
 
         case XWRELAY_ACK:
-            stream_putU8( stream, destID );
+            strm_putU8( stream, destID );
             break;
 
         case XWRELAY_GAME_DISCONNECT:
-            stream_putU16( stream, comms->rr.cookieID );
-            stream_putU8( stream, comms->rr.myHostID );
+            strm_putU16( stream, comms->rr.cookieID );
+            strm_putU8( stream, comms->rr.myHostID );
             break;
 
 #if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
-            stream_putU16( stream, comms->rr.cookieID );
-            stream_putU8( stream, comms->rr.myHostID );
+            strm_putU16( stream, comms->rr.cookieID );
+            strm_putU8( stream, comms->rr.myHostID );
             break;
 #endif
         default:
@@ -4128,14 +4119,14 @@ send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID destID,
         if ( tmpStream != NULL ) {
             XP_U16 len = 0;
 
-            len = stream_getSize( tmpStream );
+            len = strm_getSize( tmpStream );
             if ( 0 < len ) {
                 XP_U16 result;
                 CommsAddrRec addr;
 
                 comms_getAddr( comms, &addr );
                 COMMS_LOGFF( "passing %d bytes to sendproc", len );
-                result = (*comms->procs.send)( xwe, stream_getPtr(tmpStream), len,
+                result = (*comms->procs.send)( xwe, strm_getPtr(tmpStream), len,
                                                msgNo, &addr, COMMS_CONN_RELAY, 
                                                gameID(comms), 
                                                comms->procs.closure );
@@ -4144,7 +4135,7 @@ send_via_relay( CommsCtxt* comms, XWEnv xwe, XWRELAY_Cmd cmd, XWHostID destID,
                     setHeartbeatTimer( comms );
                 }
             }
-            stream_destroy( tmpStream );
+            strm_destroy( tmpStream );
         }
     }
     return success;
@@ -4166,15 +4157,15 @@ sendNoConn( CommsCtxt* comms, XWEnv xwe, const MsgQueueElem* elem, XWHostID dest
             relay_msg_to_stream( comms, xwe, XWRELAY_MSG_TORELAY_NOCONN,
                                  destID, elem->smp.buf, elem->smp.len );
         if ( NULL != stream ) {
-            XP_U16 len = stream_getSize( stream );
+            XP_U16 len = strm_getSize( stream );
             if ( 0 < len ) {
                 XP_UCHAR msgNo[16];
                 formatMsgNo( comms, elem, msgNo, sizeof(msgNo) );
-                success = (*comms->procs.sendNoConn)( xwe, stream_getPtr( stream ),
+                success = (*comms->procs.sendNoConn)( xwe, strm_getPtr( stream ),
                                                       len, msgNo, relayID,
                                                       comms->procs.closure );
             }
-            stream_destroy( stream );
+            strm_destroy( stream );
         }
     }
 
@@ -4290,10 +4281,10 @@ putDevID( const CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
     DevIDType typ;
     const XP_UCHAR* devID = dutil_getDevID( comms->dutil, xwe, &typ );
     XP_ASSERT( ID_TYPE_NONE <= typ && typ < ID_TYPE_NTYPES );
-    stream_putU8( stream, typ );
+    strm_putU8( stream, typ );
     if ( ID_TYPE_NONE != typ ) {
-        stream_catString( stream, devID );
-        stream_putU8( stream, '\0' );
+        strm_catString( stream, devID );
+        strm_putU8( stream, '\0' );
     }
 # else
     XP_ASSERT(0);

@@ -25,8 +25,6 @@
 #include "dictnry.h"
 #include "mempool.h"
 #include "comms.h"
-#include "memstream.h"
-/* #include "compipe.h" */
 
 extern int errno;
 
@@ -51,8 +49,8 @@ int linux_relay_receive( CommonGlobals* cGlobals, int sock,
 XP_Bool linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
 
-XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, 
-                                  const unsigned char* bufPtr, XP_U16 nBytes );
+XWStreamCtxt* strm_from_msgbuf( CommonGlobals* cGlobals,
+                                const unsigned char* bufPtr, XP_U16 nBytes );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( LaunchParams* params, GameRef gr );
