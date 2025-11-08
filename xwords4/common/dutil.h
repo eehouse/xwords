@@ -53,6 +53,7 @@ typedef enum {
     GCE_MSGCOUNT_CHANGED = 0x40,
 } GameChangeEvent;
 typedef XP_U32 GameChangeEvents; /* bit vector of above */
+
 typedef enum {
     GRCE_ADDED = 0x01,
     GRCE_DELETED = 0x02,

@@ -1357,8 +1357,8 @@ comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
 
     forEachElem( (CommsCtxt*)comms, countNonAcks, &na );
 
-    // COMMS_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
     END_WITH_MUTEX();
+    // COMMS_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
     return na.count;
 }
 
@@ -3489,7 +3489,7 @@ comms_getStats( RELCONST CommsCtxt* comms )
 
     for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf),
-                     (XP_UCHAR*)"Stats for channel %.4X msgs\n",
+                     (XP_UCHAR*)"Stats for channel %.4X msgs:\n",
                      rec->channelNo );
         strm_catString( stream, buf );
 

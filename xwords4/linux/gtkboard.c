@@ -1073,8 +1073,7 @@ disenable_buttons( GtkGameGlobals* globals )
                        G_CALLBACK(handle_invite_button), globals );
     }
 
-    GameStateInfo gsi;
-    gr_getState( dutil, gr, NULL_XWE, &gsi );
+    GameStateInfo gsi = gr_getState( dutil, gr, NULL_XWE );
 
     XP_Bool canFlip = 1 < gr_visTileCount( dutil, gr, NULL_XWE );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
@@ -2567,7 +2566,7 @@ freeGlobals( GtkGameGlobals* globals )
 void
 onGameChanged( GtkGameGlobals* globals, GameChangeEvents gces )
 {
-    XP_LOGFF( "(gces=0x%x)", gces );
+    XP_LOGFF( "(gces=0X%X)", gces );
     if ( 0 != (gces & GCE_MSGCOUNT_CHANGED) ) {
         updateCountButton( globals );
     }

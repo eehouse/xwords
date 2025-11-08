@@ -475,12 +475,12 @@ static void
 linux_dutil_onGameChanged( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
                            GameChangeEvents gces )
 {
-    LOG_FUNC();
+    XP_LOGFF( "(gces=0X%X)", gces );
     LaunchParams* params = (LaunchParams*)duc->closure;
     if ( params->useCurses ) {
         onGameChangedCurses( params->cag, gr, gces );
     } else {
-        onGameChangedGTK( params, gr, gces);
+        onGameChangedGTK( params, gr, gces );
     }
 }
 

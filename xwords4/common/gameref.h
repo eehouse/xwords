@@ -44,7 +44,7 @@ GameRef gr_makeRematch( DUTIL_GR_XWE, const XP_UCHAR* newName, RematchOrder ro,
 #ifdef XWFEATURE_CHANGEDICT
 void gr_changeDict( DUTIL_GR_XWE, DictionaryCtxt* dict );
 #endif
-void gr_getState( DUTIL_GR_XWE, GameStateInfo* gsi );
+GameStateInfo gr_getState( DUTIL_GR_XWE );
 const GameSummary* gr_getSummary( DUTIL_GR_XWE );
 GroupRef gr_getGroup( DUTIL_GR_XWE );
 

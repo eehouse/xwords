@@ -1632,10 +1632,9 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getState
 {
     jobject jgsi;
     DVC_HEADER(jniGlobalPtr);
-    GameStateInfo info = {};
-    gr_getState( DUTIL_GR_ENV, &info );
-
-    jgsi = makeObjectEmptyConstr( env, PKG_PATH("jni/GameRef$GameStateInfo") );
+    GameStateInfo info = gr_getState( DUTIL_GR_ENV );
+    jgsi = makeObjectEmptyConstr( env,
+                                  PKG_PATH("jni/GameRef$GameStateInfo") );
 
     setInts( env, jgsi, (void*)&info, AANDS(gsi_ints) );
     setBools( env, jgsi, (void*)&info, AANDS(gsi_bools) );

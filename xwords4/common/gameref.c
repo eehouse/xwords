@@ -1086,11 +1086,16 @@ checkMessageCount(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     XP_Bool quashed;
     XP_U16 count = comms_countPendingPackets( gd->comms, &quashed );
-    if ( !quashed && gd->sum.nPacketsPending != count ) {
+    if ( quashed ) {
+        XP_LOGFF( "quashed: doing nothing" );
+    } else if ( gd->sum.nPacketsPending != count ) {
+        XP_LOGFF( "got msg count change: %d -> %d", gd->sum.nPacketsPending, count );
         gd->sum.nPacketsPending = count;
         saveSummary( duc, xwe, gd );
         postGameChangeEvent( duc, xwe, gd,
                              GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
+    } else {
+        XP_LOGFF( "no change: both %d", count );
     }
 }
 
@@ -1704,6 +1709,7 @@ gr_commitTurn( DUTIL_GR_XWE, const PhoniesConf* pc,
     if ( board_commitTurn( gd->board, xwe, pc, turnConfirmed, newTiles ) ) {
         schedule_draw( duc, xwe, gd );
         thumbChanged( duc, xwe, gd );
+        checkMessageCount( duc, xwe, gd );
     }
     GR_HEADER_END_SAVE();
 }
@@ -2152,30 +2158,30 @@ gr_isFromRematch( DUTIL_GR_XWE )
     return result;
 }
 
-void
-gr_getState( DUTIL_GR_XWE, GameStateInfo* gsi )
+GameStateInfo
+gr_getState( DUTIL_GR_XWE )
 {
+    GameStateInfo gsi = {};
     GR_HEADER();
     const CtrlrCtxt* ctrlr = gd->ctrlr;
     BoardCtxt* board = gd->board;
 
     XP_Bool gameOver = ctrl_getGameIsOver( ctrlr );
-    gsi->curTurnSelected = board_curTurnSelected( board );
-    gsi->trayVisState = board_getTrayVisState( board );
-    gsi->visTileCount = board_visTileCount( board );
-    gsi->canHint = !gameOver && board_canHint( board );
-    gsi->canUndo = model_canUndo( gd->model );
-    gsi->canRedo = board_canTogglePending( board );
-    gsi->inTrade = board_inTrade( board, &gsi->tradeTilesSelected );
-    gsi->canChat = !!gd->comms && comms_canChat( gd->comms );
-    gsi->canShuffle = board_canShuffle( board );
-    gsi->canHideRack = board_canHideRack( board );
-    gsi->canTrade = board_canTrade( board, xwe );
-    gsi->nPendingMessages = !!gd->comms ? 
-        comms_countPendingPackets(gd->comms, NULL) : 0;
-    gsi->canPause = ctrl_canPause( ctrlr );
-    gsi->canUnpause = ctrl_canUnpause( ctrlr );
+    gsi.curTurnSelected = board_curTurnSelected( board );
+    gsi.trayVisState = board_getTrayVisState( board );
+    gsi.visTileCount = board_visTileCount( board );
+    gsi.canHint = !gameOver && board_canHint( board );
+    gsi.canUndo = model_canUndo( gd->model );
+    gsi.canRedo = board_canTogglePending( board );
+    gsi.inTrade = board_inTrade( board, &gsi.tradeTilesSelected );
+    gsi.canChat = !!gd->comms && comms_canChat( gd->comms );
+    gsi.canShuffle = board_canShuffle( board );
+    gsi.canHideRack = board_canHideRack( board );
+    gsi.canTrade = board_canTrade( board, xwe );
+    gsi.canPause = ctrl_canPause( ctrlr );
+    gsi.canUnpause = ctrl_canUnpause( ctrlr );
     GR_HEADER_END();
+    return gsi;
 }
 
 const GameSummary*

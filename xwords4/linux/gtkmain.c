@@ -1025,6 +1025,8 @@ onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
     CommonGlobals* cGlobals = globalsForGameRef( cag, gr, XP_FALSE );
     if ( !!cGlobals ) {
         onGameChanged( (GtkGameGlobals*)cGlobals, gces );
+    } else {
+        XP_LOGFF( "unable to find for " GR_FMT, gr );
     }
 }
 
