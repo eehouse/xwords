@@ -732,11 +732,8 @@ static void
 tile_values_impl( GtkGameGlobals* globals, bool full )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
-    XWStreamCtxt* stream = 
-        strm_make( MPPARM(cGlobals->params->mpool)
-                   CHANNEL_NONE );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE, stream, 5, full );
+    XWStreamCtxt* stream = gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE, 5, full );
     strm_putU8( stream, '\n' );
     catAndClose( stream );
 } /* tile_values */
@@ -1861,19 +1858,16 @@ static void
 gtk_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
-    GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
-    XWStreamCtxt* stream;
-    XP_UCHAR* text;
-
-    stream = dvc_makeStream( cGlobals->params->dutil );
-    
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE, stream );
-    text = strFromStream( stream );
-    strm_destroy( stream );
+    XWStreamCtxt* stream = gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE );
+    if ( !!stream ) {
+        XP_UCHAR* text = strFromStream( stream );
+        strm_destroy( stream );
 
-    (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
-    free( text );
+        GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
+        (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
+        free( text );
+    }
 }
 
 static void

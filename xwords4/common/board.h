@@ -139,8 +139,7 @@ XP_Bool board_commitTurn( BoardCtxt* board, XWEnv xwe, const PhoniesConf* pc,
 void board_pushTimerSave( BoardCtxt* board, XWEnv xwe );
 void board_popTimerSave( BoardCtxt* board, XWEnv xwe );
 
-void board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe,
-                                 XWStreamCtxt* stream );
+XWStreamCtxt* board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe );
 
 #ifdef POINTER_SUPPORT
 XP_Bool board_handlePenDown( BoardCtxt* board, XWEnv xwe, XP_U16 xx,

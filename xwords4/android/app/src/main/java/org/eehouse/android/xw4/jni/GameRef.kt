@@ -500,7 +500,6 @@ class GameRef(val gr: Long): Parcelable, Serializable {
     class GameStateInfo() {
         var visTileCount: Int = 0
         var trayVisState: Int = 0
-        var nPendingMessages: Int = 0
         var canHint: Boolean = false
         var canUndo: Boolean = false
         var canRedo: Boolean = false

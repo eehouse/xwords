@@ -392,14 +392,14 @@ showThumb( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     LaunchParams* params = aGlobals->cag.params;
     GameRef gr = cgl_getSel( aGlobals->gameList );
-    XWStreamCtxt* stream = dvc_makeStream( params->dutil );
-    if ( gr_getThumbData( params->dutil, gr, NULL_XWE, stream ) ) {
+    XWStreamCtxt* stream = gr_getThumbData( params->dutil, gr, NULL_XWE );
+    if ( !!stream ) {
         XP_UCHAR* str = strFromStream( stream );
         ca_informf( aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
                     gr, str );
         free( str );
+        strm_destroy( stream );
     }
-    strm_destroy( stream );
 
     return true;
 }

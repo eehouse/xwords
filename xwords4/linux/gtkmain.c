@@ -332,15 +332,15 @@ getSnapData( LaunchParams* params, GameRef gr )
 {
     GdkPixbuf* result = NULL;
     XW_DUtilCtxt* dutil = params->dutil;
-    XWStreamCtxt* stream = dvc_makeStream( params->dutil );
-    if ( gr_getThumbData( dutil, gr, NULL_XWE, stream ) ) {
+    XWStreamCtxt* stream = gr_getThumbData( dutil, gr, NULL_XWE );
+    if ( !!stream ) {
         GInputStream* istr =
             g_memory_input_stream_new_from_data( strm_getPtr(stream),
                                                  strm_getSize(stream), NULL );
         result = gdk_pixbuf_new_from_stream( istr, NULL, NULL );
         g_object_unref( istr );
+        strm_destroy( stream );
     }
-    strm_destroy( stream );
     return result;
 }
 

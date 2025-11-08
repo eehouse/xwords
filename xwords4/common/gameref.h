@@ -55,7 +55,7 @@ XP_U32 gr_getGameID( GameRef gr );
 void gr_giToStream( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe, XWStreamCtxt* stream );
 
 /* board */
-XP_Bool gr_getThumbData( DUTIL_GR_XWE, XWStreamCtxt* stream);
+XWStreamCtxt* gr_getThumbData( DUTIL_GR_XWE );
 void gr_invalAll( DUTIL_GR_XWE );
 void gr_draw( DUTIL_GR_XWE );
 void gr_figureLayout( DUTIL_GR_XWE,
@@ -145,9 +145,9 @@ XP_Bool gr_handleUndo( DUTIL_GR_XWE, XP_U16 limit );
 void gr_endGame( DUTIL_GR_XWE );
 void gr_writeFinalScores( DUTIL_GR_XWE, XWStreamCtxt* stream );
 void gr_figureOrder( DUTIL_GR_XWE, RematchOrder ro, NewOrder* nop );
-void gr_formatDictCounts( DUTIL_GR_XWE, XWStreamCtxt* stream,
-                          XP_U16 nCols, XP_Bool allFaces );
-void gr_formatRemainingTiles( DUTIL_GR_XWE, XWStreamCtxt* stream );
+XWStreamCtxt* gr_formatDictCounts( DUTIL_GR_XWE, XP_U16 nCols,
+                                   XP_Bool allFaces );
+XWStreamCtxt* gr_formatRemainingTiles( DUTIL_GR_XWE );
 XP_Bool gr_canRematch( DUTIL_GR_XWE, XP_Bool* canOrder );
 XP_U16 gr_getPendingRegs( DUTIL_GR_XWE );
 XP_Bool gr_isFromRematch( DUTIL_GR_XWE );

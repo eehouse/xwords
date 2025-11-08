@@ -818,7 +818,6 @@ struct _JNIState {
 
 static const SetInfo gsi_ints[] = {
     ARR_MEMBER( GameStateInfo, visTileCount ),
-    ARR_MEMBER( GameStateInfo, nPendingMessages ),
     ARR_MEMBER( GameStateInfo, trayVisState ),
 };
 static const SetInfo gsi_bools[] = {
@@ -1489,8 +1488,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1formatDictCounts
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
-    gr_formatDictCounts( DUTIL_GR_ENV, stream, 3, XP_FALSE );
+    XWStreamCtxt* stream = gr_formatDictCounts( DUTIL_GR_ENV, 3, XP_FALSE );
     result = streamToJString( env, stream, XP_TRUE );
 
     DVC_HEADER_END();
@@ -1762,12 +1760,13 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getThumbData
     LOG_FUNC();
     jbyteArray result = NULL;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
+    and_tmp_stream( globalState->dutil );
     XP_LOGFF( "calling gr_getThumbData");
-    if ( gr_getThumbData( DUTIL_GR_ENV, stream ) ) {
+    XWStreamCtxt* stream = gr_getThumbData( DUTIL_GR_ENV );
+    if ( !!stream ) {
         result = streamToBArray( env, stream );
+        strm_destroy( stream );
     }
-    strm_destroy( stream );
     DVC_HEADER_END();
     return result;
 }
@@ -1957,8 +1956,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1formatRemainingTiles
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
-    gr_formatRemainingTiles( DUTIL_GR_ENV, stream );
+    XWStreamCtxt* stream = gr_formatRemainingTiles( DUTIL_GR_ENV );
     result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;

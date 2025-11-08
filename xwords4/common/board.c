@@ -1536,14 +1536,14 @@ board_popTimerSave( BoardCtxt* board, XWEnv xwe )
 /* Figure out if the current player's tiles should be excluded, then call
  * server to format.
  */
-void
-board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe, XWStreamCtxt* stream )
+XWStreamCtxt*
+board_formatRemainingTiles( BoardCtxt* board, XWEnv xwe )
 {
     XP_S16 curPlayer = board->selPlayer;
     if ( board->trayVisState != TRAY_REVEALED ) {
         curPlayer = -1;
     }
-    ctrl_formatRemainingTiles( board->ctrlr, xwe, stream, curPlayer );
+    return ctrl_formatRemainingTiles( board->ctrlr, xwe, curPlayer );
 } /* board_formatRemainingTiles */
 
 static void

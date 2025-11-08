@@ -1068,19 +1068,17 @@ curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)
         globalsForUtil( uc, XP_FALSE );
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
-    XWStreamCtxt* stream;
-    XP_UCHAR* text;
-
-    stream = dvc_makeStream( cGlobals->params->dutil );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE, stream );
+    XWStreamCtxt* stream = gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE );
+    if ( !!stream ) {
+        XP_UCHAR* text = strFromStream( stream );
+        strm_destroy( stream );
 
-    text = strFromStream( stream );
+        CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
+        (void)ca_inform( bGlobals->boardWin, text );
 
-    (void)ca_inform( bGlobals->boardWin, text );
-
-    free( text );
+        free( text );
+    }
 }
 
 static void
@@ -1603,10 +1601,9 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
-    XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE,
-                         stream, 5, XP_FALSE );
+    XWStreamCtxt* stream = gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE,
+                                                5, XP_FALSE );
     const XP_U8* data = strm_getPtr( stream );
     XP_U16 len = strm_getSize( stream );
     XP_UCHAR buf[len + 1];

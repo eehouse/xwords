@@ -5233,10 +5233,11 @@ ctrl_receiveMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
     return accepted;
 } /* ctrl_receiveMessage */
 
-void 
-ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
-                         XP_U16 nCols, XP_Bool allFaces )
+XWStreamCtxt*
+ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U16 nCols,
+                       XP_Bool allFaces )
 {
+    XWStreamCtxt* stream = dvc_makeStream( ctrlr->vol.dutil );
     const DictionaryCtxt* dict;
     Tile tile;
     XP_U16 nChars, nPrinted;
@@ -5289,16 +5290,17 @@ ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
             }
         }
     }
+    return stream;
 } /* ctrl_formatDictCounts */
 
 /* Print the faces of all tiles left in the pool, including those currently in
  * trays !unless! player is >= 0, in which case his tiles get removed from the
  * pool.  The idea is to show him what tiles are left in play.
  */
-void
-ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
-                             XP_S16 player )
+XWStreamCtxt*
+ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe, XP_S16 player )
 {
+    XWStreamCtxt* stream = dvc_makeStream( ctrlr->vol.dutil );
     PoolContext* pool = ctrlr->pool;
     if ( !!pool ) {
         XP_UCHAR buf[128];
@@ -5359,6 +5361,7 @@ ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
 
         strm_catString( stream, cntsBuf );
     }
+    return stream;
 } /* ctrl_formatRemainingTiles */
 
 #ifdef XWFEATURE_BONUSALL

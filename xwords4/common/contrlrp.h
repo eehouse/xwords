@@ -130,10 +130,10 @@ XP_Bool ctrl_initClientConnection( CtrlrCtxt* ctrlr, XWEnv xwe );
 void ctrl_sendChat( CtrlrCtxt* ctrlr, XWEnv xwe,
                       const XP_UCHAR* msg, XP_S16 from );
 
-void ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream,
-                              XP_U16 nCols, XP_Bool allFaces );
-void ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe,
-                                  XWStreamCtxt* stream, XP_S16 player );
+XWStreamCtxt* ctrl_formatDictCounts( CtrlrCtxt* ctrlr, XWEnv xwe,
+                                     XP_U16 nCols, XP_Bool allFaces );
+XWStreamCtxt* ctrl_formatRemainingTiles( CtrlrCtxt* ctrlr, XWEnv xwe,
+                                         XP_S16 player );
 
 void ctrl_writeFinalScores( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream );
 

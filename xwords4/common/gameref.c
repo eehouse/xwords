@@ -1200,24 +1200,23 @@ loadThumbData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     }
 }
 
-XP_Bool
-gr_getThumbData( DUTIL_GR_XWE, XWStreamCtxt* stream )
+XWStreamCtxt*
+gr_getThumbData( DUTIL_GR_XWE )
 {
-    XP_Bool result = XP_FALSE;
+    XWStreamCtxt* result = NULL;
     GR_HEADER();
     // XP_LOGFF( "looking at gd->thumbData; gd: %p", gd );
-    result = !!gd;
-    if ( result ) {
+    if ( !!gd ) {
         if ( !gd->thumbData ) {
             // XP_LOGFF( "no data; calling loadThumbData()");
             loadThumbData( duc, xwe, gd );
         } else {
             // XP_LOGFF( "have data, so NOT calling loadThumbData()");
         }
-        result = !!gd->thumbData;
-        if ( result ) {
+        if ( !!gd->thumbData ) {
             strm_setPos( gd->thumbData, POS_READ, START_OF_STREAM );
-            strm_getFromStream( stream, gd->thumbData, strm_getSize(gd->thumbData) );
+            result = dvc_makeStream( duc );
+            strm_getFromStream( result, gd->thumbData, strm_getSize(gd->thumbData) );
         }
     }
     GR_HEADER_END();
@@ -1723,12 +1722,14 @@ gr_figureOrder( DUTIL_GR_XWE,
     GR_HEADER_END();
 }
 
-void
-gr_formatRemainingTiles( DUTIL_GR_XWE, XWStreamCtxt* stream )
+XWStreamCtxt*
+gr_formatRemainingTiles( DUTIL_GR_XWE )
 {
+    XWStreamCtxt* result = NULL;
     GR_HEADER();
-    board_formatRemainingTiles( gd->board, xwe, stream );
+    result = board_formatRemainingTiles( gd->board, xwe );
     GR_HEADER_END();
+    return result;
 }
 
 void
@@ -1941,13 +1942,14 @@ gr_getFocusOwner( DUTIL_GR_XWE )
 }
 #endif
 
-void
-gr_formatDictCounts( DUTIL_GR_XWE, XWStreamCtxt* stream,
-                     XP_U16 nCols, XP_Bool allFaces )
+XWStreamCtxt*
+gr_formatDictCounts( DUTIL_GR_XWE, XP_U16 nCols, XP_Bool allFaces )
 {
+    XWStreamCtxt* result = NULL;
     GR_HEADER();
-    ctrl_formatDictCounts( gd->ctrlr, xwe, stream, nCols, allFaces );
+    result = ctrl_formatDictCounts( gd->ctrlr, xwe, nCols, allFaces );
     GR_HEADER_END();
+    return result;
 }
 
 XP_Bool
