@@ -28,6 +28,7 @@
 #include "dbgutil.h"
 #include "strutils.h"
 #include "chatp.h"
+#include "device.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef CPLUS
@@ -2604,10 +2605,11 @@ makeTmpModel( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
     return tmpModel;
 } /* makeTmpModel */
 
-void
-model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
+XWStreamCtxt*
+model_writeGameHistory( ModelCtxt* model, XWEnv xwe,
                         CtrlrCtxt* ctrlr, XP_Bool gameOver )
 {
+    XWStreamCtxt* stream = dvc_makeStream( model->vol.dutil );
     MovePrintClosure closure = {
         .stream = stream,
         .dict = model_getDictionary( model ),
@@ -2624,6 +2626,7 @@ model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
            method */
         ctrl_writeFinalScores( ctrlr, xwe, stream );
     }
+    return stream;
 } /* model_writeGameHistory */
 
 typedef struct _FirstWordData {

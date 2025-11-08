@@ -1966,11 +1966,12 @@ JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1writeGameHistory
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jboolean gameOver )
 {
-    jstring result;
+    jstring result = NULL;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
-    gr_writeGameHistory( DUTIL_GR_ENV, stream, gameOver );
-    result = streamToJString( env, stream, XP_TRUE );
+    XWStreamCtxt* stream = gr_writeGameHistory( DUTIL_GR_ENV, gameOver );
+    if ( !!stream ) {
+        result = streamToJString( env, stream, XP_TRUE );
+    }
     DVC_HEADER_END();
     return result;
 }

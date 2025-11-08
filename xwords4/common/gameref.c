@@ -1084,18 +1084,20 @@ gr_checkIncomingStream( DUTIL_GR_XWE, XWStreamCtxt* stream,
 static void
 checkMessageCount(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
-    XP_Bool quashed;
-    XP_U16 count = comms_countPendingPackets( gd->comms, &quashed );
-    if ( quashed ) {
-        XP_LOGFF( "quashed: doing nothing" );
-    } else if ( gd->sum.nPacketsPending != count ) {
-        XP_LOGFF( "got msg count change: %d -> %d", gd->sum.nPacketsPending, count );
-        gd->sum.nPacketsPending = count;
-        saveSummary( duc, xwe, gd );
-        postGameChangeEvent( duc, xwe, gd,
-                             GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
-    } else {
-        XP_LOGFF( "no change: both %d", count );
+    if ( !!gd->comms ) {
+        XP_Bool quashed;
+        XP_U16 count = comms_countPendingPackets( gd->comms, &quashed );
+        if ( quashed ) {
+            XP_LOGFF( "quashed: doing nothing" );
+        } else if ( gd->sum.nPacketsPending != count ) {
+            XP_LOGFF( "got msg count change: %d -> %d", gd->sum.nPacketsPending, count );
+            gd->sum.nPacketsPending = count;
+            saveSummary( duc, xwe, gd );
+            postGameChangeEvent( duc, xwe, gd,
+                                 GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
+        } else {
+            XP_LOGFF( "no change: both %d", count );
+        }
     }
 }
 
@@ -2519,13 +2521,14 @@ gr_commitTrade( DUTIL_GR_XWE, const TrayTileSet* oldTiles,
     return result;
 }
 
-void
-gr_writeGameHistory( DUTIL_GR_XWE, XWStreamCtxt* stream,
-                     XP_Bool gameOver )
+XWStreamCtxt*
+gr_writeGameHistory( DUTIL_GR_XWE, XP_Bool gameOver )
 {
+    XWStreamCtxt* result = NULL;
     GR_HEADER();
-    model_writeGameHistory( gd->model, xwe, stream, gd->ctrlr, gameOver );
+    result = model_writeGameHistory( gd->model, xwe, gd->ctrlr, gameOver );
     GR_HEADER_END();
+    return result;
 }
 
 void

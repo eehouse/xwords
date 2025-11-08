@@ -174,8 +174,7 @@ XP_Bool gr_getPlayersLastScore( DUTIL_GR_XWE, XP_S16 player,
                                 LastMoveInfo* info );
 void gr_writeToTextStream( DUTIL_GR_XWE, XWStreamCtxt* stream );
 const TrayTileSet* gr_getPlayerTiles( DUTIL_GR_XWE, XP_S16 turn );
-void gr_writeGameHistory( DUTIL_GR_XWE, XWStreamCtxt* stream,
-                          XP_Bool gameOver );
+XWStreamCtxt* gr_writeGameHistory( DUTIL_GR_XWE, XP_Bool gameOver );
 
 XP_Bool gr_haveData( DUTIL_GR_XWE );
 XP_U16 gr_getNumTilesInTray( DUTIL_GR_XWE, XP_S16 turn );

@@ -255,9 +255,9 @@ void model_foreachPendingCell( ModelCtxt* model, XWEnv xwe, XP_S16 turn,
                                BoardListener bl, void* data );
 void model_foreachPrevCell( ModelCtxt* model, XWEnv xwe, BoardListener bl, void* data );
 
-void model_writeGameHistory( ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
-                             CtrlrCtxt* ctrlr, /* for player names */
-                             XP_Bool gameOver );
+XWStreamCtxt* model_writeGameHistory( ModelCtxt* model, XWEnv xwe,
+                                      CtrlrCtxt* ctrlr, /* for player names */
+                                      XP_Bool gameOver );
 
 /* for the tile values dialog: total all the tiles in players trays and
    tentatively placed on the board. */

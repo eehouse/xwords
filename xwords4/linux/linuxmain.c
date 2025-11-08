@@ -460,8 +460,7 @@ catGameHistory( LaunchParams* params, GameRef gr )
 {
     XW_DUtilCtxt* dutil = params->dutil;
     XP_Bool gameOver = gr_getGameIsOver( dutil, gr, NULL_XWE );
-    XWStreamCtxt* stream = dvc_makeStream( dutil );
-    gr_writeGameHistory( dutil, gr, NULL_XWE, stream, gameOver );
+    XWStreamCtxt* stream = gr_writeGameHistory( dutil, gr, NULL_XWE, gameOver );
     strm_putU8( stream, '\n' );
     catAndClose( stream );
 } /* catGameHistory */
