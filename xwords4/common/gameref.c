@@ -2108,12 +2108,14 @@ gr_getAddrs( DUTIL_GR_XWE,
 }
 
 #ifdef DEBUG
-void
-gr_getStats( RELCONST DUTIL_GR_XWE, XWStreamCtxt* stream )
+XWStreamCtxt*
+gr_getStats( DUTIL_GR_XWE )
 {
+    XWStreamCtxt* result = NULL;
     GR_HEADER_WITH(COMMS);
-    comms_getStats( gd->comms, stream );
+    result = comms_getStats( gd->comms );
     GR_HEADER_END();
+    return result;
 }
 #endif
 

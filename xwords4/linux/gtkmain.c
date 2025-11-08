@@ -243,9 +243,7 @@ init_games_list( void* closure )
 #ifdef XWFEATURE_DEVICE_STORES
     addTextColumn( list, "Name", GAMENAME_ITEM );
     addTextColumn( list, "GameRef", GAMEREF_ITEM );
-    addTextColumn( list, "Created", CREATED_ITEM );
     addTextColumn( list, "Status", STATUS_ITEM );
-    addTextColumn( list, "Group", GROUPNAME_ITEM );
 #else
     addTextColumn( list, "Row", ROW_ITEM );
     addTextColumn( list, "Name", NAME_ITEM );
@@ -264,9 +262,8 @@ init_games_list( void* closure )
 #endif
     // addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
-    addTextColumn( list, "#moves", NMOVES_ITEM );
     addTextColumn( list, "#packets", NPACKETS_ITEM );
-    addTextColumn( list, "Last move", LASTMOVE_ITEM );
+    addTextColumn( list, "#moves", NMOVES_ITEM );
     addTextColumn( list, "Lang", LANG_ITEM );
     addTextColumn( list, "Channel", CHANNEL_ITEM );
     addTextColumn( list, "Role", ROLE_ITEM );
@@ -274,6 +271,9 @@ init_games_list( void* closure )
     addTextColumn( list, "ConTypes", CONTYPES_ITEM );
 #endif
     addTextColumn( list, "NTotal", NTOTAL_ITEM );
+    addTextColumn( list, "Group", GROUPNAME_ITEM );
+    addTextColumn( list, "Created", CREATED_ITEM );
+    addTextColumn( list, "Last move", LASTMOVE_ITEM );
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS,
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */

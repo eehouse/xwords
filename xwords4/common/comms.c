@@ -3472,9 +3472,10 @@ statsProc( MsgQueueElem* elem, void* closure )
     return FEA_OK;
 }
 
-void
-comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream )
+XWStreamCtxt*
+comms_getStats( RELCONST CommsCtxt* comms )
 {
+    XWStreamCtxt* stream = dvc_makeStream( comms->dutil );
     WITH_MUTEX(&comms->mutex);
     XP_UCHAR buf[100];
 
@@ -3503,6 +3504,7 @@ comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream )
         strm_catString( stream, buf );
     }
     END_WITH_MUTEX();
+    return stream;
 } /* comms_getStats */
 
 void

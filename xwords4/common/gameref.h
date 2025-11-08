@@ -222,7 +222,7 @@ void gr_parsePendingPackets( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                              XWStreamCtxt* stream );
 
 # ifdef DEBUG
-void gr_getStats( RELCONST DUTIL_GR_XWE, XWStreamCtxt* stream );
+XWStreamCtxt* gr_getStats( DUTIL_GR_XWE );
 # endif
 
 

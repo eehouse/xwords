@@ -920,8 +920,7 @@ handle_commstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     GameRef gr = cGlobals->gr;
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     if ( gr_haveComms(dutil, gr, NULL_XWE) ) {
-        XWStreamCtxt* stream = dvc_makeStream( cGlobals->params->dutil);
-        gr_getStats( dutil, gr, NULL_XWE, stream );
+        XWStreamCtxt* stream = gr_getStats( dutil, gr, NULL_XWE );
         catAndClose( stream );
     }
 } /* handle_commstats */

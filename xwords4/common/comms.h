@@ -194,7 +194,7 @@ XP_Bool types_iter( ConnTypeSetBits conTypes, CommsConnType* typp, XP_U32* state
 const char* ConnType2Str( CommsConnType typ );
 
 # ifdef DEBUG
-void comms_getStats( RELCONST CommsCtxt* comms, XWStreamCtxt* stream );
+XWStreamCtxt* comms_getStats( RELCONST CommsCtxt* comms );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
 

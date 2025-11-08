@@ -1794,8 +1794,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getStats
 {
     jstring result;
     DVC_HEADER(jniGlobalPtr);
-    XWStreamCtxt* stream = and_tmp_stream( globalState->dutil );
-    gr_getStats( DUTIL_GR_ENV, stream );
+    XWStreamCtxt* stream = gr_getStats( DUTIL_GR_ENV );
     result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
     return result;

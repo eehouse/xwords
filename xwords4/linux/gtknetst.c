@@ -21,7 +21,8 @@
 
 #include "gtknetst.h"
 #include "gtkqrwrp.h"
-#include "knownplyr.h" 
+#include "knownplyr.h"
+#include "linuxmain.h"
 
 typedef struct _NetStateState {
     XW_DUtilCtxt* dutil;
@@ -46,7 +47,16 @@ makeForAddr( NetStateState* nss, int index )
     GtkWidget* label = gtk_label_new(name);
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-    XWStreamCtxt* stream = gr_getPendingPacketsFor( nss->dutil, nss->gr,
+    XWStreamCtxt* stream = gr_getStats( nss->dutil, nss->gr, NULL_XWE );
+    if ( !!stream ) {
+        XP_UCHAR* str = strFromStream( stream );
+        GtkWidget* stats = gtk_label_new(str);
+        gtk_box_pack_start(GTK_BOX(vbox), stats, FALSE, FALSE, 0);
+        free( str );
+        strm_destroy( stream );
+    }
+
+    stream = gr_getPendingPacketsFor( nss->dutil, nss->gr,
                                                     NULL_XWE, addr, NULL, NULL );
     if ( !!stream ) {
         const XP_UCHAR* ptr = (XP_UCHAR*)strm_getPtr( stream );
