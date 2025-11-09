@@ -28,6 +28,7 @@
 #include "pool.h"
 #include "enginep.h"
 #include "device.h"
+#include "gamerefp.h"
 #include "strutils.h"
 #include "dbgutil.h"
 #include "knownplyr.h"
@@ -1141,6 +1142,7 @@ receiveChat( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* incoming,
     model_chatReceived( ctrlr->vol.model, xwe, msg, from, timestamp );
     if ( !util_showChat( *ctrlr->vol.utilp, xwe, msg, from, timestamp ) ) {
         *needsChatNotifyP = XP_TRUE;
+        gr_postEvents( ctrlr->vol.dutil, xwe, ctrlr->vol.gr, GCE_CHAT_ARRIVED );
     }
     XP_FREE( ctrlr->mpool, msg );
     return XP_TRUE;
@@ -4913,6 +4915,7 @@ setTurn( CtrlrCtxt* ctrlr, XWEnv xwe, XP_S16 turn )
         ctrlr->nv.currentTurn = turn;
         ctrlr->nv.lastMoveTime = dutil_getCurSeconds( ctrlr->vol.dutil, xwe );
         callTurnChangeListener( ctrlr, xwe );
+        gr_postEvents( ctrlr->vol.dutil, xwe, ctrlr->vol.gr, GCE_TURN_CHANGED );
     }
 }
 

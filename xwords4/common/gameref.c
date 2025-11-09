@@ -93,8 +93,8 @@ static void saveSummary( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
 static void sumToStream( XWStreamCtxt* stream, const GameSummary* sum,
                          XP_U16 nPlayers );
 static XP_Bool gotSumFromStream( GameSummary* sum, XWStreamCtxt* stream );
-static void postGameChangeEvent( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
-                                 GameChangeEvent evt );
+static void postGameChangeEvents( XW_DUtilCtxt* duc, XWEnv xwe,
+                                  GameData* gd, GameChangeEvents gces );
 static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
 
 #define PROC_PUSH(GD) {                                                 \
@@ -1041,7 +1041,7 @@ setGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
         gmgr_saveGI( duc, xwe, gd->gr );
 
         gmgr_addToGroup( duc, xwe, gd->gr, grp );
-        postGameChangeEvent( duc, xwe, gd, GCE_CONFIG_CHANGED );
+        postGameChangeEvents( duc, xwe, gd, GCE_CONFIG_CHANGED );
     }
 }
 
@@ -1093,8 +1093,8 @@ checkMessageCount(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
             XP_LOGFF( "got msg count change: %d -> %d", gd->sum.nPacketsPending, count );
             gd->sum.nPacketsPending = count;
             saveSummary( duc, xwe, gd );
-            postGameChangeEvent( duc, xwe, gd,
-                                 GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
+            postGameChangeEvents( duc, xwe, gd,
+                                  GCE_MSGCOUNT_CHANGED|GCE_SUMMARY_CHANGED );
         } else {
             XP_LOGFF( "no change: both %d", count );
         }
@@ -1123,7 +1123,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
             result = ctrl_receiveMessage( gd->ctrlr, xwe, stream,
                                           &needsChatNotify );
             if ( needsChatNotify ) {
-                postGameChangeEvent( duc, xwe, gd, GCE_CHAT_ARRIVED );
+                postGameChangeEvents( duc, xwe, gd, GCE_CHAT_ARRIVED );
                 if ( !gd->sum.hasChat ) {
                     GameSummary newSum = gd->sum;
                     newSum.hasChat = XP_TRUE;
@@ -1593,7 +1593,7 @@ gr_replaceDicts( DUTIL_GR_XWE, const XP_UCHAR* oldName, const XP_UCHAR* newName 
     }
 
     if ( changed ) {
-        postGameChangeEvent( duc, xwe, gd, GCE_CONFIG_CHANGED );
+        postGameChangeEvents( duc, xwe, gd, GCE_CONFIG_CHANGED );
     }
 
     GR_HEADER_END();
@@ -1678,7 +1678,7 @@ gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn,
     if ( markShown && gd->sum.hasChat ) {
         gd->sum.hasChat = XP_FALSE;
         saveSummary( duc, xwe, gd );
-        postGameChangeEvent( duc, xwe, gd, GCE_SUMMARY_CHANGED );
+        postGameChangeEvents( duc, xwe, gd, GCE_SUMMARY_CHANGED );
     }
     GR_HEADER_END();
 }
@@ -2206,7 +2206,7 @@ gr_setCollapsed( DUTIL_GR_XWE, XP_Bool collapsed )
     if ( gd->sum.collapsed != collapsed ) {
         gd->sum.collapsed = collapsed;
         saveSummary( duc, xwe, gd );
-        postGameChangeEvent( duc, xwe, gd, GCE_SUMMARY_CHANGED );
+        postGameChangeEvents( duc, xwe, gd, GCE_SUMMARY_CHANGED );
     }
     GR_HEADER_END();
 }
@@ -2585,7 +2585,7 @@ dummyDestroy( XW_UtilCtxt* uc, XWEnv xwe )
 
 /*     XW_DUtilCtxt* duc = util_getDevUtilCtxt( uc ); */
 /*     DummyUtilCtxt* dummy = (DummyUtilCtxt*)uc; */
-/*     postGameChangeEvent( duc, xwe, dummy->gd, GCE_MOVE_MADE ); */
+/*     postGameChangeEvents( duc, xwe, dummy->gd, GCE_MOVE_MADE ); */
 /* } */
 
 /* static void */
@@ -2638,25 +2638,27 @@ sendGameEventProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
 }
 
 static void
-postGameChangeEvent( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
-                     GameChangeEvent evt )
+postGameChangeEvents( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
+                      GameChangeEvents gces )
 {
-    GameChangeEvtData* gcedp = gd->gcedp;
-    if ( !gcedp ) {
-        gcedp = XP_CALLOC( duc->mpool, sizeof(*gcedp) );
-        gcedp->gd = gd;
-        gd->gcedp = gcedp;
-        tmr_set( duc, xwe, 250, sendGameEventProc, gcedp );
+    if ( gces ) {
+        GameChangeEvtData* gcedp = gd->gcedp;
+        if ( !gcedp ) {
+            gcedp = XP_CALLOC( duc->mpool, sizeof(*gcedp) );
+            gcedp->gd = gd;
+            gd->gcedp = gcedp;
+            tmr_set( duc, xwe, 250, sendGameEventProc, gcedp );
+        }
+        XP_ASSERT( gcedp->gd == gd );
+        gcedp->gces |= gces;
     }
-    XP_ASSERT( gcedp->gd == gd );
-    gcedp->gces |= evt;
 }
 
 static void
 thumbChanged( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     destroyStreamIf( &gd->thumbData );
-    postGameChangeEvent( duc, xwe, gd, GCE_BOARD_CHANGED );
+    postGameChangeEvents( duc, xwe, gd, GCE_BOARD_CHANGED );
 }
 
 /* Private functions */
@@ -2678,6 +2680,14 @@ gr_setGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )
 {
     GameData* gd = gmgr_getForRef(duc, xwe, gr, NULL);
     gd->grp = grp;
+}
+
+void
+gr_postEvents( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+               GameChangeEvents gces )
+{
+    GameData* gd = gmgr_getForRef(duc, xwe, gr, NULL);
+    postGameChangeEvents( duc, xwe, gd, gces );
 }
 
 void

@@ -42,31 +42,6 @@ typedef struct _Md5SumBuf {
 
 #define KEY_WILDCARD "*"
 
-/* Keep these in sync with consts in DUtilCtxt.kt */
-typedef enum {
-    GCE_PLAYER_JOINED = 0x01,
-    GCE_CONFIG_CHANGED = 0x02,
-    GCE_SUMMARY_CHANGED = 0x04,
-    GCE_TURN_CHANGED = 0x08,
-    GCE_BOARD_CHANGED = 0x10,
-    GCE_CHAT_ARRIVED = 0x20,
-    GCE_MSGCOUNT_CHANGED = 0x40,
-} GameChangeEvent;
-typedef XP_U32 GameChangeEvents; /* bit vector of above */
-
-typedef enum {
-    GRCE_ADDED = 0x01,
-    GRCE_DELETED = 0x02,
-    GRCE_MOVED = 0x04,
-    GRCE_RENAMED = 0x08,
-    GRCE_COLLAPSED = 0x10,
-    GRCE_EXPANDED = 0x20,
-    GRCE_GAMES_REORDERED = 0x40,
-    GRCE_GAME_ADDED = 0x80,
-    GRCE_GAME_REMOVED = 0x100,
-} GroupChangeEvent;
-typedef XP_U32 GroupChangeEvents; /* bit vector of above */
-
 typedef XP_U32 TimerKey;
 typedef struct _DUtilVtable {
     /* 0 */

@@ -43,6 +43,7 @@ void gr_onMessageReceived( DUTIL_GR_XWE,
                            XP_U16 msgLen, const MsgCountState* mcs );
 void gr_clearThumb( GameData* gd );
 void gr_setGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp );
+void gr_postEvents( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GameChangeEvents gces );
 
 
 # ifdef MEM_DEBUG

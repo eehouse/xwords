@@ -2215,9 +2215,7 @@ class GamesListDelegate(delegator: Delegator) :
     override fun onGameChanged(gr: GameRef, flags: GameChangeEvents) {
         Log.d(TAG, "onGameChanged($gr, $flags)")
 
-        if (flags.contains(GameChangeEvent.GCE_MSGCOUNT_CHANGED)) {
-            BoardDelegate.getIfOpen(gr)?.countChanged()
-        }
+        BoardDelegate.getIfOpen(gr)?.onGameChanged(flags)
 
         findViewFor(gr)?.let { view ->
             var reloadNeeded = false

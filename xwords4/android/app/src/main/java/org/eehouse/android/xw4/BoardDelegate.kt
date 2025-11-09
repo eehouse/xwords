@@ -78,6 +78,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
 import org.eehouse.android.xw4.jni.DUtilCtxt
+import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvent
+import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvents
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
@@ -1460,12 +1462,31 @@ class BoardDelegate(delegator: Delegator) :
          }
      }
 
-     fun countChanged() {
-         launch {
-             val count = mGR!!.countPendingPackets()
-             Log.d(TAG, "countChanged($count)")
-             ConnStatusHandler.updateMoveCount(mActivity, count)
-             mGameOverAlert?.pendingCountChanged(count)
+     fun onGameChanged(flags: GameChangeEvents) {
+         Log.d(TAG, "onGameChanged($flags)")
+         mGR?.let { gr ->
+             launch {
+                 gr.getSummary()?.let { summary ->
+                     mSummary = summary
+                     if (flags.contains(GameChangeEvent.GCE_MSGCOUNT_CHANGED)) {
+                         val count = summary.nPacketsPending
+                         ConnStatusHandler.updateMoveCount(mActivity, count)
+                         mGameOverAlert?.pendingCountChanged(count)
+                     }
+
+                     if (flags.contains(GameChangeEvent.GCE_TURN_CHANGED)
+                             && 0 <= summary.turn ) {
+                         post {
+                             makeNotAgainBuilder(
+                                 R.string.key_notagain_turnchanged,
+                                 R.string.not_again_turnchanged
+                             )
+                                 .show()
+                         }
+                         showInviteAlertIf()
+                     }
+                 }
+             }
          }
      }
 
