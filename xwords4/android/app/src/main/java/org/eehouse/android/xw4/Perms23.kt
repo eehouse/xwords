@@ -359,7 +359,6 @@ object Perms23 {
         //
         // PENDING: I suspect this'll crash if I ask for a banned and
         // non-banned at the same time (and don't have either)
-        @JvmOverloads
         fun asyncQuery(activity: Activity, cbck: PermCbck? = null) {
             Log.d(TAG, "asyncQuery(%s)", m_perms)
             var haveAll = true

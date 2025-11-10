@@ -33,6 +33,7 @@ import kotlin.collections.HashMap
 
 import java.util.UUID
 
+import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType.COMMS_CONN_BT
 import org.eehouse.android.xw4.jni.Device
 
@@ -64,7 +65,8 @@ object BleNetwork {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
         // This will fail when e.g. in airplane mode
-        if (mBluetoothAdapter.isMultipleAdvertisementSupported) {
+        if (mBluetoothAdapter.isMultipleAdvertisementSupported
+                && Perms23.havePermissions(context, Perm.BLUETOOTH_CONNECT) ) {
             // Setup GATT server (Peripheral role)
             val mgr = context.getSystemService(Context. BLUETOOTH_SERVICE) as BluetoothManager
             mGattServer = mgr.openGattServer(context, gattServerCallback)
