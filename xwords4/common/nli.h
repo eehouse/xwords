@@ -41,10 +41,10 @@ XP_Bool nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream );
 void nli_saveToStream( const NetLaunchInfo* nli, XWStreamCtxt* stream );
 
 /* Populate a CurGameInfo from a NetLaunchInfo */
-void nliToGI( XW_DUtilCtxt* dutil, XWEnv xwe,
-              const NetLaunchInfo* nli, CurGameInfo* gi );
+CurGameInfo nli_makeGI( XW_DUtilCtxt* dutil, XWEnv xwe,
+                        const NetLaunchInfo* nli );
 /* Populate a CommsAddrRec */
-void nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr );
+CommsAddrRec nli_makeAddrRec( const NetLaunchInfo* nli );
 
 void nli_setDevID( NetLaunchInfo* nli, XP_U32 devID );
 void nli_setInviteID( NetLaunchInfo* nli, const XP_UCHAR* inviteID );

@@ -81,18 +81,18 @@ nli_init( NetLaunchInfo* nlip, const CurGameInfo* gi, const CommsAddrRec* addr,
     *nlip = nli;
 }
 
-void
-nliToGI( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
-         CurGameInfo* gi )
+CurGameInfo
+nli_makeGI( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli )
 {
-    gi_setNPlayers( dutil, xwe, gi, nli->nPlayersT, nli->nPlayersH );
-    gi->gameID = nli->gameID;
-    XP_STRNCPY( &gi->isoCodeStr[0], nli->isoCodeStr, VSIZE(gi->isoCodeStr)-1 );
+    CurGameInfo gi = {};
+    gi_setNPlayers( dutil, xwe, &gi, nli->nPlayersT, nli->nPlayersH );
+    gi.gameID = nli->gameID;
+    XP_STRNCPY( &gi.isoCodeStr[0], nli->isoCodeStr, VSIZE(gi.isoCodeStr)-1 );
 
     XP_U16 nLocals = 0;
     XP_Bool remotesAreRobots = nli->remotesAreRobots;
-    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        LocalPlayer* lp = &gi->players[ii];
+    for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
+        LocalPlayer* lp = &gi.players[ii];
         if ( lp->isLocal ) {
             if ( nli->remotesAreRobots ) {
                 lp->robotIQ = 1;
@@ -105,17 +105,18 @@ nliToGI( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
 
     /* These defaults can be overwritten when host starts game after all
        register */
-    gi->boardSize = 15;
-    gi->traySize = gi->bingoMin = 7;
+    gi.boardSize = 15;
+    gi.traySize = gi.bingoMin = 7;
 
-    XP_STRNCPY( gi->isoCodeStr, nli->isoCodeStr, VSIZE(gi->isoCodeStr) );
-    gi->forceChannel = nli->forceChannel;
-    gi->inDuplicateMode = nli->inDuplicateMode;
-    gi->deviceRole = ROLE_ISGUEST; /* recipient of invitation is client */
-    str2ChrArray( gi->dictName, nli->dict );
-    str2ChrArray( gi->gameName, nli->gameName );
+    XP_STRNCPY( gi.isoCodeStr, nli->isoCodeStr, VSIZE(gi.isoCodeStr) );
+    gi.forceChannel = nli->forceChannel;
+    gi.inDuplicateMode = nli->inDuplicateMode;
+    gi.deviceRole = ROLE_ISGUEST; /* recipient of invitation is client */
+    str2ChrArray( gi.dictName, nli->dict );
+    str2ChrArray( gi.gameName, nli->gameName );
 
-    gi->conTypes = nli->_conTypes;
+    gi.conTypes = nli->_conTypes;
+    return gi;
 }
 
 static XP_U32 
@@ -284,35 +285,35 @@ nli_makeFromStream( NetLaunchInfo* nli, XWStreamCtxt* stream )
     return success;
 }
 
-void
-nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
+CommsAddrRec
+nli_makeAddrRec( const NetLaunchInfo* nli )
 {
-    XP_MEMSET( addr, 0, sizeof(*addr) );
+    CommsAddrRec addr = {};
     CommsConnType type;
     for ( XP_U32 state = 0; types_iter( nli->_conTypes, &type, &state ); ) {
-        addr_addType( addr, type );
+        addr_addType( &addr, type );
         switch( type ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
-            XP_STRCAT( addr->u.ip_relay.invite, nli->room );
+            XP_STRCAT( addr.u.ip_relay.invite, nli->room );
             /* String relayName = XWPrefs.getDefaultRelayHost( context ); */
             /* int relayPort = XWPrefs.getDefaultRelayPort( context ); */
             /* result.setRelayParams( relayName, relayPort, room ); */
             break;
 #endif
         case COMMS_CONN_BT:
-            XP_STRCAT( addr->u.bt.btAddr.chars, nli->btAddress );
-            XP_STRCAT( addr->u.bt.hostName, nli->btName );
+            XP_STRCAT( addr.u.bt.btAddr.chars, nli->btAddress );
+            XP_STRCAT( addr.u.bt.hostName, nli->btName );
             break;
         case COMMS_CONN_SMS:
-            XP_STRCAT( addr->u.sms.phone, nli->phone );
-            addr->u.sms.port = 1; /* BAD, but 0 is worse */
+            XP_STRCAT( addr.u.sms.phone, nli->phone );
+            addr.u.sms.port = 1; /* BAD, but 0 is worse */
             break;
         case COMMS_CONN_MQTT: {
 #ifdef DEBUG
             XP_Bool success =
 #endif
-                strToMQTTCDevID( nli->mqttDevID, &addr->u.mqtt.devID );
+                strToMQTTCDevID( nli->mqttDevID, &addr.u.mqtt.devID );
             XP_ASSERT( success );
         }
             break;
@@ -323,6 +324,7 @@ nli_makeAddrRec( const NetLaunchInfo* nli, CommsAddrRec* addr )
             break;
         }
     }
+    return addr;
 }
 
 #ifdef XWFEATURE_NLI_FROM_ARGV

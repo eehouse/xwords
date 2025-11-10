@@ -1314,14 +1314,12 @@ gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
 {
     GameRef gr = 0;
     if ( !gmgr_haveGame( duc, xwe, nli->gameID, ROLE_ISGUEST ) ) {
-        CurGameInfo gi = {};
-        nliToGI( duc, xwe, nli, &gi );
+        CurGameInfo gi = nli_makeGI( duc, xwe, nli );
         if ( !gi.created ) {
             gi.created = dutil_getCurSeconds( duc, xwe );
         }
 
-        CommsAddrRec hostAddr = {};
-        nli_makeAddrRec( nli, &hostAddr );
+        CommsAddrRec hostAddr = nli_makeAddrRec( nli );
 
         checkDefault( duc, &grp );
         gr = gr_makeForGI( duc, xwe, &grp, &gi, &hostAddr );
