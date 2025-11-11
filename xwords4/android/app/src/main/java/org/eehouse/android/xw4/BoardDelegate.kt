@@ -1831,9 +1831,6 @@ class BoardDelegate(delegator: Delegator) :
          }
          if (success) {
              ConnStatusHandler.setHandler(this)
-             mSummary?.let {
-                 ConnStatusHandler.updateMoveCount(mActivity, it.nPacketsPending)
-             }
          } else {
              finish()
          }
@@ -1945,7 +1942,10 @@ class BoardDelegate(delegator: Delegator) :
             val gr = mGR!!
             mGi = gr.getGI()!!
             val gi = mGi!!
-            mSummary = gr.getSummary()
+            gr.getSummary()?.let {
+                mSummary = it
+                ConnStatusHandler.updateMoveCount(mActivity, it.nPacketsPending)
+            }
             Wrapper.setGameID(mNFCWrapper, gi.gameID)
             getInvite()?.let {
                 NFCUtils.addInvitationFor(it, gi.gameID)
