@@ -47,6 +47,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -3021,7 +3024,8 @@ class GamesListDelegate(delegator: Delegator) :
                     val selected = m_mySIS!!.selGames.contains(mGR)
                     Log.d(TAG, "calling load...")
                     mGameListElem.load(mGR!!, this@GamesListDelegate,
-                                       adapter.mFieldId, mHandler, selected)
+                                       adapter.mFieldId, mHandler, selected,
+                                       (mActivity as LifecycleOwner).lifecycleScope)
                 } else {
                     item.toGroup().let { grp ->
                         mGrp = grp

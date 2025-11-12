@@ -29,8 +29,9 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.doOnAttach
+import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import java.text.DateFormat
@@ -75,6 +76,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     private var mCb: SelectableItem? = null
     private var mFieldID = 0
     private var mSelected = false
+    private var mLifecycleScope: LifecycleCoroutineScope? = null
     private val m_dsdel: DrawSelDelegate
 
     fun getSummary(): GameSummary?
@@ -94,11 +96,13 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     }
 
     fun load(gr: GameRef, cb: SelectableItem, field: Int,
-             handler: Handler, selected: Boolean) {
+             handler: Handler, selected: Boolean,
+             scope: LifecycleCoroutineScope) {
         mGR = gr
         mCb = cb
         mFieldID = field
         mHandler = handler
+        mLifecycleScope = scope
         setSelected(selected)
         forceReload()
     }
@@ -107,7 +111,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         setLoaded(false)
 
         mGR?.let { gr ->
-            launch {
+            mLifecycleScope?.launch {
                 findViewsOnce()
                 mGi = gr.getGI()
                 // Log.d(TAG, "forceReload(): gi: $mGi")
@@ -180,7 +184,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     override fun expandedChanged(nowExpanded: Boolean) {
         // Log.d(TAG, "expandedChanged(nowExpanded: $nowExpanded)")
         mGR!!.setCollapsed(!nowExpanded)
-        launch {
+        mLifecycleScope!!.launch {
             mSummary = mGR!!.getSummary()
             showHide()
         }
@@ -419,9 +423,6 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         m_loaded = false
         m_lastMoveTime = 0
         m_dsdel = DrawSelDelegate(this)
-        this.doOnAttach {
-            forceReload()
-        }
     }
 
     companion object {

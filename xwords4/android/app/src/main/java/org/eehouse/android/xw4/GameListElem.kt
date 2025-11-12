@@ -23,6 +23,7 @@ import android.os.Handler
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import androidx.lifecycle.LifecycleCoroutineScope
 
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameRef
@@ -47,7 +48,8 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
     }
 
     fun load(gr: GameRef, delegate: GamesListDelegate,
-             field: Int, handler: Handler, selected: Boolean) {
+             field: Int, handler: Handler, selected: Boolean,
+             scope: LifecycleCoroutineScope) {
         isGame = true
         findViewById<View>(R.id.group).visibility = GONE
         mGLG = null
@@ -55,7 +57,7 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
         findViewById<GameListItem>(R.id.game)!!.let {
             mGLI = it
             it.visibility = VISIBLE
-            it.load(gr, delegate, field, handler, selected)
+            it.load(gr, delegate, field, handler, selected, scope)
         }
     }
 
