@@ -1139,4 +1139,6 @@
     <string name="ksconfig_running_fmt">移动检查程序已经连续运行 %1$d 小时 %2$02d 分钟了。它将在 %3$d 小时 %4$02d 分钟内停止，除非在此之前走了一步或接收到移动指令。</string>
     <string name="movechecker_name">移动检查程序</string>
     <string name="ka_menuwhen_running">运行时</string>
+    <string name="pref_item_allowMulti_title">允许重复游戏ID</string>
+    <string name="pref_item_allowMulti_summary">通常这意味着接受来自同一设备的邀请</string>
 </resources>
