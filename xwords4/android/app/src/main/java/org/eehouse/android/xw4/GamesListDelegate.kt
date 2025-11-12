@@ -3019,17 +3019,18 @@ class GamesListDelegate(delegator: Delegator) :
             if (0 <= mPosition) {
                 val adapter = mAdapter!!
                 val item = adapter.mPositions!![mPosition]
+                val scope = (mActivity as LifecycleOwner).lifecycleScope
                 if ( item.isGame() ) {
                     mGR = item.toGame()
                     val selected = m_mySIS!!.selGames.contains(mGR)
                     Log.d(TAG, "calling load...")
                     mGameListElem.load(mGR!!, this@GamesListDelegate,
                                        adapter.mFieldId, mHandler, selected,
-                                       (mActivity as LifecycleOwner).lifecycleScope)
+                                       scope)
                 } else {
                     item.toGroup().let { grp ->
                         mGrp = grp
-                        mGameListElem.load(grp, this@GamesListDelegate)
+                        mGameListElem.load(grp, this@GamesListDelegate, scope)
                     }
                 }
             }

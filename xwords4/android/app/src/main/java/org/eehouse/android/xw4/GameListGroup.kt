@@ -26,6 +26,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.doOnAttach
+import androidx.lifecycle.LifecycleCoroutineScope
+import kotlinx.coroutines.launch
 
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
 import org.eehouse.android.xw4.jni.GameMgr
@@ -49,12 +51,7 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
     private var m_dsdel: DrawSelDelegate? = null
     private var mExpandButton: ImageButton? = null
     private var m_check: ImageView? = null
-
-    init {
-        doOnAttach {
-            reload();
-        }
-    }
+    private var mScope: LifecycleCoroutineScope? = null
 
     override fun onFinishInflate() {
         super.onFinishInflate()
@@ -80,15 +77,17 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         }
     }
 
-    fun load(grp: GroupRef, gsl: GroupStateListener ) {
+    fun load(grp: GroupRef, gsl: GroupStateListener,
+             scope: LifecycleCoroutineScope) {
         mGrp = grp
         mGsl = gsl
+        mScope = scope
         reload()
     }
 
     fun reload() {
         mGrp?.let { grp ->
-            launch {
+            mScope!!.launch {
                 mExpanded = !grp.getGroupCollapsed()
                 m_nGames = grp.getGroupGamesCount()
                 mName = grp.getGroupName()

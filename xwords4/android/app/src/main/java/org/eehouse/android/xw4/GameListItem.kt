@@ -76,7 +76,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     private var mCb: SelectableItem? = null
     private var mFieldID = 0
     private var mSelected = false
-    private var mLifecycleScope: LifecycleCoroutineScope? = null
+    private var mScope: LifecycleCoroutineScope? = null
     private val m_dsdel: DrawSelDelegate
 
     fun getSummary(): GameSummary?
@@ -102,7 +102,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         mCb = cb
         mFieldID = field
         mHandler = handler
-        mLifecycleScope = scope
+        mScope = scope
         setSelected(selected)
         forceReload()
     }
@@ -111,7 +111,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         setLoaded(false)
 
         mGR?.let { gr ->
-            mLifecycleScope?.launch {
+            mScope!!.launch {
                 findViewsOnce()
                 mGi = gr.getGI()
                 // Log.d(TAG, "forceReload(): gi: $mGi")
@@ -184,7 +184,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     override fun expandedChanged(nowExpanded: Boolean) {
         // Log.d(TAG, "expandedChanged(nowExpanded: $nowExpanded)")
         mGR!!.setCollapsed(!nowExpanded)
-        mLifecycleScope!!.launch {
+        mScope!!.launch {
             mSummary = mGR!!.getSummary()
             showHide()
         }
