@@ -113,24 +113,25 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
         if (isChecked) {
             val builder: DlgDelegate.Builder
             val buttonText = bv.getText()
-            builder = if (bv === mArchiveBox) {
-                mDeleteBox!!.setChecked(false)
-                val archiveName = LocUtils
-                    .getString(requireContext(), R.string.group_name_archive)
-                mDlgDlgt!!.makeNotAgainBuilder(
-                    R.string.key_na_archivecheck,
-                    R.string.not_again_archivecheck_fmt,
-                    buttonText, archiveName
-                )
-            } else {
-                Assert.assertTrueNR(bv === mDeleteBox)
-                mArchiveBox!!.setChecked(false)
-                mDlgDlgt!!.makeNotAgainBuilder(
-                    R.string.key_na_deletecheck,
-                    R.string.not_again_deletecheck_fmt,
-                    buttonText
-                )
-            }
+            builder =
+                if (bv === mArchiveBox) {
+                    mDeleteBox!!.setChecked(false)
+                    val archiveName = LocUtils
+                        .getString(requireContext(), R.string.group_name_archive)
+                    mDlgDlgt!!.makeNotAgainBuilder(
+                        R.string.key_na_archivecheck,
+                        R.string.not_again_archivecheck_fmt,
+                        buttonText, archiveName
+                    )
+                } else {
+                    Assert.assertTrueNR(bv === mDeleteBox)
+                    mArchiveBox!!.setChecked(false)
+                    mDlgDlgt!!.makeNotAgainBuilder(
+                        R.string.key_na_deletecheck,
+                        R.string.not_again_deletecheck_fmt,
+                        buttonText
+                    )
+                }
             builder.show()
         }
     }
@@ -150,20 +151,22 @@ class GameOverAlert : XWDialogFragment(), DialogInterface.OnClickListener,
     }
 
     private fun updateForPending() {
-        mArchiveBox!!.visibility =
-            if (mHasPending || mInArchive) View.GONE else View.VISIBLE
-        Utils.enableAlertButton(mDialog!!, AlertDialog.BUTTON_NEGATIVE, !mHasPending)
-        mDeleteBox!!.visibility = if (mHasPending) View.GONE else View.VISIBLE
+        mArchiveBox?.let {      // all are still null, or none is
+            it.visibility =
+                if (mHasPending || mInArchive) View.GONE else View.VISIBLE
+            Utils.enableAlertButton(mDialog!!, AlertDialog.BUTTON_NEGATIVE, !mHasPending)
+            mDeleteBox!!.visibility = if (mHasPending) View.GONE else View.VISIBLE
+        }
     }
 
     private fun initView() {
-        (mView!!.findViewById<View>(R.id.msg) as TextView).text = mMsg
-        mArchiveBox = mView!!.findViewById<View>(R.id.archive_check) as CheckBox
+        mView!!.findViewById<TextView>(R.id.msg).text = mMsg
+        mArchiveBox = mView!!.findViewById<CheckBox>(R.id.archive_check)
         mArchiveBox!!.setOnCheckedChangeListener(this)
         if (mInArchive) {
             mArchiveBox!!.visibility = View.GONE
         }
-        mDeleteBox = mView!!.findViewById<View>(R.id.delete_check) as CheckBox
+        mDeleteBox = mView!!.findViewById<CheckBox>(R.id.delete_check)
         mDeleteBox!!.setOnCheckedChangeListener(this)
     }
 

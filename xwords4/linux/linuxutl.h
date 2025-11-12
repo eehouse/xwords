@@ -33,9 +33,8 @@ void linux_debugf(const char*, ...)
 #endif
 
 
-void linux_util_vt_init( MPFORMAL XW_UtilCtxt* util );
-void linux_util_vt_destroy( XW_UtilCtxt* util );
-
+XW_UtilCtxt* linux_util_make( XW_DUtilCtxt* dutil, const CurGameInfo* gi,
+                              GameRef gr );
 const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 
 void formatConfirmTrade( CommonGlobals* cGlobals, const XP_UCHAR** tiles,

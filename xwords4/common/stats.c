@@ -157,7 +157,7 @@ storeCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
 
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     stream_putU8( stream, VERSION_1 );
     stream_putU32( stream, ss->startTime );
 
@@ -184,7 +184,7 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
         = XP_CALLOC( dutil->mpool, sizeof(*statsVals) * STAT_NSTATS );
     ss->statsVals = statsVals;
 
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     dutil_loadStream( dutil, xwe, STATS_KEY, stream );
 
     XP_U8 version;
@@ -207,12 +207,11 @@ loadCountsLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
     }
 }
 
-#ifdef DUTIL_TIMERS
 static void
-onStoreTimer( void* closure, XWEnv xwe, XP_Bool XP_UNUSED_DBG(fired) )
+onStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
+              TimerKey XP_UNUSED(key), XP_Bool XP_UNUSED_DBG(fired) )
 {
     XP_LOGFF( "(fired: %s)", boolToStr(fired) );
-    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
 
@@ -222,12 +221,10 @@ onStoreTimer( void* closure, XWEnv xwe, XP_Bool XP_UNUSED_DBG(fired) )
     END_WITH_MUTEX();
     LOG_RETURN_VOID();
 }
-#endif
 
 static void
 setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-#ifdef DUTIL_TIMERS
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
     if ( !ss->timerSet ) {
@@ -236,13 +233,9 @@ setStoreTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe )
 #ifdef DEBUG
         TimerKey key =
 #endif
-            tmr_set( dutil, xwe, inWhenMS, onStoreTimer, dutil );
+            tmr_set( dutil, xwe, inWhenMS, onStoreTimer, NULL );
         XP_LOGFF( "tmr_set() => %d", key );
     } else {
         // XP_LOGFF( "timer already set" );
     }
-#else
-    XP_USE(dutil);
-    XP_USE(xwe);
-#endif
 }

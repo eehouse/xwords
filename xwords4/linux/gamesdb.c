@@ -23,6 +23,7 @@
 #include "linuxutl.h"
 #include "main.h"
 #include "dbgutil.h"
+#include "gameref.h"
 
 #define SNAP_WIDTH 150
 #define SNAP_HEIGHT 150
@@ -207,299 +208,302 @@ createTables( sqlite3* pDb )
 void
 gdb_close( sqlite3* pDb )
 {
+    XP_LOGFF("(pdb=%p)", pDb);
     sqlite3_close( pDb );
     LOG_RETURN_VOID();
 }
 
-static sqlite3_int64
-writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* pDb,
-                     sqlite3_int64 curRow, const char* column )
-{
-    XP_LOGFF( "(col=%s)", column );
-    int result;
-    char query[256];
+/* static sqlite3_int64 */
+/* writeBlobColumnData( const XP_U8* data, gsize len, XP_U16 strVersion, sqlite3* pDb, */
+/*                      sqlite3_int64 curRow, const char* column ) */
+/* { */
+/*     XP_LOGFF( "(col=%s)", column ); */
+/*     int result; */
+/*     char query[256]; */
 
-    sqlite3_stmt* stmt = NULL;
-    XP_Bool newGame = -1 == curRow;
-    if ( newGame ) {         /* new row; need to insert blob first */
-        const char* fmt = "INSERT INTO games (%s) VALUES (?)";
-        snprintf( query, sizeof(query), fmt, column );
-    } else {
-        const char* fmt = "UPDATE games SET %s=? where rowid=%lld";
-        snprintf( query, sizeof(query), fmt, column, curRow );
-    }
-    XP_LOGFF( "query: %s", query );
+/*     sqlite3_stmt* stmt = NULL; */
+/*     XP_Bool newGame = -1 == curRow; */
+/*     if ( newGame ) {         /\* new row; need to insert blob first *\/ */
+/*         const char* fmt = "INSERT INTO games (%s) VALUES (?)"; */
+/*         snprintf( query, sizeof(query), fmt, column ); */
+/*     } else { */
+/*         const char* fmt = "UPDATE games SET %s=? where rowid=%lld"; */
+/*         snprintf( query, sizeof(query), fmt, column, curRow ); */
+/*     } */
+/*     XP_LOGFF( "query: %s", query ); */
 
-    result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, sizeof(XP_U16) + len );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_step( stmt );
-    if ( SQLITE_DONE != result ) {
-        XP_LOGFF( "sqlite3_step => %s", sqlite3_errstr( result ) );
-        XP_ASSERT(0);
-    }
-    XP_USE( result );
+/*     result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     result = sqlite3_bind_zeroblob( stmt, 1 /\*col 0 ??*\/, sizeof(XP_U16) + len ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     result = sqlite3_step( stmt ); */
+/*     if ( SQLITE_DONE != result ) { */
+/*         XP_LOGFF( "sqlite3_step => %s", sqlite3_errstr( result ) ); */
+/*         XP_ASSERT(0); */
+/*     } */
+/*     XP_USE( result ); */
 
-    if ( newGame ) {         /* new row; need to insert blob first */
-        curRow = sqlite3_last_insert_rowid( pDb );
-        XP_LOGFF( "new rowid: %lld", curRow );
-    }
+/*     if ( newGame ) {         /\* new row; need to insert blob first *\/ */
+/*         curRow = sqlite3_last_insert_rowid( pDb ); */
+/*         XP_LOGFF( "new rowid: %lld", curRow ); */
+/*     } */
 
-    sqlite3_blob* blob;
-    result = sqlite3_blob_open( pDb, "main", "games", column,
-                                curRow, 1 /*flags: writeable*/, &blob );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    XP_ASSERT( strVersion <= CUR_STREAM_VERS );
-    result = sqlite3_blob_write( blob, &strVersion, sizeof(strVersion), 0/*offset*/ );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_blob_write( blob, data, len, sizeof(strVersion) /* offset */ );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    result = sqlite3_blob_close( blob );
-    assertPrintResult( pDb, result, SQLITE_OK );
+/*     sqlite3_blob* blob; */
+/*     result = sqlite3_blob_open( pDb, "main", "games", column, */
+/*                                 curRow, 1 /\*flags: writeable*\/, &blob ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     XP_ASSERT( strVersion <= CUR_STREAM_VERS ); */
+/*     result = sqlite3_blob_write( blob, &strVersion, sizeof(strVersion), 0/\*offset*\/ ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     result = sqlite3_blob_write( blob, data, len, sizeof(strVersion) /\* offset *\/ ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     result = sqlite3_blob_close( blob ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
 
-    if ( !!stmt ) {
-        sqlite3_finalize( stmt );
-    }
+/*     if ( !!stmt ) { */
+/*         sqlite3_finalize( stmt ); */
+/*     } */
 
-    LOG_RETURNF( "%lld", curRow );
-    return curRow;
-} /* writeBlobColumnData */
+/*     LOG_RETURNF( "%lld", curRow ); */
+/*     return curRow; */
+/* } /\* writeBlobColumnData *\/ */
 
-static sqlite3_int64
-writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
-                       const char* column )
-{
-    XP_U16 strVersion = stream_getVersion( stream );
-    const XP_U8* data = stream_getPtr( stream );
-    gsize len = stream_getSize( stream );
-    return writeBlobColumnData( data, len, strVersion, pDb, curRow, column );
-}
+/* static sqlite3_int64 */
+/* writeBlobColumnStream( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow, */
+/*                        const char* column ) */
+/* { */
+/*     XP_U16 strVersion = stream_getVersion( stream ); */
+/*     const XP_U8* data = stream_getPtr( stream ); */
+/*     gsize len = stream_getSize( stream ); */
+/*     return writeBlobColumnData( data, len, strVersion, pDb, curRow, column ); */
+/* } */
 
-sqlite3_int64
-gdb_writeNewGame( XWStreamCtxt* stream, sqlite3* pDb )
-{
-    sqlite3_int64 newRow = writeBlobColumnStream( stream, pDb, -1, "game" );
-    return newRow;
-}
+/* sqlite3_int64 */
+/* gdb_writeNewGame( XWStreamCtxt* stream, sqlite3* pDb ) */
+/* { */
+/*     sqlite3_int64 newRow = writeBlobColumnStream( stream, pDb, -1, "game" ); */
+/*     return newRow; */
+/* } */
 
-void
-gdb_write( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    sqlite3_int64 selRow = cGlobals->rowid;
-    sqlite3* pDb = cGlobals->params->pDb;
+/* void */
+/* gdb_write( XWStreamCtxt* stream, XWEnv XP_UNUSED(xwe), void* closure ) */
+/* { */
+/*     CommonGlobals* cGlobals = (CommonGlobals*)closure; */
+/*     sqlite3_int64 selRow = cGlobals->rowid; */
+/*     sqlite3* pDb = cGlobals->params->pDb; */
 
-    XP_Bool newGame = -1 == selRow;
-    selRow = writeBlobColumnStream( stream, pDb, selRow, "game" );
+/*     XP_Bool newGame = -1 == selRow; */
+/*     selRow = writeBlobColumnStream( stream, pDb, selRow, "game" ); */
 
-    if ( newGame ) {         /* new row; need to insert blob first */
-        cGlobals->rowid = selRow;
-        XP_LOGFF( "new game for id %X at row %lld", cGlobals->gi->gameID, selRow );
-    } else {
-        assert( selRow == cGlobals->rowid );
-    }
+/*     if ( newGame ) {         /\* new row; need to insert blob first *\/ */
+/*         cGlobals->rowid = selRow; */
+/*         XP_LOGFF( "new game for id %X at row %lld", cGlobals->gi->gameID, selRow ); */
+/*     } else { */
+/*         assert( selRow == cGlobals->rowid ); */
+/*     } */
 
-    (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
-}
+/*     (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame ); */
+/* } */
 
-#ifdef PLATFORM_GTK
-static void
-addSnapshot( CommonGlobals* cGlobals )
-{
-    LOG_FUNC();
+/* #ifdef PLATFORM_GTK */
+/* static void */
+/* addSnapshot( CommonGlobals* cGlobals ) */
+/* { */
+/*     LOG_FUNC(); */
 
-    BoardCtxt* board = cGlobals->game.board;
-    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)board_getDraw( board );
-    if ( !!dctx ) {
-        addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT );
-        board_drawSnapshot( board, NULL_XWE, (DrawCtx*)dctx, SNAP_WIDTH, SNAP_HEIGHT );
+/*     XW_DUtilCtxt* dutil = util_getDevUtilCtxt( cGlobals->util, NULL_XWE ); */
+/*     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)gr_getDraw( dutil, cGlobals->gameRef ); */
+/*     if ( !!dctx ) { */
+/*         addSurface( dctx, SNAP_WIDTH, SNAP_HEIGHT ); */
+/*         gr_drawSnapshot( dutil, cGlobals->gameRef, NULL_XWE, (DrawCtx*)dctx, */
+/*                          SNAP_WIDTH, SNAP_HEIGHT ); */
 
-        XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr );
-        getImage( dctx, stream );
-        removeSurface( dctx );
-        cGlobals->rowid = writeBlobColumnStream( stream, cGlobals->params->pDb,
-                                                 cGlobals->rowid, "snap" );
-        stream_destroy( stream );
-    }
+/*         XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool) */
+/*                                                     cGlobals->params->vtMgr ); */
+/*         getImage( dctx, stream ); */
+/*         removeSurface( dctx ); */
+/*         cGlobals->rowid = writeBlobColumnStream( stream, cGlobals->params->pDb, */
+/*                                                  cGlobals->rowid, "snap" ); */
+/*         stream_destroy( stream ); */
+/*     } */
 
-    LOG_RETURN_VOID();
-}
-#else
-# define addSnapshot( cGlobals )
-#endif
+/*     LOG_RETURN_VOID(); */
+/* } */
+/* #else */
+/* # define addSnapshot( cGlobals ) */
+/* #endif */
 
-void
-gdb_summarize( CommonGlobals* cGlobals )
-{
-    const XWGame* game = &cGlobals->game;
-    XP_S16 nMoves = model_getNMoves( game->model );
-    XP_Bool gameOver = server_getGameIsOver( game->server );
-    XP_Bool isLocal = -1;
-    XP_S16 turn = server_getCurrentTurn( game->server, &isLocal );
-    XP_U32 lastMoveTime = server_getLastMoveTime( game->server );
-    XP_U32 dupTimerExpires = server_getDupTimerExpires( game->server );
-    XP_U16 seed = 0;
-    XP_S16 nMissing = 0;
-    XP_U16 nPending = 0;
-    const CurGameInfo* gi = cGlobals->gi;
-    XP_U16 nTotal = gi->nPlayers;
-    XP_U32 gameID = gi->gameID;
-    XP_ASSERT( 0 != gameID );
+/* void */
+/* gdb_summarize( CommonGlobals* cGlobals ) */
+/* { */
+/*     GameRef gameRef = cGlobals->gameRef; */
+/*     XW_DUtilCtxt* dutil = util_getDevUtilCtxt(cGlobals->util, NULL_XWE); */
+/*     XP_S16 nMoves = gr_getNMoves( dutil, gameRef ); */
+/*     XP_Bool gameOver = gr_getGameIsOver( dutil, gameRef ); */
+/*     XP_Bool isLocal = -1; */
+/*     XP_S16 turn = gr_getCurrentTurn( dutil, gameRef, &isLocal ); */
+/*     XP_U32 lastMoveTime = gr_getLastMoveTime( dutil, gameRef ); */
+/*     XP_U32 dupTimerExpires = gr_getDupTimerExpires( dutil, gameRef ); */
+/*     XP_U16 seed = 0; */
+/*     XP_S16 nMissing = 0; */
+/*     XP_U16 nPending = 0; */
+/*     const CurGameInfo* gi = cGlobals->gi; */
+/*     XP_U16 nTotal = gi->nPlayers; */
+/*     XP_U32 gameID = gi->gameID; */
+/*     XP_ASSERT( 0 != gameID ); */
 
-    gchar connvia[128] = {};
+/*     gchar connvia[128] = {}; */
 
-    ScoresArray scores = {};
-    if ( gameOver ) {
-        model_figureFinalScores( game->model, &scores, NULL );
-    } else {
-        for ( int ii = 0; ii < nTotal; ++ii ) {
-            scores.arr[ii] = model_getPlayerScore( game->model, ii );
-        }
-    }
-    gchar scoreBufs[MAX_NUM_PLAYERS][64] = {};
-    gchar* arr[MAX_NUM_PLAYERS+1] = {};
-    for ( int ii = 0; ii < nTotal; ++ii ) {
-        XP_SNPRINTF( scoreBufs[ii], VSIZE(scoreBufs[ii]), "%s: %d",
-                     gi->players[ii].name, scores.arr[ii] );
-        arr[ii] = scoreBufs[ii];
-    }
-    gchar* scoresStr = g_strjoinv( "; ", arr );
-    XP_LOGF( "%s(): scoresStr: %s", __func__, scoresStr );
+/*     ScoresArray scores = {}; */
+/*     if ( gameOver ) { */
+/*         gr_figureFinalScores( dutil, gameRef, &scores, NULL ); */
+/*     } else { */
+/*         for ( int ii = 0; ii < nTotal; ++ii ) { */
+/*             scores.arr[ii] = gr_getPlayerScore( dutil, gameRef, ii ); */
+/*         } */
+/*     } */
+/*     gchar scoreBufs[MAX_NUM_PLAYERS][64] = {}; */
+/*     gchar* arr[MAX_NUM_PLAYERS+1] = {}; */
+/*     for ( int ii = 0; ii < nTotal; ++ii ) { */
+/*         XP_SNPRINTF( scoreBufs[ii], VSIZE(scoreBufs[ii]), "%s: %d", */
+/*                      gi->players[ii].name, scores.arr[ii] ); */
+/*         arr[ii] = scoreBufs[ii]; */
+/*     } */
+/*     gchar* scoresStr = g_strjoinv( "; ", arr ); */
+/*     XP_LOGF( "%s(): scoresStr: %s", __func__, scoresStr ); */
 
-    if ( !!game->comms ) {
-        nMissing = server_getMissingPlayers( game->server );
-        CommsAddrRec selfAddr;
-        comms_getSelfAddr( game->comms, &selfAddr );
-        CommsConnType typ;
-        for ( XP_U32 st = 0; addr_iter( &selfAddr, &typ, &st ); ) {
-            if ( !!connvia[0] ) {
-                strcat( connvia, "+" );
-            }
-            switch( typ) {
-            case COMMS_CONN_RELAY:
-                strcat( connvia, "Relay" );
-                break;
-            case COMMS_CONN_SMS:
-                strcat( connvia, "SMS" );
-                break;
-            case COMMS_CONN_BT:
-                strcat( connvia, "BT" );
-                break;
-            case COMMS_CONN_IP_DIRECT:
-                strcat( connvia, "IP" );
-                break;
-            case COMMS_CONN_MQTT:
-                strcat( connvia, "MQTT" );
-                break;
-            case COMMS_CONN_NFC: /* this should be filtered out!!! */
-                strcat( connvia, "NFC" );
-                break;
-            default:
-                XP_ASSERT(0);
-                break;
-            }
-        }
-        seed = comms_getChannelSeed( game->comms );
-#ifdef XWFEATURE_RELAY
-        XP_UCHAR relayID[32] = {};
-        XP_U16 len = VSIZE(relayID);
-        (void)comms_getRelayID( game->comms, relayID, &len );
-#endif
+/*     if ( gr_haveComms(dutil, gameRef) ) { */
+/*         nMissing = gr_getMissingPlayers( dutil, gameRef ); */
+/*         CommsAddrRec selfAddr; */
+/*         gr_getSelfAddr( dutil, gameRef, &selfAddr ); */
+/*         CommsConnType typ; */
+/*         for ( XP_U32 st = 0; addr_iter( &selfAddr, &typ, &st ); ) { */
+/*             if ( !!connvia[0] ) { */
+/*                 strcat( connvia, "+" ); */
+/*             } */
+/*             switch( typ) { */
+/*             case COMMS_CONN_RELAY: */
+/*                 strcat( connvia, "Relay" ); */
+/*                 break; */
+/*             case COMMS_CONN_SMS: */
+/*                 strcat( connvia, "SMS" ); */
+/*                 break; */
+/*             case COMMS_CONN_BT: */
+/*                 strcat( connvia, "BT" ); */
+/*                 break; */
+/*             case COMMS_CONN_IP_DIRECT: */
+/*                 strcat( connvia, "IP" ); */
+/*                 break; */
+/*             case COMMS_CONN_MQTT: */
+/*                 strcat( connvia, "MQTT" ); */
+/*                 break; */
+/*             case COMMS_CONN_NFC: /\* this should be filtered out!!! *\/ */
+/*                 strcat( connvia, "NFC" ); */
+/*                 break; */
+/*             default: */
+/*                 XP_ASSERT(0); */
+/*                 break; */
+/*             } */
+/*         } */
+/*         seed = gr_getChannelSeed( dutil, gameRef ); */
+/* #ifdef XWFEATURE_RELAY */
+/*         XP_UCHAR relayID[32] = {}; */
+/*         XP_U16 len = VSIZE(relayID); */
+/*         (void)comms_getRelayID( game->comms, relayID, &len ); */
+/* #endif */
 
-        nPending = comms_countPendingPackets( game->comms, NULL );
-    } else {
-        strcat( connvia, "local" );
-    }
+/*         nPending = gr_countPendingPackets( dutil, gameRef, NULL_XWE, NULL ); */
+/*     } else { */
+/*         strcat( connvia, "local" ); */
+/*     } */
 
-    XP_S16 nTiles = server_countTilesInPool( game->server );
+/*     XP_S16 nTiles = gr_countTilesInPool( dutil, gameRef ); */
 
-    gchar* pairs[40];
-    int indx = 0;
-    pairs[indx++] = g_strdup_printf( "ended=%d", gameOver?1:0 );
-    pairs[indx++] = g_strdup_printf( "turn=%d", turn);
-    pairs[indx++] = g_strdup_printf( "local=%d", isLocal?1:0);
-    pairs[indx++] = g_strdup_printf( "ntotal=%d", nTotal );
-    pairs[indx++] = g_strdup_printf( "nmissing=%d", nMissing);
-    pairs[indx++] = g_strdup_printf( "nmoves=%d", nMoves);
-    pairs[indx++] = g_strdup_printf( "seed=%d", seed);
-    pairs[indx++] = g_strdup_printf( "isoCode='%s'", gi->isoCodeStr);
-    pairs[indx++] = g_strdup_printf( "gameid=%d", gameID);
-    pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia);
-#ifdef XWFEATURE_RELAY
-    pairs[indx++] = g_strdup_printf( "relayid='%s'", relayID);
-#endif
-    pairs[indx++] = g_strdup_printf( "lastMoveTime=%d", lastMoveTime );
-    pairs[indx++] = g_strdup_printf( "dupTimerExpires=%d", dupTimerExpires);
-    pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr);
-    pairs[indx++] = g_strdup_printf( "nPending=%d", nPending );
-    pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole);
-    pairs[indx++] = g_strdup_printf( "created=%d", game->created );
-    pairs[indx++] = g_strdup_printf( "channel=%d", gi->forceChannel );
-    pairs[indx++] = g_strdup_printf( "nTiles=%d", nTiles );
-    pairs[indx++] = NULL;
-    XP_ASSERT( indx < VSIZE(pairs) );
+/*     gchar* pairs[40]; */
+/*     int indx = 0; */
+/*     pairs[indx++] = g_strdup_printf( "ended=%d", gameOver?1:0 ); */
+/*     pairs[indx++] = g_strdup_printf( "turn=%d", turn); */
+/*     pairs[indx++] = g_strdup_printf( "local=%d", isLocal?1:0); */
+/*     pairs[indx++] = g_strdup_printf( "ntotal=%d", nTotal ); */
+/*     pairs[indx++] = g_strdup_printf( "nmissing=%d", nMissing); */
+/*     pairs[indx++] = g_strdup_printf( "nmoves=%d", nMoves); */
+/*     pairs[indx++] = g_strdup_printf( "seed=%d", seed); */
+/*     pairs[indx++] = g_strdup_printf( "isoCode='%s'", gi->isoCodeStr); */
+/*     pairs[indx++] = g_strdup_printf( "gameid=%d", gameID); */
+/*     pairs[indx++] = g_strdup_printf( "connvia='%s'", connvia); */
+/* #ifdef XWFEATURE_RELAY */
+/*     pairs[indx++] = g_strdup_printf( "relayid='%s'", relayID); */
+/* #endif */
+/*     pairs[indx++] = g_strdup_printf( "lastMoveTime=%d", lastMoveTime ); */
+/*     pairs[indx++] = g_strdup_printf( "dupTimerExpires=%d", dupTimerExpires); */
+/*     pairs[indx++] = g_strdup_printf( "scores='%s'", scoresStr); */
+/*     pairs[indx++] = g_strdup_printf( "nPending=%d", nPending ); */
+/*     pairs[indx++] = g_strdup_printf( "role=%d", gi->serverRole); */
+/*     pairs[indx++] = g_strdup_printf( "created=%d", gr_getCreated(dutil, gameRef) ); */
+/*     pairs[indx++] = g_strdup_printf( "channel=%d", gi->forceChannel ); */
+/*     pairs[indx++] = g_strdup_printf( "nTiles=%d", nTiles ); */
+/*     pairs[indx++] = NULL; */
+/*     XP_ASSERT( indx < VSIZE(pairs) ); */
 
-    gchar* vals = g_strjoinv( ",", pairs );
-    for ( int ii = 0; !!pairs[ii]; ++ii ) {
-        g_free( pairs[ii] );
-    }
-    XP_ASSERT( -1 != cGlobals->rowid );
-    gchar* query = g_strdup_printf( "UPDATE games SET %s WHERE rowid=%lld",
-                                    vals, cGlobals->rowid );
-    g_free( vals );
-    XP_LOGFF( "query: %s", query );
-    sqlite3_stmt* stmt = NULL;
-    int result = sqlite3_prepare_v2( cGlobals->params->pDb, query, -1, &stmt, NULL );
-    assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK );
-    result = sqlite3_step( stmt );
-    if ( SQLITE_DONE != result ) {
-        XP_LOGFF( "sqlite3_step=>%s", sqlite3_errstr( result ) );
-        XP_ASSERT( 0 );
-    }
-    sqlite3_finalize( stmt );
-    XP_USE( result );
+/*     gchar* vals = g_strjoinv( ",", pairs ); */
+/*     for ( int ii = 0; !!pairs[ii]; ++ii ) { */
+/*         g_free( pairs[ii] ); */
+/*     } */
+/*     XP_ASSERT( -1 != cGlobals->rowid ); */
+/*     gchar* query = g_strdup_printf( "UPDATE games SET %s WHERE rowid=%lld", */
+/*                                     vals, cGlobals->rowid ); */
+/*     g_free( vals ); */
+/*     XP_LOGFF( "query: %s", query ); */
+/*     sqlite3_stmt* stmt = NULL; */
+/*     int result = sqlite3_prepare_v2( cGlobals->params->pDb, query, -1, &stmt, NULL ); */
+/*     assertPrintResult( cGlobals->params->pDb, result, SQLITE_OK ); */
+/*     result = sqlite3_step( stmt ); */
+/*     if ( SQLITE_DONE != result ) { */
+/*         XP_LOGFF( "sqlite3_step=>%s", sqlite3_errstr( result ) ); */
+/*         XP_ASSERT( 0 ); */
+/*     } */
+/*     sqlite3_finalize( stmt ); */
+/*     XP_USE( result ); */
 
-    if ( !cGlobals->params->useCurses ) {
-        addSnapshot( cGlobals );
-    }
-    g_free( scoresStr );
-    g_free( query );
-}
+/*     if ( !cGlobals->params->useCurses ) { */
+/*         addSnapshot( cGlobals ); */
+/*     } */
+/*     g_free( scoresStr ); */
+/*     g_free( query ); */
+/* } */
 
-GSList*
-gdb_listGames( sqlite3* pDb )
-{
-    GSList* list = NULL;
+/* GSList* */
+/* gdb_listGames( sqlite3* pDb ) */
+/* { */
+/*     GSList* list = NULL; */
     
-    sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, 
-                                     "SELECT rowid FROM games ORDER BY rowid", 
-                                     -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
-    XP_USE( result );
-    while ( NULL != ppStmt ) {
-        switch( sqlite3_step( ppStmt ) ) {
-        case SQLITE_ROW:        /* have data */
-        {
-            sqlite3_int64* data = g_malloc( sizeof( *data ) );
-            *data = sqlite3_column_int64( ppStmt, 0 );
-            XP_LOGFF( "got a row; id=%lld", *data );
-            list = g_slist_append( list, data );
-        }
-        break;
-        case SQLITE_DONE:
-            sqlite3_finalize( ppStmt );
-            ppStmt = NULL;
-            break;
-        default:
-            XP_ASSERT( 0 );
-            break;
-        }
-    }
-    return list;
-}
+/*     sqlite3_stmt *ppStmt; */
+/*     int result = sqlite3_prepare_v2( pDb,  */
+/*                                      "SELECT rowid FROM games ORDER BY rowid",  */
+/*                                      -1, &ppStmt, NULL ); */
+/*     assertPrintResult( pDb, result, SQLITE_OK ); */
+/*     XP_USE( result ); */
+/*     while ( NULL != ppStmt ) { */
+/*         switch( sqlite3_step( ppStmt ) ) { */
+/*         case SQLITE_ROW:        /\* have data *\/ */
+/*         { */
+/*             sqlite3_int64* data = g_malloc( sizeof( *data ) ); */
+/*             *data = sqlite3_column_int64( ppStmt, 0 ); */
+/*             XP_LOGFF( "got a row; id=%lld", *data ); */
+/*             list = g_slist_append( list, data ); */
+/*         } */
+/*         break; */
+/*         case SQLITE_DONE: */
+/*             sqlite3_finalize( ppStmt ); */
+/*             ppStmt = NULL; */
+/*             break; */
+/*         default: */
+/*             XP_ASSERT( 0 ); */
+/*             break; */
+/*         } */
+/*     } */
+/*     return list; */
+/* } */
 
 static void
 dataKiller( gpointer data )
@@ -511,6 +515,42 @@ void
 gdb_freeGamesList( GSList* games )
 {
     g_slist_free_full( games, dataKiller );
+}
+
+GSList*
+gdb_keysLike( sqlite3* pDb, const XP_UCHAR* pattern )
+{
+    GSList* list = NULL;
+    XP_UCHAR query[256];
+    snprintf( query, sizeof(query),
+              "SELECT key FROM pairs WHERE key LIKE '%s'", pattern );
+    XP_LOGFF( "query: %s", query );
+
+    sqlite3_stmt* ppStmt;
+    int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, sqlResult, SQLITE_OK );
+    while ( NULL != ppStmt ) {
+        sqlResult = sqlite3_step( ppStmt );
+        switch ( sqlResult ) {
+        case SQLITE_ROW: {
+            const unsigned char* key = sqlite3_column_text( ppStmt, 0 );
+            list = g_slist_append( list, g_strdup((char*)key) );
+        }
+            break;
+        case SQLITE_DONE:
+        default:
+            sqlite3_finalize( ppStmt );
+            ppStmt = NULL;
+            break;
+        }
+    }
+    return list;
+}
+
+void
+gdb_freeKeysList( GSList* keys )
+{
+    g_slist_free_full( keys, dataKiller );
 }
 
 GHashTable*

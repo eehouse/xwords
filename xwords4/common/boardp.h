@@ -147,9 +147,9 @@ struct BoardCtxt {
     ServerCtxt* server;
     DrawCtx* draw;
     XW_DUtilCtxt* dutil;
-    XW_UtilCtxt* util;
+    XW_UtilCtxt** utilp;
 
-    struct CurGameInfo* gi;
+    const CurGameInfo* gi;
     ScrollData sd[N_SCROLL_DIMS];
 
     BadWordList bwl;

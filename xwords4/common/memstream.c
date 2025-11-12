@@ -46,13 +46,10 @@ extern "C" {
 
 #define SOCKET_STREAM_SUPER_COMMON_SLOTS \
     StreamCtxVTable* vtable; \
-    void* closure; \
     XP_U32 curReadPos; \
     XP_U32 curWritePos; \
     XP_PlayerAddr channelNo; \
     XP_U8* buf; \
-    MemStreamCloseCallback onClose; \
-    XWEnv xwe; \
     XP_U16 nBytesWritten; \
     XP_U16 nBytesAllocated; \
     XP_U16 version; \
@@ -77,13 +74,11 @@ static StreamCtxVTable* make_vtable( MemStreamCtxt* stream );
 XWStreamCtxt* 
 mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr )
 {
-    return mem_stream_make( MPPARM(mpool) vtmgr, NULL, 0, NULL, NULL );
+    return mem_stream_make( MPPARM(mpool) vtmgr, 0 );
 }
 
 XWStreamCtxt*
-mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
-                 XP_PlayerAddr channelNo, MemStreamCloseCallback onClose,
-                 XWEnv xwe )
+mem_stream_make( MPFORMAL VTableMgr* vtmgr, XP_PlayerAddr channelNo )
 {
     StreamCtxVTable* vtable;
     MemStreamCtxt* result = (MemStreamCtxt*)XP_CALLOC( mpool, 
@@ -97,10 +92,7 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
     }
     result->vtable = vtable;
 
-    result->closure = closure;
     result->channelNo = channelNo;
-    result->onClose = onClose;
-    result->xwe = xwe;
 
     result->isOpen = XP_TRUE;
 #ifdef XWFEATURE_STREAMREF
@@ -111,12 +103,10 @@ mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure,
 
 XWStreamCtxt* 
 mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, XP_U16 startSize, 
-                       void* closure, XP_PlayerAddr channelNo, 
-                       MemStreamCloseCallback onClose, XWEnv xwe )
+                       XP_PlayerAddr channelNo )
 {
     MemStreamCtxt* result =
-        (MemStreamCtxt*)mem_stream_make( MPPARM(mpool) vtmgr, closure, 
-                                         channelNo, onClose, xwe );
+        (MemStreamCtxt*)mem_stream_make( MPPARM(mpool) vtmgr, channelNo );
     if ( 0 < startSize ) {
         result->buf = (XP_U8*)XP_CALLOC( mpool, startSize );
         result->nBytesAllocated = startSize;
@@ -412,9 +402,6 @@ mem_stream_close( XWStreamCtxt* p_sctx )
 
     XP_ASSERT( stream->isOpen );
 
-    if ( !!stream->onClose ) {
-        (*stream->onClose)( p_sctx, stream->xwe, stream->closure );
-    }
     stream->isOpen = XP_FALSE;
 } /* mem_stream_close */
 
@@ -487,15 +474,6 @@ mem_stream_getVersion( const XWStreamCtxt* p_sctx )
     const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
     return stream->version;
 } /* mem_stream_getVersion */
-
-static void
-mem_stream_setOnCloseProc( XWStreamCtxt* p_sctx, MemStreamCloseCallback proc,
-                           XWEnv xwe )
-{
-    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
-    stream->onClose = proc;
-    stream->xwe = xwe;
-}
 
 static XWStreamPos
 mem_stream_getPos( const XWStreamCtxt* p_sctx, PosWhich which )
@@ -605,8 +583,6 @@ make_vtable( MemStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( vtable, stream_setVersion, mem );
     SET_VTABLE_ENTRY( vtable, stream_getVersion, mem );
-
-    SET_VTABLE_ENTRY( vtable, stream_setOnCloseProc, mem );
 
     return vtable;
 } /* make_vtable */

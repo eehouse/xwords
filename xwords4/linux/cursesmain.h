@@ -36,7 +36,6 @@
 #include "dictnry.h"
 #include "xwstream.h"
 #include "comms.h"
-#include "server.h"
 #include "xwstate.h"
 #include "util.h"
 #include "cursesmenu.h"
@@ -59,8 +58,8 @@ void onCursesGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid );
 
 // typedef struct CursesBoardGlobals;
 
-DrawCtx* cursesDrawCtxtMake( WINDOW* boardWin );
-void cursesDrawCtxtFree( DrawCtx* dctx );
+DrawCtx* cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
+                             GameRef gr, DrawTarget dt );
 
 /* Ports: Client and server pick a port at startup on which they'll listen.
  * If both are to be on the same device using localhost as their ip address,
@@ -78,5 +77,10 @@ void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite );
 void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
                             XP_U32 gameID, const XP_U8* buf, XP_U16 len );
 void gameGoneCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID );
+void onCursesGameOpened( CommonAppGlobals* cag, GameRef gr );
+void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr, GameChangeEvents gces );
+void informMoveCurses( LaunchParams* params, XWStreamCtxt* expl );
+void informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter );
+void cursesShowFinalScores( CursesBoardGlobals* bGlobals );
 
 #endif

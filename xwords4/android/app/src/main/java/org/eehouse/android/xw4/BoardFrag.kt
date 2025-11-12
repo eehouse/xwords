@@ -20,8 +20,16 @@
 package org.eehouse.android.xw4
 
 import android.os.Bundle
+import android.view.View
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 
-class BoardFrag(): XWFragment() {
+private val TAG = BoardFrag::class.java.getSimpleName()
+class BoardFrag(): XWFragment()
+// , DefaultLifecycleObserver, LifecycleEventObserver
+{
 
 	companion object {
 		fun newInstance( parent: Delegator ): XWFragment
@@ -32,6 +40,21 @@ class BoardFrag(): XWFragment() {
 
     override fun onCreate( sis: Bundle? )
     {
-        super.onCreate( BoardDelegate( this ), sis, true )
+        super<XWFragment>.onCreate( BoardDelegate( this ), sis, true )
     }
+
+    // override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    //     super.onViewCreated(view, savedInstanceState)
+    //     Log.d(TAG, "onViewCreated()")
+    //     getViewLifecycleOwner().getLifecycle().addObserver(this)
+    // }
+
+    // override fun onDestroyView() {
+    //     super.onDestroyView()
+    //     getViewLifecycleOwner().getLifecycle().removeObserver(this);
+    // }
+
+    // override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+    //     Log.d(TAG, "onStateChanged($event)")
+    // }
 }

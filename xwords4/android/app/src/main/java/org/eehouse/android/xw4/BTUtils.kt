@@ -53,8 +53,9 @@ import org.eehouse.android.xw4.XWServiceHelper.ReceiveResult
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
+import org.eehouse.android.xw4.jni.Stats
 import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.STAT
+import org.eehouse.android.xw4.jni.Stats.STAT
 
 object BTUtils {
     private val TAG: String = BTUtils::class.java.simpleName
@@ -681,12 +682,13 @@ object BTUtils {
         }
 
         fun addInvite(nli: NetLaunchInfo) {
+            Assert.failDbg()
             try {
                 val op = OutputPair()
                 if (IS_BATCH_PROTO()) {
-                    val nliData = XwJNI.nliToStream(nli)
-                    op.dos.writeShort(nliData.size)
-                    op.dos.write(nliData, 0, nliData.size)
+                    // val nliData = XwJNI.nliToStream(nli)
+                    // op.dos.writeShort(nliData.size)
+                    // op.dos.write(nliData, 0, nliData.size)
                 } else {
                     op.dos.writeUTF(nli.toString())
                 }
@@ -985,7 +987,7 @@ object BTUtils {
                                 msgCount, data.size, Utils.getMD5SumFor(data),
                                 this
                             )
-                            XwJNI.sts_increment(STAT.STAT_BT_SENT);
+                            Stats.increment(STAT.STAT_BT_SENT);
                         } catch (ioe: IOException) {
                             Log.e(TAG, "writeAndCheck(): ioe: %s", ioe.message)
                             localElems = null
@@ -1405,7 +1407,7 @@ object BTUtils {
                     data.size, Utils.getMD5SumFor(data), nMessages
                 )
 
-                XwJNI.sts_increment(STAT.STAT_BT_RCVD);
+                Stats.increment(STAT.STAT_BT_RCVD);
 
                 for (ii in 0 until nMessages) {
                     val cmdOrd = dis.readByte()
@@ -1421,18 +1423,19 @@ object BTUtils {
                             }
 
                             BTCmd.INVITE -> {
-                                var nli: NetLaunchInfo?
-                                if (isOldProto) {
-                                    nli = NetLaunchInfo.makeFrom(
-                                        context,
-                                        dis.readUTF()
-                                    )
-                                } else {
-                                    data = ByteArray(dis.readShort().toInt())
-                                    dis.readFully(data)
-                                    nli = XwJNI.nliFromStream(data)
-                                }
-                                receiveInvitation(nli, socket)
+                                Assert.failDbg()
+                                // var nli: NetLaunchInfo?
+                                // if (isOldProto) {
+                                //     nli = NetLaunchInfo.makeFrom(
+                                //         context,
+                                //         dis.readUTF()
+                                //     )
+                                // } else {
+                                //     data = ByteArray(dis.readShort().toInt())
+                                //     dis.readFully(data)
+                                //     nli = XwJNI.nliFromStream(data)
+                                // }
+                                // receiveInvitation(nli, socket)
                             }
 
                             BTCmd.MESG_SEND -> {

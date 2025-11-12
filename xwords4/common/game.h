@@ -25,47 +25,13 @@
 #include "model.h"
 #include "board.h"
 #include "comms.h"
-#include "server.h"
+#include "serverp.h"
 #include "util.h"
+#include "gameref.h"
 
 #ifdef CPLUS
 extern "C" {
 #endif
-
-typedef struct _GameStateInfo {
-    XP_U16 visTileCount;
-    XP_U16 nPendingMessages;
-    XW_TrayVisState trayVisState;
-    XP_Bool canHint;
-    XP_Bool canUndo;
-    XP_Bool canRedo;
-    XP_Bool inTrade;
-    XP_Bool tradeTilesSelected;
-    XP_Bool canChat;
-    XP_Bool canShuffle;
-    XP_Bool curTurnSelected;
-    XP_Bool canHideRack;
-    XP_Bool canTrade;
-    XP_Bool canPause;           /* duplicate-mode only */
-    XP_Bool canUnpause;         /* duplicate-mode only */
-} GameStateInfo;
-
-typedef struct _GameSummary {
-    XP_Bool turnIsLocal;
-    XP_Bool gameOver;
-    XP_Bool quashed;
-    XP_Bool canRematch;
-    XP_Bool canOfferRO;
-    XP_S8 turn;
-    XP_U32 lastMoveTime;
-    XP_S32 dupTimerExpires;
-    XP_U8 missingPlayers;
-    XP_U8 nPacketsPending;
-    XP_U8 channelNo;            /* 0..4 */
-    XP_S16 nMoves;
-    XP_UCHAR isoCodeStr[MAX_ISO_CODE_LEN+1];
-    XP_UCHAR opponents[64];
-} GameSummary;
 
 typedef struct _XWGame {
     XW_UtilCtxt* util;
@@ -76,45 +42,42 @@ typedef struct _XWGame {
     XP_U32 created;     /* dutil_getCurSeconds() of creation */
 } XWGame;
 
-XP_U32 game_makeGameID();
+GameRef game_makeNewGame( XWEnv xwe, CurGameInfo* gi,
+                           const CommsAddrRec* hostAddr,
+                           XW_UtilCtxt* util, DrawCtx* draw,
+                           const CommonPrefs* cp );
 
-XP_Bool game_makeNewGame( MPFORMAL XWEnv xwe, XWGame* game, CurGameInfo* gi,
-                          const CommsAddrRec* selfAddr, const CommsAddrRec* hostAddr,
-                          XW_UtilCtxt* util, DrawCtx* draw, const CommonPrefs* cp,
-                          const TransportProcs* procs );
-
-XP_Bool game_makeRematch( const XWGame* game, XWEnv xwe, XW_UtilCtxt* util,
-                          const CommonPrefs* cp, const TransportProcs* procs,
-                          XWGame* newGame, const XP_UCHAR* newName,
-                          NewOrder* no );
+GameRef game_makeRematch( GameRef game, XWEnv xwe, XW_UtilCtxt* util,
+                           const CommonPrefs* cp,
+                           const XP_UCHAR* newName, NewOrder* no );
 
 void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
                       DictionaryCtxt* dict );
 
 XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                             XWGame* game, CurGameInfo* gi,
+                             CurGameInfo* gi, GameRef* grOut,
                              XW_UtilCtxt* util, DrawCtx* draw,
-                             CommonPrefs* cp, const TransportProcs* procs );
+                             CommonPrefs* cp );
 
-XP_Bool game_makeFromInvite( XWGame* newGame, XWEnv xwe, const NetLaunchInfo* nli,
+GameRef game_makeFromInvite( XWEnv xwe, const NetLaunchInfo* nli,
                              const CommsAddrRec* selfAddr,
                              XW_UtilCtxt* util, DrawCtx* draw,
-                             CommonPrefs* cp, const TransportProcs* procs );
+                             CommonPrefs* cp );
 
-void game_saveToStream( const XWGame* game, const CurGameInfo* gi,
+void game_saveToStream( const GameRef gr, const CurGameInfo* gi,
                         XWStreamCtxt* stream, XP_U16 saveToken );
-void game_saveSucceeded( const XWGame* game, XWEnv xwe, XP_U16 saveToken );
+void game_saveSucceeded( const GameRef gr, XWEnv xwe, XP_U16 saveToken );
 
-XP_Bool game_receiveMessage( XWGame* game, XWEnv xwe, XWStreamCtxt* stream,
-                             const CommsAddrRec* retAddr );
+XP_Bool game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
+                             XWStreamCtxt* stream, const CommsAddrRec* retAddr );
 
 void game_dispose( XWGame* game, XWEnv xwe );
 
 void game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary );
 void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
 XP_Bool game_getIsHost( const XWGame* game );
-void gi_setNPlayers( CurGameInfo* gi, XWEnv xwe, XW_UtilCtxt* util,
-                     XP_U16 nTotal, XP_U16 nHere );
+void gi_setNPlayers( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe,
+                     CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
@@ -127,7 +90,6 @@ XP_U16 gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint );
 
 XP_Bool player_hasPasswd( const LocalPlayer* player );
 XP_Bool player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* pwd );
-XP_U16 player_timePenalty( CurGameInfo* gi, XP_U16 playerNum );
 
 #ifdef CPLUS
 }

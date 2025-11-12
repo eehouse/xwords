@@ -51,7 +51,7 @@ curses_askLetter( WINDOW* window, XP_UCHAR* query,
 {
     XP_S16 result;
     WINDOW* confWin;
-    int x, y, rows, row, nLines, i;
+    int xx, yy, rows, row, nLines, i;
     short newSelButton = 0;
     short curSelButton = 1;	/* force draw by being different */
     short maxWidth;
@@ -65,18 +65,18 @@ curses_askLetter( WINDOW* window, XP_UCHAR* query,
     XP_U16 spacePerCtlButton;
     char* textPtrs[MAX_UNIQUE_TILES];
 
-    for ( i = 0; i < nTiles; ++i ) {
-        textPtrs[i] = (char*)&texts[i];
+    for ( int ii = 0; ii < nTiles; ++ii ) {
+        textPtrs[ii] = (char*)&texts[ii];
     }
 
-    getmaxyx( window, y, x );
+    getmaxyx( window, yy, xx );
 
     numCtlButtons = VSIZE(ctlButtons);
 
-    maxWidth = x - (PAD*2) - 2; /* 2 for two borders */
+    maxWidth = xx - (PAD*2) - 2; /* 2 for two borders */
     measureAskText( query, maxWidth, &fi );
 
-    sizeTextsAsButtons( x, nTiles, &textsCols, &textsRows, textsOffsets );
+    sizeTextsAsButtons( xx, nTiles, &textsCols, &textsRows, textsOffsets );
 
     len = XP_MAX( fi.maxLen, textsCols * MAX_TILE_BUTTON_WIDTH );
     if ( len < MIN_WIDTH ) {
@@ -87,7 +87,7 @@ curses_askLetter( WINDOW* window, XP_UCHAR* query,
     XP_DEBUGF( "set maxWidth=%d", maxWidth );
 
 
-    if ( len > x-2 ) {
+    if ( len > xx-2 ) {
         rows = (len / maxWidth) + 1;
         len = maxWidth;
     }
@@ -95,11 +95,11 @@ curses_askLetter( WINDOW* window, XP_UCHAR* query,
     nLines = ASK_HEIGHT + rows - 1;
     XP_DEBUGF( "newwin( %d, %d, (%d/2) - (%d/2), (%d-%d-2)/2",
                nLines, len,//+(PAD*2), 
-               y, nLines, x, len );
+               yy, nLines, xx, len );
 
-    XP_ASSERT( y >= nLines );
+    XP_ASSERT( yy >= nLines );
     confWin = newwin( nLines, len,//+(PAD*2), 
-                      (y/2) - (nLines/2), (x-len-2)/2 );
+                      (yy/2) - (nLines/2), (xx-len-2)/2 );
     keypad( confWin, TRUE );
     XP_ASSERT( !!confWin );
 
@@ -208,7 +208,7 @@ curses_askLetter( WINDOW* window, XP_UCHAR* query,
     delwin( confWin );
 
     /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( window, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
+    wtouchln( window, (yy/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
     wrefresh( window );
     
     return result;

@@ -26,6 +26,8 @@ import java.io.Serializable
 
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.GameRef
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -70,6 +72,11 @@ internal class InvitesNeededAlert private constructor(
 
         fun make(alert: DBAlert, vararg params: Any?): AlertDialog {
             DbgUtils.assertOnUIThread()
+            if ( null == mSelf ) {
+                val delegate = mCallbacks.getDelegate()
+                val state = params[1] as State
+                mSelf = InvitesNeededAlert(delegate, state)
+            }
             return mSelf!!.makeImpl(mCallbacks, alert, mHostAddr, *params)
         }
 
@@ -92,7 +99,14 @@ internal class InvitesNeededAlert private constructor(
             val state = State(isServer, nPlayersMissing, nInvited, isRematch)
             val delegate = mCallbacks.getDelegate()
             mSelf = InvitesNeededAlert(delegate, state)
-            delegate.showDialogFragment(DlgID.DLG_INVITE, state)
+            Utils.launch {
+                // mHostAddr is null in the host case, but we still run in
+                // co-routine to keep code simpler
+                val mqttDevName = mHostAddr?.mqtt_devID?.let {
+                    Knowns.nameForMqttDev(it)
+                }
+                delegate.showDialogFragment(DlgID.DLG_INVITE, mqttDevName, state)
+            }
         }
     }
 
@@ -107,7 +121,7 @@ internal class InvitesNeededAlert private constructor(
 
     internal interface Callbacks {
         fun getDelegate(): DelegateBase
-        fun getRowID(): Long
+        fun getGameRef(): GameRef
         fun onCloseClicked()
         fun onInviteClicked()
     }
@@ -115,10 +129,10 @@ internal class InvitesNeededAlert private constructor(
     private fun close(): Boolean {
         var dismissed = false
         DbgUtils.assertOnUIThread()
-        if (null != mAlert) {
+        mAlert?.let {
             dismissed = InviteChoicesAlert.dismissAny()
             try {
-                mAlert!!.dismiss() // I've seen this throw a NPE inside
+                it.dismiss() // I've seen this throw a NPE inside
             } catch (ex: Exception) {
                 Log.ex(TAG, ex)
             }
@@ -130,7 +144,8 @@ internal class InvitesNeededAlert private constructor(
         callbacks: Callbacks, alert: DBAlert,
         hostAddr: CommsAddrRec?, vararg params: Any?
     ): AlertDialog {
-        val state = params[0] as State
+        val mqttDevName = params[0] as String?
+        val state = params[1] as State
         val ab = mDelegate.makeAlertBuilder()
         mAlert = alert
         val closeLoc = intArrayOf(AlertDialog.BUTTON_NEGATIVE)
@@ -138,7 +153,7 @@ internal class InvitesNeededAlert private constructor(
         if (state.mIsServer) {
             makeImplHost(ab, callbacks, alert, state, closeLoc)
         } else {
-            makeImplGuest(ab, state, hostAddr)
+            makeImplGuest(ab, state, hostAddr, mqttDevName)
         }
 
         alert.setOnCancelListener(object : XWDialogFragment.OnCancelListener {
@@ -174,7 +189,7 @@ internal class InvitesNeededAlert private constructor(
 
     private fun makeImplGuest(
         ab: AlertDialog.Builder, state: State,
-        hostAddr: CommsAddrRec?
+        hostAddr: CommsAddrRec?, mqttDevName: String?
     ) {
         val context: Context = mDelegate.getActivity()
         var message = LocUtils.getString(context, R.string.waiting_host_expl)
@@ -187,11 +202,8 @@ internal class InvitesNeededAlert private constructor(
                 """.trimIndent()
         }
 
-        if (BuildConfig.NON_RELEASE && null != hostAddr && hostAddr.contains(CommsConnType.COMMS_CONN_MQTT)) {
-            val name = XwJNI.kplr_nameForMqttDev(hostAddr.mqtt_devID)
-            if (null != name) {
-                message += "\n\n" + LocUtils.getString(context, R.string.missing_host_fmt, name)
-            }
+        mqttDevName?.let {
+            message += "\n\n" + LocUtils.getString(context, R.string.missing_host_fmt, it)
         }
 
         ab.setTitle(R.string.waiting_host_title)
@@ -205,22 +217,23 @@ internal class InvitesNeededAlert private constructor(
         val context: Context = mDelegate.getActivity()
         val nPlayersMissing = state.mNPlayersMissing
 
-        val rowid = callbacks.getRowID()
-        val sentInfo = DBUtils.getInvitesFor(context, rowid)
+        val gr = callbacks.getGameRef()
+        // val sentInfo = DBUtils.getInvitesFor(context, rowid)
 
-        val nSent = state.mNInvited + sentInfo.minPlayerCount
-        val invitesNeeded = nPlayersMissing > nSent && !state.mIsRematch
+        // val nSent = state.mNInvited + sentInfo.minPlayerCount
+        val isRematch = state.mIsRematch
+        val invitesNeeded = !isRematch // nPlayersMissing > nSent && !state.mIsRematch
 
         val title: String
-        val isRematch = state.mIsRematch
-        title = if (isRematch) {
-            LocUtils.getString(context, R.string.waiting_rematch_title)
-        } else {
-            LocUtils.getQuantityString(
-                context, R.plurals.waiting_title_fmt,
-                nPlayersMissing, nPlayersMissing
-            )
-        }
+        title =
+            if (isRematch) {
+                LocUtils.getString(context, R.string.waiting_rematch_title)
+            } else {
+                LocUtils.getQuantityString(
+                    context, R.plurals.waiting_title_fmt,
+                    nPlayersMissing, nPlayersMissing
+                )
+            }
         ab.setTitle(title)
 
         var message: String

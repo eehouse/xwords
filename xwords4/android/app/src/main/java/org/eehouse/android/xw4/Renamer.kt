@@ -23,12 +23,29 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.doOnAttach
 
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.loc.LocUtils
 
 class Renamer(context: Context, aset: AttributeSet?) :
     LinearLayout(context, aset)
 {
+    private var mGR: GameRef? = null
+
+    init {
+        doOnAttach {
+            // if mGR isn't set, we're doing things the old way
+            mGR?.let { gr ->
+                setLabel( R.string.rename_label )
+                launchWhenStarted {
+                    val gi = gr.getGI()!!
+                    edit.setText(gi.gameName)
+                }
+            }
+        }
+    }
+
     fun setLabel(label: String): Renamer {
         val view = findViewById<View>(R.id.name_label) as TextView
         view.text = label
@@ -42,6 +59,11 @@ class Renamer(context: Context, aset: AttributeSet?) :
 
     fun setName(text: String?): Renamer {
         text?.let{ edit.setText(it) }
+        return this
+    }
+
+    fun setGR(gr: GameRef): Renamer {
+        mGR = gr
         return this
     }
 

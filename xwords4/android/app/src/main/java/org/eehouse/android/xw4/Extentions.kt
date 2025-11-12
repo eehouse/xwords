@@ -21,6 +21,11 @@ package org.eehouse.android.xw4
 import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.Serializable
 
@@ -101,4 +106,12 @@ fun JSONObject.putAnd(key: String, value: Long): JSONObject {
 
 fun Intent?.orEmpty(): Intent {
     return if (null == this) Intent() else this
+}
+
+fun View.launch(block: suspend CoroutineScope.() -> Unit) {
+    findViewTreeLifecycleOwner()?.lifecycleScope?.launch{block()}
+}
+
+fun View.launchWhenStarted(block: suspend CoroutineScope.() -> Unit) {
+    findViewTreeLifecycleOwner()?.lifecycleScope?.launchWhenStarted{block()}
 }

@@ -24,13 +24,12 @@
 #include <glib/gstdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 #include "linuxsms.h"
 #include "linuxutl.h"
 #include "strutils.h"
-#include "smsproto.h"
 #include "stats.h"
+#include "device.h"
 #include "linuxmain.h"
 
 #define SMS_DIR "/tmp/xw_sms"
@@ -57,21 +56,15 @@
 
 #define ADDR_FMT "from: %s %d\n"
 
-typedef struct _LinSMSData {
+struct LinSMSData {
     XP_UCHAR myQueue[256];
     XP_U16 myPort;
     FILE* lock;
 
     const gchar* myPhone;
-    const SMSProcs* procs;
-    void* procClosure;
     SMSProto* protoState;
-} LinSMSData;
+};
 
-static gboolean retrySend( gpointer data );
-static void sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
-                         XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
-                         XP_U32 gameID, const XP_UCHAR* msgNo );
 static gint check_for_files( gpointer data );
 static gint check_for_files_once( gpointer data );
 
@@ -82,8 +75,6 @@ formatQueuePath( const XP_UCHAR* phone, XP_U16 port, XP_UCHAR* path,
     XP_ASSERT( 0 != port );
     snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
 }
-
-static LinSMSData* getStorage( LaunchParams* params );
 
 static void
 lock_queue( LinSMSData* storage )
@@ -107,7 +98,7 @@ unlock_queue( LinSMSData* storage )
 
 static XP_S16
 write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
-                const XP_UCHAR* msgNo, const XP_UCHAR* phone, XP_U16 port )
+                const XP_UCHAR* phone, XP_U16 port )
 {
     XP_S16 nSent;
     XP_U16 pct = XP_RANDOM() % 100;
@@ -117,62 +108,64 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
         nSent = buflen;
         XP_LOGFF( "dropping sms msg of len %d to phone %s", nSent, phone );
     } else {
-        LinSMSData* storage = getStorage( params );
-        XP_LOGFF( "(phone=%s, port=%d, len=%d)", phone, port, buflen );
-
-        XP_ASSERT( !!storage );
-
-        lock_queue( storage );
+        LinSMSData* storage = params->smsStorage; //  getStorage( params );
+        if ( !!storage ) {
+            XP_LOGFF( "(phone=%s, port=%d, len=%d)", phone, port, buflen );
+            lock_queue( storage );
 
 #ifdef DEBUG
-        gchar* str64 = g_base64_encode( buf, buflen );
+            gchar* str64 = g_base64_encode( buf, buflen );
 #endif
 
-        char path[256];
-        formatQueuePath( phone, port, path, sizeof(path) );
+            char path[256];
+            formatQueuePath( phone, port, path, sizeof(path) );
 
-        /* Random-number-based name is fine, as we pick based on age. */
-        g_mkdir_with_parents( path, 0777 ); /* just in case */
-        int len = strlen( path );
-        int rint = makeRandomInt();
-        if ( !!msgNo ) {
-            snprintf( &path[len], sizeof(path)-len, "/%s_%u", msgNo, rint );
-        } else {
+            /* Random-number-based name is fine, as we pick based on age. */
+            g_mkdir_with_parents( path, 0777 ); /* just in case */
+            int len = strlen( path );
+            int rint = makeRandomInt();
             snprintf( &path[len], sizeof(path)-len, "/%u", rint );
-        }
-        XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
-        XP_U16 smslen = sizeof(sms);
-        binToSms( sms, &smslen, buf, buflen );
-        XP_ASSERT( smslen == strlen(sms) );
-        XP_LOGFF( "writing msg to %s", path );
+            XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
+            XP_U16 smslen = sizeof(sms);
+            binToSms( sms, &smslen, buf, buflen );
+            XP_ASSERT( smslen == strlen(sms) );
+            XP_LOGFF( "writing msg to %s", path );
 
 #ifdef DEBUG
-        XP_ASSERT( !strcmp( str64, sms ) );
-        g_free( str64 );
+            XP_ASSERT( !strcmp( str64, sms ) );
+            g_free( str64 );
 
-        XP_U8 testout[buflen];
-        XP_U16 lenout = sizeof( testout );
-        XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
-        XP_ASSERT( lenout == buflen );
-        // valgrind doesn't like this; punting on figuring out
-        // XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
+            XP_U8 testout[buflen];
+            XP_U16 lenout = sizeof( testout );
+            XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
+            XP_ASSERT( lenout == buflen );
+            // valgrind doesn't like this; punting on figuring out
+            // XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
 #endif
 
-        FILE* fp = fopen( path, "w" );
-        XP_ASSERT( !!fp );
-        (void)fprintf( fp, ADDR_FMT, storage->myPhone, storage->myPort );
-        (void)fprintf( fp, "%s\n", sms );
-        fclose( fp );
-        sync();
+            FILE* fp = fopen( path, "w" );
+            XP_ASSERT( !!fp );
+            (void)fprintf( fp, ADDR_FMT, storage->myPhone, storage->myPort );
+            (void)fprintf( fp, "%s\n", sms );
+            fclose( fp );
+            sync();
 
-        unlock_queue( storage );
+            unlock_queue( storage );
 
-        nSent = buflen;
+            nSent = buflen;
 
-        LOG_RETURNF( "%d", nSent );
+            LOG_RETURNF( "%d", nSent );
+        }
     }
     return nSent;
 } /* write_fake_sms */
+
+void
+linux_sms_enqueue( LaunchParams* params, const XP_U8* buf,
+                   XP_U16 len, const XP_UCHAR* phone, XP_U16 port )
+{
+    write_fake_sms( params, buf, len, phone, port );
+}
 
 static XP_S16
 decodeAndDelete( const gchar* path, XP_U8* buf, XP_U16 buflen,
@@ -224,75 +217,21 @@ decodeAndDelete( const gchar* path, XP_U8* buf, XP_U16 buflen,
     return nRead;
 } /* decodeAndDelete */
 
-static void
-nliFromData( LaunchParams* params, const SMSMsgLoc* msg, NetLaunchInfo* nliOut )
-{
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
-    stream_putBytes( stream, msg->data, msg->len );
-#ifdef DEBUG
-    XP_Bool success =
-#endif
-        nli_makeFromStream( nliOut, stream );
-    XP_ASSERT( success );
-    stream_destroy( stream );
-}
-
-static void
-parseAndDispatch( LaunchParams* params, uint8_t* buf, int len, 
-                  CommsAddrRec* addr )
-{
-    LinSMSData* storage = getStorage( params );
-    const XP_UCHAR* fromPhone = addr->u.sms.phone;
-    SMSMsgArray* arr =
-        smsproto_prepInbound( storage->protoState, NULL_XWE, fromPhone,
-                              storage->myPort, buf, len );
-
-    sts_increment( params->dutil, NULL_XWE, STAT_NBS_RCVD );
-
-    if ( NULL != arr ) {
-        XP_ASSERT( arr->format == FORMAT_LOC );
-        for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
-            SMSMsgLoc* msg = &arr->u.msgsLoc[ii];
-            switch ( msg->cmd ) {
-            case DATA:
-                (*storage->procs->msgReceived)( storage->procClosure, addr,
-                                                msg->gameID,
-                                                msg->data, msg->len );
-                break;
-            case INVITE: {
-                NetLaunchInfo nli = {};
-                nliFromData( params, msg, &nli );
-                (*storage->procs->inviteReceived)( storage->procClosure,
-                                                   &nli );
-            }
-                break;
-            default:
-                XP_ASSERT(0);   /* implement me!! */
-                break;
-            }
-        }
-        smsproto_freeMsgArray( storage->protoState, arr );
-    }
-}
-
 void
-linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
-                const SMSProcs* procs, void* procClosure )
+linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort )
 {
     LOG_FUNC();
     XP_ASSERT( !!myPhone );
-    LinSMSData* storage = getStorage( params );
-    XP_ASSERT( !!storage );
+    XP_ASSERT( !params->smsStorage );
+    LinSMSData* storage = XP_CALLOC( params->mpool, sizeof(*params->smsStorage) ); 
+    params->smsStorage = storage;
     storage->myPhone = myPhone;
     storage->myPort = myPort;
-    storage->procs = procs;
-    storage->procClosure = procClosure;
     storage->protoState = smsproto_init( MPPARM(params->mpool) NULL_XWE, params->dutil );
     XP_ASSERT( !!storage->protoState );
 
     formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
-    XP_LOGFF( " my queue: %s", storage->myQueue );
+    XP_LOGFF( "my queue: %s", storage->myQueue );
     storage->myPort = params->connInfo.sms.port;
 
     (void)g_mkdir_with_parents( storage->myQueue, 0777 );
@@ -303,124 +242,6 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
     (void)g_idle_add( check_for_files_once, params );
     (void)g_timeout_add( 500, check_for_files, params );
 } /* linux_sms_init */
-
-void
-linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
-                  const gchar* toPhone, int toPort )
-{
-    XP_LOGFF( "(toPhone: %s, toPort: %d)", toPhone, toPort );
-    LinSMSData* storage = getStorage( params );
-
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
-                                                params->vtMgr );
-    nli_saveToStream( nli, stream );
-    const XP_U8* ptr = stream_getPtr( stream );
-    XP_U16 len = stream_getSize( stream );
-
-    XP_U16 waitSecs;
-    const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
-    SMSMsgArray* arr
-        = smsproto_prepOutbound( storage->protoState, NULL_XWE, INVITE, nli->gameID, ptr,
-                                 len, toPhone, toPort, forceOld, &waitSecs );
-    XP_ASSERT( !!arr || !forceOld );
-    sendOrRetry( params, arr, INVITE, waitSecs, toPhone, toPort,
-                 nli->gameID, "invite" );
-    stream_destroy( stream );
-}
-
-static XP_S16
-linux_sms_send_impl( LaunchParams* params, const XP_U8* buf,
-                     XP_U16 buflen, const XP_UCHAR* msgNo, const XP_UCHAR* phone,
-                     XP_U16 port, XP_U32 gameID )
-{
-    XP_S16 nSent = -1;
-    LinSMSData* storage = getStorage( params );
-    if ( !!storage->protoState ) {
-        XP_U16 waitSecs;
-        SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE, DATA, gameID,
-                                                  buf, buflen, phone, port,
-                                                  XP_TRUE, &waitSecs );
-        sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo );
-        nSent = buflen;
-    } else {
-        XP_LOGFF( "dropping: sms not configured" );
-    }
-    return nSent;
-}
-
-XP_S16
-linux_sms_send( LaunchParams* params, const SendMsgsPacket* const msgs,
-                const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
-{
-    XP_S16 result = 0;
-    for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
-          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
-        XP_S16 tmp = linux_sms_send_impl( params, packet->buf,
-                     packet->len, packet->msgNo, phone, port, gameID );
-        if ( tmp > 0 ) {
-            result += tmp;
-        } else {
-            result = -1;
-            break;
-        }
-    }
-    return result;
-}
-
-typedef struct _RetryClosure {
-    LaunchParams* params;
-    SMS_CMD cmd;
-    XP_U16 port;
-    XP_U32 gameID;
-    XP_UCHAR msgNo[32];
-    XP_UCHAR phone[32];
-} RetryClosure;
-
-static void
-sendOrRetry( LaunchParams* params, SMSMsgArray* arr, SMS_CMD cmd,
-             XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
-             XP_U32 gameID, const XP_UCHAR* msgNo )
-{
-    if ( !!arr ) {
-        for ( XP_U16 ii = 0; ii < arr->nMsgs; ++ii ) {
-            const SMSMsgNet* msg = &arr->u.msgsNet[ii];
-            // doSend( params, msg->data, msg->len, phone, port, gameID );
-            (void)write_fake_sms( params, msg->data, msg->len, msgNo, 
-                                  phone, port );
-            sts_increment( params->dutil, NULL_XWE, STAT_NBS_SENT );
-        }
-
-        LinSMSData* storage = getStorage( params );
-        smsproto_freeMsgArray( storage->protoState, arr );
-    } else if ( waitSecs > 0 ) {
-        RetryClosure* closure = (RetryClosure*)XP_CALLOC( params->mpool,
-                                                          sizeof(*closure) );
-        closure->params = params;
-        XP_STRCAT( closure->phone, phone );
-        XP_STRCAT( closure->msgNo, msgNo );
-        closure->port = port;
-        closure->gameID = gameID;
-        closure->cmd = cmd;
-        g_timeout_add_seconds( 5, retrySend, closure );
-    }
-}
-
-static gboolean
-retrySend( gpointer data )
-{
-    RetryClosure* closure = (RetryClosure*)data;
-    LinSMSData* storage = getStorage( closure->params );
-    XP_U16 waitSecs;
-    SMSMsgArray* arr = smsproto_prepOutbound( storage->protoState, NULL_XWE,
-                                              closure->cmd,
-                                              closure->gameID, NULL, 0,
-                                              closure->phone, closure->port,
-                                              XP_TRUE, &waitSecs );
-    sendOrRetry( closure->params, arr, closure->cmd, waitSecs, closure->phone,
-                 closure->port, closure->gameID, closure->msgNo );
-    XP_FREEP( closure->params->mpool, &closure );
-    return FALSE;
-}
 
 static XP_Bool
 pickFile( LinSMSData* storage, XP_Bool pickAtRandom,
@@ -514,9 +335,9 @@ check_for_files_once( gpointer data )
 {
     // LOG_FUNC();
     LaunchParams* params = (LaunchParams*)data;
-    LinSMSData* storage = getStorage( params );
+    LinSMSData* storage = params->smsStorage;
 
-    for ( ; ; ) {
+    while ( !!storage ) {
         lock_queue( storage );
 
         uint8_t buf[256];
@@ -535,7 +356,7 @@ check_for_files_once( gpointer data )
             break;
         }
 
-        parseAndDispatch( params, buf, nRead, &fromAddr );
+        dvc_parseSMSPacket( params->dutil, NULL_XWE, &fromAddr, buf, nRead );
     }
     return FALSE;
 } /* check_for_files_once */
@@ -543,20 +364,11 @@ check_for_files_once( gpointer data )
 void
 linux_sms_cleanup( LaunchParams* params )
 {
-    LinSMSData* storage = getStorage( params );
-    smsproto_free( storage->protoState );
-    XP_FREEP( params->mpool, &params->smsStorage );
-}
-
-static LinSMSData* 
-getStorage( LaunchParams* params )
-{
-    LinSMSData* storage = (LinSMSData*)params->smsStorage;
-    if ( NULL == storage ) {
-        storage = XP_CALLOC( params->mpool, sizeof(*storage) );
-        params->smsStorage = storage;
+    LinSMSData* storage = params->smsStorage;
+    if ( !!storage ) {
+        smsproto_free( storage->protoState );
+        XP_FREEP( params->mpool, &params->smsStorage );
     }
-    return storage;
 }
 
 #endif /* XWFEATURE_SMS */

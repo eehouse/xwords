@@ -49,7 +49,6 @@ class XWSumListPreference(private val mContext: Context, attrs: AttributeSet?) :
 
         private val _s_game_summary_values_dbg = intArrayOf(
             R.string.game_summary_field_npackets,
-            R.string.game_summary_field_rowid,
             R.string.game_summary_field_gameid,
             R.string.title_addrs_pref,
             R.string.game_summary_field_created,

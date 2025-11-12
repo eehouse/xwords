@@ -19,22 +19,21 @@
 
 #include "timers.h"
 #include "xwmutex.h"
-#include "dllist.h"
+#include "xwarray.h"
+#include "dbgutil.h"
 
-#ifdef DUTIL_TIMERS
 typedef struct _TimerState {
-    DLHead links;
     TimerProc proc;
     void* closure;
     TimerKey key;
-    XP_U32 inWhen;
+    XP_U32 inWhenMS;
 } TimerState;
 
 typedef struct _TimerMgrState {
     XW_DUtilCtxt* dutil;
     MutexState mutex;
     XP_U32 nextKey;
-    TimerState* timers;
+    XWArray* timers;
 } TimerMgrState;
 
 static void clearPendings( XW_DUtilCtxt* dutil, XWEnv xwe );
@@ -47,6 +46,7 @@ tmr_init( XW_DUtilCtxt* dutil )
     TimerMgrState* tms = XP_CALLOC( dutil->mpool, sizeof(*tms) );
     tms->dutil = dutil;
     dutil->timersState = tms;
+    tms->timers = arr_make( MPPARM(dutil->mpool) PtrCmpProc, NULL);
     MUTEX_INIT( &tms->mutex, XP_TRUE );
 }
 
@@ -56,12 +56,13 @@ tmr_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     TimerMgrState* timersState = (TimerMgrState*)dutil->timersState;
     XP_ASSERT( !!timersState );
     clearPendings( dutil, xwe );
+    arr_destroy( timersState->timers );
     MUTEX_DESTROY( &timersState->mutex );
     XP_FREEP( dutil->mpool, &dutil->timersState );
 }
 
 TimerKey
-tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhen,
+tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhenMS,
          TimerProc proc, void* closure )
 {
     TimerKey key;
@@ -69,27 +70,27 @@ tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhen,
     XP_ASSERT( !!timersState );
 
     TimerState* ts = XP_CALLOC( dutil->mpool, sizeof(*ts) );
-    XP_LOGFF( "allocated timer %p", ts );
+    // XP_LOGFF( "allocated timer %p", ts );
     ts->proc = proc;
     ts->closure = closure;
-    ts->inWhen = inWhen;
+    ts->inWhenMS = inWhenMS;
     
     WITH_MUTEX( &timersState->mutex );
     key = ts->key = ++timersState->nextKey;
-    timersState->timers = (TimerState*)
-        dll_insert( &timersState->timers->links, &ts->links, NULL );
+    arr_insert( timersState->timers, xwe, ts );
     END_WITH_MUTEX();
 
-    dutil_setTimer( dutil, xwe, inWhen, ts->key );
+    dutil_setTimer( dutil, xwe, inWhenMS, ts->key );
     return key;
 }
 
 static void
-timerFired( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, TimerState* timer,
+timerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerState* timer,
             XP_Bool fired )
 {
-    // XP_LOGFF( "(timer=%p); key=%d", timer, timer->key );
-    (*timer->proc)( timer->closure, xwe, fired );
+    /* XP_LOGFF( "(timer=%p, fired=%s); key=%d", timer, boolToStr(fired), */
+    /*           timer->key ); */
+    (*timer->proc)( dutil, xwe, timer->closure, timer->key, fired );
     XP_FREE( dutil->mpool, timer );
 }
 
@@ -99,7 +100,7 @@ typedef struct _FindByKeyState {
 } FindByKeyState;
 
 static ForEachAct
-findByKeyProc( const DLHead* elem, void* closure )
+findByKeyProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     ForEachAct result = FEA_OK;
     FindByKeyState* fbksp = (FindByKeyState*)closure;
@@ -120,8 +121,7 @@ tmr_fired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
     FindByKeyState fbks = { .key = key };
 
     WITH_MUTEX( &timersState->mutex );
-    timersState->timers = (TimerState*)
-        dll_map( &timersState->timers->links, findByKeyProc, NULL, &fbks );
+    arr_map( timersState->timers, xwe, findByKeyProc, &fbks );
     END_WITH_MUTEX();
 
     if ( !!fbks.found ) {
@@ -137,7 +137,7 @@ typedef struct _FireAndDisposeState {
 } FireAndDisposeState;
 
 static void
-fireAndDispose( DLHead* elem, void* closure )
+fireAndDispose( void* elem, void* closure )
 {
     TimerState* ts = (TimerState*)elem;
     FireAndDisposeState* fadsp = (FireAndDisposeState*)closure;
@@ -148,20 +148,12 @@ fireAndDispose( DLHead* elem, void* closure )
 static void
 clearPendings( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
+    LOG_FUNC();
     TimerMgrState* timersState = (TimerMgrState*)dutil->timersState;
-    TimerState* timers;
-
-    /* Grab the list so we can run over it without a mutex */
-    WITH_MUTEX( &timersState->mutex );
-    timers = timersState->timers;
-    timersState->timers = NULL;
-    END_WITH_MUTEX();
 
     FireAndDisposeState fads = {
         .xwe = xwe,
         .dutil = dutil,
     };
-    dll_removeAll( &timers->links, fireAndDispose, &fads );
+    arr_removeAll( timersState->timers, fireAndDispose, &fads );
 }
-
-#endif

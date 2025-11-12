@@ -26,7 +26,7 @@
 
 #define ASK_HEIGHT 5
 #define PAD 2
-#define MAX_LINES 15
+#define MAX_LINES 25
 #define MIN_WIDTH 25
 
 

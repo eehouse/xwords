@@ -23,17 +23,15 @@
 #include "main.h"
 #include "nli.h"
 
-void mqttc_init( LaunchParams* params );
+void mqttc_init( LaunchParams* params, const MQTTDevID* devID,
+                 const XP_UCHAR** topics, XP_U8 qos );
 void mqttc_cleanup( LaunchParams* params );
 
 const MQTTDevID* mqttc_getDevID( LaunchParams* params );
 const gchar* mqttc_getDevIDStr( LaunchParams* params );
-void mqttc_invite( LaunchParams* params, const NetLaunchInfo* nli,
-                   const MQTTDevID* mqttInvitee );
 void mqttc_onInviteHandled( LaunchParams* params, const NetLaunchInfo* nli );
-XP_S16 mqttc_send( LaunchParams* params, XP_U32 gameID,
-                   const SendMsgsPacket* const msgs, XP_U16 streamVersion,
-                   const MQTTDevID* addressee );
+void mqttc_enqueue( LaunchParams* params, const XP_UCHAR* topic, const XP_U8* buf,
+                    XP_U16 len, XP_U8 qos );
 void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );
 
 bool mqttc_strToDevID( const gchar* str, MQTTDevID* result );

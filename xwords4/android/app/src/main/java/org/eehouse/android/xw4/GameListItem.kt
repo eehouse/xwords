@@ -21,6 +21,7 @@ package org.eehouse.android.xw4
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.os.Handler
 import android.util.AttributeSet
@@ -28,10 +29,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import java.text.DateFormat
@@ -39,6 +37,8 @@ import java.util.Date
 
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
+import org.eehouse.android.xw4.jni.CurGameInfo
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -48,10 +48,8 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     LinearLayout(mContext, aset),
     View.OnClickListener, LongClickHandler, ExpandChangeListener
 {
-    private var mActivity: Activity? = null
     private var m_loaded: Boolean
-    var rowID: Long
-        private set
+    private var mGR: GameRef? = null
     private var m_hideable: View? = null
     private var mThumbView: ImageView? = null
     private var mThumb: Bitmap? = null
@@ -64,19 +62,18 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     private var m_gameTypeImage: ImageView? = null
     private var m_role: TextView? = null
 
-    private var m_expanded = false
     private var m_haveTurn = false
     private var m_haveTurnLocal = false
     private var m_lastMoveTime: Long
     private var m_expandButton: ExpandImageButton? = null
-    private var m_handler: Handler? = null
+    private var mHandler: Handler? = null
 
     private var mSummary: GameSummary? = null
+    private var mGi: CurGameInfo? = null
 
-    private var m_cb: SelectableItem? = null
+    private var mCb: SelectableItem? = null
     private var m_fieldID = 0
-    private var m_loadingCount: Int
-    private var m_selected = false
+    private var mSelected = false
     private val m_dsdel: DrawSelDelegate
 
     fun getSummary(): GameSummary?
@@ -84,27 +81,35 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         return mSummary;
     }
 
-    private fun init(
-        handler: Handler, rowid: Long, fieldID: Int,
-        cb: SelectableItem
-    ) {
-        m_handler = handler
-        rowID = rowid
-        m_fieldID = fieldID
-        m_cb = cb
+    fun getGI(): CurGameInfo { return mGi!! }
 
+    fun gr(): GameRef {
+        return mGR!!
+    }
+
+    fun load(gr: GameRef, cb: SelectableItem, handler: Handler, selected: Boolean) {
+        mGR = gr
+        mCb = cb
+        mHandler = handler
+        setSelected(selected)
         forceReload()
     }
 
     fun forceReload() {
-        // DbgUtils.logf( "GameListItem.forceReload: rowid=%d", m_rowid );
         setLoaded(false)
-        // Apparently it's impossible to reliably cancel an existing
-        // AsyncTask, so let it complete, but drop the results as soon
-        // as we're back on the UI thread.
-        ++m_loadingCount
 
-        LoadItemTask().start()
+        launch {
+            findViewsOnce()
+            mGi = mGR!!.getGI()
+            mGR!!.getSummary()?.let { summary ->
+                mSummary = summary
+                makeThumbnailIf(summary)
+                summary.setGI(mGi!!)
+                Log.d(TAG, "got summary: $summary")
+                setData(summary)
+                setLoaded(true)
+            }
+        }
     }
 
     fun invalName() {
@@ -113,16 +118,16 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
     override fun setSelected(selected: Boolean) {
         // If new value and state not in sync, force change in state
-        if (selected != m_selected) {
+        if (selected != mSelected) {
             toggleSelected()
         }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (DBUtils.ROWID_NOTFOUND != rowID) {
+        mGR?.let {
             synchronized(s_invalRows) {
-                if (s_invalRows.contains(rowID) ) {
+                if (s_invalRows.contains(it.gr) ) {
                     forceReload()
                 }
             }
@@ -130,10 +135,9 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     }
 
     private fun update(
-        expanded: Boolean, lastMoveTime: Long, haveTurn: Boolean,
+        lastMoveTime: Long, haveTurn: Boolean,
         haveTurnLocal: Boolean
     ) {
-        m_expanded = expanded
         m_lastMoveTime = lastMoveTime
         m_haveTurn = haveTurn
         m_haveTurnLocal = haveTurnLocal
@@ -143,12 +147,11 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     // View.OnClickListener interface
     override fun onClick(view: View) {
         val id = view.id
+        Log.d(TAG, "onClick($id)")
         when (id) {
             R.id.game_view_container -> toggleSelected()
             R.id.right_side, R.id.thumbnail ->
-                if (null != mSummary) {
-                    m_cb!!.itemClicked(this@GameListItem)
-                }
+                mCb!!.itemClicked(this@GameListItem)
 
             else -> Assert.failDbg()
         }
@@ -156,31 +159,33 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
     // ExpandImageButton.ExpandChangeListener
     override fun expandedChanged(nowExpanded: Boolean) {
-        m_expanded = nowExpanded
-        DBUtils.setExpanded(mContext, rowID, m_expanded)
-
-        makeThumbnailIf(m_expanded)
-
-        showHide()
+        // Log.d(TAG, "expandedChanged(nowExpanded: $nowExpanded)")
+        mGR!!.setCollapsed(!nowExpanded)
+        launch {
+            mSummary = mGR!!.getSummary()
+            showHide()
+        }
     }
 
-    private fun findViews() {
-        m_hideable = findViewById<LinearLayout>(R.id.hideable)
-        m_name = findViewById<ExpiringTextView>(R.id.game_name)
-        m_expandButton = findViewById<ExpandImageButton>(R.id.expander)
-        m_expandButton!!.setOnExpandChangedListener(this)
-        m_viewUnloaded = findViewById<TextView>(R.id.view_unloaded)
-        m_viewLoaded = findViewById(R.id.view_loaded)
-        findViewById<View>(R.id.game_view_container).setOnClickListener(this)
-        m_list = findViewById<LinearLayout>(R.id.player_list)
-        m_state = findViewById<TextView>(R.id.state)
-        m_modTime = findViewById<TextView>(R.id.modtime)
-        m_gameTypeImage = findViewById<View>(R.id.game_type_marker) as ImageView
-        mThumbView = findViewById<ImageView>(R.id.thumbnail)
-        mThumbView!!.setOnClickListener(this)
-        m_role = findViewById<TextView>(R.id.role)
+    private fun findViewsOnce() {
+        if ( null == m_hideable ) {
+            m_hideable = findViewById<LinearLayout>(R.id.hideable)
+            m_name = findViewById<ExpiringTextView>(R.id.game_name)
+            m_expandButton = findViewById<ExpandImageButton>(R.id.expander)
+            m_expandButton!!.setOnExpandChangedListener(this)
+            m_viewUnloaded = findViewById<TextView>(R.id.view_unloaded)
+            m_viewLoaded = findViewById(R.id.view_loaded)
+            findViewById<View>(R.id.game_view_container).setOnClickListener(this)
+            m_list = findViewById<LinearLayout>(R.id.player_list)
+            m_state = findViewById<TextView>(R.id.state)
+            m_modTime = findViewById<TextView>(R.id.modtime)
+            m_gameTypeImage = findViewById<View>(R.id.game_type_marker) as ImageView
+            mThumbView = findViewById<ImageView>(R.id.thumbnail)
+            mThumbView!!.setOnClickListener(this)
+            m_role = findViewById<TextView>(R.id.role)
 
-        findViewById<View>(R.id.right_side).setOnClickListener(this)
+            findViewById<View>(R.id.right_side).setOnClickListener(this)
+        }
     }
 
     private fun setLoaded(loaded: Boolean) {
@@ -198,43 +203,48 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     }
 
     private fun showHide() {
-        m_expandButton!!.setExpanded(m_expanded)
-        m_hideable!!.visibility = if (m_expanded) VISIBLE else GONE
+        mSummary?.let {
+            val expanded = !it.collapsed
+            Log.d(TAG, "showHide(): expanded: $expanded")
 
-        val showThumb = (null != mThumb && XWPrefs.getThumbEnabled(mContext)
-                && m_expanded)
-        if (showThumb) {
-            mThumbView!!.visibility = VISIBLE
-            mThumbView!!.setImageBitmap(mThumb)
-        } else {
-            mThumbView!!.visibility = GONE
+            m_expandButton!!.setExpanded(expanded)
+            m_hideable!!.visibility = if (expanded) VISIBLE else GONE
+
+            val showThumb = (null != mThumb && XWPrefs.getThumbEnabled(mContext)
+                                 && expanded)
+            Log.d(TAG, "showHide: showThumb: $showThumb")
+            if (showThumb) {
+                mThumbView!!.visibility = VISIBLE
+                mThumbView!!.setImageBitmap(mThumb)
+            } else {
+                mThumbView!!.visibility = GONE
+            }
+            m_name!!.setBackgroundColor(android.R.color.transparent)
+            mHandler?.let {
+                m_name?.setPct(
+                    it, m_haveTurn && !expanded,
+                    m_haveTurnLocal, m_lastMoveTime
+                )
+            }
         }
-
-        m_name!!.setBackgroundColor(android.R.color.transparent)
-        m_name!!.setPct(
-            m_handler!!, m_haveTurn && !m_expanded,
-            m_haveTurnLocal, m_lastMoveTime
-        )
     }
 
     private fun setName(): String? {
         var state: String? = null // hack to avoid calling summarizeState twice
-        if (null != mSummary) {
-            val summary = mSummary!!
+        mSummary?.let { summary ->
             state = summary.summarizeState(mContext)
             var value = when (m_fieldID) {
                 R.string.game_summary_field_empty -> null
                 R.string.game_summary_field_gameid ->
                     String.format("ID:%X", summary.gameID)
 
-                R.string.game_summary_field_rowid -> String.format("%d", rowID)
                 R.string.game_summary_field_npackets ->
                     String.format("%d", summary.nPacketsPending)
 
                 R.string.game_summary_field_language -> dictLang
                 R.string.game_summary_field_opponents -> summary.playerNames(mContext)
                 R.string.game_summary_field_state -> state
-                R.string.title_addrs_pref -> summary.conTypes!!.toString(mContext, false)
+                R.string.title_addrs_pref -> mGi!!.conTypes?.toString(mContext, false)
                 R.string.game_summary_field_created ->
                     sDF.format(Date(summary.created))
                 else -> {
@@ -243,7 +253,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
                     null
                 } // here
             }
-            val name = GameUtils.getName(mContext, rowID)
+            val name = mGi!!.gameName
             value = if (null != value) {
                 LocUtils.getString(
                     mContext, R.string.str_game_name_fmt,
@@ -271,92 +281,89 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
             return langName!!
         }
 
-    private fun setData(summary: GameSummary?, expanded: Boolean) {
-        if (null != summary) {
-            val state = setName()
+    private suspend fun setData(summary: GameSummary) {
+        val state = setName()
 
-            m_list!!.removeAllViews()
-            var haveATurn = false
-            var haveALocalTurn = false
-            val isLocal = BooleanArray(1)
-            for (ii in 0 until summary.nPlayers) {
-                val tmp = LocUtils.inflate(mContext, R.layout.player_list_elem)
-                    as ExpiringLinearLayout
-                var tview = tmp.findViewById<TextView>(R.id.item_name)
-                tview.text = summary.summarizePlayer(mContext, rowID, ii)
-                tview = tmp.findViewById<TextView>(R.id.item_score)
-                tview.text = String.format("%d", summary.scores!![ii])
-                val thisHasTurn = summary.isNextToPlay(ii, isLocal)
-                if (thisHasTurn) {
-                    haveATurn = true
-                    if (isLocal[0]) {
-                        haveALocalTurn = true
-                    }
-                }
-                tmp.setPct(m_handler!!, thisHasTurn, isLocal[0],
-                           summary.lastMoveTime.toLong())
-                m_list!!.addView(tmp, ii)
-            }
-
-            m_state!!.text = state
-
-            var lastMoveTime = summary.lastMoveTime.toLong()
-            lastMoveTime *= 1000
-            m_modTime!!.text = sDF.format(Date(lastMoveTime))
-
-            setTypeIcon()
-
-            // Let's use the chat-icon space for an ALERT icon when we're
-            // quarantined. Not ready for non-debug use though, as it shows up
-            // periodically as a false positive. Chat icon wins if both should
-            // be displayed, mostly because of the false positives.
-            var resID = 0
-            if (summary.isMultiGame) {
-                val flags = DBUtils.getMsgFlags(mContext, rowID)
-                if (0 != (flags and GameSummary.MSG_FLAGS_CHAT)) {
-                    resID = R.drawable.green_chat__gen
+        m_list!!.removeAllViews()
+        var haveATurn = false
+        var haveALocalTurn = false
+        val isLocal = BooleanArray(1)
+        for (ii in 0 until summary.nPlayers) {
+            val tmp = LocUtils.inflate(mContext, R.layout.player_list_elem)
+                as ExpiringLinearLayout
+            var tview = tmp.findViewById<TextView>(R.id.item_name)
+            tview.text = summary.summarizePlayer(mContext, ii)
+            tview = tmp.findViewById<TextView>(R.id.item_score)
+            tview.text = String.format("%d", summary.scores!![ii])
+            val thisHasTurn = summary.isNextToPlay(ii, isLocal)
+            if (thisHasTurn) {
+                haveATurn = true
+                if (isLocal[0]) {
+                    haveALocalTurn = true
                 }
             }
-            if (0 == resID && BuildConfig.NON_RELEASE
-                && !Quarantine.safeToOpen(rowID)
-            ) {
-                resID = android.R.drawable.stat_sys_warning
-            }
-            // Setting to 0 clears, which we want
-            val iv = findViewById<View>(R.id.has_chat_marker) as ImageView
-            iv.setImageResource(resID)
-            if (BuildConfig.NON_RELEASE) {
-                val quarCount = Quarantine.getCount(rowID)
-                findViewById<TextView>(R.id.corrupt_count_marker).text =
-                    // 1 is normal: means the game's open.
-                    if (quarCount <= 1) "" else "$quarCount"
-            }
-
-            if (XWPrefs.moveCountEnabled(mContext)) {
-                val tv = findViewById<View>(R.id.n_pending) as TextView
-                val nPending = summary.nPacketsPending
-                val str = if (nPending == 0) "" else String.format("%d", nPending)
-                tv.text = str
-            }
-
-            val roleSummary = summary.summarizeRole(mContext, rowID)
-            m_role!!.visibility = if (null == roleSummary) GONE else VISIBLE
-            if (null != roleSummary) {
-                m_role!!.text = roleSummary
-            }
-
-            findViewById<View>(R.id.dup_tag).visibility =
-                if (summary.inDuplicateMode()) VISIBLE else GONE
-
-            update(
-                expanded, summary.lastMoveTime.toLong(), haveATurn,
-                haveALocalTurn
-            )
+            tmp.setPct(mHandler!!, thisHasTurn, isLocal[0],
+                       summary.lastMoveTime.toLong())
+            m_list!!.addView(tmp, ii)
         }
+
+        m_state!!.text = state
+
+        var lastMoveTime = summary.lastMoveTime.toLong()
+        lastMoveTime *= 1000
+        m_modTime!!.text = sDF.format(Date(lastMoveTime))
+
+        setTypeIcon()
+
+        // Let's use the chat-icon space for an ALERT icon when we're
+        // quarantined. Not ready for non-debug use though, as it shows up
+        // periodically as a false positive. Chat icon wins if both should
+        // be displayed, mostly because of the false positives.
+        var resID = 0
+        if (summary.isMultiGame) {
+            // val flags = DBUtils.getMsgFlags(mContext, rowID)
+            // if (0 != (flags and GameSummary.MSG_FLAGS_CHAT)) {
+            //     resID = R.drawable.green_chat__gen
+            // }
+        }
+        if (0 == resID && BuildConfig.NON_RELEASE && !mGR!!.safeToOpen()
+        ) {
+            resID = android.R.drawable.stat_sys_warning
+        }
+        // Setting to 0 clears, which we want
+        val iv = findViewById<View>(R.id.has_chat_marker) as ImageView
+        iv.setImageResource(resID)
+        if (BuildConfig.NON_RELEASE) {
+            val quarCount = mGR!!.failedOpenCount()
+            findViewById<TextView>(R.id.corrupt_count_marker).text =
+                // 1 is normal: means the game's open.
+                if (quarCount <= 1) "" else "$quarCount"
+        }
+
+        if (XWPrefs.moveCountEnabled(mContext)) {
+            val tv = findViewById<View>(R.id.n_pending) as TextView
+            val nPending = summary.nPacketsPending
+            val str = if (nPending == 0) "" else String.format("%d", nPending)
+            tv.text = str
+        }
+
+        val roleSummary = summary.summarizeRole(mContext, mGR!!)
+        m_role!!.visibility = if (null == roleSummary) GONE else VISIBLE
+        if (null != roleSummary) {
+            m_role!!.text = roleSummary
+        }
+
+        findViewById<View>(R.id.dup_tag).visibility =
+            if (summary.inDuplicateMode()) VISIBLE else GONE
+
+        Log.d(TAG, "setData(): collapsed: ${summary.collapsed}")
+        update(
+            summary.lastMoveTime.toLong(), haveATurn, haveALocalTurn
+        )
     }
 
     private fun setTypeIcon() {
-        if (null != mSummary) { // to be safe
+        mSummary?.let { // to be safe
             val iconID = if (mSummary!!.isMultiGame
             ) R.drawable.ic_multigame
             else R.drawable.ic_sologame
@@ -365,26 +372,24 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
     }
 
     private fun toggleSelected() {
-        m_selected = !m_selected
-        m_dsdel.showSelected(m_selected)
-        m_cb!!.itemToggled(this, m_selected)
+        mSelected = !mSelected
+        m_dsdel.showSelected(mSelected)
+        mCb!!.itemToggled(this, mSelected)
 
-        findViewById<View>(R.id.game_checked).visibility = if (m_selected) VISIBLE else GONE
+        findViewById<View>(R.id.game_checked).visibility =
+            if (mSelected) VISIBLE else GONE
     }
 
-    private fun makeThumbnailIf(expanded: Boolean)
+    private suspend fun makeThumbnailIf(summary: GameSummary)
     {
-        if (expanded && XWPrefs.getThumbEnabled(mContext)) {
-            CoroutineScope(Job() + Dispatchers.IO).launch {
-                var thumb = DBUtils.getThumbnail(mContext, rowID)
-                if (null == thumb) {
-                    // loadMakeBitmap puts in DB
-                    thumb = GameUtils.loadMakeBitmap(mContext, rowID) // here
-                }
-
-                thumb?.let {
+        // Log.d(TAG, "makeThumbnailIf($expanded)")
+        if (!summary.collapsed && XWPrefs.getThumbEnabled(mContext)) {
+            Log.d(TAG, "makeThumbnailIf(): calling getThumbData()")
+            mGR!!.getThumbData()?.let {
+                BitmapFactory.decodeByteArray(it, 0, it!!.size)?.let {
                     withContext(Dispatchers.Main) {
                         mThumb = it
+                        Log.d(TAG, "makeThumbnailIf: created it!!!")
                         showHide()
                     }
                 }
@@ -392,46 +397,14 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         }
     }
 
-    private inner class LoadItemTask() : Thread() {
-        override fun run() {
-            val summary = GameUtils.getSummary(
-                mContext, rowID, SUMMARY_WAIT_MSECS.toLong()
-            )
-
-            if (0 == --m_loadingCount) {
-                mSummary = summary
-
-                mActivity?.runOnUiThread {
-                    val expanded = DBUtils.getExpanded(mContext, rowID)
-                    makeThumbnailIf(expanded)
-
-                    setData(summary, expanded)
-                    setLoaded(null != mSummary)
-                    if (null == summary) {
-                        m_viewUnloaded!!
-                            .setText(LocUtils.getString(mContext, R.string.summary_busy))
-                    }
-                    synchronized(s_invalRows) {
-                        s_invalRows.remove(rowID)
-                    }
-                }
-            }
-        }
-    } // class LoadItemTask
-
     // GameListAdapter.ClickHandler interface
     override fun longClicked() {
         toggleSelected()
     }
 
     init {
-        if (mContext is Activity) {
-            mActivity = mContext
-        }
         m_loaded = false
-        rowID = DBUtils.ROWID_NOTFOUND
         m_lastMoveTime = 0
-        m_loadingCount = 0
         m_dsdel = DrawSelDelegate(this)
     }
 
@@ -443,28 +416,10 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         private val sDF: DateFormat = DateFormat
             .getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
 
-        fun makeForRow(
-            context: Context, convertView: View?,
-            rowid: Long, handler: Handler,
-            fieldID: Int, cb: SelectableItem
-        ): GameListItem {
-            val result: GameListItem
-            if (null != convertView && convertView is GameListItem) {
-                result = convertView
-            } else {
-                result = LocUtils.inflate(context,R.layout.game_list_item)
-                    as GameListItem
-                result.findViews()
-            }
-            result.init(handler, rowid, fieldID, cb)
-            return result
-        }
-
-        fun inval(rowid: Long) {
+        fun inval(gr: GameRef) {
             synchronized(s_invalRows) {
-                s_invalRows.add(rowid)
+                s_invalRows.add(gr.gr)
             }
-            // Log.d( TAG, "GameListItem.inval(rowid=%d)", rowid );
         }
     }
 }

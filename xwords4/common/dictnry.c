@@ -44,8 +44,8 @@ static XP_Bool makeBitmap( XP_U8 const** ptrp, const XP_U8* end );
 static XP_U8* getCountsFor( const DictionaryCtxt* dict, XP_U16 nCols );
 
 const DictionaryCtxt*
-p_dict_ref( const DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
-#ifdef DEBUG_REF
+p_dict_ref( const DictionaryCtxt* dict
+#ifdef DEBUG_DICT_REF
             ,const char* func, const char* file, int line
 #endif
             )
@@ -54,7 +54,7 @@ p_dict_ref( const DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
         DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
         WITH_MUTEX( &_dict->mutex );
         ++_dict->refCount;
-#ifdef DEBUG_REF
+#ifdef DEBUG_DICT_REF
         XP_LOGFF( "(dict=%p): refCount now %d (from line %d of %s() in %s)",
                  dict, dict->refCount, line, func, file );
 #endif
@@ -65,7 +65,7 @@ p_dict_ref( const DictionaryCtxt* dict, XWEnv XP_UNUSED(xwe)
 
 void
 p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
-#ifdef DEBUG_REF
+#ifdef DEBUG_DICT_REF
             ,const char* func, const char* file, int line
 #endif
               )
@@ -76,7 +76,7 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
         XP_ASSERT( 0 != _dict->refCount );
         --_dict->refCount;
         XP_ASSERT( 0 <= _dict->refCount );
-#ifdef DEBUG_REF
+#ifdef DEBUG_DICT_REF
         XP_LOGFF( "(dict=%p): refCount now %d  (from line %d of %s() in %s)",
                   dict, dict->refCount, line, func, file );
 #endif
@@ -941,7 +941,6 @@ dict_getMaxWidth( const DictionaryCtxt* dict )
 }
 #endif
 
-
 const XP_UCHAR*
 dict_getName( const DictionaryCtxt* dict )
 {
@@ -985,7 +984,7 @@ dict_getWordCount( const DictionaryCtxt* dict, XWEnv xwe )
     XP_U32 nWords = dict->nWords;
 #ifdef XWFEATURE_WALKDICT
     if ( 0 == nWords ) {
-        DictIter* iter = di_makeIter( dict, xwe, NULL, NULL, 0, NULL, 0 );
+        DictIter* iter = di_makeIter( dict, NULL, NULL, 0, NULL, 0 );
         nWords = di_countWords( iter, NULL );
         di_freeIter( iter, xwe );
     }
@@ -1196,9 +1195,14 @@ dict_super_edge_with_tile( const DictionaryCtxt* dict, array_edge* from,
 } /* edge_with_tile */
 
 void
-dict_super_init( MPFORMAL DictionaryCtxt* dict )
+dict_super_init( MPFORMAL DictionaryCtxt* dict, DictDestructor destructor )
 {
+    LOG_FUNC();
     MPASSIGN(dict->mpool, mpool);
+    XP_ASSERT( 0 == dict->refCount );
+    dict->refCount = 1;
+
+    dict->destructor = destructor;
 
     /* subclass may change these later.... */
     dict->func_edge_for_index = dict_super_edge_for_index;

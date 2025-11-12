@@ -59,7 +59,6 @@ typedef struct BlankQueue {
     XP_U8 row[MAX_NUM_BLANKS];
 } BlankQueue;
 
-typedef XP_U16 TileBit;    /* bits indicating selection of tiles in tray */
 #define ALLTILES ((TileBit)~(0xFF<<(MAX_TRAY_TILES)))
 
 #define ILLEGAL_MOVE_SCORE (-1)
@@ -70,14 +69,14 @@ typedef XP_U16 TileBit;    /* bits indicating selection of tiles in tray */
                                           only */
 
 
-ModelCtxt* model_make( MPFORMAL XWEnv xwe, const DictionaryCtxt* dict,
-                       const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols );
+ModelCtxt* model_make( XWEnv xwe, const DictionaryCtxt* dict,
+                       const PlayerDicts* dicts, XW_UtilCtxt** utilp, XP_U16 nCols );
 
-ModelCtxt* model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+ModelCtxt* model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                                  const DictionaryCtxt* dict, const PlayerDicts* dicts,
-                                 XW_UtilCtxt* util );
+                                 XW_UtilCtxt** utilp );
 
-void model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream );
+void model_writeToStream( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream );
 
 #ifdef TEXT_MODEL
 void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
@@ -116,6 +115,11 @@ void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 void model_assignDupeTiles( ModelCtxt* model, XWEnv xwe, const TrayTileSet* tiles );
 
 Tile model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index );
+
+void model_setSecondsUsed( ModelCtxt* model, XP_U16 turn, XP_U16 newSeconds );
+void model_augmentSecondsUsed( ModelCtxt* model, XP_U16 turn, XP_U16 bySeconds );
+XP_U32 model_getSecondsUsed( const ModelCtxt* model, XP_U16 turn );
+XP_U16 model_timePenalty( const ModelCtxt* model, XP_U16 playerNum );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_removePlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles );
@@ -203,6 +207,14 @@ XP_Bool model_makeTurnFromStream( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
 void model_makeTurnFromMoveInfo( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                                  const MoveInfo* newMove );
 
+void model_chatReceived( ModelCtxt* model, XWEnv xwe, XP_UCHAR* msg,
+                         XP_S16 from, XP_U32 timestamp );
+XP_U16 model_countChats( ModelCtxt* model );
+void model_getChat( ModelCtxt* model, XP_U16 nn, XP_UCHAR* buf, XP_U16* bufLen,
+                    XP_S16* from, XP_U32* timestamp );
+void model_addChat( ModelCtxt* model, XWEnv xwe, const XP_UCHAR* msg, XP_S16 from,
+                    XP_U32 timestamp );
+void model_deleteChats( ModelCtxt* model );
 #ifdef DEBUG
 void juggleMoveIfDebug( MoveInfo* move );
 void model_dumpSelf( const ModelCtxt* model, const XP_UCHAR* msg );
@@ -297,7 +309,6 @@ XP_Bool model_checkMoveLegal( ModelCtxt* model, XWEnv xwe, XP_S16 player,
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
 
-typedef struct _ScoresArray { XP_S16 arr[MAX_NUM_PLAYERS]; } ScoresArray;
 void model_figureFinalScores( const ModelCtxt* model, ScoresArray* scores,
                               ScoresArray* tilePenalties );
 

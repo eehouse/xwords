@@ -274,24 +274,24 @@ class WiDirService : XWService() {
         val rowids = DBUtils.getRowIDsFor(this, nli.gameID())
         if (0 == rowids.size) {
             val addr = nli.makeAddrRec(this)
-            val rowid = GameUtils.makeNewMultiGame2(
+            GameUtils.makeNewMultiGame2(
                 this, nli,
                 m_sink,
                 mHelper!!.utilCtxt
-            )
-            if (DBUtils.ROWID_NOTFOUND != rowid) {
+            )?.let { gr ->
                 val gameName = nli.gameName
                 if ( 0 < (gameName?.length ?: 0) ) {
-                    DBUtils.setName(this, rowid, gameName!!)
+                    // DBUtils.setName(this, rowid, gameName!!)
                 }
                 val body = LocUtils.getString(
                     this, R.string.new_bt_body_fmt,
                     senderMac
                 )
-                GameUtils.postInvitedNotification(
-                    this, nli.gameID(), body,
-                    rowid
-                )
+                Assert.failDbg()
+                // GameUtils.postInvitedNotification(
+                //     this, nli.gameID(), body,
+                //     gr
+                // )
             }
         }
     }

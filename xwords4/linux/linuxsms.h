@@ -24,24 +24,9 @@
 #include "main.h"
 #include "nli.h"
 
-typedef struct _SMSProcs {
-    void (*inviteReceived)( void* closure, const NetLaunchInfo* nli );
-    void (*msgReceived)( void* closure, const CommsAddrRec* from, XP_U32 gameID,
-                         const XP_U8* buf, XP_U16 len );
-    void (*msgNoticeReceived)( void* closure );
-    void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
-                           XP_U16 maxInterval );
-    void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-} SMSProcs;
-
-
-void linux_sms_init( LaunchParams* params, const gchar* phone, 
-                     XP_U16 port, const SMSProcs* procs, void* procClosure );
-XP_S16 linux_sms_send( LaunchParams* params, const SendMsgsPacket* const msgs,
-                       const XP_UCHAR* phone, XP_U16 port,
-                       XP_U32 gameID );
-void linux_sms_invite( LaunchParams* params, const NetLaunchInfo* nli,
-                       const gchar* phone, int port );
+void linux_sms_init( LaunchParams* params, const gchar* phone, XP_U16 port );
+void linux_sms_enqueue( LaunchParams* params, const XP_U8* buf, XP_U16 len,
+                        const XP_UCHAR* phone, XP_U16 port );
 void linux_sms_cleanup( LaunchParams* params );
 
 #endif /* XWFEATURE_SMS */

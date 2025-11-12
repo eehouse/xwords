@@ -26,13 +26,12 @@ import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
-import org.eehouse.android.xw4.Quarantine
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
-import org.eehouse.android.xw4.jni.JNIThread.GameStateInfo
+// import org.eehouse.android.xw4.jni.JNIThread.GameStateInfo
 
 // Collection of native methods and a bit of state
 class XwJNI private constructor() {
@@ -46,7 +45,7 @@ class XwJNI private constructor() {
             m_ptrGame = ptr
             this.rowid = rowid
             mStack = android.util.Log.getStackTraceString(Exception())
-            Quarantine.recordOpened(rowid)
+            // Quarantine.recordOpened(rowid)
         }
 
         @Synchronized
@@ -77,7 +76,7 @@ class XwJNI private constructor() {
             //        getClass().getName(), this, m_rowid, m_refCount );
             if (0 == m_refCount) {
                 if (0L != m_ptrGame) {
-                    Quarantine.recordClosed(rowid)
+                    // Quarantine.recordClosed(rowid)
                     if (haveEnv(jNI.m_ptrGlobals)) {
                         game_dispose(this) // will crash if haveEnv fails
                     } else {
@@ -167,18 +166,6 @@ class XwJNI private constructor() {
         cleanGlobals(m_ptrGlobals)
     }
 
-    // Keep in sync with server.h
-    enum class RematchOrder(val strID: Int) {
-        RO_NONE(0),
-        RO_SAME(R.string.ro_same),
-        RO_LOW_SCORE_FIRST(R.string.ro_low_score_first),
-        RO_HIGH_SCORE_FIRST(R.string.ro_high_score_first),
-        RO_JUGGLE(R.string.ro_juggle);
-
-		// fun getStrID(): Int = strID
-
-    }
-
     enum class XP_Key {
         XP_KEY_NONE,
         XP_CURSOR_KEY_DOWN,
@@ -203,100 +190,12 @@ class XwJNI private constructor() {
         ACK_INVITE
     }
 
-    enum class STAT {
-        STAT_NONE,
-        STAT_MQTT_RCVD,
-        STAT_MQTT_SENT,
-
-        STAT_REG_NOROOM,
-
-        STAT_NEW_SOLO,
-        STAT_NEW_TWO,
-        STAT_NEW_THREE,
-        STAT_NEW_FOUR,
-        STAT_NEW_REMATCH,
-
-        STAT_NBS_RCVD,
-        STAT_NBS_SENT,
-        STAT_BT_RCVD,
-        STAT_BT_SENT,
-
-        STAT_NSTATS,
-    }
-
-    class SMSProtoMsg {
-        @JvmField
-        var cmd: SMS_CMD? = null
-        @JvmField
-        var gameID = 0
-        @JvmField
-        var data // other cases
-                : ByteArray? = null
-    }
-
-    // Dicts
-    class DictWrapper {
-        var dictPtr: Long
-            private set
-
-        constructor() {
-            dictPtr = 0L
-        }
-
-        constructor(dictPtr: Long) {
-            this.dictPtr = dictPtr
-            dict_ref(dictPtr)
-        }
-
-        fun release() {
-            if (0L != dictPtr) {
-                dict_unref(dictPtr)
-                dictPtr = 0
-            }
-        }
-
-        // @Override
-        @Throws(Throwable::class)
-        fun finalize() {
-            release()
-        }
-    }
-
     init {
         var seed = Utils.nextRandomInt().toLong()
         seed = seed shl 32
         seed = seed or Utils.nextRandomInt().toLong()
         seed = seed xor System.currentTimeMillis()
         m_ptrGlobals = globalsInit(DUtilCtxt(), JNIUtilsImpl.get(), seed)
-    }
-
-    class PatDesc : Serializable {
-        @JvmField
-        var strPat: String? = null
-        @JvmField
-        var tilePat: ByteArray? = null
-        @JvmField
-        var anyOrderOk = false
-        override fun toString(): String {
-            return String.format(
-                "{str: %s; nTiles: %d; anyOrderOk: %b}",
-                strPat, tilePat?.size ?: 0, anyOrderOk )
-        }
-    }
-
-    class IterWrapper(private val ref: Long) {
-
-        @Throws(Throwable::class)
-        fun finalize() {
-            di_destroy(ref)
-        }
-
-		fun getRef(): Long = ref
-
-    }
-
-    interface DictIterProcs {
-        fun onIterReady(iterRef: IterWrapper?)
     }
 
     companion object {
@@ -316,21 +215,19 @@ class XwJNI private constructor() {
             cleanGlobals()
         }
 
-        fun dvc_getMQTTDevID(): String {
-            return dvc_getMQTTDevID(jNI.m_ptrGlobals)
-        }
+        fun getJNIState(): Long { return jNI.m_ptrGlobals }
 
-        fun dvc_setMQTTDevID(newID: String): Boolean {
-            return dvc_setMQTTDevID(jNI.m_ptrGlobals, newID)
-        }
+        // fun dvc_getMQTTDevID(): String {
+        //     return dvc_getMQTTDevID(jNI.m_ptrGlobals)
+        // }
 
-        fun dvc_resetMQTTDevID() {
-            dvc_resetMQTTDevID(jNI.m_ptrGlobals)
-        }
+        // fun dvc_setMQTTDevID(newID: String): Boolean {
+        //     return dvc_setMQTTDevID(jNI.m_ptrGlobals, newID)
+        // }
 
-        fun dvc_getMQTTSubTopics(qosout: IntArray): Array<String> {
-            return dvc_getMQTTSubTopics(jNI.m_ptrGlobals, qosout)
-        }
+        // fun dvc_resetMQTTDevID() {
+        //     dvc_resetMQTTDevID(jNI.m_ptrGlobals)
+        // }
 
         fun dvc_makeMQTTNukeInvite(nli: NetLaunchInfo): TopicsAndPackets {
             return dvc_makeMQTTNukeInvite(jNI.m_ptrGlobals, nli)
@@ -343,16 +240,16 @@ class XwJNI private constructor() {
             return dvc_makeMQTTNoSuchGames(jNI.m_ptrGlobals, addressee, gameID)
         }
 
-        fun dvc_parseMQTTPacket(topic: String, buf: ByteArray) {
-            dvc_parseMQTTPacket(jNI.m_ptrGlobals, topic, buf)
-        }
+        // fun dvc_parseMQTTPacket(topic: String, buf: ByteArray) {
+        //     dvc_parseMQTTPacket(jNI.m_ptrGlobals, topic, buf)
+        // }
 
-        fun dvc_onWebSendResult(
-            resultKey: Int, succeeded: Boolean,
-            result: String?
-        ) {
-            dvc_onWebSendResult(jNI.m_ptrGlobals, resultKey, succeeded, result)
-        }
+        // fun dvc_onWebSendResult(
+        //     resultKey: Int, succeeded: Boolean,
+        //     result: String?
+        // ) {
+        //     dvc_onWebSendResult(jNI.m_ptrGlobals, resultKey, succeeded, result)
+        // }
 
         fun dvc_getLegalPhonyCodes(): Array<ISOCode> {
             val codes = ArrayList<String>()
@@ -375,44 +272,44 @@ class XwJNI private constructor() {
             dvc_clearLegalPhony(jNI.m_ptrGlobals, code.toString(), phony)
         }
 
-        fun hasKnownPlayers(): Boolean {
-            val players = kplr_getPlayers()
-            return null != players && 0 < players.size
-        }
+        // fun hasKnownPlayers(): Boolean {
+        //     val players = kplr_getPlayers()
+        //     return null != players && 0 < players.size
+        // }
 
-        @JvmOverloads
-        fun kplr_getPlayers(byDate: Boolean = false): Array<String>? {
-            var result: Array<String>? = null
-            if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-                result = kplr_getPlayers(jNI.m_ptrGlobals, byDate)
-            }
-            return result
-        }
+        // @JvmOverloads
+        // fun kplr_getPlayers(byDate: Boolean = false): Array<String>? {
+        //     var result: Array<String>? = null
+        //     if (BuildConfig.HAVE_KNOWN_PLAYERS) {
+        //         result = kplr_getPlayers(jNI.m_ptrGlobals, byDate)
+        //     }
+        //     return result
+        // }
 
-        fun kplr_renamePlayer(oldName: String, newName: String): Boolean {
-            return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_renamePlayer(
-                jNI.m_ptrGlobals, oldName, newName
-            ) else true
-        }
+        // fun kplr_renamePlayer(oldName: String, newName: String): Boolean {
+        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_renamePlayer(
+        //         jNI.m_ptrGlobals, oldName, newName
+        //     ) else true
+        // }
 
-        fun kplr_deletePlayer(player: String) {
-            if (BuildConfig.HAVE_KNOWN_PLAYERS) {
-                kplr_deletePlayer(jNI.m_ptrGlobals, player)
-            }
-        }
+        // fun kplr_deletePlayer(player: String) {
+        //     if (BuildConfig.HAVE_KNOWN_PLAYERS) {
+        //         kplr_deletePlayer(jNI.m_ptrGlobals, player)
+        //     }
+        // }
 
-        @JvmOverloads
-        fun kplr_getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
-            return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_getAddr(
-                jNI.m_ptrGlobals, name, lastMod
-            ) else null
-        }
+        // @JvmOverloads
+        // fun kplr_getAddr(name: String, lastMod: IntArray? = null): CommsAddrRec? {
+        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_getAddr(
+        //         jNI.m_ptrGlobals, name, lastMod
+        //     ) else null
+        // }
 
-        fun kplr_nameForMqttDev(mqttID: String?): String? {
-            return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_nameForMqttDev(
-                jNI.m_ptrGlobals, mqttID
-            ) else null
-        }
+        // fun kplr_nameForMqttDev(mqttID: String?): String? {
+        //     return if (BuildConfig.HAVE_KNOWN_PLAYERS) kplr_nameForMqttDev(
+        //         jNI.m_ptrGlobals, mqttID
+        //     ) else null
+        // }
 
         private fun cleanGlobals() {
             synchronized(XwJNI::class.java) {
@@ -434,31 +331,13 @@ class XwJNI private constructor() {
         const val TRAY_REVERSED = 1
         const val TRAY_REVEALED = 2
 
-        // Methods not part of the common interface but necessitated by
-        // how java/jni work (or perhaps my limited understanding of it.)
-        // callback into jni from java when timer set here fires.
-        @JvmStatic
-        external fun timerFired(
-            gamePtr: GamePtr?, why: Int,
-            `when`: Int, handle: Int
-        ): Boolean
-
         fun giFromStream(gi: CurGameInfo, stream: ByteArray) {
             Assert.assertNotNull(stream)
             gi_from_stream(jNI.m_ptrGlobals, gi, stream) // called here
         }
 
-        fun nliToStream(nli: NetLaunchInfo): ByteArray {
-            return nli_to_stream(jNI.m_ptrGlobals, nli)
-        }
-
         fun nliFromStream(stream: ByteArray): NetLaunchInfo? {
             return nli_from_stream(jNI.m_ptrGlobals, stream)
-        }
-
-        fun lcToLocaleJ(lc: Int): ISOCode? {
-            val code = lcToLocale(lc)
-            return ISOCode.newIf(code)
         }
 
         fun haveLocaleToLc(isoCode: ISOCode, lc: IntArray?): Boolean {
@@ -467,8 +346,6 @@ class XwJNI private constructor() {
 
         @JvmStatic
         external fun comms_getUUID(): String
-        @JvmStatic
-        external fun lcToLocale(lc: Int): String?
         @JvmStatic
         external fun haveLocaleToLc(isoCodeStr: String?, lc: IntArray?): Boolean
 
@@ -585,12 +462,12 @@ class XwJNI private constructor() {
             procs: TransportProcs
         ): Boolean
 
-        @JvmStatic
-        external fun game_receiveMessage(
-            gamePtr: GamePtr?,
-            stream: ByteArray?,
-            retAddr: CommsAddrRec?
-        ): Boolean
+        // @JvmStatic
+        // external fun game_receiveMessage(
+        //     gamePtr: GamePtr?,
+        //     stream: ByteArray?,
+        //     retAddr: CommsAddrRec?
+        // ): Boolean
 
         @JvmStatic
         external fun game_summarize(gamePtr: GamePtr?, summary: GameSummary?)
@@ -603,12 +480,13 @@ class XwJNI private constructor() {
         @JvmStatic
         external fun game_saveSucceeded(gamePtr: GamePtr?)
         @JvmStatic
+
         external fun game_getGi(gamePtr: GamePtr?, gi: CurGameInfo?)
-        @JvmStatic
-        external fun game_getState(
-            gamePtr: GamePtr,
-            gsi: GameStateInfo
-        )
+        // @JvmStatic
+        // external fun game_getState(
+        //     gamePtr: GamePtr,
+        //     gsi: GameStateInfo
+        // )
 
         @JvmStatic
         external fun game_hasComms(gamePtr: GamePtr?): Boolean
@@ -629,11 +507,11 @@ class XwJNI private constructor() {
         external fun board_invalAll(gamePtr: GamePtr?)
         @JvmStatic
         external fun board_draw(gamePtr: GamePtr?): Boolean
-        @JvmStatic
-        external fun board_drawSnapshot(
+
+        fun board_drawSnapshot(
             gamePtr: GamePtr, draw: DrawCtx?,
             width: Int, height: Int
-        )
+        ) = Assert.failDbg()
 
         // Only if COMMON_LAYOUT defined
         @JvmStatic
@@ -761,30 +639,30 @@ class XwJNI private constructor() {
         external fun model_getNMoves(gamePtr: GamePtr?): Int
         @JvmStatic
         external fun model_getNumTilesInTray(gamePtr: GamePtr?, player: Int): Int
-        @JvmStatic
-        external fun model_getPlayersLastScore(
-            gamePtr: GamePtr?,
-            player: Int
-        ): LastMoveInfo
+        // @JvmStatic
+        // external fun model_getPlayersLastScore(
+        //     gamePtr: GamePtr?,
+        //     player: Int
+        // ): LastMoveInfo
 
         // Server
-        external fun server_reset(gamePtr: GamePtr?)
-        @JvmStatic
-        external fun server_handleUndo(gamePtr: GamePtr?)
-        @JvmStatic
-        external fun server_do(gamePtr: GamePtr?): Boolean
-        @JvmStatic
-        external fun server_tilesPicked(gamePtr: GamePtr?, player: Int, tiles: IntArray?)
-        @JvmStatic
-        external fun server_countTilesInPool(gamePtr: GamePtr?): Int
-        @JvmStatic
-        external fun server_formatDictCounts(gamePtr: GamePtr?, nCols: Int): String
-        @JvmStatic
-        external fun server_getGameIsOver(gamePtr: GamePtr?): Boolean
-        @JvmStatic
-        external fun server_getGameIsConnected(gamePtr: GamePtr?): Boolean
-        @JvmStatic
-        external fun server_writeFinalScores(gamePtr: GamePtr?): String
+        // external fun server_reset(gamePtr: GamePtr?)
+        // @JvmStatic
+        // external fun server_handleUndo(gamePtr: GamePtr?)
+        // @JvmStatic
+        // external fun server_do(gamePtr: GamePtr?): Boolean
+        // @JvmStatic
+        // external fun server_tilesPicked(gamePtr: GamePtr?, player: Int, tiles: IntArray?)
+        // @JvmStatic
+        // external fun server_countTilesInPool(gamePtr: GamePtr?): Int
+        // @JvmStatic
+        // external fun server_formatDictCounts(gamePtr: GamePtr?, nCols: Int): String
+        // @JvmStatic
+        // external fun server_getGameIsOver(gamePtr: GamePtr?): Boolean
+        // @JvmStatic
+        // external fun server_getGameIsConnected(gamePtr: GamePtr?): Boolean
+        // @JvmStatic
+        // external fun server_writeFinalScores(gamePtr: GamePtr?): String
 
         @JvmStatic
         external fun server_initClientConnection(gamePtr: GamePtr?): Boolean
@@ -796,18 +674,19 @@ class XwJNI private constructor() {
         }
 
         @JvmStatic
-        external fun server_canOfferRematch(gamePtr: GamePtr, results: BooleanArray)
+        external fun server_canOfferRematch(gamePtr: GamePtr,
+                                            results: BooleanArray)
 
-        fun server_figureOrderKT(gamePtr: GamePtr, ro: RematchOrder): Array<Int> {
-            val noInts = server_figureOrder(gamePtr, ro)
-            val result = ArrayList<Int>()
-            noInts.map{result.add(it)}
-            return result.toTypedArray()
-        }
+        // fun server_figureOrderKT(gamePtr: GamePtr, ro: RematchOrder): Array<Int> {
+        //     val noInts = server_figureOrder(gamePtr, ro)
+        //     val result = ArrayList<Int>()
+        //     noInts.map{result.add(it)}
+        //     return result.toTypedArray()
+        // }
 
-        @JvmStatic
-        private external fun server_figureOrder(gamePtr: GamePtr,
-                                                ro: RematchOrder): IntArray
+        // @JvmStatic
+        // private external fun server_figureOrder(gamePtr: GamePtr,
+        //                                         ro: RematchOrder): IntArray
         @JvmStatic
         external fun server_endGame(gamePtr: GamePtr?)
 
@@ -822,221 +701,78 @@ class XwJNI private constructor() {
         ): Boolean
 
         // Comms
-        @JvmStatic
-        external fun comms_start(gamePtr: GamePtr?)
-        @JvmStatic
-        external fun comms_stop(gamePtr: GamePtr?)
-        @JvmStatic
-        external fun comms_getSelfAddr(gamePtr: GamePtr?): CommsAddrRec
-        @JvmStatic
-        external fun comms_getHostAddr(gamePtr: GamePtr?): CommsAddrRec?
-        @JvmStatic
-        external fun comms_getAddrs(gamePtr: GamePtr?): Array<CommsAddrRec>?
-        @JvmStatic
-        external fun comms_dropHostAddr(gamePtr: GamePtr?, typ: CommsConnType?)
-        @JvmStatic
-        external fun comms_setQuashed(gamePtr: GamePtr?, quashed: Boolean): Boolean
-        @JvmStatic
-        external fun comms_resendAll(
-            gamePtr: GamePtr?, force: Boolean,
-            filter: CommsConnType?,
-            andAck: Boolean
-        ): Int
+        // @JvmStatic
+        // external fun comms_start(gamePtr: GamePtr?)
+        // @JvmStatic
+        // external fun comms_stop(gamePtr: GamePtr?)
+        // @JvmStatic
+        // external fun comms_getSelfAddr(gamePtr: GamePtr?): CommsAddrRec
+        // @JvmStatic
+        // external fun comms_getHostAddr(gamePtr: GamePtr?): CommsAddrRec?
+        // @JvmStatic
+        // external fun comms_getAddrs(gamePtr: GamePtr?): Array<CommsAddrRec>?
+        // @JvmStatic
+        // external fun comms_dropHostAddr(gamePtr: GamePtr?, typ: CommsConnType?)
+        // @JvmStatic
+        // external fun comms_setQuashed(gamePtr: GamePtr?, quashed: Boolean): Boolean
+        // @JvmStatic
+        // external fun comms_resendAll(
+        //     gamePtr: GamePtr?, force: Boolean,
+        //     filter: CommsConnType?,
+        //     andAck: Boolean
+        // ): Int
 
-        fun comms_resendAll(
-            gamePtr: GamePtr?, force: Boolean,
-            andAck: Boolean
-        ): Int {
-            return comms_resendAll(gamePtr, force, null, andAck)
-        }
+        // fun comms_resendAll(
+        //     gamePtr: GamePtr?, force: Boolean,
+        //     andAck: Boolean
+        // ): Int {
+        //     return comms_resendAll(gamePtr, force, null, andAck)
+        // }
 
-        @JvmStatic
-        external fun comms_countPendingPackets(gamePtr: GamePtr?): Int
-        @JvmStatic
-        external fun comms_ackAny(gamePtr: GamePtr?)
-        @JvmStatic
-        external fun comms_isConnected(gamePtr: GamePtr?): Boolean
-        @JvmStatic
-        external fun comms_getStats(gamePtr: GamePtr?): String?
-        @JvmStatic
-        external fun comms_addMQTTDevID(
-            gamePtr: GamePtr?, channelNo: Int,
-            devID: String?
-        )
+        // @JvmStatic
+        // external fun comms_countPendingPackets(gamePtr: GamePtr?): Int
+        // @JvmStatic
+        // external fun comms_ackAny(gamePtr: GamePtr?)
+        // @JvmStatic
+        // external fun comms_isConnected(gamePtr: GamePtr?): Boolean
+        // @JvmStatic
+        // external fun comms_getStats(gamePtr: GamePtr?): String?
+        // @JvmStatic
+        // external fun comms_addMQTTDevID(
+        //     gamePtr: GamePtr?, channelNo: Int,
+        //     devID: String?
+        // )
 
-        @JvmStatic
-        external fun comms_invite(
-            gamePtr: GamePtr?, nli: NetLaunchInfo?,
-            destAddr: CommsAddrRec?, sendNow: Boolean
-        )
+        // @JvmStatic
+        // external fun comms_invite(
+        //     gamePtr: GamePtr?, nli: NetLaunchInfo?,
+        //     destAddr: CommsAddrRec?, sendNow: Boolean
+        // )
 
         // Used/defined (in C) for DEBUG only
-        @JvmStatic
-        external fun comms_setAddrDisabled(
-            gamePtr: GamePtr?, typ: CommsConnType?,
-            send: Boolean, enabled: Boolean
-        )
+        // @JvmStatic
+        // external fun comms_setAddrDisabled(
+        //     gamePtr: GamePtr?, typ: CommsConnType?,
+        //     send: Boolean, enabled: Boolean
+        // )
 
-        @JvmStatic
-        external fun comms_getAddrDisabled(
-            gamePtr: GamePtr?, typ: CommsConnType?,
-            send: Boolean
-        ): Boolean
+        // @JvmStatic
+        // external fun comms_getAddrDisabled(
+        //     gamePtr: GamePtr?, typ: CommsConnType?,
+        //     send: Boolean
+        // ): Boolean
 
-        fun dvc_onTimerFired(key: Int) = dvc_onTimerFired(jNI.m_ptrGlobals, key)
-        @JvmStatic
-        private external fun dvc_onTimerFired(jniState: Long, key: Int)
-
-        fun smsproto_prepOutbound(
-            cmd: SMS_CMD, gameID: Int, buf: ByteArray?, phone: String,
-            port: Int,  /*out*/
-            waitSecs: IntArray
-        ): Array<ByteArray>? {
-            return smsproto_prepOutbound(
-                jNI.m_ptrGlobals, cmd, gameID, buf,
-                phone, port, waitSecs
-            )
-        }
-
-        fun smsproto_prepOutbound(phone: String,
-                                  port: Int,
-                                  waitSecs: IntArray): Array<ByteArray>?
-        {
-            return smsproto_prepOutbound(SMS_CMD.NONE, 0, null, phone,
-                                         port, waitSecs)
-        }
-
-        fun smsproto_prepInbound(
-            data: ByteArray,
-            fromPhone: String, wantPort: Int
-        ): Array<SMSProtoMsg>? {
-            return smsproto_prepInbound(jNI.m_ptrGlobals, data, fromPhone, wantPort)
-        }
-
-        fun sts_export(): JSONObject {
-            val str = sts_export(jNI.m_ptrGlobals)
-            return JSONObject(str)
-        }
-        fun sts_clearAll() { sts_clearAll(jNI.m_ptrGlobals) }
-        fun sts_increment(stat: STAT) {sts_increment(jNI.m_ptrGlobals, stat)}
-
-        @JvmStatic
-        external fun dict_tilesAreSame(dict1: Long, dict2: Long): Boolean
-        @JvmStatic
-        external fun dict_getChars(dict: Long): Array<String>?
-        fun dict_getInfo(
-            dict: ByteArray?, name: String?, path: String?,
-            check: Boolean
-        ): DictInfo {
-            val wrapper = makeDict(dict, name, path)
-            return dict_getInfo(wrapper, check)
-        }
-
-        fun dict_getInfo(dict: DictWrapper, check: Boolean): DictInfo {
-            return dict_getInfo(jNI.m_ptrGlobals, dict.dictPtr, check)
-        }
-
-        fun dict_getDesc(dict: DictWrapper): String? {
-            return dict_getDesc(dict.dictPtr)
-        }
-
-        fun dict_tilesToStr(dict: DictWrapper, tiles: ByteArray?,
-                            delim: String?): String?
-        {
-            return dict_tilesToStr(dict.dictPtr, tiles, delim)
-        }
-
-        fun dict_strToTiles(dict: DictWrapper, str: String):
-            Array<ByteArray>?
-        {
-            return dict_strToTiles(dict.dictPtr, str)
-        }
-
-        fun dict_hasDuplicates(dict: DictWrapper): Boolean {
-            return dict_hasDuplicates(dict.dictPtr)
-        }
-
-        fun getTilesInfo(dict: DictWrapper): String {
-            return dict_getTilesInfo(jNI.m_ptrGlobals, dict.dictPtr)
-        }
-
-		@JvmStatic
-        external fun dict_getTileValue(dictPtr: Long, tile: Int): Int
-
-        // Dict iterator
-        const val MAX_COLS_DICT = 15 // from dictiter.h
-        fun makeDict(bytes: ByteArray?, name: String?, path: String?): DictWrapper {
-            val dict = dict_make(jNI.m_ptrGlobals, bytes, name, path)
-            return DictWrapper(dict)
-        }
-
-        fun di_init(
-            dict: DictWrapper, pats: Array<PatDesc>,
-            minLen: Int, maxLen: Int,
-            callback: DictIterProcs
-        ) {
-            val jniState = jNI.m_ptrGlobals
-            val dictPtr = dict.dictPtr
-            thread {
-                var wrapper: IterWrapper? = null
-                val iterPtr = di_init(
-                    jniState, dictPtr, pats,
-                    minLen, maxLen
-                )
-                if (0L != iterPtr) {
-                    wrapper = IterWrapper(iterPtr)
-                }
-                callback.onIterReady(wrapper)
-            }
-        }
-
-        fun di_wordCount(iw: IterWrapper): Int {
-            return di_wordCount(iw.getRef())
-        }
-
-        fun di_nthWord(iw: IterWrapper, nn: Int, delim: String?): String? {
-            return di_nthWord(iw.getRef(), nn, delim)
-        }
-
-        fun di_getMinMax(iw: IterWrapper): IntArray {
-            return di_getMinMax(iw.getRef())
-        }
-
-        fun di_getPrefixes(iw: IterWrapper): Array<String>? {
-            return di_getPrefixes(iw.getRef())
-        }
-
-        fun di_getIndices(iw: IterWrapper): IntArray? {
-            return di_getIndices(iw.getRef())
-        }
-
-		@JvmStatic
-        private external fun di_destroy(closure: Long)
-		@JvmStatic
-        private external fun di_wordCount(closure: Long): Int
-		@JvmStatic
-        private external fun di_nthWord(closure: Long, nn: Int, delim: String?): String?
-		@JvmStatic
-        private external fun di_getMinMax(closure: Long): IntArray
-		@JvmStatic
-        private external fun di_getPrefixes(closure: Long): Array<String>?
-		@JvmStatic
-        private external fun di_getIndices(closure: Long): IntArray?
 
         // Private methods -- called only here
         //
         // Some don't need JvmStatic because I used newer form of jni function
         // name.
         private external fun globalsInit(dutil: DUtilCtxt, jniu: JNIUtils, seed: Long): Long
-		private external fun dvc_getMQTTDevID(jniState: Long): String
-		@JvmStatic
-		private external fun dvc_setMQTTDevID(jniState: Long, newid: String): Boolean
-		@JvmStatic
-        private external fun dvc_resetMQTTDevID(jniState: Long)
-		@JvmStatic
-        private external fun dvc_getMQTTSubTopics(
-            jniState: Long, qosout: IntArray)
-            : Array<String>
+		// private external fun dvc_getMQTTDevID(jniState: Long): String
+		// @JvmStatic
+		// private external fun dvc_setMQTTDevID(jniState: Long, newid: String): Boolean
+		// @JvmStatic
+        // private external fun dvc_resetMQTTDevID(jniState: Long)
 		@JvmStatic
         private external fun dvc_makeMQTTNukeInvite(
             jniState: Long,
@@ -1050,18 +786,18 @@ class XwJNI private constructor() {
             gameID: Int
         ): TopicsAndPackets
 
-		@JvmStatic
-        private external fun dvc_parseMQTTPacket(
-            jniState: Long, topic: String,
-            buf: ByteArray
-        )
+		// @JvmStatic
+        // private external fun dvc_parseMQTTPacket(
+        //     jniState: Long, topic: String,
+        //     buf: ByteArray
+        // )
 
-		@JvmStatic
-        private external fun dvc_onWebSendResult(
-            jniState: Long, resultKey: Int,
-            succeeded: Boolean,
-            result: String?
-        )
+		// @JvmStatic
+        // private external fun dvc_onWebSendResult(
+        //     jniState: Long, resultKey: Int,
+        //     succeeded: Boolean,
+        //     result: String?
+        // )
 
 		@JvmStatic
         private external fun dvc_getLegalPhonyCodes(
@@ -1077,24 +813,24 @@ class XwJNI private constructor() {
 
 		@JvmStatic
         private external fun dvc_clearLegalPhony(jniState: Long, code: String, phony: String)
-		@JvmStatic
-        private external fun kplr_getPlayers(jniState: Long, byDate: Boolean): Array<String>?
-		@JvmStatic
-        private external fun kplr_renamePlayer(
-            jniState: Long, oldName: String,
-            newName: String
-        ): Boolean
+		// @JvmStatic
+        // private external fun kplr_getPlayers(jniState: Long, byDate: Boolean): Array<String>?
+		// @JvmStatic
+        // private external fun kplr_renamePlayer(
+        //     jniState: Long, oldName: String,
+        //     newName: String
+        // ): Boolean
 
-		@JvmStatic
-        private external fun kplr_deletePlayer(jniState: Long, player: String)
-		@JvmStatic
-        private external fun kplr_getAddr(
-            jniState: Long, name: String,
-            lastMod: IntArray?
-        ): CommsAddrRec
+		// @JvmStatic
+        // private external fun kplr_deletePlayer(jniState: Long, player: String)
+		// @JvmStatic
+        // private external fun kplr_getAddr(
+        //     jniState: Long, name: String,
+        //     lastMod: IntArray?
+        // ): CommsAddrRec
 
-		@JvmStatic
-        external fun kplr_nameForMqttDev(jniState: Long, mqttID: String?): String
+		// @JvmStatic
+        // external fun kplr_nameForMqttDev(jniState: Long, mqttID: String?): String
 		@JvmStatic
         private external fun cleanGlobals(jniState: Long)
 		@JvmStatic
@@ -1104,74 +840,13 @@ class XwJNI private constructor() {
         )
 
 		@JvmStatic
-        private external fun nli_to_stream(jniState: Long, nli: NetLaunchInfo): ByteArray
-		@JvmStatic
         private external fun nli_from_stream(jniState: Long, stream: ByteArray): NetLaunchInfo
 		@JvmStatic
         private external fun gameJNIInit(jniState: Long): Long
 		@JvmStatic
         private external fun envDone(globals: Long)
-		@JvmStatic
-        private external fun dict_make(jniState: Long, dict: ByteArray?,
-                                       name: String?, path: String?)
-            : Long
-
-		@JvmStatic
-        private external fun dict_ref(dictPtr: Long)
-		@JvmStatic
-        private external fun dict_unref(dictPtr: Long)
-		@JvmStatic
-        private external fun dict_strToTiles(dictPtr: Long,
-                                             str: String):
-            Array<ByteArray>?
-		@JvmStatic
-        private external fun dict_tilesToStr(dictPtr: Long, tiles: ByteArray?, delim: String?): String?
-		@JvmStatic
-        private external fun dict_hasDuplicates(dictPtr: Long): Boolean
-		@JvmStatic
-        private external fun dict_getTilesInfo(jniState: Long, dictPtr: Long): String
-		@JvmStatic
-        private external fun dict_getInfo(
-            jniState: Long, dictPtr: Long,
-            check: Boolean
-        ): DictInfo
-
-		@JvmStatic
-        private external fun dict_getDesc(dictPtr: Long): String?
-		@JvmStatic
-        private external fun di_init(
-            jniState: Long, dictPtr: Long,
-            pats: Array<PatDesc>, minLen: Int, maxLen: Int
-        ): Long
-
-		@JvmStatic
-        private external fun smsproto_prepOutbound(
-            jniState: Long, cmd: SMS_CMD, gameID: Int, buf: ByteArray?,
-            phone: String, port: Int,  /*out*/
-            waitSecs: IntArray
-        ): Array<ByteArray>?
-
-		@JvmStatic
-        private external fun smsproto_prepInbound(
-            jniState: Long,
-            data: ByteArray,
-            fromPhone: String,
-            wantPort: Int
-        ): Array<SMSProtoMsg>?
-
-        @JvmStatic
-        private external fun sts_export(jniState: Long): String
-        @JvmStatic
-        private external fun sts_clearAll(jniState: Long)
-        @JvmStatic
-        private external fun sts_increment(jniState: Long, stat: STAT)
-
         // This always returns true on release builds now.
 		@JvmStatic
         private external fun haveEnv(jniState: Long): Boolean
-
-        fun dvc_getQOS(): Int { return dvc_getQOS(jNI.m_ptrGlobals) }
-		@JvmStatic
-        private external fun dvc_getQOS(jniState: Long): Int
     }
 }

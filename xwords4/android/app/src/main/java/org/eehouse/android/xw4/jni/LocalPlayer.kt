@@ -26,19 +26,19 @@ import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.jni.LocalPlayer
 
-class LocalPlayer : Serializable {
+class LocalPlayer() : Serializable {
     @JvmField
-    var name: String
-    var password: String
+    var name = ""
+    var password = ""
     @JvmField
     var dictName: String? = null
-    var secondsUsed: Int = 0
+    var secondsUsed = 0
     @JvmField
-    var robotIQ: Int
+    var robotIQ = 0
     @JvmField
-    var isLocal: Boolean
+    var isLocal = true
 
-    constructor(context: Context, num: Int) {
+    constructor(context: Context, num: Int) : this() {
         isLocal = true
         robotIQ = 0 // human
         name = CommonPrefs.getDefaultPlayerName(context, num, true)
@@ -47,7 +47,7 @@ class LocalPlayer : Serializable {
         // Utils.testSerialization( this )
     }
 
-    constructor(src: LocalPlayer) {
+    constructor(src: LocalPlayer) : this() {
         isLocal = src.isLocal
         robotIQ = src.robotIQ
         name = src.name

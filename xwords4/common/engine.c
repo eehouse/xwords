@@ -84,7 +84,7 @@ typedef struct Crosscheck { CrossBits bits[2]; } Crosscheck;
 struct EngineCtxt {
     const ModelCtxt* model;
     const DictionaryCtxt* dict;
-    XW_UtilCtxt* util;
+    XW_UtilCtxt** utilp;
     XP_S16 turn;
 
     Engine_rack rack;
@@ -174,7 +174,7 @@ static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
 #define CROSSCHECK_CONTAINS(chk,tile) checkIsSet( (chk), (tile) )
 
 #define HILITE_CELL( engine, xwe, col, row )         \
-    util_hiliteCell( (engine)->util, (xwe), (col), (row) )
+    util_hiliteCell( *(engine)->utilp, (xwe), (col), (row) )
 
 /* not implemented yet */
 XP_U16
@@ -188,14 +188,17 @@ engine_getScoreCache( EngineCtxt* engine, XP_U16 row )
  * turn it into a separate code module later.
  ****************************************************************************/ 
 EngineCtxt*
-engine_make( XW_UtilCtxt* util )
+engine_make( XWEnv xwe, XW_UtilCtxt** utilp )
 {
-    EngineCtxt* result = (EngineCtxt*)XP_MALLOC( util->mpool, sizeof(*result) );
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
+#endif
+    EngineCtxt* result = (EngineCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
-    MPASSIGN(result->mpool, util->mpool);
+    MPASSIGN(result->mpool, mpool);
 
-    result->util = util;
+    result->utilp = utilp;
 
     engine_reset( result );
 
@@ -210,10 +213,10 @@ engine_writeToStream( EngineCtxt* XP_UNUSED(ctxt),
 } /* engine_writeToStream */
 
 EngineCtxt* 
-engine_makeFromStream( XWStreamCtxt* XP_UNUSED(stream),
-                       XW_UtilCtxt* util )
+engine_makeFromStream( XWEnv xwe, XW_UtilCtxt** utilp,
+                       XWStreamCtxt* XP_UNUSED(stream) )
 {
-    EngineCtxt* engine = engine_make( util );
+    EngineCtxt* engine = engine_make( xwe, utilp );
 
     /* All the engine's data seems to be used only in the process of finding a
        move.  So if we're willing to have the set of moves found lost across
@@ -426,7 +429,7 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
             XP_U16 nTilesMin = engine->nTilesMinUser;
             XP_U16 nTilesMax = engine->nTilesMaxUser;
 
-            if ( util_getTraySearchLimits( engine->util, xwe,
+            if ( util_getTraySearchLimits( *engine->utilp, xwe,
                                            &nTilesMin, &nTilesMax ) ) {
                 engine->tileLimitsKnown = XP_TRUE;
                 engine->nTilesMinUser = nTilesMin;
@@ -1086,7 +1089,7 @@ considerMove( EngineCtxt* engine, XWEnv xwe, Tile* tiles, XP_S16 tileLength,
               XP_S16 firstCol, XP_S16 lastRow )
 {
     if ( !engine->skipProgressCallback
-         && !util_engineProgressCallback( engine->util, xwe ) ) {
+         && !util_engineProgressCallback( *engine->utilp, xwe ) ) {
         engine->returnNOW = XP_TRUE;
     } else {
 

@@ -23,6 +23,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import org.eehouse.android.xw4.jni.Device
 
 import java.text.DateFormat
 import java.util.Date
@@ -63,7 +64,7 @@ public class AboutAlert : XWDialogFragment() {
         sb = StringBuilder(
             getString(
                 R.string.about_devid_fmt,
-                XwJNI.dvc_getMQTTDevID()
+                MQTTUtils.getMQTTDevID()
             )
         )
         if (BuildConfig.NON_RELEASE) {

@@ -1,6 +1,6 @@
 /* 
  * Copyright 2018 by Eric House (xwords@eehouse.org).  All rights reserved.
- *
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -31,22 +31,24 @@
 #include "nli.h"
 #include "strutils.h"
 #include "xwmutex.h"
+#include "gamemgr.h"
 
 #include "linuxdict.h"
 #include "cursesmain.h"
 #include "gtkmain.h"
+#include "gtkdraw.h"
 #include "mqttcon.h"
-
-
+#include "linuxsms.h"
+#include "gsrcwrap.h"
 
 typedef struct _LinDUtilCtxt {
     XW_DUtilCtxt super;
-#ifdef DUTIL_TIMERS
     MutexState timersMutex;
     GSList* timers;
-#endif
 } LinDUtilCtxt;
 
+static DrawCtx* linux_dutil_getThumbDraw( XW_DUtilCtxt* duc, XWEnv xwe,
+                                          GameRef gr );
 static XP_U32 linux_dutil_getCurSeconds( XW_DUtilCtxt* duc, XWEnv xwe );
 static const XP_UCHAR* linux_dutil_getUserString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code );
 static const XP_UCHAR* linux_dutil_getUserQuantityString( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 code,
@@ -56,11 +58,13 @@ static void linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* 
                                   const void* data, XP_U32 len );
 static void linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key,
                                  void* data, XP_U32* lenp );
+static void linux_dutil_removeStored( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* key );
+static void linux_dutil_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe,
+                                     const XP_UCHAR* pattern, OnGotKey proc,
+                                     void* closure );
 static void linux_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_UCHAR* keys[],
                                  OnOneProc proc, void* closure );
-static void linux_dutil_remove( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] );
-
 #ifdef XWFEATURE_SMS
 static XP_Bool  linux_dutil_phoneNumbersSame( XW_DUtilCtxt* duc, XWEnv xwe,
                                               const XP_UCHAR* p1,
@@ -92,83 +96,104 @@ linux_dutil_getUsername( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static void
+linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+
+    if ( !params->skipMQTTAdd ) {
+        addr_addType( addr, COMMS_CONN_MQTT );
+        dvc_getMQTTDevID( duc, xwe, &addr->u.mqtt.devID );
+    }
+
+    if ( !!params->connInfo.sms.myPhone ) {
+        addr_addType( addr, COMMS_CONN_SMS );
+        XP_STRCAT( addr->u.sms.phone, params->connInfo.sms.myPhone );
+        addr->u.sms.port = params->connInfo.sms.port;
+    }
+}
+
+static void
 linux_dutil_notifyPause( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
-                         XP_U32 XP_UNUSED_DBG(gameID),
+                         GameRef XP_UNUSED_DBG(gr),
                          DupPauseType XP_UNUSED_DBG(pauseTyp),
                          XP_U16 XP_UNUSED_DBG(pauser),
                          const XP_UCHAR* XP_UNUSED_DBG(name),
                          const XP_UCHAR* XP_UNUSED_DBG(msg) )
 {
-    XP_LOGFF( "(id=%d, turn=%d, name=%s, typ=%d, %s)", gameID, pauser,
+    XP_LOGFF( "(gr=%lX, turn=%d, name=%s, typ=%d, %s)", gr, pauser,
               name, pauseTyp, msg );
 }
 
-static XP_Bool
-linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                      XP_U32 gameID, XP_U8 XP_UNUSED_DBG(channel) )
+static void
+linux_dutil_informMove( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
+                        XP_S16 XP_UNUSED(turn), XWStreamCtxt* expl,
+                        XWStreamCtxt* words )
+{
+
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->useCurses ) {
+        informMoveCurses( params, expl );
+    } else {
+        informMoveGTK( params, gr, expl, words );
+    }
+}
+
+static void
+linux_dutil_notifyGameOver( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                            GameRef gr, XP_S16 quitter )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
-    sqlite3* pDb = params->pDb;
-
-    sqlite3_int64 rowids[MAX_NUM_PLAYERS];
-    int nRowIDs = VSIZE(rowids);
-    gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs );
-    XP_Bool result = 0 < nRowIDs;
-    /* XP_Bool result = XP_FALSE; */
-    /* for ( int ii = 0; ii < nRowIDs; ++ii ) { */
-    /*     GameInfo gib; */
-    /*     if ( ! gdb_getGameInfoForRow( pDb, rowids[ii], &gib ) ) { */
-    /*         XP_ASSERT(0); */
-    /*     } */
-    /*     if ( gib.channelNo == channel ) { */
-    /*         result = XP_TRUE; */
-    /*     } */
-    /* } */
-    XP_LOGFF( "(gameID=%X, channel=%d) => %s",
-              gameID, channel, boolToStr(result) );
-    return result;
+    if ( params->useCurses ) {
+        informGameOverCurses( params, gr, quitter );
+    } else {
+        informGameOverGTK( params, gr, quitter );
+    }
 }
+
+/* static XP_Bool */
+/* linux_dutil_haveGame( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), */
+/*                       XP_U32 gameID, XP_U8 channel ) */
+/* { */
+/*     LaunchParams* params = (LaunchParams*)duc->closure; */
+/*     sqlite3* pDb = params->pDb; */
+/*     sqlite3_int64 rowids[MAX_NUM_PLAYERS]; */
+/*     int nRowIDs = VSIZE(rowids); */
+/*     gdb_getRowsForGameID( pDb, gameID, rowids, &nRowIDs ); */
+/*     XP_Bool result = XP_FALSE; */
+/*     for ( int ii = 0; ii < nRowIDs; ++ii ) { */
+/*         GameInfo gib; */
+/*         if ( ! gdb_getGameInfoForRow( pDb, rowids[ii], &gib ) ) { */
+/*             XP_ASSERT(0); */
+/*         } */
+/*         if ( gib.channelNo == channel ) { */
+/*             result = XP_TRUE; */
+/*         } */
+/*     } */
+/*     XP_LOGFF( "(gameID=%X, channel=%d) => %s", */
+/*               gameID, channel, boolToStr(result) ); */
+/*     return result; */
+/* } */
 
 static void
 linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
-                               XP_U32 XP_UNUSED_DBG(gameID),
+                               GameRef XP_UNUSED_DBG(gr),
                                XP_U32 XP_UNUSED_DBG(oldVal),
                                XP_U32 XP_UNUSED_DBG(newVal) )
 {
-    XP_LOGFF( "(id=%d, oldVal=%d, newVal=%d)", gameID, oldVal, newVal );
+    XP_LOGFF( "(gr=%lX, oldVal=%d, newVal=%d)", gr, oldVal, newVal );
 }
 
 static void
-linux_dutil_onInviteReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                              const NetLaunchInfo* nli )
+linux_dutil_onGroupChanged( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                            GroupChangeEvents gces )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
-
-    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, (unsigned char*)nli,
-                                              sizeof(*nli) );
-    XP_LOGFF( "sum: %s", sum );
-    g_free( sum );
-
     if ( params->useCurses ) {
-        inviteReceivedCurses( params->appGlobals, nli );
+        XP_UCHAR buf[64];
+        gmgr_getGroupName( duc, xwe, grp, buf, VSIZE(buf) );
+        XP_LOGFF( "grp=%d, name=%s", grp, buf );
     } else {
-        inviteReceivedGTK( params->appGlobals, nli );
-    }
-    mqttc_onInviteHandled( params, nli );
-}
-
-static void
-linux_dutil_onMessageReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                               XP_U32 gameID, const CommsAddrRec* from,
-                               const XP_U8* buf, XP_U16 len )
-{
-    XP_LOGFF( "(gameID=%X)", gameID );
-    LaunchParams* params = (LaunchParams*)duc->closure;
-
-    if ( params->useCurses ) {
-        mqttMsgReceivedCurses( params->appGlobals, from, gameID, buf, len );
-    } else {
-        msgReceivedGTK( params->appGlobals, from, gameID, buf, len );
+        onGroupChangedGTK( params, grp, gces );
     }
 }
 
@@ -183,29 +208,19 @@ linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe,
     XP_LOGFF( "got msg len %d", len );
 }
 
-static void
-linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                                XP_U32 gameID, const CommsAddrRec* from )
-{
-    LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
-        gameGoneCurses( params->appGlobals, from, gameID );
-    } else {
-        gameGoneGTK( params->appGlobals, from, gameID );
-    }
-}
+typedef struct _FetchData {
+    char* payload;
+    size_t size;
+} FetchData;
 
 typedef struct _SendViaData {
     LinDUtilCtxt* lduc;
     char* pstr;
     char* api;
     XP_U32 resultKey;
+    XP_Bool succeeded;
+    FetchData fd;
 } SendViaData;
-
-typedef struct _FetchData {
-    char* payload;
-    size_t size;
-} FetchData;
 
 static size_t
 curl_callback( void *contents, size_t size, size_t nmemb, void *userp )
@@ -221,11 +236,28 @@ curl_callback( void *contents, size_t size, size_t nmemb, void *userp )
     return realsize;
 }
 
+static gint
+onGotData( gpointer data )
+{
+    SendViaData* svdp = (SendViaData*)data;
+    if ( svdp->resultKey ) {
+        dvc_onWebSendResult( &svdp->lduc->super, NULL_XWE, svdp->resultKey,
+                             svdp->succeeded, svdp->fd.payload );
+    }
+
+    free( svdp->fd.payload );
+    free( svdp->pstr );
+    g_free( svdp->api );
+    g_free( svdp );
+
+    return FALSE;
+}
+
 static void*
 sendViaThreadProc( void* arg )
 {
-    XP_Bool succeeded = XP_TRUE;
     SendViaData* svdp = (SendViaData*)arg;
+    svdp->succeeded = XP_TRUE;
 
     const LaunchParams* params = (LaunchParams*)svdp->lduc->super.closure;
 
@@ -254,32 +286,22 @@ sendViaThreadProc( void* arg )
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    FetchData fd = {};
 
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, curl_callback );
-    curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *) &fd );
+    curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *) &svdp->fd );
 
     res = curl_easy_perform( curl );
     if ( res != CURLE_OK ) {
         XP_LOGFF( "curl_easy_perform() failed: %s", curl_easy_strerror(res));
-        succeeded = XP_FALSE;
+        svdp->succeeded = XP_FALSE;
     } else {
-        XP_LOGFF( "got buffer: %s", fd.payload );
+        XP_LOGFF( "got buffer: %s", svdp->fd.payload );
     }
 
     curl_slist_free_all( headers );
     curl_easy_cleanup( curl );
 
-    if ( svdp->resultKey ) {
-        dvc_onWebSendResult( &svdp->lduc->super, NULL_XWE, svdp->resultKey,
-                             succeeded, fd.payload );
-    }
-
-    free( fd.payload );
-    free( svdp->pstr );
-    g_free( svdp->api );
-    g_free( svdp );
-
+    ADD_ONETIME_IDLE( onGotData, svdp );
     return NULL;
 }
 
@@ -304,22 +326,136 @@ linux_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static DictionaryCtxt*
-linux_dutil_makeEmptyDict( XW_DUtilCtxt* duc, XWEnv xwe )
+linux_dutil_makeEmptyDict( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe) )
 {
     XP_DEBUGF( "linux_util_makeEmptyDict called" );
     LaunchParams* params = (LaunchParams*)duc->closure;
     XP_USE(params);
-    return linux_dictionary_make( MPPARM(params->mpool) xwe, NULL, NULL, XP_FALSE );
+    return linux_dictionary_make( MPPARM(params->mpool) NULL, NULL, XP_FALSE );
 }
 
 static const DictionaryCtxt*
-linux_dutil_getDict( XW_DUtilCtxt* duc, XWEnv xwe,
-                    const XP_UCHAR* XP_UNUSED(isoCode), const XP_UCHAR* dictName )
+linux_dutil_makeDict( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                      const XP_UCHAR* dictName )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
-    DictionaryCtxt* result = linux_dictionary_make( MPPARM(params->mpool) xwe,
+    DictionaryCtxt* result = linux_dictionary_make( MPPARM(params->mpool)
                                                     params, dictName, XP_TRUE );
     return result;
+}
+
+static void
+linux_dutil_missingDictAdded( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
+                              const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(gr=" GR_FMT ", name=%s)", gr, dictName );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->useCurses ) {
+    } else {
+        onGTKMissingDictAdded( params, gr, dictName );
+    }
+    XP_USE( params );
+}
+
+static void
+linux_dutil_dictGone( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
+                      const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(gr=" GR_FMT ", name=%s)", gr, dictName );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->useCurses ) {
+    } else {
+        onGTKDictGone( params, gr, dictName );
+    }
+    XP_USE( params );
+}
+
+typedef struct _MQTTParams {
+    LaunchParams* params;
+    const XP_UCHAR* topics[8];
+    MQTTDevID devID;
+    XP_U8 qos;
+} MQTTParams;
+
+static gint
+startMQTT( gpointer data )
+{
+    MQTTParams* mqttp = (MQTTParams*)data;
+    mqttc_init( mqttp->params, &mqttp->devID, mqttp->topics, mqttp->qos );
+
+    for ( int ii = 0; ; ++ii ) {
+        XP_UCHAR* topic = (XP_UCHAR*)mqttp->topics[ii];
+        if ( !topic ) { break; }
+        g_free( topic );
+    }
+    g_free( mqttp );
+    return FALSE;
+}
+
+static void
+linux_dutil_startMQTTListener( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                               const MQTTDevID* devID, const XP_UCHAR** topics,
+                               XP_U8 qos )
+{
+    MQTTParams* mqttp = g_malloc0( sizeof(*mqttp) );
+    mqttp->params = (LaunchParams*)duc->closure;
+    mqttp->devID = *devID;
+    mqttp->qos = qos;
+    for ( int ii = 0; ; ++ii ) {
+        const XP_UCHAR* topic = topics[ii];
+        if ( !topic ) {
+            break;
+        }
+        mqttp->topics[ii] = g_strdup(topic);
+    }
+    ADD_ONETIME_IDLE( startMQTT, mqttp );
+}
+
+static XP_S16
+linux_dutil_sendViaMQTT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                         const XP_UCHAR* topic, const XP_U8* buf,
+                         XP_U16 len, XP_U8 qos )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    mqttc_enqueue( params, topic, buf, len, qos );
+    return -1;
+}
+
+static XP_S16
+linux_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                        const XP_U8* buf, XP_U16 len,
+                        const XP_UCHAR* phone, XP_U16 port )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    linux_sms_enqueue( params, buf, len, phone, port );
+    return -1;
+}
+
+static void
+linux_dutil_onKnownPlayersChange( XW_DUtilCtxt* XP_UNUSED(duc),
+                                  XWEnv XP_UNUSED(xwe) )
+{
+    LOG_FUNC();
+}
+
+static void
+linux_dutil_onGameChanged( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
+                           GameChangeEvents gces )
+{
+    LOG_FUNC();
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( params->useCurses ) {
+        onGameChangedCurses( params->cag, gr, gces );
+    } else {
+        onGameChangedGTK( params, gr, gces);
+    }
+}
+
+static void
+linux_dutil_getCommonPrefs( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), CommonPrefs* cp )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    cpFromLP( cp, params );
 }
 
 static cJSON*
@@ -340,7 +476,6 @@ linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
     return results;
 }
 
-#ifdef DUTIL_TIMERS
 typedef struct _TimerClosure {
     XW_DUtilCtxt* duc;
     TimerKey key;
@@ -395,19 +530,16 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey ke
     tc->duc = duc;
     tc->key = key;
 
-    XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS );
-    tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
-
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
     WITH_MUTEX( &lduc->timersMutex );
     lduc->timers = g_slist_append( lduc->timers, tc );
     END_WITH_MUTEX();
 
+    XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS );
+    tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
+
     XP_LOGFF( "after setting, length %d", g_slist_length(lduc->timers) );
 }
-
-
-#endif
 
 XW_DUtilCtxt*
 linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
@@ -424,13 +556,15 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 # define SET_PROC(nam) \
     super->vtable.m_dutil_ ## nam = linux_dutil_ ## nam;
 
+    SET_PROC(getThumbDraw);
     SET_PROC(getCurSeconds);
     SET_PROC(getUserString);
     SET_PROC(getUserQuantityString);
     SET_PROC(storePtr);
     SET_PROC(loadPtr);
+    SET_PROC(removeStored);
+    SET_PROC(getKeysLike);
     SET_PROC(forEach);
-    SET_PROC(remove);
 
 #ifdef XWFEATURE_SMS
     SET_PROC(phoneNumbersSame);
@@ -443,21 +577,34 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     SET_PROC(md5sum);
     SET_PROC(getUsername);
+    SET_PROC(getSelfAddr);
     SET_PROC(notifyPause);
-    SET_PROC(haveGame);
+    SET_PROC(informMove);
+    SET_PROC(notifyGameOver);
+    /* SET_PROC(haveGame); */
     SET_PROC(onDupTimerChanged);
+    SET_PROC(onGroupChanged);
+#ifndef XWFEATURE_DEVICE_STORES
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);
-    SET_PROC(onCtrlReceived);
     SET_PROC(onGameGoneReceived);
+#endif
+    SET_PROC(onCtrlReceived);
     SET_PROC(sendViaWeb);
     SET_PROC(makeEmptyDict);
-    SET_PROC(getDict);
+    SET_PROC(makeDict);
+    SET_PROC(missingDictAdded);
+    SET_PROC(dictGone);
+    SET_PROC(startMQTTListener);
+    SET_PROC(sendViaMQTT);
+    SET_PROC(sendViaNBS);
+    SET_PROC(onKnownPlayersChange);
+    SET_PROC(onGameChanged);
+    SET_PROC(getCommonPrefs);
+
     SET_PROC(getRegValues);
-#ifdef DUTIL_TIMERS
     SET_PROC(setTimer);
     SET_PROC(clearTimer);
-#endif
 
 # undef SET_PROC
 
@@ -472,11 +619,25 @@ void
 linux_dutils_free( XW_DUtilCtxt** dutil )
 {
     dutil_super_cleanup( *dutil, NULL_XWE );
-    LinDUtilCtxt* lduc = (LinDUtilCtxt*)*dutil;
-    MUTEX_DESTROY(&lduc->timersMutex);
+    MUTEX_DESTROY(&((LinDUtilCtxt*)*dutil)->timersMutex);
 # ifdef MEM_DEBUG
     XP_FREEP( (*dutil)->mpool, dutil );
 # endif
+}
+
+static DrawCtx*
+linux_dutil_getThumbDraw( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                          GameRef XP_UNUSED(gr) )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    DrawCtx* dctx = NULL;
+    if ( params->useCurses ) {
+    } else {
+        dctx = gtkDrawCtxtMake( NULL, NULL, DT_THUMB );
+        XP_LOGFF( "allocated thumb: %p", dctx );
+        addSurface( dctx, THUMB_WIDTH, THUMB_HEIGHT );
+    }
+    return dctx;
 }
 
 static XP_U32
@@ -566,6 +727,12 @@ linux_dutil_getUserString( XW_DUtilCtxt* XP_UNUSED(uc),
     case STRSD_DUP_ONESCORE:
         return "%s: %d points\n";
 
+    case STRS_GROUPS_DEFAULT:
+        return "New games";
+
+    case STRS_GROUPS_ARCHIVE:
+        return "Archive";
+
     default:
         XP_LOGFF( "(code=%d)", code );
         return (XP_UCHAR*)"unknown code";
@@ -630,16 +797,34 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 }
 
 static void
+linux_dutil_removeStored( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                          const XP_UCHAR* key )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    sqlite3* pDb = params->pDb;
+    gdb_remove( pDb, key );
+}
+
+static void
+linux_dutil_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe,
+                         const XP_UCHAR* pattern, OnGotKey proc,
+                         void* closure )
+{
+    XP_LOGFF( "(pattern: %s)", pattern );
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    GSList* keys = gdb_keysLike( params->pDb, pattern );
+    for ( GSList* iter = keys; !!iter; iter = iter->next ) {
+        XP_UCHAR* key = iter->data;
+        (*proc)(key, closure, xwe);
+    }
+    gdb_freeKeysList( keys );
+}
+
+static void
 linux_dutil_forEach( XW_DUtilCtxt* XP_UNUSED(duc),
                      XWEnv XP_UNUSED(xwe),
                      const XP_UCHAR* XP_UNUSED(keys[]),
                      OnOneProc XP_UNUSED(proc), void* XP_UNUSED(closure) )
-{
-    XP_ASSERT(0);
-}
-
-static void
-linux_dutil_remove( XW_DUtilCtxt* XP_UNUSED(duc), const XP_UCHAR* XP_UNUSED(keys[]) )
 {
     XP_ASSERT(0);
 }

@@ -49,7 +49,9 @@ open class MultiMsgSink @JvmOverloads constructor(
     }
 
     open fun sendViaSMS(buf: ByteArray, msgID: String?, gameID: Int, addr: CommsAddrRec): Int {
-        return NBSProto.sendPacket(m_context, addr.sms_phone!!, gameID, buf, msgID)
+        Assert.failDbg()
+        return -1
+        // return NBSProto.sendPacket(m_context, addr.sms_phone!!, gameID, buf, msgID)
     }
 
     fun sendViaP2P(buf: ByteArray, gameID: Int, addr: CommsAddrRec): Int {
@@ -108,7 +110,9 @@ open class MultiMsgSink @JvmOverloads constructor(
     }
 
     override fun transportSendMQTT(tap: TopicsAndPackets): Int {
-        return MQTTUtils.send(m_context, tap)
+        // return MQTTUtils.send(m_context, tap)
+        Assert.failDbg()
+        return -1
     }
 
     override fun countChanged(newCount: Int, quashed: Boolean) {
@@ -128,10 +132,11 @@ open class MultiMsgSink @JvmOverloads constructor(
             val target: String? = null
             when (typ) {
                 CommsConnType.COMMS_CONN_MQTT -> Assert.failDbg()
-                CommsConnType.COMMS_CONN_SMS -> if (XWPrefs.getNBSEnabled(context)) {
-                    NBSProto.inviteRemote(context, addr.sms_phone!!, nli)
-                    success = true
-                }
+                CommsConnType.COMMS_CONN_SMS -> Assert.failDbg()
+                //     if (XWPrefs.getNBSEnabled(context)) {
+                //     NBSProto.inviteRemote(context, addr.sms_phone!!, nli)
+                //     success = true
+                // }
 
                 CommsConnType.COMMS_CONN_BT -> success =
                     BTUtils.sendInvite(context, addr.bt_hostName!!, addr.bt_btAddr, nli)

@@ -968,7 +968,8 @@ object NFCUtils {
         private val mAddr = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
         public override fun postNotification(device: String?, gameID: Int, rowid: Long) {
             val body = LocUtils.getString(mContext, R.string.new_game_body)
-            GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
+            // GameUtils.postInvitedNotification(mContext, gameID, body, rowid)
+            Assert.failDbg()
         }
 
         fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {

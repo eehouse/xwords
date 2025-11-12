@@ -28,8 +28,11 @@
 #include "strutils.h"
 #include "nli.h"
 #include "dbgutil.h"
-#include "timers.h"
+#include "timersp.h"
 #include "xwmutex.h"
+#include "gamemgrp.h"
+#include "stats.h"
+#include "dictmgrp.h"
 
 #ifdef DEBUG
 # define MAGIC_INITED 0x8283413F
@@ -52,12 +55,214 @@
 # define ACK_TIMER_INTERVAL_MS 5000
 #endif
 
+static XP_S16
+makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
+                  MsgAndTopicProc proc, void* closure,
+                  const SendMsgsPacket* const msgs,
+                  const MQTTDevID* addressee,
+                  XP_U32 gameID, XP_U16 streamVersion );
+static void makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
+                             MsgAndTopicProc proc, void* closure,
+                             const MQTTDevID* addressee,
+                             const NetLaunchInfo* nli );
+
+
 XWStreamCtxt*
-mkStream( XW_DUtilCtxt* dutil )
+dvc_makeStream( XW_DUtilCtxt* dutil )
 {
     XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(dutil->mpool)
                                                 dutil_getVTManager(dutil) );
     return stream;
+}
+
+#define KEY_DELIM '/'
+
+static void
+formatKeys( const XP_UCHAR* keys[], XP_UCHAR buf[], XP_U16 bufLen,
+            XP_Bool sepAfter )
+{
+    int offset = 0;
+
+    for ( int ii = 0; ; ) {
+        XP_ASSERT( NULL == strchr(keys[ii], KEY_DELIM) );
+        offset += XP_SNPRINTF( &buf[offset], bufLen - offset, "%s", keys[ii] );
+        if ( !keys[++ii] ) {
+            break;
+        }
+        buf[offset++] = KEY_DELIM;
+    }
+    if ( sepAfter ) {
+        buf[offset++] = KEY_DELIM;
+        buf[offset++] = '%';
+    }
+    buf[offset] = '\0';
+}
+
+void
+dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts )
+{
+    XP_UCHAR* ptr = buf;
+    int nFound = 0;
+    for ( int ii = 0; !!buf[ii]; ++ii ) {
+        if ( KEY_DELIM == buf[ii] ) {
+            buf[ii] = '\0';
+            parts[nFound++] = ptr;
+            ptr = &buf[ii+1];
+            XP_ASSERT( nFound < *nParts );
+        }
+    }
+    parts[nFound++] = ptr;
+    XP_ASSERT( nFound < *nParts );
+
+    /* for ( int ii = 0; ii < nFound; ++ii ) { */
+    /*     XP_LOGFF( "found part[%d]: '%s'", ii, parts[ii] ); */
+    /* } */
+    
+    *nParts = nFound;
+}
+
+void
+dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+                 XWStreamCtxt* stream )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+
+    XP_LOGFF( "using key: %s", key );
+
+    dutil_storeStream( dutil, xwe, key, stream );
+}
+
+XWStreamCtxt*
+dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+    XP_LOGFF( "using key: %s", key );
+
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    dutil_loadStream( dutil, xwe, key, stream );
+    if ( 0 == stream_getSize(stream) ) { /* data found */
+        stream_destroy( stream );
+        stream = NULL;
+    }
+    return stream;
+}
+
+void
+dvc_removeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+    XP_LOGFF( "using key: %s", key );
+
+    dutil_removeStored( dutil, xwe, key );
+}
+
+void
+dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+                 OnGotKey proc, void* closure )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+    XP_LOGFF( "using key: %s", key );
+
+    dutil_getKeysLike( dutil, xwe, key, proc, closure );
+}
+
+/* typedef struct _GotMsgState { */
+/*     XW_DUtilCtxt* dutil; */
+/*     XWStreamCtxt* stream; */
+/*     XP_U32 gameID; */
+/*     const CommsAddrRec* retAddr; */
+/* } GotMsgState; */
+
+/* static void */
+/* onGameProc( GameRef gr, XWEnv xwe, void* closure ) */
+/* { */
+/*     GotMsgState* sp = (GotMsgState*)closure; */
+/*     if ( sp->gameID == gr_getGameID(sp->duc, gr, xwe) ) { */
+/*         XP_Bool success = */
+/*             game_receiveMessage( sp->duc, gr, xwe, sp->stream, sp->retAddr ); */
+/*         XP_LOGFF( "game_receiveMessage() => %s", boolToStr(success) ); */
+/*     } */
+/* } */
+
+/* void */
+/* dvc_onMessageReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID, */
+/*                        const CommsAddrRec* from, const XP_U8* buf, */
+/*                        XP_U16 len ) */
+/* { */
+/*     XP_LOGFF( "(gameID: %X)", gameID ); */
+/*     /\* XWStreamCtxt* stream = dvc_makeStream( dutil ); *\/ */
+/*     /\* stream_putBytes( stream, buf, len ); *\/ */
+
+/*     GameRef gr = gmgr_getFor( dutil, xwe, gameID ); */
+/*     if ( gr ) { */
+/*         gr_onMessageReceived(dutil, xwe, gr, from, buf, len ); */
+/*     } */
+/*         // dutil_onGameAdded( dutil, xwe, gr ); /\* in case it was created? *\/ */
+
+/*     /\*     XP_Bool haveComms = gr_haveComms( duc, gr, xwe ); *\/ */
+/*     /\*     if ( haveComms ) { *\/ */
+/*     /\*         CommsMsgState commsState; *\/ */
+/*     /\*         result = gr_checkIncomingStream( duc, gr, xwe, stream, retAddr, *\/ */
+/*     /\*                                          &commsState ); *\/ */
+/*     /\*         if ( result ) { *\/ */
+/*     /\*             result = gr_receiveMessage( duc, gr, xwe, stream ); *\/ */
+/*     /\*         } *\/ */
+/*     /\*         gr_msgProcessed( duc, gr, xwe, &commsState, !result ); *\/ */
+/*     /\*     } *\/ */
+
+/*     /\* if ( result ) { *\/ */
+/*     /\*     gr_addIdle( duc, xwe, gr ); *\/ */
+/*     /\* } *\/ */
+
+/*     /\* LOG_RETURNF( "%s", boolToStr(result) ); *\/ */
+/*     /\* return result; *\/ */
+/* } */
+     
+        
+/* #ifdef DEBUG */
+/*         XP_Bool success = */
+/* #endif */
+/*             game_receiveMessage( dutil, gr, xwe, stream, from ); */
+/*         XP_LOGFF( "game_receiveMessage() => %s", boolToStr(success) ); */
+/*     } */
+/*     stream_destroy( stream ); */
+/* } */
+
+void
+dvc_onInviteReceived( XW_DUtilCtxt* dutil, XWEnv xwe,
+                      const NetLaunchInfo* nli )
+{
+    /*GameRef gr = */
+    gmgr_addForInvite( dutil, xwe, GROUP_DEFAULT, nli );
+}
+
+void
+dvc_onGameGoneReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
+                        const CommsAddrRec* from )
+{
+    XP_LOGFF( "(gameID=%X)", gameID );
+    XP_USE(dutil);
+    XP_USE(xwe);
+    XP_USE(from);
+}
+
+void
+dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName )
+{
+    gmgr_onDictAdded( duc, xwe, dictName );
+}
+
+void
+dvc_onDictRemoved( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName )
+{
+    LOG_FUNC();
+    dmgr_remove( duc, xwe, dictName );
+    gmgr_onDictRemoved( duc, xwe, dictName );
+    LOG_RETURN_VOID();
 }
 
 typedef enum { WSR_REGISTER, } WSR;
@@ -112,7 +317,7 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 #ifdef XWFEATURE_DEVICE
         dutil->devCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
 
-        XWStreamCtxt* stream = mkStream( dutil );
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
         dutil_loadStream( dutil, xwe, KEY_DEVSTATE, stream );
 
         if ( 0 < stream_getSize( stream ) ) {
@@ -148,7 +353,7 @@ dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv xwe )
 static void
 dvcStoreLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* state )
 {
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     stream_putU16( stream, state->devCount );
     stream_putU8( stream, state->mqttQOS );
     dutil_storeStream( dutil, xwe, KEY_DEVSTATE, stream );
@@ -165,6 +370,206 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
     END_WITH_MUTEX();
 }
 #endif
+
+typedef struct _MsgTopicData {
+    XW_DUtilCtxt* dutil;
+    XWEnv xwe;
+} MsgTopicData;
+
+static void
+msgAndTopicProc( void* closure, const XP_UCHAR* topic, const XP_U8* buf,
+                 XP_U16 len, XP_U8 qos )
+{
+    MsgTopicData* mtd = (MsgTopicData*)closure;
+    dutil_sendViaMQTT( mtd->dutil, mtd->xwe, topic, buf, len, qos );
+}
+
+static void
+sendInviteViaMQTT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
+                   const MQTTDevID* invitee )
+{
+    MsgTopicData mtd = { .dutil = dutil, .xwe = xwe, };
+    makeMQTTInvites( dutil, xwe, msgAndTopicProc, &mtd,
+                     invitee, nli );
+}
+
+typedef struct _RetryClosure {
+    SMS_CMD cmd;
+    XP_U16 port;
+    XP_U32 gameID;
+    XP_UCHAR msgNo[32];
+    XP_UCHAR phone[32];
+} RetryClosure;
+
+static void sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr,
+                         SMS_CMD cmd, XP_U16 waitSecs, const XP_UCHAR* phone,
+                         XP_U16 port, XP_U32 gameID, const XP_UCHAR* msgNo );
+
+static void
+retryProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
+           TimerKey XP_UNUSED_DBG(key), XP_Bool fired )
+{
+    XP_LOGFF( "(key: %d, fired: %s)", key, boolToStr(fired) );
+    if ( fired ) {
+        RetryClosure* rc = (RetryClosure*)closure;
+
+        XP_U16 waitSecs;
+        SMSMsgArray* arr = smsproto_prepOutbound( dutil->protoState, xwe,
+                                                  rc->cmd,
+                                                  rc->gameID, NULL, 0,
+                                                  rc->phone, rc->port,
+                                                  XP_TRUE, &waitSecs );
+        sendOrRetry( dutil, xwe, arr, rc->cmd, waitSecs, rc->phone,
+                     rc->port, rc->gameID, rc->msgNo );
+    }
+    XP_FREEP( dutil->mpool, &closure );
+}
+
+static void
+sendOrRetry( XW_DUtilCtxt* dutil, XWEnv xwe, SMSMsgArray* arr, SMS_CMD cmd,
+             XP_U16 waitSecs, const XP_UCHAR* phone, XP_U16 port,
+             XP_U32 gameID, const XP_UCHAR* msgNo )
+{
+    if ( !!arr ) {
+        for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
+            const SMSMsgNet* msg = &arr->u.msgsNet[ii];
+            dutil_sendViaNBS( dutil, xwe, msg->data, msg->len, phone, port );
+        }
+        smsproto_freeMsgArray( dutil->protoState, arr );
+    } else if ( waitSecs > 0 ) {
+        XP_U32 inWhenMS = waitSecs * 1000;
+
+        RetryClosure* rc = (RetryClosure*)XP_CALLOC( dutil->mpool, sizeof(*rc) );
+        XP_STRCAT( rc->phone, phone );
+        XP_STRCAT( rc->msgNo, msgNo );
+        rc->port = port;
+        rc->gameID = gameID;
+        rc->cmd = cmd;
+        TimerKey key = tmr_set( dutil, xwe, inWhenMS, retryProc, rc );
+        XP_LOGFF( "got key %d", key );
+    }
+}
+
+static SMSProto*
+initSMSProtoOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    if ( !dutil->protoState ) {
+        dutil->protoState = smsproto_init( MPPARM(dutil->mpool) xwe, dutil );
+    }
+    return dutil->protoState;
+}
+
+static void
+sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
+                  const XP_UCHAR* phone, XP_U16 port )
+{
+    initSMSProtoOnce( dutil, xwe );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    nli_saveToStream( nli, stream );
+    const XP_U8* ptr = stream_getPtr( stream );
+    XP_U16 len = stream_getSize( stream );
+
+    XP_U16 waitSecs;
+    const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
+    SMSMsgArray* arr
+        = smsproto_prepOutbound( dutil->protoState, xwe, INVITE, nli->gameID,
+                                 ptr, len, phone, port, forceOld, &waitSecs );
+    XP_ASSERT( !!arr || !forceOld );
+    sendOrRetry( dutil, xwe, arr, INVITE, waitSecs, phone, port,
+                 nli->gameID, "invite" );
+    stream_destroy( stream );
+}
+
+XP_S16
+dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
+                XP_U32 XP_UNUSED(createdStamp), const CommsAddrRec* addr,
+                CommsConnType typ )
+{
+    XP_S16 nSent = -1;
+    switch ( typ ) {
+    case COMMS_CONN_MQTT:
+        sendInviteViaMQTT( dutil, xwe, nli, &addr->u.mqtt.devID );
+        break;
+    case COMMS_CONN_SMS:
+        sendInviteViaNBS( dutil, xwe, nli, addr->u.sms.phone, addr->u.sms.port );
+        break;
+    case COMMS_CONN_NFC:
+        break;
+    default:
+        XP_LOGFF( "unexpected typ %s", ConnType2Str(typ) );
+        XP_ASSERT(0);           /* fired */
+    }
+    return nSent;
+}
+
+static void
+sendMsgViaMQTT(XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* addressee,
+               const SendMsgsPacket* const packets, XP_U32 gameID,
+               XP_U16 streamVersion )
+{
+    MsgTopicData mtd = { .dutil = dutil, .xwe = xwe, };
+    (void)makeMQTTMessages( dutil, xwe,
+                            msgAndTopicProc, &mtd,
+                            packets, addressee,
+                            gameID, streamVersion );
+}
+
+static void
+sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
+               const SendMsgsPacket* const packets,
+               const XP_UCHAR* phone, XP_U16 port, XP_U32 gameID )
+{
+    initSMSProtoOnce( dutil, xwe );
+
+    for ( SendMsgsPacket* packet = (SendMsgsPacket*)packets;
+          !!packet; packet = (SendMsgsPacket* const)packet->next ) {
+        XP_U16 waitSecs;
+        SMSMsgArray* arr
+            = smsproto_prepOutbound( dutil->protoState, xwe, DATA, gameID,
+                                     packet->buf, packet->len, phone, port,
+                                     XP_TRUE, &waitSecs );
+        sendOrRetry( dutil, xwe, arr, DATA, waitSecs, phone, port, gameID,
+                     packet->msgNo );
+    }
+
+    /* XP_U16 waitSecs; */
+    /* SMSMsgArray* arr = smsproto_prepOutbound( dutil->protoState, NULL_XWE, DATA, gameID, */
+    /*                                           buf, buflen, phone, port, */
+    /*                                           XP_TRUE, &waitSecs ); */
+    /*     sendOrRetry( params, arr, DATA, waitSecs, phone, port, gameID, msgNo ); */
+    /*     nSent = buflen; */
+    /* } else { */
+    /*     XP_LOGFF( "dropping: sms not configured" ); */
+    /* } */
+}
+
+XP_S16
+dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
+              const SendMsgsPacket* const packets,
+              XP_U16 streamVersion,
+              const CommsAddrRec* addr, CommsConnType typ,
+              GameRef gr )
+{
+    XP_S16 nSent = -1;
+    XP_U32 gameID = gr_getGameID( gr );
+    switch ( typ ) {
+    case COMMS_CONN_MQTT:
+        sendMsgViaMQTT( dutil, xwe, &addr->u.mqtt.devID, packets,
+                        gameID, streamVersion );
+        break;
+    case COMMS_CONN_SMS:
+        sendMsgViaNBS( dutil, xwe, packets, addr->u.sms.phone,
+                       addr->u.sms.port, gameID );
+        break;
+    case COMMS_CONN_NFC:
+        XP_LOGFF( "Nothing to do for NFC" );
+        break;
+    default:
+        XP_LOGFF( "don't handle %s", ConnType2Str( typ ) );
+        XP_ASSERT(0);           /* fired */
+    }
+    return nSent;
+}
 
 // #define BOGUS_ALL_SAME_DEVID
 #define NUM_RUNS 1              /* up this to see how random things look */
@@ -263,73 +668,43 @@ dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe )
 #endif
 }
 
-static XP_UCHAR*
-appendToStorage( XP_UCHAR* storage, int* offset,
-                 const XP_UCHAR* str )
+static void
+mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    XP_UCHAR* start = &storage[*offset];
-    start[0] = '\0';
-    XP_STRCAT( start, str );
-    *offset += 1 + XP_STRLEN(str);
-    return start;
-}
-
-/* #ifdef DEBUG */
-/* static void */
-/* logPtrs( const char* func, int nTopics, char* topics[] ) */
-/* { */
-/*     for ( int ii = 0; ii < nTopics; ++ii ) { */
-/*         XP_LOGFF( "from %s; topics[%d] = %s", func, ii, topics[ii] ); */
-/*     } */
-/* } */
-/* #else */
-/* # define logPtrs(func, nTopics, topics) */
-/* #endif */
-
-void
-dvc_getMQTTSubTopics( XW_DUtilCtxt* dutil, XWEnv xwe,
-                      XP_UCHAR* storage, XP_U16 XP_UNUSED_DBG(storageLen),
-                      XP_U16* nTopics, XP_UCHAR* topics[], XP_U8* qos )
-{
-    ASSERT_MAGIC();
-    int offset = 0;
-    XP_U16 count = 0;
-    storage[0] = '\0';
-
     MQTTDevID devid;
     getMQTTDevID( dutil, xwe, XP_FALSE, &devid );
-    XP_UCHAR buf[64];
-    formatMQTTDevTopic( &devid, buf, VSIZE(buf) );
+    XP_UCHAR buf0[64];
+    formatMQTTDevTopic( &devid, buf0, VSIZE(buf0) );
 
+    const XP_UCHAR* topics[4] = {};
+
+    int count = 0;
 #ifdef MQTT_DEV_TOPICS
     /* First, the main device topic */
-    topics[count++] = appendToStorage( storage, &offset, buf );
+    topics[count++] = buf0;
 #endif
 
 #ifdef MQTT_GAMEID_TOPICS
     /* Then the pattern that includes gameIDs */
-    XP_UCHAR buf2[64];
-    size_t siz = XP_SNPRINTF( buf2, VSIZE(buf2), "%s/+", buf );
-    XP_ASSERT( siz < VSIZE(buf) );
+    XP_UCHAR buf1[64];
+    size_t siz = XP_SNPRINTF( buf1, VSIZE(buf1), "%s/+", buf0 );
+    XP_ASSERT( siz < VSIZE(buf1) );
     XP_USE(siz);
-    topics[count++] = appendToStorage( storage, &offset, buf2 );
+    topics[count++] = buf1;
 #endif
 
     /* Finally, the control pattern */
-    formatMQTTCtrlTopic( &devid, buf, VSIZE(buf) );
-    topics[count++] = appendToStorage( storage, &offset, buf );
+    XP_UCHAR buf2[64];
+    formatMQTTCtrlTopic( &devid, buf2, VSIZE(buf2) );
+    topics[count++] = buf2;
 
     for ( int ii = 0; ii < count; ++ii ) {
         XP_LOGFFV( "AFTER: got %d: %s", ii, topics[ii] );
     }
 
-    XP_ASSERT( count <= *nTopics );
-    *nTopics = count;
-    XP_ASSERT( offset < storageLen );
+    XP_U8 qos = dvc_getQOS( dutil, xwe );
 
-    *qos = dvc_getQOS( dutil, xwe );
-
-    // logPtrs( __func__, *nTopics, topics );
+    dutil_startMQTTListener( dutil, xwe, &devid, topics, qos );
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
@@ -383,17 +758,17 @@ callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic,
     (*proc)( closure, topic, msgBuf, msgLen, qos );
 }
 
-void
-dvc_makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
-                     MsgAndTopicProc proc, void* closure,
-                     const MQTTDevID* addressee,
-                     const NetLaunchInfo* nli )
+static void
+makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
+                 MsgAndTopicProc proc, void* closure,
+                 const MQTTDevID* addressee,
+                 const NetLaunchInfo* nli )
 {
     ASSERT_MAGIC();
     XP_UCHAR devTopic[64];      /* used by two below */
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
     /* Stream format is identical for both topics */
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_INVITE, nli->gameID, stream );
     nli_saveToStream( nli, stream );
 
@@ -434,12 +809,12 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
 #endif
 }
 
-XP_S16
-dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
-                      MsgAndTopicProc proc, void* closure,
-                      const SendMsgsPacket* const msgs,
-                      const MQTTDevID* addressee,
-                      XP_U32 gameID, XP_U16 streamVersion )
+static XP_S16
+makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
+                  MsgAndTopicProc proc, void* closure,
+                  const SendMsgsPacket* const msgs,
+                  const MQTTDevID* addressee,
+                  XP_U32 gameID, XP_U16 streamVersion )
 {
     ASSERT_MAGIC();
     XP_S16 nSent0 = 0;
@@ -459,7 +834,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
           !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         ++nBufs;
         if ( 0 == streamVersion || STREAM_VERS_NORELAY > streamVersion ) {
-            XWStreamCtxt* stream = mkStream( dutil );
+            XWStreamCtxt* stream = dvc_makeStream( dutil );
             addHeaderGameIDAndCmd( dutil, xwe, CMD_MSG, gameID, stream );
             stream_putBytes( stream, packet->buf, packet->len );
             callProc( proc, closure, devTopic, stream, qos );
@@ -469,7 +844,7 @@ dvc_makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
     }
 
     if ( 0 == streamVersion || STREAM_VERS_NORELAY <= streamVersion ) {
-        XWStreamCtxt* stream = mkStream( dutil );
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
         addProto3HeaderCmd( dutil, xwe, CMD_MSG, stream );
 
         /* For now, we ship one message per packet. But the receiving code
@@ -517,7 +892,7 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
 
     XP_U8 qos = dvc_getQOS( dutil, xwe );
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
 #ifdef MQTT_DEV_TOPICS
     callProc( proc, closure, devTopic, stream, qos );
@@ -568,20 +943,19 @@ isCtrlMsg( const MQTTDevID* myID, const XP_UCHAR* topic )
 }
 
 static void
-dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto, XWStreamCtxt* stream,
-              XP_U32 gameID, const CommsAddrRec* from )
+dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto,
+              XWStreamCtxt* stream, XP_U32 gameID,
+              const CommsAddrRec* from )
 {
     int msgCount = proto >= PROTO_3 ? stream_getU8( stream ) : 1;
     if ( 1 < msgCount ) {
         XP_LOGFF( "nBufs > 1: %d", msgCount );
     }
+    MsgCountState mcs = { .last = msgCount-1, };
     for ( int ii = 0; ii < msgCount; ++ii ) {
-        XP_U32 msgLen;
-        if ( PROTO_1 == proto ) {
-            msgLen = stream_getSize( stream );
-        } else {
-            msgLen = stream_getU32VL( stream );
-        }
+        XP_U32 msgLen = PROTO_1 == proto
+            ? stream_getSize( stream )
+            : stream_getU32VL( stream );
         if ( msgLen > stream_getSize( stream ) ) {
             XP_LOGFF( "msglen %d too large", msgLen );
             msgLen = 0;
@@ -590,17 +964,19 @@ dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto, XWStreamCtxt* stream,
         if ( 0 < msgLen ) {
             XP_U8 msgBuf[msgLen];
             stream_getBytes( stream, msgBuf, msgLen );
-            dutil_onMessageReceived( dutil, xwe, gameID,
-                                     from, msgBuf, msgLen );
+            mcs.cur = ii;
+            gmgr_onMessageReceived( dutil, xwe, gameID,
+                                    from, msgBuf, msgLen,
+                                    &mcs );
         }
     }
 }
 
 static void
-onAckSendTimer( void* closure, XWEnv xwe, XP_Bool fired )
+onAckSendTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
+                TimerKey XP_UNUSED(key), XP_Bool fired )
 {
     XP_LOGFF( "(fired: %s)", boolToStr(fired) );
-    XW_DUtilCtxt* dutil = (XW_DUtilCtxt*)closure;
     DevCtxt* dc = load( dutil, xwe );
     cJSON* ackMsgs;
     WITH_MUTEX( &dc->ackTimer.mutex );
@@ -628,7 +1004,7 @@ setAckSendTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
     if ( 0 == dc->ackTimer.key ) {
         dc->ackTimer.key = tmr_set( dutil, xwe,
                                     ACK_TIMER_INTERVAL_MS,
-                                    onAckSendTimer, dutil );
+                                    onAckSendTimer, NULL );
         XP_ASSERT( 0 != dc->ackTimer.key );
     }
 }
@@ -670,7 +1046,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
 
     XP_U32 gameID = 0;
     if ( isDevMsg( &myID, topic, &gameID ) ) {
-        XWStreamCtxt* stream = mkStream( dutil );
+        XP_LOGFF( "is msg; gameID: %X", gameID );
+        XWStreamCtxt* stream = dvc_makeStream( dutil );
         stream_putBytes( stream, buf, len );
 
         XP_U8 proto = 0;
@@ -700,7 +1077,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                 case CMD_INVITE: {
                     NetLaunchInfo nli = {};
                     if ( nli_makeFromStream( &nli, stream ) ) {
-                        dutil_onInviteReceived( dutil, xwe, &nli );
+                        dvc_onInviteReceived( dutil, xwe, &nli );
                     }
                 }
                     break;
@@ -712,7 +1089,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                     if ( CMD_MSG == cmd ) {
                         dispatchMsgs( dutil, xwe, proto, stream, gameID, &from );
                     } else if ( CMD_DEVGONE == cmd ) {
-                        dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
+                        dvc_onGameGoneReceived( dutil, xwe, gameID, &from );
                     }
                 }
                     break;
@@ -734,6 +1111,48 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     }
     LOG_RETURN_VOID();
 } /* dvc_parseMQTTPacket */
+
+void
+dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
+                    const CommsAddrRec* fromAddr,
+                    const XP_U8* buf, XP_U16 len )
+{
+    SMSProto* state = initSMSProtoOnce( dutil, xwe );
+    SMSMsgArray* msgArr = smsproto_prepInbound( state, xwe,
+                                                fromAddr->u.sms.phone,
+                                                fromAddr->u.sms.port,
+                                                buf, len );
+    sts_increment( dutil, xwe, STAT_NBS_RCVD );
+    if ( NULL != msgArr ) {
+        XP_ASSERT( msgArr->format == FORMAT_LOC );
+        for ( int ii = 0; ii < msgArr->nMsgs; ++ii ) {
+            SMSMsgLoc* msg = &msgArr->u.msgsLoc[ii];
+            switch ( msg->cmd ) {
+            case DATA:
+                gmgr_onMessageReceived( dutil, xwe, msg->gameID,
+                                        fromAddr, msg->data, msg->len,
+                                        NULL );
+                break;
+            case INVITE: {
+                XWStreamCtxt* stream = dvc_makeStream( dutil );
+                stream_putBytes( stream, msg->data, msg->len );
+                NetLaunchInfo nli = {};
+                if ( nli_makeFromStream( &nli, stream ) ) {
+                    dvc_onInviteReceived( dutil, xwe, &nli );
+                } else {
+                    XP_ASSERT(0);
+                }
+                stream_destroy( stream );
+            }
+                break;
+            default:
+                XP_ASSERT(0);   /* implement me!! */
+                break;
+            }
+        }
+        smsproto_freeMsgArray( state, msgArr );
+    }
+} /* dvc_parseSMSPacket */
 
 typedef struct _GetByKeyData {
     XP_U32 resultKey;
@@ -875,7 +1294,7 @@ typedef struct _PhoniesMapState {
 } PhoniesMapState;
 
 static ForEachAct
-findIsoProc( void* elem, void* closure )
+findIsoProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     ForEachAct result = FEA_OK;
     PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
@@ -889,44 +1308,45 @@ findIsoProc( void* elem, void* closure )
 }
 
 static int
-strCmpProc( const void* dl1, const void* dl2 )
+strCmpProc( const void* dl1, const void* dl2,
+            XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
 {
     return XP_STRCMP( (XP_UCHAR*)dl1, (XP_UCHAR*)dl2 );
 }
 
 static PhoniesDataCodes*
-findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), DevCtxt* dc, const XP_UCHAR* isoCode )
+findForIso( XW_DUtilCtxt* XP_UNUSED_DBG(dutil), XWEnv xwe, DevCtxt* dc,
+            const XP_UCHAR* isoCode )
 {
     PhoniesMapState ms = {
         .isoCode = isoCode,
     };
-    arr_map( dc->pd, findIsoProc, &ms );
+    arr_map( dc->pd, xwe, findIsoProc, &ms );
     PhoniesDataCodes* pdc = (PhoniesDataCodes*)ms.found;
 
     if ( !pdc ) {
         pdc = XP_CALLOC( dutil->mpool, sizeof(*pdc) );
         pdc->isoCode = copyString( dutil->mpool, isoCode );
-        pdc->phonies = arr_make( MPPARM_NOCOMMA(dutil->mpool) );
-        arr_setSort( pdc->phonies, strCmpProc );
-        arr_insert( dc->pd, pdc );
+        pdc->phonies = arr_make( MPPARM(dutil->mpool) strCmpProc, NULL );
+        arr_insert( dc->pd, xwe, pdc );
     }
 
     return pdc;
 }
 
 static void
-addPhony( XW_DUtilCtxt* dutil, DevCtxt* dc, const XP_UCHAR* isoCode,
+addPhony( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc, const XP_UCHAR* isoCode,
           const XP_UCHAR* phony )
 {
-    PhoniesDataCodes* pdc = findForIso( dutil, dc, isoCode );
+    PhoniesDataCodes* pdc = findForIso( dutil, xwe, dc, isoCode );
     XP_ASSERT( !!pdc );
 
     XP_UCHAR* datum = copyString( dutil->mpool, phony );
-    arr_insert( pdc->phonies, datum );
+    arr_insert( pdc->phonies, xwe, datum );
 }
 
 static ForEachAct
-storeStrs( void* elem, void* closure )
+storeStrs( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     XP_UCHAR* phony = (XP_UCHAR*)elem;
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
@@ -935,7 +1355,7 @@ storeStrs( void* elem, void* closure )
 }
 
 static ForEachAct
-storeIso( void* elem, void* closure )
+storeIso( void* elem, void* closure, XWEnv xwe )
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
     XWStreamCtxt* stream = (XWStreamCtxt*)closure;
@@ -946,7 +1366,7 @@ storeIso( void* elem, void* closure )
     XP_ASSERT( 0 < numStrs );
     stream_putU32VL( stream, numStrs );
 
-    arr_map( phonies, storeStrs, stream );
+    arr_map( phonies, xwe, storeStrs, stream );
 
     return FEA_OK;
 }
@@ -963,7 +1383,7 @@ storeIso( void* elem, void* closure )
 static void
 storePhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     if ( !!dc->pd ) {
         stream_putU8( stream, PD_VERSION_1 );
 
@@ -972,7 +1392,7 @@ storePhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
         XP_ASSERT( 0 < numIsos );
         stream_putU8( stream, numIsos );
 
-        arr_map( pdc, storeIso, stream );
+        arr_map( pdc, xwe, storeIso, stream );
     }
 
     dutil_storeStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
@@ -984,9 +1404,9 @@ loadPhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
     LOG_FUNC();
     XP_ASSERT ( !dc->pd );
-    dc->pd = arr_make( MPPARM_NOCOMMA(dutil->mpool) );
+    dc->pd = arr_make( MPPARM(dutil->mpool) PtrCmpProc, NULL );
 
-    XWStreamCtxt* stream = mkStream( dutil );
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
     dutil_loadStream( dutil, xwe, KEY_LEGAL_PHONIES, stream );
 
     XP_U8 flags;
@@ -1000,7 +1420,7 @@ loadPhoniesData( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
                 for ( int jj = 0; jj < numStrs; ++jj ) {
                     XP_UCHAR phony[32];
                     stringFromStreamHere( stream, phony, VSIZE(phony) );
-                    addPhony( dutil, dc, isoCode, phony );
+                    addPhony( dutil, xwe, dc, isoCode, phony );
                 }
             }
         }
@@ -1018,7 +1438,7 @@ dvc_addLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
 {
     if ( ! dvc_isLegalPhony( dutil, xwe, isoCode, phony ) ) {
         DevCtxt* dc = load( dutil, xwe );
-        addPhony( dutil, dc, isoCode, phony );
+        addPhony( dutil, xwe, dc, isoCode, phony );
         storePhoniesData( dutil, xwe, dc );
     }
 }
@@ -1068,7 +1488,7 @@ freePhonyState( XW_DUtilCtxt* dutil, XWEnv xwe )
 }
 
 static ForEachAct
-clearPhonyProc( void* elem, void* closure )
+clearPhonyProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     ForEachAct result = FEA_OK;
     XP_UCHAR* phony = (XP_UCHAR*)elem;
@@ -1086,12 +1506,12 @@ dvc_clearLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
                      const XP_UCHAR* phony )
 {
     DevCtxt* dc = load( dutil, xwe );
-    PhoniesDataCodes* pdc = findForIso( dutil, dc, isoCode );
+    PhoniesDataCodes* pdc = findForIso( dutil, xwe, dc, isoCode );
 
     PhoniesMapState ms = { .dutil = dutil, .phony = phony, };
-    arr_map( pdc->phonies, clearPhonyProc, &ms );
+    arr_map( pdc->phonies, xwe, clearPhonyProc, &ms );
     if ( 0 == arr_length(pdc->phonies) ) {
-        arr_remove( dc->pd, pdc );
+        arr_remove( dc->pd, xwe, pdc );
         freeOneCode( pdc, &ms );
     }
     storePhoniesData( dutil, xwe, dc );
@@ -1103,7 +1523,7 @@ typedef struct _GetWordsState {
 } GetWordsState;
 
 static ForEachAct
-getIsosProc( void* elem, void* closure )
+getIsosProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
     GetWordsState* gws = (GetWordsState*)closure;
@@ -1112,7 +1532,7 @@ getIsosProc( void* elem, void* closure )
 }
 
 static ForEachAct
-getWordsProc( void* elem, void* closure )
+getWordsProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
     XP_UCHAR* phony = (XP_UCHAR*)elem;
     GetWordsState* gws = (GetWordsState*)closure;
@@ -1130,7 +1550,7 @@ dvc_getIsoCodes( XW_DUtilCtxt* dutil, XWEnv xwe,
     };
 
     DevCtxt* dc = load( dutil, xwe );
-    arr_map( dc->pd, getIsosProc, &gws );
+    arr_map( dc->pd, xwe, getIsosProc, &gws );
 }
 
 void
@@ -1143,18 +1563,16 @@ dvc_getPhoniesFor( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* code,
     };
 
     DevCtxt* dc = load( dutil, xwe );
-    PhoniesDataCodes* pdc = findForIso( dutil, dc, code );
-    arr_map( pdc->phonies, getWordsProc, &gws );
+    PhoniesDataCodes* pdc = findForIso( dutil, xwe, dc, code );
+    arr_map( pdc->phonies, xwe, getWordsProc, &gws );
 }
 
-#ifdef DUTIL_TIMERS
 void
 dvc_onTimerFired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
 {
     // XP_LOGFF( "(key: %d)", key );
     tmr_fired( dutil, xwe, key );
 }
-#endif
 
 typedef struct _FindState {
     const XP_UCHAR* isoCode;
@@ -1163,13 +1581,13 @@ typedef struct _FindState {
 } FindState;
 
 static ForEachAct
-findPhonyProc( void* elem, void* closure )
+findPhonyProc( void* elem, void* closure, XWEnv xwe )
 {
     ForEachAct result = FEA_OK;
     FindState* fs = (FindState*)closure;
     const PhoniesDataCodes* pdc = (PhoniesDataCodes*)elem;
     if ( 0 == XP_STRCMP( fs->isoCode, pdc->isoCode ) ) {
-        fs->foundIt = arr_find( pdc->phonies, fs->phony );
+        fs->foundIt = arr_find( pdc->phonies, xwe, fs->phony, NULL );
         result |= FEA_EXIT;
     }
     return result;
@@ -1185,7 +1603,7 @@ dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
         .isoCode = isoCode,
         .phony = phony,
     };
-    arr_map( dc->pd, findPhonyProc, &fs );
+    arr_map( dc->pd, xwe, findPhonyProc, &fs );
     XP_LOGFF( "(%s, %s) => %s", isoCode, phony, boolToStr(fs.foundIt) );
     return fs.foundIt;
 }
@@ -1251,6 +1669,8 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     loadPhoniesData( dutil, xwe, dc );
 
+    mqttInit( dutil, xwe );
+
 #ifdef DEBUG
     dutil->magic = MAGIC_INITED;
 #endif
@@ -1263,9 +1683,27 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     DevCtxt* dc = freePhonyState( dutil, xwe );
     freeWSState( dutil, dc );
 
+    smsproto_free( dutil->protoState );
+
     MUTEX_DESTROY( &dc->webSend.mutex );
     MUTEX_DESTROY( &dc->ackTimer.mutex );
     MUTEX_DESTROY( &dc->mutex );
 
     XP_FREEP( dutil->mpool, &dc );
+}
+
+GameRef
+dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* stream,
+                    const CurGameInfo* gi, XW_UtilCtxt* util, DrawCtx* draw,
+                    CommonPrefs* cp )
+{
+    XP_ASSERT(0);
+    XP_USE(dutil);
+    XP_USE(xwe);
+    XP_USE(stream);
+    XP_USE(gi);
+    XP_USE(util);
+    XP_USE(draw);
+    XP_USE(cp);
+    return 0;
 }

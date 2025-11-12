@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,15 +17,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _LINUXSERVER_H_
-#define _LINUXSERVER_H_
 
-#include "server.h"
+#ifndef _DICTMGRP_H_
+#define _DICTMGRP_H_
 
-ServerCtxt* linux_make_server( char* dictName, XP_U16 totalPlayerCount );
+#ifdef CPLUS
+extern "C" {
+#endif
 
-ServerCtxt* linux_make_serverProxy( char* serverAddrStr, 
-				    XP_U16 totalPlayerCount );
+void dmgr_make( XW_DUtilCtxt* dutil );
+void dmgr_destroy( XW_DUtilCtxt* dutil, XWEnv xwe );
 
+void dmgr_put( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key,
+               const DictionaryCtxt* dict );
+const DictionaryCtxt* dmgr_get( XW_DUtilCtxt* dutil, XWEnv xwe,
+                                const XP_UCHAR* key );
+void dmgr_remove( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key );
+
+#ifdef CPLUS
+}
+#endif
 
 #endif

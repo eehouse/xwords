@@ -34,12 +34,12 @@ typedef struct _cb_dims {
     int height;
 } cb_dims;
 
-CursesBoardState* cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
-                           CursesMenuState* menuState, OnGameSaved onGameSaved );
+CursesBoardState* cb_init( LaunchParams* params, CursesMenuState* menuState,
+                           OnGameSaved onGameSaved );
 void cb_resized( CursesBoardState* cbState, const cb_dims* dims );
 
-void cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims );
-bool cb_newGame( CursesBoardState* cbState, const cb_dims* dims,
+void cb_open( CursesBoardState* cbState, GameRef gr, const cb_dims* dims );
+bool cb_newGame( CursesBoardState* cbState,
                  const CurGameInfo* gi /* optional: use from globals if unset */,
                  XP_U32* newGameIDP );
 void cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
@@ -63,5 +63,9 @@ XP_Bool cb_resign( CursesBoardState* cbState, XP_U32 gameID );
 const CommonGlobals* cb_getForGameID( CursesBoardState* cbState, XP_U32 gameID );
 
 void cb_closeAll( CursesBoardState* cbState );
+
+void cb_setupUtilCallbacks( XW_UtilCtxt* util );
+
+CommonGlobals* allocCursesBoardGlobals();
 
 #endif

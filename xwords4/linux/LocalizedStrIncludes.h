@@ -62,6 +62,9 @@ enum {
     STR_BONUS_ALL_SUB,
     STRS_DUP_ALLSCORES,
 
+    STRS_GROUPS_DEFAULT,
+    STRS_GROUPS_ARCHIVE,
+
     /* These three aren't in Android */
     STR_LOCALPLAYERS,
     STR_TOTALPLAYERS,

@@ -23,11 +23,11 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import org.eehouse.android.xw4.jni.Knowns
 
 import org.json.JSONException
 import org.json.JSONObject
 
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = PeerStatusView::class.java.simpleName
@@ -52,11 +52,13 @@ class PeerStatusView(private val mContext: Context, aset: AttributeSet?) :
 
     private fun startThreadOnce() {
         if (mFinished && null != mSelfDevID) {
-            Thread { fetchAndDisplay() }.start()
+            launch {
+                fetchAndDisplay()
+            }
         }
     }
 
-    private fun fetchAndDisplay() {
+    private suspend fun fetchAndDisplay() {
         var userStr: String? = null
         val params = JSONObject()
         try {
@@ -74,7 +76,7 @@ class PeerStatusView(private val mContext: Context, aset: AttributeSet?) :
                         val line = it.getJSONObject(ii)
                         val mqttID = line.getString("devid")
                         val age = line.getString("age")
-                        var name = XwJNI.kplr_nameForMqttDev(mqttID)
+                        var name = Knowns.nameForMqttDev(mqttID)
                         if (null == name) {
                             name = if (mSelfDevID == mqttID) {
                                 LocUtils.getString(mContext, R.string.selfName)

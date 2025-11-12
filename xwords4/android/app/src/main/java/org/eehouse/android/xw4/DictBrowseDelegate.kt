@@ -52,8 +52,8 @@ import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
 import org.eehouse.android.xw4.PatTableRow.EnterPressed
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.DictInfo
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.PatDesc
+import org.eehouse.android.xw4.jni.TmpDict
+import org.eehouse.android.xw4.jni.TmpDict.PatDesc
 import org.eehouse.android.xw4.loc.LocUtils
 
 class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
@@ -80,11 +80,10 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             mChosenMax = MAX_LEN
         }
 
-        fun onFilterAccepted(dict: XwJNI.DictWrapper?, delim: String?) {
-            Assert.assertNotNull(dict)
+        fun onFilterAccepted(dict: TmpDict.DictWrapper, delim: String?) {
             mPassedMin = mChosenMin
             mPassedMax = mChosenMax
-            mPats.map{it.strPat = XwJNI.dict_tilesToStr(dict!!, it.tilePat, delim)}
+            mPats.map{it.strPat = dict.tilesToStr(it.tilePat, delim)}
         }
 
         override fun toString(): String {
@@ -107,8 +106,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     private var mBrowseState: DictBrowseState? = null
     private val mMinAvail = 0
     private var mList: ListView? = null
-    private var mDiClosure: XwJNI.IterWrapper? = null
-    private var mDict: XwJNI.DictWrapper? = null
+    private var mDiClosure: TmpDict.IterWrapper? = null
+    private var mDict: TmpDict.DictWrapper? = null
     private var mDictInfo: DictInfo? = null
     private val mRows = arrayOf<PatTableRow?>(null, null, null)
     private var mSpinnerMin: Spinner? = null
@@ -122,7 +121,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         private val mNWords: Int
 
         init {
-            mNWords = XwJNI.di_wordCount(mDiClosure!!)
+            mNWords = mDiClosure!!.wordCount()
             // Log.d( TAG, "making DictListAdapter; have %d words", m_nWords );
         }
 
@@ -130,7 +129,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             val text = inflate(android.R.layout.simple_list_item_1) as TextView
             text.setOnClickListener(this@DictBrowseDelegate)
             text.setOnLongClickListener(this@DictBrowseDelegate)
-            var str = XwJNI.di_nthWord(mDiClosure!!, position, mBrowseState!!.mDelim)
+            var str = mDiClosure!!.nthWord(position, mBrowseState!!.mDelim)
             if (null != str) {
                 if (SHOW_NUM) {
                     str = String.format("%1\$d %2\$s", 1 + position, str)
@@ -153,7 +152,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         }
 
         override fun getCount(): Int {
-            Assert.assertTrueNR(mNWords == XwJNI.di_wordCount(mDiClosure!!))
+            Assert.assertTrueNR(mNWords == mDiClosure!!.wordCount())
             return mNWords
         }
 
@@ -178,8 +177,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         }
 
         override fun getSections(): Array<Any> {
-            mPrefixes = XwJNI.di_getPrefixes(mDiClosure!!)
-            mIndices = XwJNI.di_getIndices(mDiClosure!!)
+            mPrefixes = mDiClosure!!.getPrefixes()
+            mIndices = mDiClosure!!.getIndices()
 
             return if ( null == mPrefixes ) {
                 arrayOf()
@@ -210,8 +209,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             val names = arrayOf(mName)
             val pairs = DictUtils.openDicts(mActivity, names)
             Assert.assertNotNull(mBrowseState)
-            mDict = XwJNI.makeDict(pairs.m_bytes[0], mName, pairs.m_paths[0])
-            mDictInfo = XwJNI.dict_getInfo(mDict!!, false)
+            mDict = TmpDict.makeDict(pairs.m_bytes[0], mName, pairs.m_paths[0])
+            mDictInfo = mDict!!.getInfo(false)
             setTitle(getString(R.string.dict_browse_title_fmt, mName, mDictInfo!!.wordCount))
 
             val ecl: ExpandChangeListener = object: ExpandChangeListener {
@@ -267,7 +266,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                 val strs = arrayOfNulls<String>(choices.size)
                 var ii = 0
                 while (ii < choices.size) {
-                    strs[ii] = XwJNI.dict_tilesToStr(mDict!!, choices[ii], DELIM)
+                    strs[ii] = mDict!!.tilesToStr(choices[ii], DELIM)
                     ++ii
                 }
                 val title = getString(
@@ -427,7 +426,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     }
 
     private fun showTiles() {
-        val info = XwJNI.getTilesInfo(mDict!!)
+        val info = mDict!!.getTilesInfo()
         showDialogFragment(DlgID.SHOW_TILES, info)
     }
 
@@ -515,7 +514,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
             } else if (null == thisPats!!.tilePat) {
                 val strPat = thisPats.strPat
                 if (null != strPat && 0 < strPat.length) {
-                    val choices = XwJNI.dict_strToTiles(mDict!!, strPat)
+                    val choices = mDict!!.strToTiles(strPat)
                     if (null == choices || 0 == choices.size) {
                         val langName = DictLangCache.getLangNameForISOCode(mActivity, mLang!!)
                         makeOkOnlyBuilder(R.string.no_tiles_exist, strPat, langName)
@@ -525,9 +524,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
                             )
                             .show()
                         pending = true
-                    } else if (1 == choices.size
-                        || !XwJNI.dict_hasDuplicates(mDict!!)
-                    ) {
+                    } else if (1 == choices.size || !mDict!!.hasDuplicates()) {
                         // Pick the shortest option, i.e. when there's a
                         // choice between using one or several tiles to spell
                         // something choose one.
@@ -626,7 +623,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     private val desc: String?
         private get() {
             if (null == mDescWrap) {
-                var desc = XwJNI.dict_getDesc(mDict!!)
+                var desc = mDict!!.getDesc()
                 if (BuildConfig.NON_RELEASE) {
                     val sums = DictLangCache.getDictMD5Sums(mActivity, mName)
                     if (null != desc) {
@@ -654,28 +651,29 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
     private fun replaceIter(useOldVals: Boolean) {
         Assert.assertNotNull(mBrowseState)
         Assert.assertNotNull(mDict)
-        val min = if (useOldVals) mBrowseState!!.mPassedMin else mBrowseState!!.mChosenMin
-        val max = if (useOldVals) mBrowseState!!.mPassedMax else mBrowseState!!.mChosenMax
+        val min =
+            if (useOldVals) mBrowseState!!.mPassedMin
+            else mBrowseState!!.mChosenMin
+        val max =
+            if (useOldVals) mBrowseState!!.mPassedMax
+            else mBrowseState!!.mChosenMax
         val title = getString(R.string.filter_title_fmt, mName)
-        val msg = getString(R.string.filter_progress_fmt, mDictInfo!!.wordCount)
+        val msg = getString(R.string.filter_progress_fmt,
+                            mDictInfo!!.wordCount)
+
         startProgress(title, msg)
-        XwJNI.di_init(mDict!!, mBrowseState!!.mPats, min, max,
-            object : XwJNI.DictIterProcs {
-                override fun onIterReady(wrapper: XwJNI.IterWrapper?) {
-                    runOnUiThread {
-                        stopProgress()
-                        if (null != wrapper) {
-                            mBrowseState!!.onFilterAccepted(mDict, null)
-                            initList(wrapper)
-                            setFindPats(mBrowseState!!.mPats)
-                        } else {
-                            makeOkOnlyBuilder(R.string.alrt_bad_filter)
-                                .show()
-                        }
-                        newFeatureAlert()
-                    }
-                }
-            })
+        launch {
+            val wrapper = mDict!!.makeDI(mBrowseState!!.mPats, min, max)
+            stopProgress()
+            wrapper?.let {
+                mBrowseState!!.onFilterAccepted(mDict!!, null)
+                initList(it)
+                setFindPats(mBrowseState!!.mPats)
+            } ?: run {
+                makeOkOnlyBuilder(R.string.alrt_bad_filter).show()
+            }
+            newFeatureAlert()
+        }
     }
 
     private fun newFeatureAlert() {
@@ -691,7 +689,7 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         }
     }
 
-    private fun initList(newIter: XwJNI.IterWrapper) {
+    private fun initList(newIter: TmpDict.IterWrapper) {
         val parent = removeList()
         mList = inflate(R.layout.dict_browser_list) as ListView
         Assert.assertNotNull(mBrowseState)
@@ -710,8 +708,8 @@ class DictBrowseDelegate constructor(delegator: Delegator) : DelegateBase(
         Assert.assertNotNull(pats)
         val summary: String
         val pat = formatPats(pats, null)
-        val nWords = XwJNI.di_wordCount(mDiClosure!!)
-        val minMax = XwJNI.di_getMinMax(mDiClosure!!)
+        val nWords = mDiClosure!!.wordCount()
+        val minMax = mDiClosure!!.getMinMax()
         summary = getString(
             R.string.filter_sum_pat_fmt, pat,
             minMax[0], minMax[1],

@@ -30,7 +30,7 @@ import org.eehouse.android.xw4.DBUtils.getAnyGroup
 import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
-import org.eehouse.android.xw4.jni.XwJNI.RematchOrder
+import org.eehouse.android.xw4.jni.GameRef.RematchOrder
 
 open class XWPrefs {
     companion object {
@@ -295,18 +295,18 @@ open class XWPrefs {
             return getPrefsBoolean(context, R.string.key_default_loc, true)
         }
 
-        fun getDefaultNewGameGroup(context: Context): Long {
-            var groupID = getPrefsLong(
-                context, R.string.key_default_group,
-                DBUtils.GROUPID_UNSPEC
-            )
-            if (DBUtils.GROUPID_UNSPEC == groupID) {
-                groupID = getAnyGroup(context)
-                setPrefsLong(context, R.string.key_default_group, groupID)
-            }
-            Assert.assertTrue(DBUtils.GROUPID_UNSPEC != groupID)
-            return groupID
-        }
+        // fun getDefaultNewGameGroup(context: Context): Long {
+        //     var groupID = getPrefsLong(
+        //         context, R.string.key_default_group,
+        //         DBUtils.GROUPID_UNSPEC
+        //     )
+        //     if (DBUtils.GROUPID_UNSPEC == groupID) {
+        //         groupID = getAnyGroup(context)
+        //         setPrefsLong(context, R.string.key_default_group, groupID)
+        //     }
+        //     Assert.assertTrue(DBUtils.GROUPID_UNSPEC != groupID)
+        //     return groupID
+        // }
 
         fun getDefaultRematchOrder(context: Context): RematchOrder? {
             val storedStr = getPrefsString(context, R.string.key_rematch_order)
@@ -325,10 +325,10 @@ open class XWPrefs {
             return ro
         }
 
-        fun setDefaultNewGameGroup(context: Context, `val`: Long) {
-            Assert.assertTrue(DBUtils.GROUPID_UNSPEC != `val`)
-            setPrefsLong(context, R.string.key_default_group, `val`)
-        }
+        // fun setDefaultNewGameGroup(context: Context, `val`: Long) {
+        //     Assert.assertTrue(DBUtils.GROUPID_UNSPEC != `val`)
+        //     setPrefsLong(context, R.string.key_default_group, `val`)
+        // }
 
         fun getThumbEnabled(context: Context): Boolean {
             return 0 < getThumbPct(context)

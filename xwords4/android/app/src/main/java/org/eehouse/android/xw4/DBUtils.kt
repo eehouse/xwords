@@ -69,7 +69,7 @@ object DBUtils {
     private const val NAME_FMT = "%s='%s'"
     private var s_cachedRowID = ROWID_NOTFOUND.toLong()
     private var s_cachedBytes: ByteArray? = null
-    private val s_listeners = HashSet<DBChangeListener>()
+    // private val s_listeners = HashSet<DBChangeListener>()
     private val s_slListeners: MutableSet<StudyListListener> = HashSet()
     private var s_dbHelper: SQLiteOpenHelper? = null
     private var s_db: SQLiteDatabase? = null
@@ -153,7 +153,7 @@ object DBUtils {
                 var col = cursor.getColumnIndex(DBHelper.CONTYPE)
                 if (0 <= col) {
                     tmpInt = cursor.getInt(col)
-                    summary!!.conTypes = CommsConnTypeSet(tmpInt)
+                    val conTypes = CommsConnTypeSet(tmpInt)
                     col = cursor.getColumnIndex(DBHelper.SEED)
                     if (0 < col) {
                         summary!!.seed = cursor.getInt(col)
@@ -162,7 +162,7 @@ object DBUtils {
                     if (0 <= col) {
                         summary!!.nPacketsPending = cursor.getInt(col)
                     }
-                    val iter: Iterator<CommsConnType> = summary!!.conTypes!!.iterator()
+                    val iter: Iterator<CommsConnType> = conTypes.iterator()
                     while (iter.hasNext()) {
                         val typ = iter.next()
                         when (typ) {
@@ -234,7 +234,7 @@ object DBUtils {
 				    .putAnd(DBHelper.TURN, summary.turn)
 				    .putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
 				    .putAnd(DBHelper.GIFLAGS, summary.giflags())
-				    .putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
+				    // .putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
                 Assert.assertTrueNR(null != summary.isoCode)
 				values.putAnd(DBHelper.ISOCODE, summary.isoCode.toString())
 					.putAnd(DBHelper.GAMEID, summary.gameID)
@@ -265,26 +265,27 @@ object DBUtils {
                     }
                     values.put(DBHelper.SCORES, sb.toString())
                 }
-                if (null != summary.conTypes) {
-                    values.putAnd(DBHelper.CONTYPE, summary.conTypes!!.toInt())
-					    .putAnd(DBHelper.SEED, summary.seed)
-					    .putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
-                    val iter: Iterator<CommsConnType> = summary.conTypes!!.iterator()
-                    while (iter.hasNext()) {
-                        when (val typ = iter.next()) {
-                            CommsConnType.COMMS_CONN_RELAY -> {
-                                val relayID = summary.relayID
-                                values.putAnd(DBHelper.ROOMNAME, summary.roomName)
-								    .putAnd(DBHelper.RELAYID, summary.relayID)
-                            }
+                Assert.failDbg()
+                // summary.conTypes()?.let { conTypes ->
+                //     values.putAnd(DBHelper.CONTYPE, conTypes.toInt())
+				// 	    .putAnd(DBHelper.SEED, summary.seed)
+				// 	    .putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
+                //     val iter: Iterator<CommsConnType> = conTypes.iterator()
+                //     while (iter.hasNext()) {
+                //         when (val typ = iter.next()) {
+                //             CommsConnType.COMMS_CONN_RELAY -> {
+                //                 val relayID = summary.relayID
+                //                 values.putAnd(DBHelper.ROOMNAME, summary.roomName)
+				// 				    .putAnd(DBHelper.RELAYID, summary.relayID)
+                //             }
 
-                            CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
-							    -> values.put(DBHelper.REMOTEDEVS,
-										      summary.summarizeDevs() )
-                            else -> {} // Log.d( TAG, "unexpected type ${typ}")
-                        }
-                    }
-                }
+                //             CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
+				// 			    -> values.put(DBHelper.REMOTEDEVS,
+				// 						      summary.summarizeDevs() )
+                //             else -> {} // Log.d( TAG, "unexpected type ${typ}")
+                //         }
+                //     }
+                // }
                 values.put(DBHelper.SERVERROLE, summary.serverRole!!.ordinal)
             }
             initDB(context)
@@ -473,10 +474,6 @@ object DBUtils {
         notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
     }
 
-    fun setExpanded(context: Context, rowid: Long, expanded: Boolean) {
-        setSummaryInt(context, rowid, DBHelper.CONTRACTED, if (expanded) 0 else 1)
-    }
-
     private fun getSummaryInt(
         context: Context, rowid: Long, column: String,
         dflt: Int
@@ -500,10 +497,6 @@ object DBUtils {
             context, rowid, DBHelper.HASMSGS,
             GameSummary.MSG_FLAGS_NONE
         )
-    }
-
-    fun getExpanded(context: Context, rowid: Long): Boolean {
-        return 0 == getSummaryInt(context, rowid, DBHelper.CONTRACTED, 0)
     }
 
     fun gameOver(context: Context, rowid: Long): Boolean {
@@ -532,15 +525,15 @@ object DBUtils {
         }
     }
 
-    fun clearThumbnails(context: Context) {
-        val values = ContentValues()
-        values.putNull(DBHelper.THUMBNAIL)
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            val result = update(TABLE_NAMES.SUM, values, null).toLong()
-            notifyListeners(context, ROWIDS_ALL.toLong(), GameChangeType.GAME_CHANGED)
-        }
-    }
+    // fun clearThumbnails(context: Context) {
+    //     val values = ContentValues()
+    //     values.putNull(DBHelper.THUMBNAIL)
+    //     initDB(context)
+    //     synchronized(s_dbHelper!!) {
+    //         val result = update(TABLE_NAMES.SUM, values, null).toLong()
+    //         notifyListeners(context, ROWIDS_ALL.toLong(), GameChangeType.GAME_CHANGED)
+    //     }
+    // }
 
     fun getKAMinutesLeft(context: Context): Long
     {
@@ -791,29 +784,30 @@ object DBUtils {
 
     fun loadGame(context: Context, lock: GameLock): ByteArray? {
         var result: ByteArray? = null
-        val rowid = lock.rowid
-        Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
-        if (Quarantine.safeToOpen(rowid)) {
-            result = getCached(rowid)
-            if (null == result) {
-                val columns = arrayOf(DBHelper.SNAPSHOT)
-                val selection = String.format(ROW_ID_FMT, rowid)
-                initDB(context)
-                synchronized(s_dbHelper!!) {
-                    val cursor = query(TABLE_NAMES.SUM, columns, selection)
-                    if (1 == cursor.count && cursor.moveToFirst()) {
-                        result = cursor.getBlob(
-                            cursor
-                                .getColumnIndex(DBHelper.SNAPSHOT)
-                        )
-                    } else {
-                        Log.e(TAG, "loadGame: none for rowid=%d", rowid)
-                    }
-                    cursor.close()
-                }
-                setCached(rowid, result)
-            }
-        }
+        Assert.failDbg()
+        // val rowid = lock.rowid
+        // Assert.assertTrue(ROWID_NOTFOUND.toLong() != rowid)
+        // if (Quarantine.safeToOpen(rowid)) {
+        //     result = getCached(rowid)
+        //     if (null == result) {
+        //         val columns = arrayOf(DBHelper.SNAPSHOT)
+        //         val selection = String.format(ROW_ID_FMT, rowid)
+        //         initDB(context)
+        //         synchronized(s_dbHelper!!) {
+        //             val cursor = query(TABLE_NAMES.SUM, columns, selection)
+        //             if (1 == cursor.count && cursor.moveToFirst()) {
+        //                 result = cursor.getBlob(
+        //                     cursor
+        //                         .getColumnIndex(DBHelper.SNAPSHOT)
+        //                 )
+        //             } else {
+        //                 Log.e(TAG, "loadGame: none for rowid=%d", rowid)
+        //             }
+        //             cursor.close()
+        //         }
+        //         setCached(rowid, result)
+        //     }
+        // }
         return result
     }
 
@@ -1516,19 +1510,19 @@ object DBUtils {
         }
     }
 
-    fun setDBChangeListener(listener: DBChangeListener) {
-        synchronized(s_listeners) {
-            Assert.assertNotNull(listener)
-            s_listeners.add(listener)
-        }
-    }
+    // fun setDBChangeListener(listener: DBChangeListener) {
+    //     synchronized(s_listeners) {
+    //         Assert.assertNotNull(listener)
+    //         s_listeners.add(listener)
+    //     }
+    // }
 
-    fun clearDBChangeListener(listener: DBChangeListener) {
-        synchronized(s_listeners) {
-            Assert.assertTrueNR(s_listeners.contains(listener))
-            s_listeners.remove(listener)
-        }
-    }
+    // fun clearDBChangeListener(listener: DBChangeListener) {
+    //     synchronized(s_listeners) {
+    //         Assert.assertTrueNR(s_listeners.contains(listener))
+    //         s_listeners.remove(listener)
+    //     }
+    // }
 
     internal fun addStudyListChangedListener(lnr: StudyListListener) {
         synchronized(s_slListeners) { s_slListeners.add(lnr) }
@@ -1888,6 +1882,14 @@ object DBUtils {
         delete(db, TABLE_NAMES.PAIRS, selection, null)
     }
 
+    fun delKVPair(context: Context, key: String) {
+        val selection = String.format("%s = '%s'", DBHelper.KEY, key)
+        initDB(context)
+        synchronized(s_dbHelper!!) {
+            delete(s_db, TABLE_NAMES.PAIRS, selection, null)
+        }
+    }
+
     private fun getStringForSyncSel(db: SQLiteDatabase?, selection: String): String? {
         var result: String? = null
         val columns = arrayOf(DBHelper.VALUE)
@@ -2066,6 +2068,20 @@ object DBUtils {
         setStringFor(context, key, str64)
     }
 
+    fun getKeysLike(context: Context, pattern: String): Array<String> {
+        initDB(context)
+        val arr = ArrayList<String>()
+        val selection = "${DBHelper.KEY} LIKE \"${pattern}\""
+        val columns = arrayOf(DBHelper.KEY)
+        val cursor = DBHelper.query(s_db, TABLE_NAMES.PAIRS, columns, selection)
+        while (cursor.moveToNext()) {
+            val key = cursor.getString(cursor.getColumnIndex(DBHelper.KEY))
+            Log.d(TAG, "getKeysLike(): adding $key")
+            arr.add(key)
+        }
+        return arr.toTypedArray()
+    }
+
     fun appendLog(tag: String?, msg: String) {
         appendLog(XWApp.getContext(), msg)
     }
@@ -2233,11 +2249,11 @@ object DBUtils {
         context: Context, rowid: Long,
         change: GameChangeType
     ) {
-        synchronized(s_listeners) {
-            s_listeners.toTypedArray()
-        }.map { proc ->
-            proc.gameSaved(context, rowid, change)
-        }
+        // synchronized(s_listeners) {
+        //     s_listeners.toTypedArray()
+        // }.map { proc ->
+        //     proc.gameSaved(context, rowid, change)
+        // }
     }
 
     // Trivial one-item cache.  Typically bytes are read three times
@@ -2425,7 +2441,7 @@ object DBUtils {
 
                         InviteMeans.RELAY -> Assert.failDbg()
                         InviteMeans.MQTT -> {
-                            val player = XwJNI.kplr_nameForMqttDev(target)
+                            val player = "fred" // XwJNI.kplr_nameForMqttDev(target)
                             if (null != player) {
                                 msg = LocUtils.getString(
                                     context,
@@ -2463,7 +2479,7 @@ object DBUtils {
             }
             var result: String? = null
             if (null != mqttID) {
-                result = XwJNI.kplr_nameForMqttDev(mqttID)
+                result = "fred" // XwJNI.kplr_nameForMqttDev(mqttID)
             }
             Log.d(TAG, "getKPName() => %s", result)
             return result

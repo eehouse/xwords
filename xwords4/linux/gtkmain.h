@@ -23,13 +23,25 @@
 #include "gtkboard.h"
 
 int gtkmain( LaunchParams* params );
+void addGTKGame( LaunchParams* params, GameRef gr );
 void windowDestroyed( GtkGameGlobals* globals );
-void gtkOnGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime );
-void make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals );
+void gtkOnGameSaved( void* closure, GameRef gr, XP_Bool firstTime );
+void make_rematch( GtkAppGlobals* apg, GameRef parent,
+                   XP_Bool archiveAfter, XP_Bool deleteAfter );
 void inviteReceivedGTK( void* closure, const NetLaunchInfo* invite );
 void msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
                      const XP_U8* buf, XP_U16 len );
 void gameGoneGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID );
 void resizeFromSaved( GtkWidget* window, sqlite3* pDb, const gchar* key );
 void saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key );
+void onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces);
+void onGroupChangedGTK( LaunchParams* params, GroupRef grp,
+                        GroupChangeEvents gces );
+void onGTKMissingDictAdded( LaunchParams* params, GameRef gr,
+                            const XP_UCHAR* dictName );
+void onGTKDictGone( LaunchParams* params, GameRef gr, const XP_UCHAR* dictName );
+void informMoveGTK( LaunchParams* params, GameRef gr, XWStreamCtxt* expl,
+                    XWStreamCtxt* words );
+void informGameOverGTK( LaunchParams* params, GameRef gr, XP_S16 quitter );
+
 #endif

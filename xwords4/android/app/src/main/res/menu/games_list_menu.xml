@@ -26,6 +26,9 @@
     <item android:id="@+id/games_menu_ksconfig"
           android:title="@string/movechecker_name"
           />
+    <item android:id="@+id/games_menu_fromclip"
+          android:title="@string/games_menu_fromclip"
+          />
     <item android:id="@+id/games_menu_rateme"
           android:title="@string/menu_rateme"
           />
@@ -53,9 +56,6 @@
           android:title="@string/board_menu_file_email"
           android:icon="@drawable/email__gen"
           android:showAsAction="ifRoom"
-          />
-    <item android:id="@+id/games_menu_resend"
-          android:title="@string/board_menu_game_resend"
           />
     <!-- Game items -->
     <item android:id="@+id/games_game_delete"

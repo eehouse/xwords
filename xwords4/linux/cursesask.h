@@ -22,8 +22,10 @@
 
 #include "cursesmain.h"
 
-int cursesask( WINDOW* window, const char* question, 
-               short numButtons, const char** buttons );
+int cursesask( WINDOW* window, short numButtons, const char** buttons,
+               const char* question );
+int cursesaskf( WINDOW* window, short numButtons, const char** buttons,
+                const char* fmt, ... );
 
 void ca_inform( WINDOW* window, const char* message );
 void ca_informf( WINDOW* window, const char* fmt, ... );

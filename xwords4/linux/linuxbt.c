@@ -45,6 +45,7 @@
 #include "strutils.h"
 #include "uuidhack.h"
 #include "gsrcwrap.h"
+#include "gameref.h"
 
 #define MAX_CLIENTS 1
 
@@ -55,7 +56,7 @@
 #endif
 
 typedef struct LinBtStuff {
-    CommonGlobals* globals;
+    CommonGlobals* cGlobals;
     union {
         struct {
             int listener;               /* socket */
@@ -74,10 +75,9 @@ static gboolean bt_socket_proc( GIOChannel* source, GIOCondition condition,
                                 gpointer data );
 
 static LinBtStuff*
-lbt_make( MPFORMAL XP_Bool amMaster )
+lbt_make( XP_Bool amMaster )
 {
-    LinBtStuff* btStuff = (LinBtStuff*)XP_MALLOC( mpool, sizeof(*btStuff) );
-    XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
+    LinBtStuff* btStuff = (LinBtStuff*)g_malloc0( sizeof(*btStuff) );
 
     btStuff->amMaster = amMaster;
     btStuff->socket = -1;
@@ -186,8 +186,8 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              // set the connection parameters (who to connect to)
              // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
-            CommonGlobals* globals = btStuff->globals;
-            ADD_SOCKET( globals->socketAddedClosure, sock, bt_socket_proc );
+            CommonGlobals* cGlobals = btStuff->cGlobals;
+            ADD_SOCKET( cGlobals->socketAddedClosure, sock, bt_socket_proc );
             btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
@@ -199,8 +199,8 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
 static XP_Bool
 lbt_accept( int listener, void* ctxt )
 {
-    CommonGlobals* globals = (CommonGlobals*)ctxt;
-    LinBtStuff* btStuff = globals->btStuff;
+    CommonGlobals* cGlobals = (CommonGlobals*)ctxt;
+    LinBtStuff* btStuff = cGlobals->btStuff;
     int sock = -1;
     L2_RF_ADDR inaddr;
     socklen_t slen;
@@ -216,7 +216,7 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-        ADD_SOCKET( globals->socketAddedClosure, sock, bt_socket_proc );
+        ADD_SOCKET( cGlobals->socketAddedClosure, sock, bt_socket_proc );
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {
@@ -312,9 +312,9 @@ lbt_register( LinBtStuff* btStuff, unsigned short l2_psm,
 } /* lbt_register */
 
 static void
-lbt_listenerSetup( CommonGlobals* globals )
+lbt_listenerSetup( CommonGlobals* cGlobals )
 {
-    LinBtStuff* btStuff = globals->btStuff;
+    LinBtStuff* btStuff = cGlobals->btStuff;
     L2_RF_ADDR saddr;
     int listener;
     uint8_t rc_channel = 0;
@@ -353,29 +353,29 @@ lbt_listenerSetup( CommonGlobals* globals )
 
     lbt_register( btStuff, htobs( XW_PSM ), rc_channel );
 
-    (*globals->addAcceptor)( listener, lbt_accept, globals, 
+    (*cGlobals->addAcceptor)( listener, lbt_accept, cGlobals, 
                              &btStuff->u.master.listenerStorage );
 } /* lbt_listenerSetup */
 
 void
-linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
+linux_bt_open( CommonGlobals* cGlobals, XP_Bool amMaster )
 {
-    LinBtStuff* btStuff = globals->btStuff;
+    LinBtStuff* btStuff = cGlobals->btStuff;
     if ( !btStuff ) {
-        btStuff = globals->btStuff
-            = lbt_make( MPPARM(globals->util->mpool) amMaster );
-        btStuff->globals = globals;
+        btStuff = cGlobals->btStuff = lbt_make( amMaster );
+        btStuff->cGlobals = cGlobals;
         btStuff->socket = -1;
 
-        globals->btStuff = btStuff;
+        cGlobals->btStuff = btStuff;
 
         if ( amMaster ) {
-            lbt_listenerSetup( globals );
+            lbt_listenerSetup( cGlobals );
         } else {
             if ( btStuff->socket < 0 ) {
                 XP_ASSERT(0);   /* don't know if this works */
                 CommsAddrRec addr;
-                comms_getSelfAddr( globals->game.comms, &addr );
+                XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+                gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &addr );
                 lbt_connectSocket( btStuff, &addr );
             }
         }
@@ -383,25 +383,25 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
 } /* linux_bt_open */
 
 void
-linux_bt_reset( CommonGlobals* globals )
+linux_bt_reset( CommonGlobals* cGlobals )
 {
-    XP_Bool amMaster = globals->btStuff->amMaster;
+    XP_Bool amMaster = cGlobals->btStuff->amMaster;
     LOG_FUNC();
-    linux_bt_close( globals );
-    linux_bt_open( globals, amMaster );
+    linux_bt_close( cGlobals );
+    linux_bt_open( cGlobals, amMaster );
     LOG_RETURN_VOID();
 }
 
 void
-linux_bt_close( CommonGlobals* globals )
+linux_bt_close( CommonGlobals* cGlobals )
 {
-    LinBtStuff* btStuff = globals->btStuff;
+    LinBtStuff* btStuff = cGlobals->btStuff;
 
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
             XP_LOGF( "%s: closing listener socket %d", __func__, btStuff->u.master.listener );
             /* Remove from main event loop */
-            (*globals->addAcceptor)( -1, NULL, globals,
+            (*cGlobals->addAcceptor)( -1, NULL, cGlobals,
                                      &btStuff->u.master.listenerStorage );
             close( btStuff->u.master.listener );
             btStuff->u.master.listener = -1;
@@ -410,16 +410,15 @@ linux_bt_close( CommonGlobals* globals )
             XP_LOGF( "sleeping for Palm's sake..." );
             sleep( 2 );         /* see if this gives palm a chance to not hang */
         }
-
-        XP_FREE( globals->util->mpool, btStuff );
-        globals->btStuff = NULL;
+        g_free( btStuff );
+        cGlobals->btStuff = NULL;
     }
 } /* linux_bt_close */
 
 static XP_S16
 linux_bt_send_impl( const XP_U8* buf, XP_U16 buflen,
                     const CommsAddrRec* addrP,
-                    CommonGlobals* globals )
+                    CommonGlobals* cGlobals )
 {
     XP_S16 nSent = -1;
     LinBtStuff* btStuff;
@@ -427,11 +426,12 @@ linux_bt_send_impl( const XP_U8* buf, XP_U16 buflen,
     XP_LOGF( "%s(len=%d)", __func__, buflen );
     LOG_HEX( buf, buflen, __func__ );
 
-    btStuff = globals->btStuff;
+    btStuff = cGlobals->btStuff;
     if ( !!btStuff ) {
         CommsAddrRec addr;
         if ( !addrP ) {
-            comms_getSelfAddr( globals->game.comms, &addr );
+            XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+            gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &addr );
             addrP = &addr;
         }
 
@@ -464,13 +464,16 @@ linux_bt_send_impl( const XP_U8* buf, XP_U16 buflen,
 
 XP_S16
 linux_bt_send( const SendMsgsPacket* const msgs,
-               const CommsAddrRec* addrRec, CommonGlobals* globals )
+               const CommsAddrRec* addrRec, CommonGlobals* cGlobals )
 {
+    XP_ASSERT(0);               /* look this stuff over; I doubt it works,
+                                   starting with linux_bt_open() never being
+                                   called. */
     XP_S16 result = 0;
     for ( SendMsgsPacket* packet = (SendMsgsPacket*)msgs;
           !!packet; packet = (SendMsgsPacket* const)packet->next ) {
         XP_S16 tmp = linux_bt_send_impl( packet->buf, packet->len,
-                                         addrRec, globals );
+                                         addrRec, cGlobals );
         if ( tmp > 0 ) {
             result += tmp;
         } else {
@@ -525,9 +528,9 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
 }
 
 void
-linux_bt_socketclosed( CommonGlobals* globals, int XP_UNUSED_DBG(sock) )
+linux_bt_socketclosed( CommonGlobals* cGlobals, int XP_UNUSED_DBG(sock) )
 {
-    LinBtStuff* btStuff = globals->btStuff;
+    LinBtStuff* btStuff = cGlobals->btStuff;
     LOG_FUNC();
     XP_ASSERT( sock == btStuff->socket );
     btStuff->socket = -1;

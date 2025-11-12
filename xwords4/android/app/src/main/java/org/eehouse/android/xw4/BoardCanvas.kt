@@ -29,6 +29,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.eehouse.android.xw4.DbgUtils.assertOnUIThread
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -36,20 +40,23 @@ import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.DrawCtx.DrawScoreInfo
-import org.eehouse.android.xw4.jni.JNIThread
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.DictWrapper
+import org.eehouse.android.xw4.jni.GameRef
+import org.eehouse.android.xw4.jni.TmpDict
+import org.eehouse.android.xw4.jni.TmpDict.DictWrapper
 import org.eehouse.android.xw4.loc.LocUtils
+import java.io.ByteArrayOutputStream
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import kotlin.math.abs
 import kotlin.math.max
 
 open class BoardCanvas private constructor(
-    private val mContext: Context, private val mActivity: Activity?, bitmap: Bitmap,
-    private var mJniThread: JNIThread?, dims: BoardDims?,
-    private val mNRP: NewRecentsProc?
-) : Canvas(bitmap), DrawCtx {
+    private val mContext: Context, private val mActivity: Activity?,
+    private val mBitmap: Bitmap, private var mGR: GameRef?, dims: BoardDims?,
+    private val mNRP: NewRecentsProc?,
+    private val mDrawProgProc: DrawProgress?,
+    private var mDT: Int = DrawCtx.DT_SCREEN // DrawTarget
+) : Canvas(mBitmap), DrawCtx {
     private val mFillPaint: Paint
     private val mStrokePaint: Paint
     private val mDrawPaint: Paint
@@ -85,6 +92,10 @@ open class BoardCanvas private constructor(
     private var mBackgroundUsed = 0x00000000
     private var mPendingCount = 0
     private var mSawRecents = false
+
+    interface DrawProgress {
+        fun drawDone()
+    }
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -134,20 +145,17 @@ open class BoardCanvas private constructor(
 
     var mFontDims: FontDims? = null
 
-    constructor(context: Context, bitmap: Bitmap) : this(context, null, bitmap, null, null, null)
+    // Used by ThumbCanvas subclass
+    constructor(context: Context, bitmap: Bitmap, dt: Int) :
+        this(context, null, bitmap, null, null, null, null, dt)
     constructor(
-        activity: Activity, bitmap: Bitmap, jniThread: JNIThread?,
-        dims: BoardDims?, nrp: NewRecentsProc?
-    ) : this(activity, activity, bitmap, jniThread, dims, nrp)
+        activity: Activity, bitmap: Bitmap, gr: GameRef,
+        dims: BoardDims?, nrp: NewRecentsProc?, drawProgProc: DrawProgress
+    ) : this(activity, activity, bitmap, gr, dims, nrp, drawProgProc)
 
-    fun setJNIThread(jniThread: JNIThread?) {
+    fun setGR(gr: GameRef?) {
         assertOnUIThread()
-        if (null == jniThread) {
-            // do nothing
-        } else if (jniThread != mJniThread) {
-            Log.w(TAG, "changing threads")
-        }
-        mJniThread = jniThread
+        mGR = gr
         updateDictChars()
     }
 
@@ -158,11 +166,22 @@ open class BoardCanvas private constructor(
     fun setInTrade(inTrade: Boolean) {
         if (mInTrade != inTrade) {
             mInTrade = inTrade
-            mJniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
+            mGR?.invalAll()
         }
     }
 
     // DrawCtxt interface implementation
+
+    override fun beginDraw(): Boolean {
+        Log.d(TAG, "beginDraw() called (returns true)")
+        return true
+    }
+
+    override fun endDraw() {
+        Log.d(TAG, "endDraw() called")
+        mDrawProgProc?.drawDone()
+    }
+
     override fun scoreBegin(
         rect: Rect, numPlayers: Int, scores: IntArray,
         remCount: Int
@@ -289,26 +308,24 @@ open class BoardCanvas private constructor(
                     || mLastTimerTurnDone != turnDone) {
                 val rectCopy = Rect(rect)
                 val secondsLeftCopy = secondsLeft
-                activity.runOnUiThread(
-                    Runnable {
-                        mJniThread?.let {
-                            mLastSecsLeft = secondsLeftCopy
-                            mLastTimerPlayer = player
-                            mLastTimerTurnDone = turnDone
-                            val negSign = if (secondsLeftCopy < 0) "-" else ""
-                            val secondsLeft = abs(secondsLeftCopy.toDouble()).toInt()
-                            val time = String.format(
-                                "%s%d:%02d", negSign,
-                                secondsLeft / 60, secondsLeft % 60
-                            )
-                            fillRectOther(rectCopy, CommonPrefs.COLOR_BACKGRND)
-                            mFillPaint.setColor(mPlayerColors[player])
-                            rectCopy.inset(0, rectCopy.height() / 5)
-                            drawCentered(time, rectCopy, null)
-                            it.handle(JNIThread.JNICmd.CMD_DRAW)
-                        }
+                mGR?.let {
+                    Utils.launch {
+                        mLastSecsLeft = secondsLeftCopy
+                        mLastTimerPlayer = player
+                        mLastTimerTurnDone = turnDone
+                        val negSign = if (secondsLeftCopy < 0) "-" else ""
+                        val secondsLeft = abs(secondsLeftCopy.toDouble()).toInt()
+                        val time = String.format(
+                            "%s%d:%02d", negSign,
+                            secondsLeft / 60, secondsLeft % 60
+                        )
+                        fillRectOther(rectCopy, CommonPrefs.COLOR_BACKGRND)
+                        mFillPaint.setColor(mPlayerColors[player])
+                        rectCopy.inset(0, rectCopy.height() / 5)
+                        drawCentered(time, rectCopy, null)
+                        it.draw()
                     }
-                )
+                }
             }
         }
     }
@@ -539,15 +556,30 @@ open class BoardCanvas private constructor(
         }
     }
 
+    override fun getThumbData(): ByteArray {
+        Assert.assertTrue( mDT == DrawCtx.DT_THUMB )
+        val bas = ByteArrayOutputStream()
+        mBitmap.compress(Bitmap.CompressFormat.PNG, 0, bas)
+        val result = bas.toByteArray()
+        return result
+    }
+
+    override fun getThumbSize(): Int {
+        Assert.failDbg()        // should never be called
+        return 0
+    }
+
     override fun dictChanged(newPtr: Long) {
-        val curPtr = mDict?.dictPtr ?: 0
+        // Other Case meant to be overridden!!
+        Assert.assertTrue( mDT == DrawCtx.DT_SCREEN )
+        val curPtr = mDict?.dictPtr ?: 0L
         var doPost = false
         if (curPtr != newPtr) {
             if (0L == newPtr) {
                 mFontDims = null
                 mDictChars = null
             } else if (0L == curPtr
-                || !XwJNI.dict_tilesAreSame(curPtr, newPtr)
+                || !TmpDict.dict_tilesAreSame(curPtr, newPtr)
             ) {
                 mFontDims = null
                 mDictChars = null
@@ -565,14 +597,13 @@ open class BoardCanvas private constructor(
     }
 
     private fun updateDictChars() {
-        if (null == mJniThread) {
-            // Log.d( TAG, "updateDictChars(): mJniThread still null!!" );
+        if (null == mGR) {
+            // Log.d( TAG, "updateDictChars(): mGR still null!!" );
         } else if (null == mDict) {
             // Log.d( TAG, "updateDictChars(): mDict still null!!" );
         } else {
-            mDictChars = XwJNI.dict_getChars(mDict!!.dictPtr)
-            // draw again
-            mJniThread!!.handle(JNIThread.JNICmd.CMD_INVALALL)
+            mDictChars = mDict!!.getChars()
+            mGR!!.invalAll()
         }
     }
 

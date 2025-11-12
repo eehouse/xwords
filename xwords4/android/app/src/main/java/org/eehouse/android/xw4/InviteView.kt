@@ -30,17 +30,18 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.lifecycleScope
+import androidx.core.view.doOnAttach
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.ExpandImageButton.ExpandChangeListener
-import org.eehouse.android.xw4.jni.XwJNI
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
 class InviteView(context: Context, aset: AttributeSet?) :
@@ -58,6 +59,10 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private var mGroupWho: LimSelGroup? = null
     private var mGroupHow: RadioGroup? = null
     private var mOrderCheck: CheckBox? = null
+    private var mMeansList: List<InviteMeans>? = null
+    private var mNMissing: Int = 0
+    private var mNInvited: Int = 0
+
 
     // mCurChecked: hack to work around old bugs in RadioButtons not being
     // immediate children of RadioGroup
@@ -73,69 +78,85 @@ class InviteView(context: Context, aset: AttributeSet?) :
                                            }
                                            override fun onViewDetachedFromWindow(v: View) {}
                                        })
+        this.doOnAttach {
+            configureChoices()
+        }
     }
 
-    fun setChoices(meansList: List<InviteMeans>, sel: Int,
+    private fun configureChoices() {
+        // Assign these before the coroutine starts, because they be be
+        // referenced before it reaches the place where they would naturally
+        // be assigned
+        mGroupTab = findViewById<View>(R.id.group_tab) as RadioGroup
+        mGroupHow = findViewById<RadioGroup>(R.id.group_how)
+        mGroupWho = (findViewById<View>(R.id.group_who) as LimSelGroup)
+
+        launchWhenStarted {
+            val context = context
+            val haveWho = Knowns.hasKnownPlayers()
+
+            // top/horizontal group or title first
+            if (haveWho) {
+                mGroupTab!!.let {
+                    it.check(R.id.radio_how)
+                    it.setOnCheckedChangeListener(this@InviteView)
+                    it.visibility = VISIBLE
+                }
+            } else {
+                findViewById<View>(R.id.title_tab).visibility = VISIBLE
+            }
+
+            mGroupHow!!.let { groupHow ->
+                groupHow.setOnCheckedChangeListener(this@InviteView)
+                val divider = groupHow.findViewById<View>(R.id.local_divider)
+                for (means in mMeansList!!.filter{it.available()}) {
+                    val button = LocUtils.inflate(context, R.layout.invite_radio)
+                        as RadioButton
+                    button.setOnCheckedChangeListener(this@InviteView)
+                    button.text = LocUtils.getString(context, means.userDescID)
+                    val where
+                        = if (means.isForLocal) {
+                            // -1: place before QRcode-wrapper
+                            groupHow.childCount - 1
+                        } else {
+                            groupHow.indexOfChild(divider)
+                        }
+                    groupHow.addView(button, where)
+                    mHowMeans[button.id] = means
+                }
+            }
+
+            if (haveWho) {
+                mGroupWho!!.setLimit(mNMissing)
+                val checkbox = findViewById<CheckBox>(R.id.check)
+                val isChecked = DBUtils.getBoolFor(context, KEY_SORTBY_DATE, false)
+                checkbox.setOnCheckedChangeListener(this@InviteView)
+                checkbox.setChecked(isChecked)
+                mOrderCheck = checkbox
+                onCheckedChanged(checkbox, isChecked) // load players
+            }
+            mIsWho = false // start with how
+            showWhoOrHow()
+
+            mExpanded = DBUtils.getBoolFor(context, KEY_EXPANDED, false)
+            findViewById<ExpandImageButton>(R.id.expander)
+                .setOnExpandChangedListener(object : ExpandChangeListener {
+                                                override fun expandedChanged(nowExpanded: Boolean) {
+                                                    mExpanded = nowExpanded
+                                                    DBUtils.setBoolFor(context, KEY_EXPANDED, nowExpanded)
+                                                    startQRCodeThread()
+                                                }
+                                            })
+                .setExpanded(mExpanded)
+        }
+    }
+
+    fun setChoices(meansList: List<InviteMeans>,
                    nMissing: Int, nInvited: Int): InviteView
     {
-        Log.d(TAG, "setChoices(nInvited=%d, nMissing=%s)", nInvited, nMissing)
-        val context = context
-
-        val haveWho = XwJNI.hasKnownPlayers()
-
-        // top/horizontal group or title first
-        if (haveWho) {
-            mGroupTab = findViewById<View>(R.id.group_tab) as RadioGroup
-            mGroupTab!!.check(R.id.radio_how)
-            mGroupTab!!.setOnCheckedChangeListener(this)
-            mGroupTab!!.visibility = VISIBLE
-        } else {
-            findViewById<View>(R.id.title_tab).visibility = VISIBLE
-        }
-
-        mGroupHow = findViewById<RadioGroup>(R.id.group_how)
-        mGroupHow!!.setOnCheckedChangeListener(this)
-        val divider = mGroupHow!!.findViewById<View>(R.id.local_divider)
-        for (means in meansList.filter{it.available()}) {
-            val button = LocUtils.inflate(context, R.layout.invite_radio)
-                as RadioButton
-            button.setOnCheckedChangeListener(this)
-            button.text = LocUtils.getString(context, means.userDescID)
-            val where
-                = if (means.isForLocal) {
-                    // -1: place before QRcode-wrapper
-                    mGroupHow!!.childCount - 1
-                } else {
-                    mGroupHow!!.indexOfChild(divider)
-                }
-            mGroupHow!!.addView(button, where)
-            mHowMeans[button.id] = means
-        }
-
-        if (haveWho) {
-            mGroupWho = (findViewById<View>(R.id.group_who) as LimSelGroup)
-                .setLimit(nMissing)
-            val checkbox = findViewById<CheckBox>(R.id.check)
-            val isChecked = DBUtils.getBoolFor(context, KEY_SORTBY_DATE, false)
-            checkbox.setOnCheckedChangeListener(this)
-            checkbox.setChecked(isChecked)
-            mOrderCheck = checkbox
-            onCheckedChanged(checkbox, isChecked) // load players
-        }
-        mIsWho = false // start with how
-        showWhoOrHow()
-
-        mExpanded = DBUtils.getBoolFor(context, KEY_EXPANDED, false)
-        findViewById<ExpandImageButton>(R.id.expander)
-            .setOnExpandChangedListener(object : ExpandChangeListener {
-                override fun expandedChanged(nowExpanded: Boolean) {
-                    mExpanded = nowExpanded
-                    DBUtils.setBoolFor(context, KEY_EXPANDED, nowExpanded)
-                    startQRCodeThread()
-                }
-            })
-            .setExpanded(mExpanded)
-
+        mMeansList = meansList
+        mNMissing = nMissing
+        mNInvited = nInvited
         return this
     }
 
@@ -154,11 +175,12 @@ class InviteView(context: Context, aset: AttributeSet?) :
 
     fun getChoice(): Any?
     {
-        var result = if (mIsWho) {
-            mGroupWho!!.getSelected()
-        } else {
-            mHowMeans[mGroupHow!!.checkedRadioButtonId]
-        }
+        var result =
+            if (mIsWho) {
+                mGroupWho!!.getSelected()
+            } else {
+                mHowMeans[mGroupHow!!.checkedRadioButtonId]
+            }
         return result
     }
 
@@ -188,12 +210,16 @@ class InviteView(context: Context, aset: AttributeSet?) :
                                   isChecked: Boolean)
     {
         if (buttonView === mOrderCheck) {
-            val players = XwJNI.kplr_getPlayers(isChecked)!!
-            mGroupWho!!.setPlayers(players)
+            launch {
+                val players = Knowns.getPlayers(isChecked)!!
+                withContext(Dispatchers.Main) {
+                    mGroupWho!!.setPlayers(players)
+                }
+            }
             DBUtils.setBoolFor(context, KEY_SORTBY_DATE, isChecked)
         } else if ( isChecked ) {
-            if (null != mCurChecked) {
-                mCurChecked!!.isChecked = false
+            mCurChecked?.let {
+                it.isChecked = false
             }
             mCurChecked = buttonView
         }
@@ -215,9 +241,7 @@ class InviteView(context: Context, aset: AttributeSet?) :
     private fun startQRCodeThread(nli: NetLaunchInfo? = null) {
         nli?.let{mNli = it}
         mNli?.let { nli ->
-            // findViewTreeLifecycleOwner will return null before view
-            // attached
-            findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+            launch {
                 nli.makeLaunchUri(context).toString().let { url ->
                     val qrSize =
                         if (mExpanded) QRCODE_SIZE_LARGE

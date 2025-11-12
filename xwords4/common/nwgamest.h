@@ -34,7 +34,7 @@
 EXTERN_C_START
 
 #include "mempool.h"
-#include "server.h"
+#include "serverp.h"
 #include "comms.h"
 #include "util.h"
 #include "game.h"
@@ -88,8 +88,8 @@ typedef void (*NewGameSetAttrProc)(void* closure, NewGameAttr attr,
                                    const NGValue value );
 
 
-NewGameCtx* newg_make( MPFORMAL XP_Bool isNewGame, 
-                       XW_UtilCtxt* util,
+NewGameCtx* newg_make( XP_Bool isNewGame, 
+                       XW_DUtilCtxt* dutil,
                        NewGameEnableColProc enableColProc, 
                        NewGameEnableAttrProc enableAttrProc, 
                        NewGameGetColProc getColProc,

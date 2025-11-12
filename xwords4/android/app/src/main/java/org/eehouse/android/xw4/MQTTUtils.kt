@@ -29,6 +29,10 @@ import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient
 import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -38,14 +42,16 @@ import java.util.function.Consumer
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 
+import org.eehouse.android.xw4.TimerReceiver.TimerCallback
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.STAT
+import org.eehouse.android.xw4.jni.Stats
+import org.eehouse.android.xw4.jni.Stats.STAT
 import org.eehouse.android.xw4.jni.XwJNI.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
-import org.eehouse.android.xw4.TimerReceiver.TimerCallback
 
 private const val PONG_PREFIX = "xw4/pong/"
 private const val MIN_BACKOFF = (1000 * 60 * 2 // 2 minutes
@@ -55,6 +61,9 @@ private const val MAX_BACKOFF = (1000 * 60 * 60 * 4 // 4 hours, to test
 
 object MQTTUtils {
     private var sEnabled = false
+    private var sDevID: String? = null
+    private var sTopics: Array<String>? = null
+    private var sQos: Int = 0
 
     private val sStateChangedIf = object:NetStateCache.StateChangedIf {
         override fun onNetAvail(context: Context, nowAvailable: Boolean) {
@@ -71,6 +80,14 @@ object MQTTUtils {
         NetStateCache.register(context, sStateChangedIf)
         val enabled = XWPrefs.getMQTTEnabled(context)
         setEnabled(context, enabled)
+    }
+
+    fun getMQTTDevID(): String? {
+        return sDevID
+    }
+
+    fun getQOS(): Int {
+        return sQos
     }
 
     // HiveMQ's version requires 24 or better, not to compile but to run
@@ -100,7 +117,7 @@ object MQTTUtils {
     }
 
     private val sOutboundQueue = LinkedBlockingQueue<TopicsAndPackets>()
-    fun send(context: Context, tap: TopicsAndPackets): Int {
+    private fun send(context: Context, tap: TopicsAndPackets): Int {
         if ( !sOutboundQueue.contains(tap)) {
             sOutboundQueue.add(tap)
             getConn(context)?.ensureSending()
@@ -108,6 +125,12 @@ object MQTTUtils {
             Log.d(TAG, "not adding duplicate packet")
         }
         return -1
+    }
+
+    fun send(context: Context, topic: String, msg: ByteArray, qos: Int)
+    {
+        val tap = TopicsAndPackets(topic, msg, qos)
+        send(context, tap)
     }
 
     fun onResume(context: Context) = getConn(context)?.reconnect()
@@ -118,54 +141,45 @@ object MQTTUtils {
         NetStateCache.unregister(sStateChangedIf)
     }
 
-    fun makeOrNotify(context: Context, nli: NetLaunchInfo) {
-        MQTTServiceHelper(context).handleInvitation(nli)
-    }
-
-    fun handleMessage(context: Context, from: CommsAddrRec,
-                      gameID: Int, msg: ByteArray)
-    {
-        val rowids = DBUtils.getRowIDsFor(context, gameID)
-        Log.d(TAG, "handleMessage(): got %d rows for gameID %X", rowids.size, gameID)
-        if (0 == rowids.size) {
-            notifyNotHere(context, from.mqtt_devID!!, gameID)
-        } else {
-            val helper = MQTTServiceHelper(context, from)
-            for (rowid in rowids) {
-                val sink = MultiMsgSink(context, rowid)
-                helper.receiveMessage(rowid, sink, msg)
-            }
-        }
+    fun startListener(context: Context, devID: String,
+                      topics: Array<String>, qos: Int) {
+        sDevID = devID
+        sTopics = topics
+        sQos = qos
+        getConn(context)        // kick off connection
     }
 
     fun handleGameGone(context: Context, from: CommsAddrRec, gameID: Int)
     {
-        val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
-        val args =
-            if (null == player) null
-            else arrayOf(ConnExpl(CommsConnType.COMMS_CONN_MQTT, player))
-        MQTTServiceHelper(context, from)
-            .postEvent(MultiService.MultiEvent.MESSAGE_NOGAME, gameID, *args.orEmpty())
+        Assert.failDbg()
+        // val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
+        // val args =
+        //     if (null == player) null
+        //     else arrayOf(ConnExpl(CommsConnType.COMMS_CONN_MQTT, player))
+        // MQTTServiceHelper(context, from)
+        //     .postEvent(MultiService.MultiEvent.MESSAGE_NOGAME, gameID, *args.orEmpty())
     }
 
     fun handleCtrlReceived(context: Context, msg: ByteArray) {
-        try {
-            val obj = JSONObject(String(msg))
-            obj.optString("msg", null)?.let { msg->
-                var title = obj.optString("title", null)
-                    ?: LocUtils.getString(context, R.string.remote_msg_title)
-                val alertIntent = GamesListDelegate.makeAlertIntent(context, msg)
-                val code = msg.hashCode() xor title.hashCode()
-                Utils.postNotification(context, alertIntent, title, msg, code)
-            }
-        } catch (je: JSONException) {
-            Log.e(TAG, "handleCtrlReceived() ex: %s", je)
-        }
+        Assert.failDbg()
+    //     try {
+    //         val obj = JSONObject(String(msg))
+    //         obj.optString("msg", null)?.let { msg->
+    //             var title = obj.optString("title", null)
+    //                 ?: LocUtils.getString(context, R.string.remote_msg_title)
+    //             val alertIntent = GamesListDelegate.makeAlertIntent(context, msg)
+    //             val code = msg.hashCode() xor title.hashCode()
+    //             Utils.postNotification(context, alertIntent, title, msg, code)
+    //         }
+    //     } catch (je: JSONException) {
+    //         Log.e(TAG, "handleCtrlReceived() ex: %s", je)
+    //     }
     }
 
     fun gameDied(context: Context, devID: String, gameID: Int) {
-        val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID, gameID)
-        send(context, tap)
+        Assert.failDbg()
+    //     val tap = XwJNI.dvc_makeMQTTNoSuchGames(devID, gameID)
+    //     send(context, tap)
     }
 
     fun onConfigChanged(context: Context)
@@ -207,10 +221,12 @@ object MQTTUtils {
     private fun getConn(context: Context): Conn?
     {
         synchronized (sWrapper) {
-            if ( null == sWrapper[0] ) {
-                if (sEnabled && MQTTSupported()) {
-                    sWrapper[0] = Conn(context)
-                    sWrapper[0]!!.start()
+            sDevID?.let {
+                if ( null == sWrapper[0] ) {
+                    if (sEnabled && MQTTSupported()) {
+                        sWrapper[0] = Conn(context, it)
+                        sWrapper[0]!!.start()
+                    }
                 }
             }
             return sWrapper[0]
@@ -244,17 +260,17 @@ object MQTTUtils {
         return qos
     }
     
-    private class Conn(val mContext: Context): MqttClientConnectedListener,
-                                               MqttClientDisconnectedListener,
-                                               Consumer<Mqtt3Publish>
+    private class Conn(private val mContext: Context, private val mDevID: String)
+        : MqttClientConnectedListener,
+          MqttClientDisconnectedListener,
+          Consumer<Mqtt3Publish>
     {
         private val mStart = System.currentTimeMillis()
-        private val mDevID = XwJNI.dvc_getMQTTDevID()
         private val mTaskQueue = LinkedBlockingQueue<Task>()
         private val mHost: String
         private val mClient: Mqtt3BlockingClient
         private val mTaskThread: Thread
-        private val mStats = Stats()
+        private val mStats = MQTTStats()
 
         init {
             Log.d(TAG, "initing conn() %H", this)
@@ -372,7 +388,7 @@ object MQTTUtils {
                 .putAnd("id", id)
                 .toString()
 
-            val qos = chooseQOS(mContext, XwJNI.dvc_getQOS())
+            val qos = chooseQOS(mContext, sQos)
             val tap = TopicsAndPackets("xw4/ping/" + mDevID,
                                        packet.toByteArray(), qos.ordinal)
             add(SendTask(tap))
@@ -433,7 +449,7 @@ object MQTTUtils {
                 byteBuf.get(packet)
                 if ( ! isRecentDuplicate(topic, packet) ) {
                     add(IncomingTask(topic, packet))
-                    XwJNI.sts_increment(STAT.STAT_MQTT_RCVD)
+                    Stats.increment(STAT.STAT_MQTT_RCVD)
                 }
 
             } else {
@@ -480,9 +496,11 @@ object MQTTUtils {
         private inner class SubscribeAllTask(): Task() {
             override fun run() {
                 val qosArray = intArrayOf(0)
-                val topics = XwJNI.dvc_getMQTTSubTopics(qosArray) + arrayOf(PONG_PREFIX + mDevID)
-                val qos = chooseQOS(mContext, qosArray[0])
-                topics.map{ add(SubscribeTask(it, qos)) }
+                // val topics = XwJNI.dvc_getMQTTSubTopics(qosArray) + arrayOf(PONG_PREFIX + mDevID)
+                // val qos = chooseQOS(mContext, qosArray[0])
+                // topics.map{ add(SubscribeTask(it, qos)) }
+                val qos = chooseQOS(mContext, sQos)
+                sTopics!!.map {add(SubscribeTask(it, qos))}
             }
         }
 
@@ -522,7 +540,7 @@ object MQTTUtils {
                                 Log.d(TAG, "%H: whenComplete(): $mqtt3Publish; sum: $sum", this)
                                 // Handle successful publish, e.g. logging or incrementing a metric
                                 TimerReceiver.setBackoff(mContext, sTimerCallbacks, MIN_BACKOFF)
-                                XwJNI.sts_increment(STAT.STAT_MQTT_SENT)
+                                Stats.increment(STAT.STAT_MQTT_SENT)
                             }
                         }
                 }
@@ -537,7 +555,10 @@ object MQTTUtils {
                 if (mTopic.startsWith(PONG_PREFIX)) {
                     handlePong(mPacket)
                 } else {
-                    XwJNI.dvc_parseMQTTPacket(mTopic, mPacket)
+                    CoroutineScope(Job() + Dispatchers.IO).launch {
+                        Log.d(TAG, "calling Device.parseMQTTPacket")
+                        Device.parseMQTTPacket(mTopic, mPacket)
+                    }
                 }
                 ConnStatusHandler
                     .updateStatusIn(mContext, CommsAddrRec.CommsConnType.COMMS_CONN_MQTT,
@@ -546,7 +567,7 @@ object MQTTUtils {
             }
         }
 
-        private inner class Stats {
+        private inner class MQTTStats {
             private var mConndTime = System.currentTimeMillis()
             private var mDisconndTime = mConndTime
             private var mDisconReps: Int = 0

@@ -29,13 +29,11 @@
 #include "commstyp.h"
 #include "nlityp.h"
 #include "cJSON.h"
-
-typedef enum { UNPAUSED,
-               PAUSED,
-               AUTOPAUSED,
-} DupPauseType;
+#include "gameinfo.h"
+#include "smsprotop.h"
 
 typedef XP_Bool (*OnOneProc)(void* closure, const XP_UCHAR* keys[]);
+typedef void (*OnGotKey)( const XP_UCHAR* key, void* closure, XWEnv xwe );
 
 typedef struct _Md5SumBuf {
     XP_UCHAR buf[33];
@@ -43,87 +41,155 @@ typedef struct _Md5SumBuf {
 
 #define KEY_WILDCARD "*"
 
-#ifdef DUTIL_TIMERS
+/* Keep these in sync with consts in DUtilCtxt.kt */
+typedef enum {
+    GCE_ADDED = 0x01,
+    GCE_DELETED = 0x02,
+    GCE_PLAYER_JOINED = 0x04,
+    GCE_CONFIG_CHANGED = 0x08,
+    GCE_SUMMARY_CHANGED = 0x10,
+    GCE_TURN_CHANGED = 0x20,
+    GCE_BOARD_CHANGED = 0x40,
+} GameChangeEvent;
+typedef XP_U32 GameChangeEvents; /* bit vector of above */
+typedef enum {
+    GRCE_ADDED = 0x01,
+    GRCE_DELETED = 0x02,
+    GRCE_MOVED = 0x04,
+    GRCE_RENAMED = 0x08,
+    GRCE_COLLAPSED = 0x10,
+    GRCE_EXPANDED = 0x20,
+    GRCE_GAMES_REORDERED = 0x40,
+    GRCE_GAME_ADDED = 0x80,
+    GRCE_GAME_REMOVED = 0x100,
+} GroupChangeEvent;
+typedef XP_U32 GroupChangeEvents; /* bit vector of above */
+
 typedef XP_U32 TimerKey;
-#endif
 typedef struct _DUtilVtable {
+    /* 0 */
+    DrawCtx* (*m_dutil_getThumbDraw)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+
+    /* 1 */
     XP_U32 (*m_dutil_getCurSeconds)( XW_DUtilCtxt* duc, XWEnv xwe );
+    /* 2 */
     const XP_UCHAR* (*m_dutil_getUserString)( XW_DUtilCtxt* duc, XWEnv xwe,
                                               XP_U16 stringCode );
+    /* 3 */
     const XP_UCHAR* (*m_dutil_getUserQuantityString)( XW_DUtilCtxt* duc,
                                                       XWEnv xwe,
                                                       XP_U16 stringCode,
                                                       XP_U16 quantity );
+    /* 4 */
     void (*m_dutil_storeStream)( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_UCHAR* key,
                                  XWStreamCtxt* stream );
+    /* 5 */
     void (*m_dutil_loadStream)( XW_DUtilCtxt* duc, XWEnv xwe,
                                 const XP_UCHAR* key,
                                 XWStreamCtxt* inOut );
     void (*m_dutil_storePtr)( XW_DUtilCtxt* duc, XWEnv xwe,
                               const XP_UCHAR* key,
                               const void* data, XP_U32 len);
+    /* 7 */
     void (*m_dutil_loadPtr)( XW_DUtilCtxt* duc, XWEnv xwe,
                              const XP_UCHAR* key,
                              void* data, XP_U32* lenp );
+    /* 8 */
+    void (*m_dutil_removeStored)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                  const XP_UCHAR* key );
+    /* 9 */
+    void (*m_dutil_getKeysLike)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                 const XP_UCHAR* prefix, OnGotKey proc,
+                                 void* closure );
 # ifdef XWFEATURE_DEVICE
+    /* 10 */
     void (*m_dutil_forEach)( XW_DUtilCtxt* duc, XWEnv xwe,
                              const XP_UCHAR* keys[],
                              OnOneProc proc, void* closure );
-    void (*m_dutil_remove)( XW_DUtilCtxt* duc, const XP_UCHAR* keys[] );
 #endif
 #ifdef XWFEATURE_SMS
+    /* 11 */
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,
                                          const XP_UCHAR* p2 );
 #endif
 
-#if defined XWFEATURE_DEVID && defined XWFEATURE_RELAY
-    const XP_UCHAR* (*m_dutil_getDevID)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType* typ );
-    void (*m_dutil_deviceRegistered)( XW_DUtilCtxt* duc, XWEnv xwe, DevIDType typ,
-                                     const XP_UCHAR* idRelay );
-#endif
-
-#ifdef DUTIL_TIMERS
+    /* 12 */
     void (*m_dutil_setTimer)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 when, TimerKey key );
+    /* 13 */
     void (*m_dutil_clearTimer)( XW_DUtilCtxt* duc, XWEnv xwe, TimerKey key );
-#endif
+    /* 14 */
     void (*m_dutil_md5sum)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* ptr,
                             XP_U32 len, Md5SumBuf* sb );
+    /* 15 */
     void (*m_dutil_getUsername)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U16 num,
                                  XP_Bool isLocal, XP_Bool isRobot,
                                  XP_UCHAR* buf, XP_U16* len );
-    void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+    /* 16 */
+    void (*m_dutil_getSelfAddr)( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr );
+    /* 17 */
+    void (*m_dutil_notifyPause)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                                  DupPauseType pauseTyp, XP_U16 pauser,
                                  const XP_UCHAR* name, const XP_UCHAR* msg );
-    XP_Bool (*m_dutil_haveGame)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,XP_U8 channel );
-    void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+    void (*m_dutil_informMove)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XP_S16 turn, 
+                                XWStreamCtxt* expl, XWStreamCtxt* words );
+    void (*m_dutil_notifyGameOver)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                                    XP_S16 quitter );
+    /* XP_Bool (*m_dutil_haveGame)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, */
+    /*                              XP_U8 channel ); */
+    /* 18 */
+    void (*m_dutil_onDupTimerChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                                        XP_U32 oldVal, XP_U32 newVal );
-
-    void (*m_dutil_onInviteReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                      const NetLaunchInfo* nli );
-    void (*m_dutil_onMessageReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                                       const CommsAddrRec* from, const XP_U8* buf, XP_U16 len );
-    void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16 len );
+    void (*m_dutil_onGameChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                                   GameChangeEvents gces );
+    /* 19 */
+    void (*m_dutil_onGroupChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                                    GroupChangeEvents grces );
+#ifndef XWFEATURE_DEVICE_STORES
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
+#endif
+    void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                    const XP_U8* buf, XP_U16 len );
     /* Return platform-specific registration keys->values */
     cJSON* (*m_dutil_getRegValues)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
                                 const XP_UCHAR* api, const cJSON* params );
 
     DictionaryCtxt* (*m_dutil_makeEmptyDict)( XW_DUtilCtxt* duc, XWEnv xwe );
-    const DictionaryCtxt* (*m_dutil_getDict)( XW_DUtilCtxt* duc, XWEnv xwe,
-                                              const XP_UCHAR* isoCode,
-                                              const XP_UCHAR* dictName );
+    const DictionaryCtxt* (*m_dutil_makeDict)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                               const XP_UCHAR* dictName );
+    void (*m_dutil_missingDictAdded)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                                      const XP_UCHAR* dictName );
+    void (*m_dutil_dictGone)( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                              const XP_UCHAR* dictName );
+    void (*m_dutil_startMQTTListener)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                       const MQTTDevID* devID,
+                                       const XP_UCHAR** topics, XP_U8 qos );
+    XP_S16 (*m_dutil_sendViaMQTT)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                   const XP_UCHAR* topic, const XP_U8* buf,
+                                   XP_U16 len, XP_U8 qos );
+    XP_S16 (*m_dutil_sendViaNBS)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                  const XP_U8* buf, XP_U16 len,
+                                  const XP_UCHAR* phone, XP_U16 port );
+
+    void (*m_dutil_onKnownPlayersChange)( XW_DUtilCtxt* duc, XWEnv xwe );
+    void (*m_dutil_getCommonPrefs)( XW_DUtilCtxt* duc, XWEnv xwe, CommonPrefs* cp );
 } DUtilVtable;
+
+typedef struct GameMgrState GameMgrState;
+typedef struct DictMgrCtxt DictMgrCtxt;
 
 struct XW_DUtilCtxt {
     DUtilVtable vtable;
+    DictMgrCtxt* dictMgr;
     MQTTDevID devID;
     void* closure;
     void* devCtxt;              /* owned by device.c */
     void* statsState;           /* owned by stats.c */
     void* timersState;          /* owned by timers.c */
+    SMSProto* protoState;
+    GameMgrState* gameMgrState; /* owned by gamemgr.c */
 #ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     MutexState kpMutex;
@@ -158,37 +224,45 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_loadPtr((duc), __VA_ARGS__)
 # define dutil_forEach( duc, ... )                                      \
     (duc)->vtable.m_dutil_forEach((duc), __VA_ARGS__ )
-#define dutil_remove(duc, ...)                 \
-    (duc)->vtable.m_dutil_remove((duc), __VA_ARGS__)
+#define dutil_removeStored(duc, ...)                 \
+    (duc)->vtable.m_dutil_removeStored((duc), __VA_ARGS__)
+
+#define dutil_getThumbDraw(duc, ...)                        \
+    (duc)->vtable.m_dutil_getThumbDraw((duc), __VA_ARGS__)
+#define dutil_getKeysLike( duc, ... )              \
+    (duc)->vtable.m_dutil_getKeysLike( (duc), __VA_ARGS__)
 
 #ifdef XWFEATURE_SMS
 # define dutil_phoneNumbersSame(duc, ...)                    \
     (duc)->vtable.m_dutil_phoneNumbersSame( (duc), __VA_ARGS__)
 #endif
 
-#ifdef DUTIL_TIMERS
 # define dutil_setTimer( duc, ... )                  \
     (duc)->vtable.m_dutil_setTimer((duc), __VA_ARGS__)
 # define dutil_clearTimer( duc, ... )                  \
     (duc)->vtable.m_dutil_clearTimer((duc), __VA_ARGS__)
-#endif
 
-# define dutil_md5sum( duc, ... )                    \
+# define dutil_md5sum( duc, ... )                       \
     (duc)->vtable.m_dutil_md5sum((duc), __VA_ARGS__)
-#define dutil_getUsername(duc, ...)                                     \
+#define dutil_getUsername(duc, ...)                         \
     (duc)->vtable.m_dutil_getUsername((duc), __VA_ARGS__)
-#define dutil_notifyPause( duc, ... )                     \
+#define dutil_notifyPause( duc, ... )                       \
     (duc)->vtable.m_dutil_notifyPause( (duc), __VA_ARGS__)
-
+#define dutil_informMove( duc, ... )                        \
+    (duc)->vtable.m_dutil_informMove( (duc), __VA_ARGS__)
+#define dutil_notifyGameOver( duc, ... )                    \
+    (duc)->vtable.m_dutil_notifyGameOver( (duc), __VA_ARGS__)
 #define dutil_haveGame( duc, ... )                      \
     (duc)->vtable.m_dutil_haveGame( (duc), __VA_ARGS__)
+#define dutil_getSelfAddr(duc, xwe, addr)                   \
+    (duc)->vtable.m_dutil_getSelfAddr((duc), (xwe), (addr))
 
 #define dutil_onDupTimerChanged(duc, ...)                           \
     (duc)->vtable.m_dutil_onDupTimerChanged( (duc), __VA_ARGS__)
-#define dutil_onInviteReceived(duc, ...)                        \
-    (duc)->vtable.m_dutil_onInviteReceived( (duc), __VA_ARGS__)
-#define dutil_onMessageReceived(duc, ...)                       \
-    (duc)->vtable.m_dutil_onMessageReceived((duc), __VA_ARGS__)
+#define dutil_onGameChanged(duc, ...)                        \
+    (duc)->vtable.m_dutil_onGameChanged((duc), __VA_ARGS__)
+#define dutil_onGroupChanged(duc, ...)                         \
+    (duc)->vtable.m_dutil_onGroupChanged( (duc), __VA_ARGS__)
 #define dutil_onCtrlReceived(duc, ... )                         \
     (duc)->vtable.m_dutil_onCtrlReceived((duc), __VA_ARGS__ )
 #define dutil_onGameGoneReceived(duc, ...)         \
@@ -197,8 +271,22 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_sendViaWeb((duc), __VA_ARGS__)
 #define dutil_makeEmptyDict(duc, ...)                   \
     (duc)->vtable.m_dutil_makeEmptyDict((duc), __VA_ARGS__)
-#define dutil_getDict(duc, ...)                      \
-    (duc)->vtable.m_dutil_getDict((duc), __VA_ARGS__)
+#define dutil_makeDict(duc, ...)                      \
+    (duc)->vtable.m_dutil_makeDict((duc), __VA_ARGS__)
+#define dutil_missingDictAdded( duc, ...)                       \
+    (duc)->vtable.m_dutil_missingDictAdded((duc), __VA_ARGS__)
+#define dutil_dictGone( duc, ...)                       \
+    (duc)->vtable.m_dutil_dictGone((duc), __VA_ARGS__)
+#define dutil_startMQTTListener(duc, ...)                       \
+    (duc)->vtable.m_dutil_startMQTTListener((duc), __VA_ARGS__)
+#define dutil_sendViaMQTT(duc, ...)                         \
+    (duc)->vtable.m_dutil_sendViaMQTT((duc), __VA_ARGS__)
+#define dutil_sendViaNBS(duc, ...)                          \
+    (duc)->vtable.m_dutil_sendViaNBS((duc), __VA_ARGS__)
+#define dutil_onKnownPlayersChange(duc, ...)                        \
+    (duc)->vtable.m_dutil_onKnownPlayersChange((duc), __VA_ARGS__)
+#define dutil_getCommonPrefs(duc, ...)          \
+    (duc)->vtable.m_dutil_getCommonPrefs((duc), __VA_ARGS__)
 
 #define dutil_getRegValues( duc, ... ) \
     (duc)->vtable.m_dutil_getRegValues( (duc), __VA_ARGS__)

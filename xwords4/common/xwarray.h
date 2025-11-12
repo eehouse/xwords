@@ -30,23 +30,28 @@ extern "C" {
 
 typedef struct XWArray XWArray;
 
-XWArray* arr_make(MPFORMAL_NOCOMMA);
+typedef int (*ArCompProc)(const void* dl1, const void* dl2, XWEnv xwe, void* closure);
+XWArray* arr_make(MPFORMAL ArCompProc proc, void* procClosure);
 void arr_destroy( XWArray* array );
 
 /* Set the sort order. Will result in a resort if there's data. Null is
    allowed, but then an insert is just an append. */
-typedef int (*ArCompProc)(const void* dl1, const void* dl2);
-void arr_setSort( XWArray* array, ArCompProc proc );
+void arr_setSort( XWArray* array, XWEnv xwe, ArCompProc proc, void* procClosure );
 
-void arr_insert( XWArray* array, void* node );
+/* Pass this to arr_setSort(), or arr_make(), when *some* order must be
+   maintained */
+int PtrCmpProc(const void* dl1, const void* dl2, XWEnv xwe, void* closure);
+
+void arr_insert( XWArray* array, XWEnv xwe, void* node );
+void arr_insertAt( XWArray* array, void* node, XP_U32 locp );
 void* arr_getNth( XWArray* array, XP_U32 nn );
-XP_Bool arr_find( XWArray* array, const void* target );
-void arr_remove( XWArray* array, void* node );
-
+XP_Bool arr_find( XWArray* array, XWEnv xwe, const void* target, XP_U32* locp );
+void arr_remove( XWArray* array, XWEnv xwe, void* node );
+void arr_removeAt( XWArray* array, XWEnv xwe, XP_U32 loc );
 XP_U32 arr_length( const XWArray* array );
 
-typedef ForEachAct (*ArMapProc)( void* elem, void* closure );
-void arr_map( XWArray* array, ArMapProc mapProc, void* closure );
+typedef ForEachAct (*ArMapProc)( void* elem, void* closure, XWEnv xwe );
+void arr_map( XWArray* array, XWEnv xwe, ArMapProc mapProc, void* closure );
 
 typedef void (*ArDisposeProc)( void* elem, void* closure );
 void arr_removeAll( XWArray* array, ArDisposeProc dispProc, void* closure );

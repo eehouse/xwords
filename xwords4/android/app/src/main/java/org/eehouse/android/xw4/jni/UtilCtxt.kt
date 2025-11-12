@@ -18,8 +18,15 @@
  */
 package org.eehouse.android.xw4.jni
 
+import android.graphics.Bitmap
+import org.eehouse.android.xw4.BoardCanvas
+import org.eehouse.android.xw4.GameUtils
+import org.eehouse.android.xw4.Log
+import org.eehouse.android.xw4.ThumbCanvas
+import org.eehouse.android.xw4.XWApp
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
+import org.eehouse.android.xw4.jni.DrawCtx.Companion.DT_THUMB
 
 interface UtilCtxt {
     fun notifyPickTileBlank(playerNum: Int, col: Int, row: Int, texts: Array<String>) {}
@@ -30,14 +37,10 @@ interface UtilCtxt {
 
     fun informNeedPassword(player: Int, name: String?) {}
     fun turnChanged(newTurn: Int) {}
-    fun engineProgressCallback(): Boolean = false
-    fun setTimer(why: Int, `when`: Int, handle: Int) {}
-    fun clearTimer(why: Int) {}
-    fun requestTime() {}
+    fun engineProgressCallback(): Boolean = true
     fun remSelected() {}
     fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {}
     fun informWordsBlocked(nWords: Int, words: String, dict: String) {}
-    fun getInviteeName(index: Int): String? = null
     fun bonusSquareHeld(bonus: Int) {}
     fun playerScoreHeld(player: Int) {}
     fun cellSquareHeld(words: String) {}
@@ -45,20 +48,20 @@ interface UtilCtxt {
     fun notifyTrade(tiles: Array<String>) {}
     fun notifyDupStatus(amHost: Boolean, msg: String) {}
     fun userError(id: Int) {}
-    fun informMove(turn: Int, expl: String, words: String?) {}
+    fun countChanged( count: Int, quashed: Boolean ) {
+        Log.d("UtilCtxt", "countChanged($count); doing nothing")
+    }
     fun informUndo() {}
     fun informNetDict(
         isoCodeStr: String, oldName: String, newName: String,
         newSum: String, phonies: XWPhoniesChoice
     ) {}
 
-    fun informMissing(
-        isServer: Boolean, hostAddr: CommsAddrRec?,
-        connTypes: CommsConnTypeSet?, nDevs: Int,
-        nMissingPlayers: Int, nInvited: Int, fromRematch: Boolean
-    ) {}
-
-    fun notifyGameOver() {}
+    // fun informMissing(
+    //     isServer: Boolean, hostAddr: CommsAddrRec?,
+    //     connTypes: CommsConnTypeSet?, nDevs: Int,
+    //     nMissingPlayers: Int, nInvited: Int, fromRematch: Boolean
+    // ) { Log.d("UtilCtxt", "informMissing()") }
 
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int maxOffset, int oldOffset, int newOffset );
@@ -72,6 +75,7 @@ interface UtilCtxt {
         pauseTyp: Int, player: Int, whenPrev: Int,
         whenCur: Int, msg: String?
     ): String? = null
+    fun dictGone(dictName: String) {}
 
     companion object {
         const val BONUS_NONE = 0

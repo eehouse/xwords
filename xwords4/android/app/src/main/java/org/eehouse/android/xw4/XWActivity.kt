@@ -147,7 +147,7 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
         if (BuildConfig.LOG_LIFECYLE) {
             Log.i(TAG, "%s.onDestroy(this=%H)", javaClass.getSimpleName(), this)
         }
-        mDlgt!!.onDestroy()
+        mDlgt?.onDestroy()
         super.onDestroy()
     }
 
@@ -185,11 +185,14 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
                 || super.onOptionsItemSelected(item))
     }
 
+    // The docs say the ContextMenuInfo parameter is non-nullable, but when
+    // the target is in a RecyclerView it seems it's always null! So make it
+    // nullable to avoid runtime errors, and everywhere assume it's null.
     override fun onCreateContextMenu(
         menu: ContextMenu, view: View,
-        menuInfo: ContextMenuInfo
+        ignoreMe: ContextMenuInfo?
     ) {
-        mDlgt!!.onCreateContextMenu(menu, view, menuInfo)
+        mDlgt!!.onCreateContextMenu(menu, view, ignoreMe)
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {

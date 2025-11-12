@@ -22,6 +22,7 @@
 #include "mempool.h"
 #include "comtypes.h"
 #include "xwstream.h"
+#include "dllist.h"
 
 // #define MUTEX_LOG_VERBOSE
 #include "xwmutex.h"
@@ -44,6 +45,7 @@ typedef struct MemPoolEntry {
 } MemPoolEntry;
 
 struct MemPoolCtx {
+    DLHead links;
     MutexState mutex;
     MemPoolEntry* freeList;
     MemPoolEntry* usedList;
@@ -56,15 +58,36 @@ struct MemPoolCtx {
     XP_UCHAR tag[64];
 };
 
+struct MemPoolState {
+    MemPoolCtx* list;
+} mps = {};
+
 /*--------------------------------------------------------------------------*/
+
+static ForEachAct
+printTag(const DLHead* elem, void* XP_UNUSED(closure))
+{
+    MemPoolCtx* mp = (MemPoolCtx*)elem;
+    XP_LOGFF( "%p found with tag: %s", mp, mp->tag );
+    return FEA_OK;
+}
+
+void
+mempool_dbg_checkall()
+{
+    dll_map( &mps.list->links, printTag, NULL, NULL );
+    XP_ASSERT( !mps.list );
+}
 
 MemPoolCtx*
 mpool_make( const XP_UCHAR* tag )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
+    mps.list = (MemPoolCtx*)dll_insert( &mps.list->links, &result->links, NULL );
     MUTEX_INIT( &result->mutex, XP_TRUE );
     mpool_setTag( result, tag );
+    XP_LOGFF( "(tag: %s) => %p", tag, result );
     return result;
 } /* mpool_make */
 
@@ -130,16 +153,16 @@ void
 mpool_destroy( MemPoolCtx* mpool )
 {
     if ( mpool->nUsed > 0 ) {
-        XP_WARNF( "leaking %d blocks (of %d allocs)", mpool->nUsed, 
-                  mpool->nAllocs );
+        XP_WARNF( "tag: %s; leaking %d blocks (of %d allocs)", mpool->tag,
+                  mpool->nUsed, mpool->nAllocs );
     }
     if ( !!mpool->usedList ) {
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGFF( "ptr: " XP_P "; index=%d, allocated %s(), ln %d of %s\n",
-                     entry->ptr, entry->index, 
-                     entry->func, entry->lineNo, entry->fileName );
+            XP_LOGFF( "tag: %s; ptr: " XP_P "; index=%d, allocated %s(), ln %d of %s\n",
+                      mpool->tag, entry->ptr, entry->index, 
+                      entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
             {
                 char* tryTxt;
@@ -160,6 +183,7 @@ mpool_destroy( MemPoolCtx* mpool )
 
     freeList( mpool->freeList );
     MUTEX_DESTROY( &mpool->mutex );
+    mps.list = (MemPoolCtx*)dll_remove( &mps.list->links, &mpool->links );
     XP_PLATFREE( mpool );
 } /* mpool_destroy */
 

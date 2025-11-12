@@ -50,6 +50,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
@@ -72,6 +76,8 @@ import org.eehouse.android.xw4.Channels.ID
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.jni.CommonPrefs
+import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -213,7 +219,7 @@ object Utils {
             intent.putExtra(Intent.EXTRA_STREAM, uri)
         }
 
-        val devID = XwJNI.dvc_getMQTTDevID()
+        val devID = MQTTUtils.getMQTTDevID()
         var body = LocUtils.getString(
             context, R.string.email_body_rev_fmt,
             BuildConfig.GIT_REV, Build.MODEL,
@@ -273,18 +279,18 @@ object Utils {
 
     fun postNotification(
         context: Context, intent: Intent?,
-        title: String?, body: String?, rowid: Long
+        title: String?, body: String?, gr: GameRef
     ) {
-        val id = sDefaultChannel.idFor(rowid)
+        val id = sDefaultChannel.idFor(gr)
         postNotification(context, intent, title, body, id)
     }
 
     fun postNotification(
         context: Context, intent: Intent?,
-        titleId: Int, body: String?, rowid: Long
+        titleId: Int, body: String?, gr: GameRef
     ) {
         postNotification(
-            context, intent, titleId, body, rowid,
+            context, intent, titleId, body, gr,
             sDefaultChannel
         )
     }
@@ -301,10 +307,10 @@ object Utils {
 
     fun postNotification(
         context: Context, intent: Intent?,
-        titleID: Int, body: String?, rowid: Long,
+        titleID: Int, body: String?, gr: GameRef,
         channel: ID
     ) {
-        val id = channel.idFor(rowid)
+        val id = channel.idFor(gr)
         postNotification(context, intent, titleID, body, id, channel)
     }
 
@@ -332,19 +338,19 @@ object Utils {
         )
     }
 
-    fun postOngoingNotification(
-        context: Context, intent: Intent?,
-        title: String?, body: String?,
-        rowid: Long, channel: ID,
-        actionIntent: Intent?,
-        actionString: Int
-    ) {
-        val id = channel.idFor(rowid)
-        postNotification(
-            context, intent, title, body, id, channel, true,
-            actionIntent, actionString
-        )
-    }
+    // fun postOngoingNotification(
+    //     context: Context, intent: Intent?,
+    //     title: String?, body: String?,
+    //     rowid: Long, channel: ID,
+    //     actionIntent: Intent?,
+    //     actionString: Int
+    // ) {
+    //     val id = channel.idFor(rowid)
+    //     postNotification(
+    //         context, intent, title, body, id, channel, true,
+    //         actionIntent, actionString
+    //     )
+    // }
 
     private fun postNotification(
         context: Context, intent: Intent?,
@@ -395,14 +401,14 @@ object Utils {
 
     fun cancelNotification(
         context: Context, channel: ID,
-        rowid: Long
+        gr: GameRef
     ) {
-        val id = channel.idFor(rowid)
+        val id = channel.idFor(gr)
         cancelNotification(context, id)
     }
 
-    fun cancelNotification(context: Context, rowid: Long) {
-        cancelNotification(context, sDefaultChannel, rowid)
+    fun cancelNotification(context: Context, gr: GameRef) {
+        cancelNotification(context, sDefaultChannel, gr)
     }
 
     fun cancelNotification(context: Context, id: Int) {
@@ -738,6 +744,10 @@ object Utils {
         if (null != button) {
             button.isEnabled = enable
         }
+    }
+
+    fun launch(block: suspend CoroutineScope.() -> Unit) {
+        CoroutineScope(Job() + Dispatchers.Main).launch{block()}
     }
 
     // But see hexArray above

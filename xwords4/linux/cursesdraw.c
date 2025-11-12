@@ -32,8 +32,13 @@
 #include "linuxutl.h"
 
 typedef struct CursesDrawCtx {
-    DrawCtxVTable* vtable;
+    DrawCtx super;
 
+    // DT_THUMB only
+    XP_U16 nCols;
+    XP_UCHAR* thumbBuf;
+
+    // DT_SCREEN only
     WINDOW* boardWin;
 } CursesDrawCtx;
 
@@ -67,10 +72,14 @@ cursesHiliteRect( WINDOW* window, const XP_Rect* rect )
 }
 
 static void
-curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe) )
+curses_draw_destroy( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
-    // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-} /* draw_setup */
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    g_free( dctx->thumbBuf );
+
+    g_free( p_dctx->vtable );
+    g_free( p_dctx );
+}
 
 static void
 curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
@@ -91,23 +100,28 @@ curses_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) )
 }
 
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
+curses_draw_boardBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
                         const XP_Rect* XP_UNUSED(rect), 
                         XP_U16 XP_UNUSED(width), XP_U16 XP_UNUSED(height),
                         DrawFocusState XP_UNUSED(dfs),
                         TileValueType XP_UNUSED(tvType) )
 {
+    if ( DT_THUMB == p_dctx->dt ) {
+        CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+        g_free( dctx->thumbBuf );
+        dctx->thumbBuf = g_malloc0( dctx->nCols * dctx->nCols );
+    }
     return XP_TRUE;
 } /* curses_draw_boardBegin */
 
 static XP_Bool
-curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
+curses_draw_trayBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
                        const XP_Rect* XP_UNUSED(rect), 
                        XP_U16 XP_UNUSED(owner), 
                        XP_S16 XP_UNUSED(score), 
                        DrawFocusState XP_UNUSED(dfs) )
 {
-    return XP_TRUE;
+    return DT_SCREEN == p_dctx->dt;
 } /* curses_draw_trayBegin */
 
 static XP_Bool
@@ -117,9 +131,15 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* re
                         XP_S16 XP_UNUSED(remCount), 
                         DrawFocusState XP_UNUSED(dfs) )
 {
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    eraseRect( dctx, rect );
-    return XP_TRUE;
+    XP_Bool result;
+    if ( DT_SCREEN == p_dctx->dt ) {
+        CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+        eraseRect( dctx, rect );
+        result = XP_TRUE;
+    } else {
+        result = XP_FALSE;
+    }
+    return result;
 } /* curses_draw_scoreBegin */
 
 #ifdef XWFEATURE_SCOREONEPASS
@@ -388,6 +408,36 @@ curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
 
 #define MY_PAIR 1
 
+static void
+putThumbChar( CursesDrawCtx* dctx, XP_U16 col, XP_U16 row, XP_UCHAR chr )
+{
+    int offset = (row * dctx->nCols) + col;
+    dctx->thumbBuf[offset] = chr;
+}
+
+static char
+getBonusChar(XWBonusType bonus)
+{
+    char ch = ' ';
+    switch ( bonus ) {
+    case BONUS_DOUBLE_LETTER:
+        ch = '+'; break;
+    case BONUS_DOUBLE_WORD:
+        ch = '*'; break;
+    case BONUS_TRIPLE_LETTER:
+        ch = '^'; break;
+    case BONUS_TRIPLE_WORD:
+        ch = '#'; break;
+    case BONUS_QUAD_LETTER:
+        ch = '%'; break;
+    case BONUS_QUAD_WORD:
+        ch = '&'; break;
+    default:
+        break;
+    } /* switch */
+    return ch;
+}
+
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* letter, 
@@ -397,56 +447,48 @@ curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect
                       HintAtts XP_UNUSED(hintAtts), CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    XP_Bool highlight = (flags & (CELL_PENDING|CELL_RECENT|CELL_ISCURSOR)) != 0;
-
-    if ( highlight ) {
-        wstandout( dctx->boardWin );
-    }
-
-    /* in case it's not 1x1 */
-    eraseRect( dctx, rect );
-
-    if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
+    if ( DT_THUMB == p_dctx->dt ) {
         char ch = ' ';
-        switch ( bonus ) {
-        case BONUS_DOUBLE_LETTER:
-            ch = '+'; break;
-        case BONUS_DOUBLE_WORD:
-            ch = '*'; break;
-        case BONUS_TRIPLE_LETTER:
-            ch = '^'; break;
-        case BONUS_TRIPLE_WORD:
-            ch = '#'; break;
-        case BONUS_QUAD_LETTER:
-            ch = '%'; break;
-        case BONUS_QUAD_WORD:
-            ch = '&'; break;
-        default:
-            break;
-        } /* switch */
-
-        mvwaddch( dctx->boardWin, rect->top, rect->left, ch );
+        if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
+            ch = getBonusChar(bonus);
+        } else if ( !!letter ) {
+            ch = letter[0];
+        }
+        putThumbChar( dctx, rect->left, rect->top, ch );
     } else {
-        /* To deal with multibyte (basically just L·L at this point), draw one
-           char at a time, wrapping to the next line if we need to. */
-        mbstate_t ps = {};
-        const char* end = letter + strlen( letter );
-        for ( int line = 0; line < rect->height; ++line ) {
-            for ( int col = 0; letter < end && col < rect->width; ++col ) {
-                // mbrlen returns len-in-bytes of next printable char
-                size_t nextLen = mbrlen( letter, end - letter, &ps );
-                XP_ASSERT( nextLen > 0 );
-                mvwaddnstr( dctx->boardWin, rect->top + line, rect->left + col,
-                            letter, nextLen );
-                letter += nextLen;
+        XP_Bool highlight = (flags & (CELL_PENDING|CELL_RECENT|CELL_ISCURSOR)) != 0;
+
+        if ( highlight ) {
+            wstandout( dctx->boardWin );
+        }
+
+        /* in case it's not 1x1 */
+        eraseRect( dctx, rect );
+
+        if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
+            char ch = getBonusChar(bonus);
+            mvwaddch( dctx->boardWin, rect->top, rect->left, ch );
+        } else {
+            /* To deal with multibyte (basically just L·L at this point), draw one
+               char at a time, wrapping to the next line if we need to. */
+            mbstate_t ps = {};
+            const char* end = letter + strlen( letter );
+            for ( int line = 0; line < rect->height; ++line ) {
+                for ( int col = 0; letter < end && col < rect->width; ++col ) {
+                    // mbrlen returns len-in-bytes of next printable char
+                    size_t nextLen = mbrlen( letter, end - letter, &ps );
+                    XP_ASSERT( nextLen > 0 );
+                    mvwaddnstr( dctx->boardWin, rect->top + line, rect->left + col,
+                                letter, nextLen );
+                    letter += nextLen;
+                }
             }
         }
-    }
 
-    if ( highlight ) {
-        wstandend( dctx->boardWin );
+        if ( highlight ) {
+            wstandend( dctx->boardWin );
+        }
     }
-
     return XP_TRUE;
 } /* curses_draw_drawCell */
 
@@ -658,6 +700,30 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
 } /* curses_draw_drawMiniWindow */
 #endif
 
+static void
+curses_thumb_draw_getThumbData( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
+{
+    XP_ASSERT( DT_THUMB == p_dctx->dt );
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    XP_ASSERT( !!dctx->thumbBuf );
+    int offset = 0;
+    for ( int row = 0; row < dctx->nCols; ++row ) {
+        for ( int col = 0; col < dctx->nCols; ++col ) {
+            stream_putU8( stream, dctx->thumbBuf[offset++] );
+        }
+        stream_putU8( stream, '\n' );
+    }
+    stream_putU8( stream, '\0' ); /* null-terminate */
+}
+
+static XP_U16
+curses_thumb_draw_getThumbSize( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
+{
+    XP_ASSERT( DT_THUMB == p_dctx->dt );
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    return dctx->nCols;
+}
+
 #if 0
 static void
 curses_draw_frameTray( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect )
@@ -668,65 +734,68 @@ curses_draw_frameTray( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect )
 #endif
 
 DrawCtx* 
-cursesDrawCtxtMake( WINDOW* boardWin )
+cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
+                    GameRef gr, DrawTarget dt )
 {
-    CursesDrawCtx* dctx = g_malloc0( sizeof(CursesDrawCtx) );
+    CursesDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
 
-    dctx->vtable = g_malloc0( sizeof(*(((CursesDrawCtx*)dctx)->vtable)) );
+    DrawCtx* super = &dctx->super;
+    draw_super_init( super, dt );
+    super->vtable = g_malloc0( sizeof(*(super->vtable)) );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_destroy, curses );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_endDraw, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_vertScrollBoard, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_dictChanged, curses );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_trayBegin, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_scoreBegin, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_beginDraw, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_endDraw, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_boardBegin, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_objFinished, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_vertScrollBoard, curses );
+
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTimer, curses );
 
 #ifdef XWFEATURE_SCOREONEPASS
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawRemText, curses );
 #else
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureRemText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawRemText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureScoreText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_score_drawPlayer, curses );
 #endif
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_score_pendingScore, curses );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawCell, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_invertCell, curses );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileMidDrag, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTile, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTileBack, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTileMidDrag, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTrayDivider, curses );
     
-    SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_clearRect, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawBoardArrow, curses );
+
+    if ( DT_THUMB == dt ) {
+        const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
+        dctx->nCols = gi->boardSize;
+        SET_VTABLE_ENTRY( super->vtable, draw_getThumbSize, curses_thumb );
+        SET_VTABLE_ENTRY( super->vtable, draw_getThumbData, curses_thumb );
+    }
 
 #ifdef XWFEATURE_MINIWIN
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawMiniWindow, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_getMiniWText, curses );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureMiniWText, curses );
 #endif
 
-    assertDrawCallbacksSet( dctx->vtable );
+    // assertDrawCallbacksSet( super->vtable );
 
     dctx->boardWin = boardWin;
 
     return (DrawCtx*)dctx;
-} /* curses_drawctxt_init */
-
-void
-cursesDrawCtxtFree( DrawCtx* pdctx )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)pdctx;
-    g_free( dctx->vtable );
-    g_free( dctx );
-}
+} /* cursesDrawCtxtMake */
 
 #endif /* PLATFORM_NCURSES */

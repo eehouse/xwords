@@ -31,7 +31,7 @@ typedef struct _ObjCacheElem {
 } ObjCacheElem;
 
 typedef struct _AndDraw {
-    DrawCtxVTable* vtable;
+    DrawCtx super;
 #ifdef MAP_THREAD_TO_ENV
     EnvThreadInfo* ti;
 #endif
@@ -112,11 +112,11 @@ makeDSI( XWEnv xwe, const DrawScoreInfo* dsi )
 
 #define DRAW_CBK_HEADER(nam,sig) {                              \
     JNIEnv* env = xwe;                                          \
-    AndDraw* draw = (AndDraw*)dctx;                             \
-    AND_DRAW_START(draw, env);                                  \
-    ASSERT_ENV( draw->ti, env );                                \
-    XP_ASSERT( !!draw->jdraw );                                 \
-    jmethodID mid = getMethodID( xwe, draw->jdraw, nam, sig )   \
+    AndDraw* adraw = (AndDraw*)dctx;                            \
+    AND_DRAW_START(adraw, env);                                 \
+    ASSERT_ENV( adraw->ti, env );                               \
+    XP_ASSERT( !!adraw->jdraw );                                \
+    jmethodID mid = getMethodID( xwe, adraw->jdraw, nam, sig )  \
 
 #define DRAW_CBK_HEADER_END() }                 \
     AND_DRAW_END();                             \
@@ -126,22 +126,23 @@ and_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
                      XP_U16 numPlayers, const XP_S16* const scores,
                      XP_S16 remCount, DrawFocusState XP_UNUSED(dfs) )
 {
-    jboolean result;
-    DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[II)Z" );
+    jboolean result = XP_FALSE;
+    if ( DT_SCREEN == dctx->dt ) {
+        DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[II)Z" );
+        jint jarr[numPlayers];
 
-    jint jarr[numPlayers];
+        for ( int ii = 0; ii < numPlayers; ++ii ) {
+            jarr[ii] = scores[ii];
+        }
+        jintArray jscores = makeIntArray( env, numPlayers, jarr, sizeof(jarr[0]) );
+        jobject jrect = makeJRect( env, rect );
 
-    for ( int ii = 0; ii < numPlayers; ++ii ) {
-        jarr[ii] = scores[ii];
+        result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid,
+                                            jrect, numPlayers, jscores, remCount );
+
+        deleteLocalRefs( env, jscores, jrect, DELETE_NO_REF );
+        DRAW_CBK_HEADER_END();
     }
-    jintArray jscores = makeIntArray( env, numPlayers, jarr, sizeof(jarr[0]) );
-    jobject jrect = makeJRect( env, rect );
-
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                        jrect, numPlayers, jscores, remCount );
-
-    deleteLocalRefs( env, jscores, jrect, DELETE_NO_REF );
-    DRAW_CBK_HEADER_END();
     return result;
 }
 
@@ -157,7 +158,7 @@ and_draw_measureRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     jintArray heightArray = (*env)->NewIntArray( env, 1 );
     jobject jrect = makeJRect( xwe, rect );
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect,
+    result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid, jrect,
                                         nTilesLeft, widthArray,
                                         heightArray );
     if ( result ) {
@@ -183,7 +184,7 @@ and_draw_drawRemText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
     jobject jrinner = makeJRect( env, rInner );
     jobject jrouter = makeJRect( env, rOuter );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, 
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrinner, jrouter,
                             nTilesLeft, focussed );
     deleteLocalRefs( env, jrinner, jrouter, DELETE_NO_REF );
     DRAW_CBK_HEADER_END();
@@ -204,7 +205,7 @@ and_draw_measureScoreText( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     jintArray widthArray = (*env)->NewIntArray( env, 1 );
     jintArray heightArray = (*env)->NewIntArray( env, 1 );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsi,
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrect, jdsi,
                             widthArray, heightArray );
     deleteLocalRefs( env, jrect, jdsi, DELETE_NO_REF );
 
@@ -229,7 +230,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rInner,
     jobject jrouter = makeJRect( xwe, rOuter );
     jobject jdsi = makeDSI( xwe, dsi );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, gotPct, 
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrinner, jrouter, gotPct,
                             jdsi );
     deleteLocalRefs( env, jrinner, jrouter, jdsi, DELETE_NO_REF );
     DRAW_CBK_HEADER_END();
@@ -245,21 +246,47 @@ and_draw_drawTimer( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 player
         DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;IIZ)V" );
 
         jobject jrect = makeJRect( xwe, rect );
-        (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                                jrect, player, secondsLeft, inDuplicateMode );
+        (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrect, player,
+                                secondsLeft, inDuplicateMode );
         deleteLocalRef( env, jrect );
         DRAW_CBK_HEADER_END();
     }
 }
 
-/* Not used on android yet */
-static XP_Bool and_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
+static void
+and_draw_destroy(DrawCtx* dctx, XWEnv xwe)
 {
-    AND_DRAW_START(dctx, xwe);
-    AND_DRAW_END();
-    return XP_TRUE;
+    AndDraw* adraw = (AndDraw*)dctx;
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = adraw->mpool;
+#endif
+    deleteGlobalRef( xwe, adraw->jdraw );
+
+    XP_FREE( mpool, adraw->super.vtable );
+    XP_FREE( mpool, adraw );
+    mpool_destroy( mpool );
 }
-static void and_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) ) {}
+
+/* Return FALSE if jdraw is null: we can't draw, which is the point of this */
+static XP_Bool
+and_draw_beginDraw( DrawCtx* dctx, XWEnv xwe )
+{
+    AndDraw* adraw = (AndDraw*)dctx;
+    jboolean jresult = !!adraw->jdraw;
+    if ( jresult ) {
+        DRAW_CBK_HEADER("beginDraw", "()Z" );
+        jresult = (*env)->CallBooleanMethod( env, adraw->jdraw, mid );
+        DRAW_CBK_HEADER_END();
+    }
+    return jresult;
+}
+static void
+and_draw_endDraw( DrawCtx* dctx, XWEnv xwe )
+{
+    DRAW_CBK_HEADER("endDraw", "()V" );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid );
+    DRAW_CBK_HEADER_END();
+}
 
 static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* XP_UNUSED(rect),
@@ -268,10 +295,10 @@ and_draw_boardBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* XP_UNUSED(rect),
 {
     AND_DRAW_START(dctx, xwe);
     JNIEnv* env = xwe;
-    AndDraw* draw = (AndDraw*)dctx;
+    AndDraw* adraw = (AndDraw*)dctx;
 
     jobject jTvType = intToJEnum( env, tvType, PKG_PATH(TVT_PATH) );
-    draw->jTvType = (*env)->NewGlobalRef( env, jTvType );
+    adraw->jTvType = (*env)->NewGlobalRef( env, jTvType );
     deleteLocalRef( env, jTvType );
     AND_DRAW_END();
     return XP_TRUE;
@@ -298,9 +325,9 @@ and_draw_drawCell( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect,
+    result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid, jrect,
                                         jtext, tile, value, owner, bonus,
-                                        flags, draw->jTvType );
+                                        flags, adraw->jTvType );
     deleteLocalRefs( env, jtext, jrect, DELETE_NO_REF );
 
     DRAW_CBK_HEADER_END();
@@ -315,8 +342,8 @@ and_draw_drawBoardArrow( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
     DRAW_CBK_HEADER("drawBoardArrow", "(Landroid/graphics/Rect;IZII)V" );
 
     jobject jrect = makeJRect( xwe, rect );
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, bonus, vert, hintAtts, flags );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrect, bonus, vert,
+                            hintAtts, flags );
     deleteLocalRef( env, jrect );
     DRAW_CBK_HEADER_END();
 }
@@ -337,14 +364,16 @@ static XP_Bool
 and_draw_trayBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, XP_U16 owner,
                     XP_S16 score, DrawFocusState XP_UNUSED(dfs) )
 {
-    jboolean result;
-    DRAW_CBK_HEADER( "trayBegin", "(Landroid/graphics/Rect;II)Z" );
+    jboolean result = XP_FALSE;
+    if ( DT_SCREEN == dctx->dt ) {
+        DRAW_CBK_HEADER( "trayBegin", "(Landroid/graphics/Rect;II)Z" );
+        jobject jrect = makeJRect( xwe, rect );
 
-    jobject jrect = makeJRect( xwe, rect );
-
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, owner, score );
-    deleteLocalRef( env, jrect );
-    DRAW_CBK_HEADER_END();
+        result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid,
+                                            jrect, owner, score );
+        deleteLocalRef( env, jrect );
+        DRAW_CBK_HEADER_END();
+    }
     return result;
 }
 
@@ -362,7 +391,7 @@ and_draw_drawTile( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+    result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid,
                                         jrect, jtext, val, flags );
     deleteLocalRefs( env, jtext, jrect, DELETE_NO_REF );
     DRAW_CBK_HEADER_END();
@@ -384,7 +413,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+    result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid,
                                         jrect, jtext, val, owner, flags );
     deleteLocalRefs( env, jtext, jrect, DELETE_NO_REF );
     DRAW_CBK_HEADER_END();
@@ -399,7 +428,7 @@ and_draw_drawTileBack( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, CellFlags 
 
     jobject jrect = makeJRect( xwe, rect );
 
-    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
+    result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid, jrect, flags );
     deleteLocalRef( env, jrect );
     DRAW_CBK_HEADER_END();
     return result;
@@ -412,8 +441,7 @@ and_draw_drawTrayDivider( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect, CellFla
 
     jobject jrect = makeJRect( xwe, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, flags );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrect, flags );
     deleteLocalRef( env, jrect );
     DRAW_CBK_HEADER_END();
 }
@@ -427,8 +455,8 @@ and_draw_score_pendingScore( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
 
     jobject jrect = makeJRect( xwe, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, score, playerNum, curTurn, flags );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jrect, score,
+                            playerNum, curTurn, flags );
     deleteLocalRef( xwe, jrect );
     DRAW_CBK_HEADER_END();
 }
@@ -441,12 +469,11 @@ and_draw_objFinished( DrawCtx* dctx, XWEnv xwe, BoardObjectType typ,
     DRAW_CBK_HEADER( "objFinished", "(ILandroid/graphics/Rect;)V" );
 
     jobject jrect = makeJRect( xwe, rect );
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            (jint)typ, jrect );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, (jint)typ, jrect );
     deleteLocalRef( xwe, jrect );
 
     if ( OBJ_BOARD == typ ) {
-        deleteGlobalRef( env, draw->jTvType );
+        deleteGlobalRef( env, adraw->jTvType );
     }
     DRAW_CBK_HEADER_END();
 }
@@ -455,16 +482,16 @@ static void
 and_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
                       const DictionaryCtxt* dict )
 {
-    AndDraw* draw = (AndDraw*)dctx;
-    if ( !!dict && !!draw->jdraw ) {
+    AndDraw* adraw = (AndDraw*)dctx;
+    if ( !!dict && !!adraw->jdraw ) {
         XP_LOGFF( "(dict=%p/%s); code=%x", dict, dict_getName(dict), andDictID(dict) );
         const XP_UCHAR* isoCode = NULL;   /* A null dict means no-lang */
         if ( NULL != dict ) {
             isoCode = dict_getISOCode( dict );
         }
         /* Don't bother sending repeats. */
-        if ( 0 != XP_STRCMP( isoCode, draw->curISOCode ) ) {
-            XP_STRNCPY( draw->curISOCode, isoCode, VSIZE(draw->curISOCode) );
+        if ( 0 != XP_STRCMP( isoCode, adraw->curISOCode ) ) {
+            XP_STRNCPY( adraw->curISOCode, isoCode, VSIZE(adraw->curISOCode) );
 
             DRAW_CBK_HEADER( "dictChanged", "(J)V" );
 
@@ -475,7 +502,7 @@ and_draw_dictChanged( DrawCtx* dctx, XWEnv xwe, XP_S16 playerNum,
             /* jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", sig ); */
             /* jobject jdict = (*env)->NewObject( env, rclass, initId, (int)dict ); */
 
-            (*env)->CallVoidMethod( env, draw->jdraw, mid, (jlong)dict );
+            (*env)->CallVoidMethod( env, adraw->jdraw, mid, (jlong)dict );
             DRAW_CBK_HEADER_END();
         }
     }
@@ -486,14 +513,14 @@ static const XP_UCHAR*
 and_draw_getMiniWText( DrawCtx* dctx, XWEnv xwe, XWMiniTextType textHint )
 {
     DRAW_CBK_HEADER( "getMiniWText", "(I)Ljava/lang/String;" );
-    jstring jstr = (*env)->CallObjectMethod( env, draw->jdraw, mid,
+    jstring jstr = (*env)->CallObjectMethod( env, adraw->jdraw, mid,
                                              textHint );
     const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
-    snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
+    snprintf( adraw->miniTextBuf, VSIZE(adraw->miniTextBuf), "%s", str );
     (*env)->ReleaseStringUTFChars( env, jstr, str );
     deleteLocalRef( env, jstr );
     DRAW_CBK_HEADER_END();
-    return draw->miniTextBuf;
+    return adraw->miniTextBuf;
 }
 
 static void
@@ -506,8 +533,8 @@ and_draw_measureMiniWText( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* textP,
     jintArray heightArray = (*env)->NewIntArray( env, 1 );
     jstring jstr = (*env)->NewStringUTF( env, textP );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jstr, widthArray, heightArray );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jstr,
+                            widthArray, heightArray );
 
     deleteLocalRef( env, jstr );
 
@@ -529,12 +556,47 @@ and_draw_drawMiniWindow( DrawCtx* dctx, XWEnv xwe, const XP_UCHAR* text,
     jstring jstr = (*env)->NewStringUTF( env, text );
     jobject jrect = makeJRect( xwe, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jstr, jrect );
+    (*env)->CallVoidMethod( env, adraw->jdraw, mid, jstr, jrect );
     deleteLocalRefs( env, jstr, jrect, DELETE_NO_REF );
     DRAW_CBK_HEADER_END();
 }
 #endif
+
+static XP_U16
+and_draw_getThumbSize(DrawCtx* dctx, XWEnv xwe)
+{
+    XP_U16 result;
+    LOG_FUNC();
+    XP_ASSERT( DT_THUMB == dctx->dt );
+    DRAW_CBK_HEADER( "getThumbSize", "()I" );
+    result = (*env)->CallIntMethod( env, adraw->jdraw, mid );
+    DRAW_CBK_HEADER_END();
+    return result;
+}
+
+/* move me */
+static void
+fillStreamFromBA( JNIEnv* env, jbyteArray jstream, XWStreamCtxt* out )
+{
+    int len = (*env)->GetArrayLength( env, jstream );
+    XP_LOGFF( "len: %d", len );
+    jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
+    stream_putBytes( out, jelems, len );
+    (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
+}
+
+static void
+and_draw_getThumbData(DrawCtx* dctx, XWEnv xwe, XWStreamCtxt* stream )
+{
+    LOG_FUNC();
+    XP_ASSERT( DT_THUMB == dctx->dt );
+    DRAW_CBK_HEADER( "getThumbData", "()[B" );
+    jobject jarr = (*env)->CallObjectMethod( env, adraw->jdraw, mid );
+    XP_LOGFF( "got %p from java", jarr );
+    fillStreamFromBA( env, jarr, stream );
+    deleteLocalRef( env, jarr );
+    DRAW_CBK_HEADER_END();
+}
 
 static XP_Bool
 draw_doNothing( DrawCtx* dctx, XWEnv xwe, ... )
@@ -544,31 +606,32 @@ draw_doNothing( DrawCtx* dctx, XWEnv xwe, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv* env,
-#ifdef MAP_THREAD_TO_ENV
-          EnvThreadInfo* ti,
-#endif
-          jobject jdraw )
+makeDraw( JNIEnv* env, jobject jdraw, DrawTarget dt )
 {
-    AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = mpool_make( NULL );
+#endif
+    AndDraw* adraw = (AndDraw*)XP_CALLOC( mpool, sizeof(*adraw) );
+    DrawCtx* super = &adraw->super;
 #ifdef MAP_THREAD_TO_ENV
-    draw->ti = ti;
+    adraw->ti = ti;
 #endif
 #ifdef DEBUG
     // draw->creator.thread = pthread_self();
     // draw->creator.env = env;
 #endif
-    draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
+    super->vtable = XP_MALLOC( mpool, sizeof(*super->vtable) );
     if ( NULL != jdraw ) {
-        draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
+        adraw->jdraw = (*env)->NewGlobalRef( env, jdraw );
     }
-    MPASSIGN( draw->mpool, mpool );
+    MPASSIGN( adraw->mpool, mpool );
 
-    for ( int ii = 0; ii < sizeof(*draw->vtable)/sizeof(void*); ++ii ) {
-        ((void**)(draw->vtable))[ii] = draw_doNothing;
+    for ( int ii = 0; ii < sizeof(super->vtable)/sizeof(void*); ++ii ) {
+        ((void**)(super->vtable))[ii] = draw_doNothing;
     }
 
-#define SET_PROC(nam) draw->vtable->m_draw_##nam = and_draw_##nam
+#define SET_PROC(nam) super->vtable->m_draw_##nam = and_draw_##nam
+    SET_PROC(destroy);
     SET_PROC(beginDraw);
     SET_PROC(endDraw);
     SET_PROC(boardBegin);
@@ -599,8 +662,15 @@ makeDraw( MPFORMAL JNIEnv* env,
     SET_PROC(drawMiniWindow);
 #endif
 
+    if ( DT_THUMB == dt ) {
+        SET_PROC(getThumbSize);
+        SET_PROC(getThumbData);
+    }
+
+    draw_super_init( super, dt );
+
 #undef SET_PROC
-    return (DrawCtx*)draw;
+    return super;
 }
 
 static void
@@ -608,18 +678,5 @@ deleteGlobalRef( JNIEnv* env, jobject jobj )
 {
     if ( !!jobj ) {
         (*env)->DeleteGlobalRef( env, jobj );
-    }
-}
-
-void
-destroyDraw( DrawCtx** dctx, JNIEnv* env )
-{
-    if ( !!*dctx ) {
-        AndDraw* draw = (AndDraw*)*dctx;
-        deleteGlobalRef( env, draw->jdraw );
-
-        XP_FREE( draw->mpool, draw->vtable );
-        XP_FREE( draw->mpool, draw );
-        *dctx = NULL;
     }
 }

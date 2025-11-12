@@ -29,24 +29,13 @@
 extern "C" {
 #endif
 
-typedef void (*MemStreamCloseCallback)( XWStreamCtxt* stream,
-                                        XWEnv env, void* closure );
-
 XWStreamCtxt* mem_stream_make_raw( MPFORMAL VTableMgr* vtmgr);
-
 XWStreamCtxt* mem_stream_make( MPFORMAL VTableMgr* vtmgr, 
-                               void* closure, 
-                               XP_PlayerAddr addr,    /* should be in a
-                                                         subclass */
-                               MemStreamCloseCallback onCloseWritten,
-                               XWEnv xwe
-                               );
-
+                               XP_PlayerAddr addr );    /* should be in a
+                                                           subclass */
 XWStreamCtxt* mem_stream_make_sized( MPFORMAL VTableMgr* vtmgr, 
                                      XP_U16 initialSize,
-                                     void* closure, XP_PlayerAddr addr,
-                                     MemStreamCloseCallback onCloseWritten,
-                                     XWEnv xwe );
+                                     XP_PlayerAddr addr );
 
 #ifdef CPLUS
 }

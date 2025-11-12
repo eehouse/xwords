@@ -263,7 +263,7 @@ stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
     if ( len > 0 ) {
         if ( buflen <= len ) {
             XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
-            XP_ASSERT(0);
+            XP_ASSERT(0);       /* firing */
         }
         if ( len >= buflen ) {
             /* better to leave stream in bad state than overwrite stack */
@@ -425,6 +425,15 @@ tilesNBits( const XWStreamCtxt* stream )
     XP_U16 result = STREAM_VERS_NINETILES <= version
         ? NTILES_NBITS_9 : NTILES_NBITS_7;
     return result;
+}
+
+void
+destroyStreamIf( XWStreamCtxt** stream )
+{
+    if ( !!*stream ) {
+        stream_destroy( *stream );
+        *stream = NULL;
+    }
 }
 
 /* sMap: Exists as a backup until everybody's running code that knows isoCode

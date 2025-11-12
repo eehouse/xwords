@@ -32,6 +32,53 @@
 #include "linuxmain.h"
 #include "linuxutl.h"
 
+#define DRAW_OFFSCREEN
+
+struct GtkDrawCtx {
+    DrawCtx super;
+
+    struct {
+        GtkWidget* drawing_area;
+#ifdef DRAW_OFFSCREEN
+        cairo_surface_t* surface;
+        XP_Bool haveData;
+#endif
+    } screen;
+
+    struct {
+        XP_U16 width;
+        XP_U16 height;
+        cairo_surface_t* surface;
+    } thumb;
+
+    GdkDrawingContext* dc;
+
+    struct GtkGameGlobals* globals;
+
+    cairo_t* _cairo;
+
+    GdkRGBA black;
+    GdkRGBA white;
+    GdkRGBA grey;
+    GdkRGBA red;		/* for pending tiles */
+    GdkRGBA tileBack;	/* for pending tiles */
+    GdkRGBA cursor;
+    GdkRGBA bonusColors[4];
+    GdkRGBA playerColors[MAX_NUM_PLAYERS];
+
+	GList* fontsPerSize;
+
+    struct {
+        XP_UCHAR str[MAX_SCORE_LEN+1];
+        XP_U16 fontHt;
+    } scoreCache[MAX_NUM_PLAYERS];
+
+    XP_U16 trayOwner;
+    XP_U16 cellHeight;
+    TileValueType tvType;
+    XP_Bool scoreIsVertical;
+};
+
 typedef enum {
     XP_GTK_JUST_NONE
     ,XP_GTK_JUST_CENTER
@@ -70,7 +117,7 @@ gtkInsetRect( XP_Rect* r, short i )
 # define GDKDRAWABLE void
 # define GDKGC void
 # define GDKCOLORMAP void
-#define LOG_CAIRO_PENDING() XP_LOGF( "%s(): CAIRO work pending", __func__ )
+#define LOG_CAIRO_PENDING() XP_LOGFF( "CAIRO work pending" )
 
 static XP_Bool
 initCairo( GtkDrawCtx* dctx )
@@ -79,23 +126,34 @@ initCairo( GtkDrawCtx* dctx )
     XP_ASSERT( !dctx->_cairo );
     cairo_t* cairo = NULL;
 
-    if ( !!dctx->surface ) {  /* the thumbnail case */
-        XP_LOGF( "%s(): have surface; doing nothing", __func__ );
-        cairo = cairo_create( dctx->surface );
-        cairo_surface_destroy( dctx->surface );
+    if ( !!dctx->thumb.surface ) {  /* the thumbnail case */
+        XP_LOGFF( "have surface; doing nothing" );
+        cairo = cairo_create( dctx->thumb.surface );
+        cairo_surface_destroy( dctx->thumb.surface );
         // XP_ASSERT( 0 );
-    } else if ( !!dctx->drawing_area ) {
-        GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+    } else if ( !!dctx->screen.drawing_area ) {
+#ifdef DRAW_OFFSCREEN
+        if ( !dctx->screen.surface ) {
+            GtkAllocation alloc;
+            gtk_widget_get_allocation( dctx->screen.drawing_area, &alloc );
+            dctx->screen.surface =
+                cairo_image_surface_create( CAIRO_FORMAT_RGB24, alloc.width, alloc.height );
+        }
+        cairo = cairo_create( dctx->screen.surface );
+        // cairo_surface_destroy( dctx->thumb.surface );
+#else
+        GdkWindow* window = gtk_widget_get_window( dctx->screen.drawing_area );
         const cairo_region_t* region = gdk_window_get_visible_region( window );
         dctx->dc = gdk_window_begin_draw_frame( window, region );
         cairo = gdk_drawing_context_get_cairo_context( dctx->dc );
+#endif
     } else {
         XP_ASSERT( 0 );
     }
     XP_Bool inited = !!cairo;
     if ( inited ) {
         dctx->_cairo = cairo;
-        if ( !!dctx->surface ) {
+        if ( !!dctx->thumb.surface ) {
             cairo_set_line_width( cairo, 0.1 );
         } else {
             cairo_set_line_width( cairo, 1.0 );
@@ -110,10 +168,10 @@ destroyCairo( GtkDrawCtx* dctx )
 {
     /* XP_LOGF( "%s(dctx=%p)", __func__, dctx ); */
     XP_ASSERT( !!dctx->_cairo );
-    if ( !!dctx->surface ) {    /* the thumbnail case */
-        XP_LOGF( "%s(): have surface; doing nothing", __func__ );
+    if ( !!dctx->thumb.surface ) {    /* the thumbnail case */
+        XP_LOGFF( "have surface; doing nothing" );
     } else {
-        GdkWindow* window = gtk_widget_get_window( dctx->drawing_area );
+        GdkWindow* window = gtk_widget_get_window( dctx->screen.drawing_area );
         gdk_window_end_draw_frame( window, dctx->dc );
     }
     dctx->_cairo = NULL;
@@ -194,7 +252,7 @@ static void
 gtkEraseRect( const GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     set_color_cairo( dctx, 0xFFFF, 0xFFFF, 0xFFFF );
-    // const GtkStyle* style = gtk_widget_get_style( dctx->drawing_area );
+    // const GtkStyle* style = gtk_widget_get_style( dctx->screen.drawing_area );
     draw_rectangle( dctx, TRUE, rect->left, rect->top,
                     rect->width, rect->height );
 } /* gtkEraseRect */
@@ -434,25 +492,43 @@ freer( gpointer data, gpointer XP_UNUSED(user_data) )
 }
 
 static void
-gtk_draw_destroyCtxt( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
-{
-    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    GtkAllocation alloc;
-    gtk_widget_get_allocation( dctx->drawing_area, &alloc );
-
-    draw_rectangle( dctx, TRUE, 0, 0, alloc.width, alloc.height );
-
-    g_list_foreach( dctx->fontsPerSize, freer, NULL );
-    g_list_free( dctx->fontsPerSize );
-
-} /* gtk_draw_destroyCtxt */
-
-
-static void
 gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                       XP_S16 XP_UNUSED(playerNum),
                       const DictionaryCtxt* XP_UNUSED(dict) )
 {
+}
+
+static cairo_status_t
+write_func( void *closure, const unsigned char *data,
+            unsigned int length )
+{
+    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
+    stream_putBytes( stream, data, length );
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static void
+gtk_thumb_draw_getThumbData( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+                             XWStreamCtxt* stream )
+{
+    XP_ASSERT( DT_THUMB == p_dctx->dt );
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_ASSERT( !!dctx->thumb.surface );
+#ifdef DEBUG
+    cairo_status_t status =
+#endif
+        cairo_surface_write_to_png_stream( dctx->thumb.surface,
+                                           write_func, stream );
+    XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+}
+
+static XP_U16
+gtk_thumb_draw_getThumbSize( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
+{
+    XP_ASSERT( DT_THUMB == p_dctx->dt );
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
+    XP_ASSERT( dctx->thumb.width ); /* not 0 */
+    return dctx->thumb.width;
 }
 
 static XP_Bool
@@ -472,7 +548,10 @@ gtk_draw_endDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
        but it also results in board_draw() getting called constantly. This app
        is for development only, so I don't have to care, but I need to
        understand gtk/cairo better at some point. */
-    gtk_widget_queue_draw( dctx->drawing_area );
+#ifdef DRAW_OFFSCREEN
+    dctx->screen.haveData = XP_TRUE;
+#endif
+    gtk_widget_queue_draw( dctx->screen.drawing_area );
 }
 
 static XP_Bool
@@ -597,7 +676,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
     XP_Rect rectInset = *rect;
     GtkGameGlobals* globals = dctx->globals;
-    XP_Bool showGrid = globals->gridOn;
+    assertMainThread( &globals->cGlobals );
+    XP_Bool showGrid = !!globals ? globals->gridOn : XP_FALSE;
     XP_Bool recent = (flags & CELL_RECENT) != 0;
     XP_Bool pending = (flags & CELL_PENDING) != 0;
     GdkRGBA* cursor = 
@@ -737,7 +817,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* XP_UNU
                     DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    XP_Bool doDraw = !dctx->surface;
+    XP_Bool doDraw = !dctx->thumb.surface;
     if ( doDraw ) {
         dctx->trayOwner = owner;
     }
@@ -874,6 +954,23 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
                     r.left, r.top, r.width, r.height);
 } /* gtk_draw_drawTrayDivider */
 
+static void
+gtk_draw_destroy( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe))
+{
+    GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
+    g_list_foreach( dctx->fontsPerSize, freer, NULL );
+    g_list_free( dctx->fontsPerSize );
+    if ( !!dctx->thumb.surface ) {
+        cairo_surface_destroy( dctx->thumb.surface );
+        dctx->thumb.surface = NULL;
+    }
+
+    g_free( dctx->super.vtable );
+    dctx->super.vtable = NULL;
+    g_free( dctx );
+    LOG_RETURN_VOID();
+}
+
 static void 
 gtk_draw_clearRect( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rectP )
 {
@@ -910,7 +1007,7 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                      DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)(void*)p_dctx;
-    XP_Bool doDraw = !dctx->surface;
+    XP_Bool doDraw = !dctx->thumb.surface;
     if ( doDraw ) {
         gtkEraseRect( dctx, rect );
         dctx->scoreIsVertical = rect->height > rect->width;
@@ -1377,79 +1474,83 @@ allocAndSet( GdkRGBA* color, unsigned short red,
 } /* allocAndSet */
 
 DrawCtx* 
-gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
+gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals,
+                 DrawTarget dt )
 {
+    assertMainThread( &globals->cGlobals );
+
     GtkDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
+    DrawCtx* super = &dctx->super;
+    draw_super_init( super, dt );
 
-    size_t tableSize = sizeof(*(((GtkDrawCtx*)dctx)->vtable));
-    dctx->vtable = g_malloc( tableSize );
-    /* void** ptr = (void**)dctx->vtable; */
-    /* void** end = (void**)(((unsigned char*)ptr) + tableSize); */
-    /* while ( ptr < end ) { */
-    /*     *ptr++ = draw_doNothing; */
-    /* } */
+    size_t tableSize = sizeof(*(super->vtable));
+    super->vtable = g_malloc0( tableSize );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_destroy, gtk );
+
+    SET_VTABLE_ENTRY( super->vtable, draw_clearRect, gtk );
 
 #ifdef DRAW_WITH_PRIMITIVES
-    SET_VTABLE_ENTRY( dctx->vtable, draw_setClip, gtk_prim );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_frameRect, gtk_prim );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_invertRect, gtk_prim );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawString, gtk_prim );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawBitmap, gtk_prim );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureText, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_setClip, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_frameRect, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_invertRect, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawString, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawBitmap, gtk_prim );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureText, gtk_prim );
 
-    InitDrawDefaults( dctx->vtable );
+    InitDrawDefaults( super->vtable );
 #else
-    SET_VTABLE_ENTRY( dctx->vtable, draw_beginDraw, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_endDraw, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_beginDraw, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_endDraw, gtk );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_vertScrollBoard, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_boardBegin, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawCell, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_invertCell, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_objFinished, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_vertScrollBoard, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_trayBegin, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTile, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTileBack, gtk );
 #ifdef POINTER_SUPPORT
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileMidDrag, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTileMidDrag, gtk );
 #endif
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTrayDivider, gtk );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawBoardArrow, gtk );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_scoreBegin, gtk );
 
 #ifdef XWFEATURE_SCOREONEPASS
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayers, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawRemText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_score_drawPlayers, gtk );
 #else
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawRemText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureRemText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawRemText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureScoreText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_score_drawPlayer, gtk );
 #endif
-    SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_score_pendingScore, gtk );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawTimer, gtk );
 
 #ifdef XWFEATURE_MINIWIN
-    SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_getMiniWText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_measureMiniWText, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_drawMiniWindow, gtk );
 #endif
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );
+    SET_VTABLE_ENTRY( super->vtable, draw_dictChanged, gtk );
 #endif
 
-    assertDrawCallbacksSet( dctx->vtable );
-
-    dctx->drawing_area = drawing_area;
+    if ( DT_THUMB == dt ) {
+        SET_VTABLE_ENTRY( super->vtable, draw_getThumbSize, gtk_thumb );
+        SET_VTABLE_ENTRY( super->vtable, draw_getThumbData, gtk_thumb );
+    } else {
+        dctx->screen.drawing_area = drawing_area;
+    }
     dctx->globals = globals;
 
-    XP_ASSERT( !!gtk_widget_get_window(drawing_area) );
+    XP_ASSERT( DT_SCREEN != dt || !!gtk_widget_get_window(drawing_area) );
 
     allocAndSet( &dctx->black, 0x0000, 0x0000, 0x0000 );
     allocAndSet( &dctx->grey, 0x7FFF, 0x7FFF, 0x7FFF );
@@ -1473,41 +1574,42 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
 } /* gtkDrawCtxtMake */
 
 void
-addSurface( GtkDrawCtx* dctx, int width, int height )
+addSurface( DrawCtx* p_dctx, int width, int height )
 {
-    XP_ASSERT( !dctx->surface );
-    dctx->surface = cairo_image_surface_create( CAIRO_FORMAT_RGB24, width, height );
-    XP_ASSERT( !!dctx->surface );
+    XP_ASSERT( DT_THUMB == p_dctx->dt );
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_ASSERT( !dctx->thumb.surface );
+    dctx->thumb.width = width;
+    dctx->thumb.height = height;
+    dctx->thumb.surface =
+        cairo_image_surface_create( CAIRO_FORMAT_RGB24, width, height );
+    XP_ASSERT( !!dctx->thumb.surface );
 }
 
-void
-removeSurface( GtkDrawCtx* dctx )
+XP_Bool
+gtk_draw_does_offscreen(GtkDrawCtx* XP_UNUSED(draw))
 {
-    XP_ASSERT( !!dctx->surface );
-    cairo_surface_destroy( dctx->surface );
-    dctx->surface = NULL;
-}
-
-static cairo_status_t
-write_func( void *closure, const unsigned char *data,
-            unsigned int length )
-{
-    XWStreamCtxt* stream = (XWStreamCtxt*)closure;
-    stream_putBytes( stream, data, length );
-    return CAIRO_STATUS_SUCCESS;
-}
-
-void
-getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream )
-{
-    LOG_FUNC();
-    XP_ASSERT( !!dctx->surface );
-#ifdef DEBUG
-    cairo_status_t status =
+#ifdef DRAW_OFFSCREEN
+    return XP_TRUE;
+#else
+    return XP_FALSE;
 #endif
-        cairo_surface_write_to_png_stream( dctx->surface,
-                                           write_func, stream );
-    XP_ASSERT( CAIRO_STATUS_SUCCESS == status );
+}
+
+cairo_surface_t*
+gtk_draw_get_surface( GtkDrawCtx* draw )
+{
+    cairo_surface_t* result = NULL;
+#ifdef DRAW_OFFSCREEN
+    if ( draw->screen.haveData ) {
+        result = draw->screen.surface;
+        draw->screen.haveData = XP_FALSE;
+    }
+#else
+    XP_USE(draw);
+    XP_ASSERT(0);
+#endif
+    return result;
 }
 
 void

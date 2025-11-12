@@ -36,13 +36,11 @@ typedef struct LinuxBMStruct {
     XP_U8 nBytes;
 } LinuxBMStruct;
 
-int initListenerSocket( int port );
-XP_S16 linux_send( XWEnv xwe, const SendMsgsPacket* const msgs,
-                   XP_U16 streamVersion, const CommsAddrRec* addrRec,
-                   CommsConnType conType, XP_U32 gameID, void* closure );
-XP_S16 linux_send_invt( XWEnv xwe, const NetLaunchInfo* nli,
-                        XP_U32 createdStamp, const CommsAddrRec* addr,
-                        CommsConnType conType, void* closure );
+void cg_init(CommonGlobals* cGlobals, cg_destructor proc);
+CommonGlobals* _cg_ref(CommonGlobals* cGlobals, const char* proc, int line);
+void _cg_unref(CommonGlobals* cGlobals, const char* proc, int line);
+#define cg_ref(cg) _cg_ref(cg, __func__, __LINE__)
+#define cg_unref(cg) _cg_unref(cg, __func__, __LINE__)
 
 #ifdef COMMS_HEARTBEAT
 void linux_reset( void* closure );
@@ -57,11 +55,11 @@ XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals,
                                   const unsigned char* bufPtr, XP_U16 nBytes );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
-void catGameHistory( CommonGlobals* cGlobals );
-void catOnClose( XWStreamCtxt* stream, XWEnv xwe, void* closure );
+void catGameHistory( LaunchParams* params, GameRef gr );
+void catAndClose( XWStreamCtxt* stream );
 void sendOnClose( XWStreamCtxt* stream, XWEnv xwe, void* closure );
 
-void catFinalScores( const CommonGlobals* cGlobals, XP_S16 quitter );
+void catFinalScores( LaunchParams* params, GameRef gr, XP_S16 quitter );
 XP_Bool file_exists( const char* fileName );
 XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name );
 XWStreamCtxt* streamFromDB( CommonGlobals* cGlobals );
@@ -69,7 +67,11 @@ void writeToFile( XWStreamCtxt* stream, XWEnv xwe, void* closure );
 XP_Bool getDictPath( const LaunchParams *params, const char* name, 
                      char* result, int resultLen );
 GSList* listDicts( const LaunchParams *params );
+#ifdef XWFEATURE_DEVICE_STORES
+# define linuxSaveGame( cGlobals )
+#else
 void linuxSaveGame( CommonGlobals* cGlobals );
+#endif
 
 void linux_close_socket( CommonGlobals* cGlobals );
 
@@ -83,16 +85,9 @@ XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
                        BoardObjectType* nxtP );
 #endif
 
-void read_pipe_then_close( CommonGlobals* cGlobals, 
-                           const TransportProcs* procs );
-void do_nbs_then_close( CommonGlobals* cGlobals, 
-                        const TransportProcs* procs );
-
-void setupLinuxUtilCallbacks( XW_UtilCtxt* util );
+void setupLinuxUtilCallbacks( XW_UtilCtxt* util, XP_Bool useCurses );
 void assertUtilCallbacksSet( XW_UtilCtxt* util );
 void assertDrawCallbacksSet( const DrawCtxVTable* vtable );
-void setupUtil( CommonGlobals* cGlobals );
-void disposeUtil( CommonGlobals* cGlobals );
 
 void sendRelayReg( LaunchParams* params, sqlite3* pDb );
 void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw, 
@@ -109,13 +104,24 @@ void makeSelfAddress( CommsAddrRec* selfAddr, const LaunchParams* params );
 
 unsigned int makeRandomInt();
 bool linuxOpenGame( CommonGlobals* cGlobals );
-void tryConnectToServer( CommonGlobals* cGlobals );
 void ensureLocalPlayerNames( LaunchParams* params, CurGameInfo* gi );
 void cancelTimers( CommonGlobals* cGlobals );
+CommonAppGlobals* getCag( const XW_UtilCtxt* util );
+CommonGlobals* globalsForGameRef( CommonAppGlobals* cag, GameRef gr,
+                                  XP_Bool allocMissing );
+CommonGlobals* globalsForUtil( const XW_UtilCtxt* uc,
+                               XP_Bool allocMissing );
+void forgetGameGlobals( CommonAppGlobals* cag, CommonGlobals* cGlobals );
+
+void cpFromLP( CommonPrefs* cp, const LaunchParams* params );
 
 RematchOrder roFromStr(const char* rematchOrder );
 
 /* void initParams( LaunchParams* params ); */
 /* void freeParams( LaunchParams* params ); */
+
+void assertMainThread(const CommonGlobals* cGlobals );
+
+XP_Bool getAndClear( GameChangeEvent evt, GameChangeEvents* gces );
 
 #endif

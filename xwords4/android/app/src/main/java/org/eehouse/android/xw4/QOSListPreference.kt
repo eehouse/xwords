@@ -51,7 +51,7 @@ class QOSListPreference(private val mContext: Context,
     {
         if ( null == mEntries ) {
             val enums = MqttQos.entries.map{it.toString()}.toMutableList()
-            val curQos = MqttQos.entries[XwJNI.dvc_getQOS()]
+            val curQos = MqttQos.entries[MQTTUtils.getQOS()]
             val str = LocUtils
                 .getString(mContext, R.string.qos_prefs_default_expl_fmt, curQos)
             enums.add(str)

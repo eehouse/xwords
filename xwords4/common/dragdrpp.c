@@ -138,7 +138,7 @@ ddStartBoard( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy )
 #ifdef XWFEATURE_SEARCHLIMIT
         } else if ( !board->gi->hintsNotAllowed && board->gi->allowHintRect
                     && trayVisible ) {
-            if ( !util_altKeyDown(board->util, xwe) ) {
+            if ( !util_altKeyDown(*board->utilp, xwe) ) {
                 ds->dtype = DT_HINTRGN;
             } else if ( canScroll ) {
                 ds->dtype = DT_BOARD;
@@ -691,7 +691,7 @@ startScrollTimerIf( BoardCtxt* board, XWEnv xwe )
         if ( onBorderCanScroll( board, SCROLL_H, ds->cur.u.board.col, &ignore )
              || onBorderCanScroll( board, SCROLL_V, ds->cur.u.board.row,
                                    &ignore ) ) {
-            util_setTimer( board->util, xwe, TIMER_PENDOWN, 0,
+            util_setTimer( *board->utilp, xwe, TIMER_PENDOWN, 0,
                            scrollTimerProc, (void*) board );
             ds->scrollTimerSet = XP_TRUE;
         } else {

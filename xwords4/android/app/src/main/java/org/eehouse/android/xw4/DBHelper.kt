@@ -27,6 +27,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.text.TextUtils
 import org.eehouse.android.xw4.BuildConfig.DB_NAME
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 import java.util.Arrays
@@ -378,9 +379,8 @@ class DBHelper(private val mContext: Context) :
             val colIndex = cursor.getColumnIndex(columns[0])
             while (cursor.moveToNext()) {
                 val code = cursor.getInt(colIndex)
-                val isoCode = XwJNI.lcToLocaleJ(code)
-                map[code] = isoCode!!
-                Log.d(TAG, "added %d => %s", code, isoCode)
+                map[code] = ISOCode.newIf(Device.lcToLocale(code))!!
+                // Log.d(TAG, "added $code => ${map[code]}")
             }
 
             // Then update the DB
@@ -470,7 +470,8 @@ class DBHelper(private val mContext: Context) :
         )
         values.put(EXPANDED, 1)
         val newGroup = insert(db, TABLE_NAMES.GROUPS, values)
-        XWPrefs.setDefaultNewGameGroup(mContext, newGroup)
+        // XWPrefs.setDefaultNewGameGroup(mContext, newGroup)
+        // Assert.failDbg()
     }
 
     private fun createStudyTable(db: SQLiteDatabase) {

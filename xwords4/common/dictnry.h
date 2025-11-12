@@ -21,7 +21,7 @@
 #define __DICTNRY_H__
 
 /* #ifdef DEBUG */
-/* # define DEBUG_REF 1 */
+/* # define DEBUG_DICT_REF 1 */
 /* #endif */
 
 #include <pthread.h>
@@ -52,15 +52,12 @@ typedef struct SpecialBitmaps {
     XP_Bitmap smallBM;
 } SpecialBitmaps;
 
-typedef struct _XP_Bitmaps {
-    XP_U16 nBitmaps;
-    XP_Bitmap bmps[2];      /* 2 is private, may change */
-} XP_Bitmaps;
-
 #define HEADERFLAGS_DUPS_SUPPORTED_BIT 0x0001
 
+typedef void (*DictDestructor)( DictionaryCtxt* dict, XWEnv xwe );
+
 struct DictionaryCtxt {
-    void (*destructor)( DictionaryCtxt* dict, XWEnv xwe );
+    DictDestructor destructor;
 
     array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, 
                                         XP_U32 index );
@@ -153,23 +150,23 @@ struct DictionaryCtxt {
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((dict)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
 
-const DictionaryCtxt* p_dict_ref( const DictionaryCtxt* dict, XWEnv xwe
-#ifdef DEBUG_REF
+const DictionaryCtxt* p_dict_ref( const DictionaryCtxt* dict
+#ifdef DEBUG_DICT_REF
                                   ,const char* func, const char* file, int line
 #endif
  );
 void p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
-#ifdef DEBUG_REF
+#ifdef DEBUG_DICT_REF
                    ,const char* func, const char* file, int line
 #endif
  );
 void dict_unref_all( PlayerDicts* dicts, XWEnv xwe );
 
-#ifdef DEBUG_REF
-# define dict_ref(dict, xwe) p_dict_ref( dict, xwe, __func__, __FILE__, __LINE__ )
+#ifdef DEBUG_DICT_REF
+# define dict_ref(dict) p_dict_ref( dict, __func__, __FILE__, __LINE__ )
 # define dict_unref(dict, xwe) p_dict_unref( (dict), (xwe), __func__, __FILE__, __LINE__ )
 #else
-# define dict_ref(dict, xwe) p_dict_ref( (dict), (xwe) )
+# define dict_ref(dict) p_dict_ref( (dict) )
 # define dict_unref(dict, xwe) p_dict_unref( (dict), (xwe) )
 #endif
 
@@ -234,7 +231,7 @@ XP_Bool parseCommon( DictionaryCtxt* dict, XWEnv xwe, const XP_U8** ptrp,
 XP_Bool checkSanity( DictionaryCtxt* dict, XP_U32 numEdges );
 
 /* To be called only by subclasses!!! */
-void dict_super_init( MPFORMAL DictionaryCtxt* ctxt );
+void dict_super_init( MPFORMAL DictionaryCtxt* ctxt, DictDestructor proc );
 void dict_super_destroy( DictionaryCtxt* ctxt );
 
 /* Must be implemented by subclasses */

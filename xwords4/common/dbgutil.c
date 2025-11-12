@@ -88,6 +88,26 @@ StackMoveType_2str( StackMoveType typ )
 #endif /* ENABLE_LOGGING */
 
 #ifdef DEBUG
+
+void
+miToStr(const MoveInfo* mi, XP_UCHAR buf[], XP_U16* bufLen )
+{
+    XP_ASSERT( !!mi );
+    XP_LOGFF( "nTiles: %d", mi->nTiles );
+    XP_U16 offset = 0;
+    offset += XP_SNPRINTF( &buf[offset], *bufLen-offset,
+                           "nTiles: %d; common: %d, hor: %s; [",
+                           mi->nTiles, mi->commonCoord,
+                           boolToStr(mi->isHorizontal) );
+    for ( int ii = 0; ii < mi->nTiles; ++ii ) {
+        const MoveInfoTile* mit = &mi->tiles[ii];
+        offset += XP_SNPRINTF( &buf[offset], *bufLen-offset,
+                               "{tile: %d, coord: %d}, ",
+                               mit->tile, mit->varCoord );
+    }
+    offset += XP_SNPRINTF( &buf[offset], *bufLen-offset, "]");
+}
+
 void
 fmtTileSet(const TrayTileSet* tts, XP_UCHAR buf[], XP_U16 bufLen)
 {
@@ -104,7 +124,6 @@ void
 assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
                     Tile blankTile )
 {
-    LOG_FUNC();
     XP_ASSERT( move->nTiles <= tts->nTiles );
     for ( int ii = 0; ii < move->nTiles; ++ii ) {
         Tile moveTile = move->tiles[ii].tile;
@@ -158,7 +177,6 @@ devIDTypeToStr(DevIDType typ)
     }
 }
 
-#undef CASESTR
 typedef void (*ProcPtr)();
 void
 assertTableFull( void* table, size_t sizeInBytes, const XP_UCHAR* tableName )
@@ -178,5 +196,24 @@ assertTableFull( void* table, size_t sizeInBytes, const XP_UCHAR* tableName )
         ++proc;
     }
 }
+
+const XP_UCHAR*
+whyToStr( XWTimerReason why )
+{
+    switch( why ) {
+        CASESTR(TIMER_PENDOWN);
+        CASESTR(TIMER_TIMERTICK);
+        CASESTR(TIMER_COMMS);
+#ifdef XWFEATURE_SLOW_ROBOT
+        CASESTR(TIMER_SLOWROBOT);
+#endif
+        CASESTR(TIMER_DUP_TIMERCHECK);
+    default:
+        XP_ASSERT(0);
+        return NULL;
+    }
+}
+
+#undef CASESTR
 
 #endif  /* DEBUG */

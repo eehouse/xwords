@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,18 +17,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef PLATFORM_GTK
+#ifndef _GTKEDALR_H_
+#define _GTKEDALR_H_
 
-#include "linuxserver.h"
+#include "comtypes.h"
 
+/* Present editable text with buf contents to start, with expl as label above
+ * it. If not cancelled, return with the edited text in buf.
+ */
+XP_Bool gtkEditAlert( GtkWidget* parent, const gchar* expl,
+                      XP_UCHAR buf[], XP_U16 bufLen );
 
-ServerCtxt*
-linux_make_server( char* dictName, XP_U16 totalPlayerCount )
-{
-    return NULL;
-} /* linux_make_server */
-
-ServerCtxt*
-linux_make_serverProxy( char* serverAddrStr, XP_U16 totalPlayerCount )
-{
-    return NULL;
-} /* linux_make_serverProxy */
+#endif
+#endif

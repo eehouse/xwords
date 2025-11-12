@@ -28,6 +28,7 @@
 #include "dbgutil.h"
 #include "memstream.h"
 #include "strutils.h"
+#include "chatp.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef CPLUS
@@ -35,6 +36,9 @@ extern "C" {
 #endif
 
 #define MAX_PASSES 2 /* how many times can all players pass? */
+
+enum { HAVE_CHAT_BIT = 1,
+};
 
 /****************************** prototypes ******************************/
 typedef void (*MovePrintFuncPre)(ModelCtxt*, XWEnv, XP_U16, const StackEntry*, void*);
@@ -89,42 +93,49 @@ static void assertDiffTurn( ModelCtxt* model, XWEnv xwe, XP_U16 turn,
  *
  ****************************************************************************/
 ModelCtxt*
-model_make( MPFORMAL XWEnv xwe, const DictionaryCtxt* dict,
-            const PlayerDicts* dicts, XW_UtilCtxt* util, XP_U16 nCols )
+model_make( XWEnv xwe, const DictionaryCtxt* dict,
+            const PlayerDicts* dicts, XW_UtilCtxt** utilp, XP_U16 nCols )
 {
-    ModelCtxt* result = (ModelCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
+#endif
+    ModelCtxt* result = (ModelCtxt*)XP_CALLOC( mpool, sizeof( *result ) );
     if ( result != NULL ) {
-        XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->vol.mpool, mpool);
 
-        result->vol.util = util;
-        result->vol.dutil = util_getDevUtilCtxt( util, xwe );
+        result->vol.utilp = utilp;
+        result->vol.dutil = util_getDevUtilCtxt( *utilp );
         result->vol.wni.proc = recordWord;
         result->vol.wni.closure = &result->vol.rwi;
 
-        XP_ASSERT( !!util->gameInfo );
-        result->vol.gi = util->gameInfo;
+        result->vol.gi = util_getGI(*utilp);
 
         model_setSize( result, nCols );
 
         model_setDictionary( result, xwe, dict );
         model_setPlayerDicts( result, xwe, dicts );
+
+        if ( SERVER_STANDALONE != result->vol.gi->serverRole ) {
+             result->vol.chat = cht_init( xwe, utilp );
+        }
     }
 
     return result;
 } /* model_make */
 
 ModelCtxt* 
-model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
+model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                       const DictionaryCtxt* dict, const PlayerDicts* dicts,
-                      XW_UtilCtxt* util )
+                      XW_UtilCtxt** utilp )
 {
-    ModelCtxt* model;
-    XP_U16 nCols;
     XP_U16 version = stream_getVersion( stream );
+    XP_U32 flags = STREAM_VERS_BIGGERGI <= version
+        ? stream_getU32VL(stream) : 0;
+    XP_ASSERT( HAVE_CHAT_BIT == (flags | HAVE_CHAT_BIT) ); /* no other bits set */
 
     XP_ASSERT( !!dict || !!dicts );
 
+    XP_U16 nCols;
     if ( 0 ) {
 #ifdef STREAM_VERS_BIGBOARD
     } else if ( STREAM_VERS_BIGBOARD <= version ) {
@@ -138,24 +149,28 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 
     XP_U16 nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
 
-    model = model_make( MPPARM(mpool) xwe, dict, dicts, util, nCols );
+    ModelCtxt* model = model_make( xwe, dict, dicts, utilp, nCols );
     model->nPlayers = nPlayers;
 
+    ModelVolatiles* vol = &model->vol;
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= version ) {
-        model->vol.nBonuses = stream_getBits( stream, 7 );
-        if ( 0 < model->vol.nBonuses ) {
-            model->vol.bonuses = 
-                XP_MALLOC( model->vol.mpool,
-                           model->vol.nBonuses * sizeof( model->vol.bonuses[0] ) );
-            for ( int ii = 0; ii < model->vol.nBonuses; ++ii ) {
-                model->vol.bonuses[ii] = stream_getBits( stream, 4 );
+        vol->nBonuses = stream_getBits( stream, 7 );
+        if ( 0 < vol->nBonuses ) {
+            vol->bonuses = XP_MALLOC( vol->mpool,
+                                      vol->nBonuses * sizeof( vol->bonuses[0] ));
+            for ( int ii = 0; ii < vol->nBonuses; ++ii ) {
+                vol->bonuses[ii] = stream_getBits( stream, 4 );
             }
         }
     }
 #endif
 
-    stack_loadFromStream( model->vol.stack, stream );
+    stack_loadFromStream( vol->stack, stream );
+
+    if ( flags & HAVE_CHAT_BIT ) {
+        cht_loadFromStream( vol->chat, xwe, stream );
+    }
 
     MovePrintFuncPre pre = NULL;
     void* closure = NULL;
@@ -165,7 +180,7 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
     closure = &state;
 #endif
 
-    buildModelFromStack( model, xwe, model->vol.stack, XP_FALSE, 0,
+    buildModelFromStack( model, xwe, vol->stack, XP_FALSE, 0,
                          (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL,
                          pre, (MovePrintFuncPost)NULL, closure );
 
@@ -179,9 +194,15 @@ model_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
 } /* model_makeFromStream */
 
 void
-model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream )
+model_writeToStream( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream )
 {
-    XP_U16 ii;
+    const ModelVolatiles* vol = &model->vol;
+    XP_U32 flags = 0;
+    if ( cht_haveToWrite( vol->chat ) ) {
+        flags |= HAVE_CHAT_BIT;
+    }
+    stream_putU32VL( stream, flags );
+
 #ifdef STREAM_VERS_BIGBOARD
     XP_ASSERT( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) );
     stream_putBits( stream, NUMCOLS_NBITS_5, model->nCols );
@@ -194,15 +215,19 @@ model_writeToStream( const ModelCtxt* model, XWStreamCtxt* stream )
     stream_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
 
 #ifdef STREAM_VERS_BIGBOARD
-    stream_putBits( stream, 7, model->vol.nBonuses );
-    for ( ii = 0; ii < model->vol.nBonuses; ++ii ) {
-        stream_putBits( stream, 4, model->vol.bonuses[ii] );
+    stream_putBits( stream, 7, vol->nBonuses );
+    for ( int ii = 0; ii < vol->nBonuses; ++ii ) {
+        stream_putBits( stream, 4, vol->bonuses[ii] );
     }
 #endif
 
-    stack_writeToStream( model->vol.stack, stream );
+    stack_writeToStream( vol->stack, stream );
 
-    for ( ii = 0; ii < model->nPlayers; ++ii ) {
+    if ( flags & HAVE_CHAT_BIT ) {
+        cht_writeToStream( vol->chat, xwe, stream );
+    }
+
+    for ( int ii = 0; ii < model->nPlayers; ++ii ) {
         writePlayerCtxt( model, stream, &model->players[ii] );
     }
 } /* model_writeToStream */
@@ -290,13 +315,17 @@ void
 model_destroy( ModelCtxt* model, XWEnv xwe )
 {
     model_unrefDicts( model, xwe );
-    stack_destroy( model->vol.stack );
-    /* is this it!? */
-    if ( !!model->vol.bonuses ) {
-        XP_FREE( model->vol.mpool, model->vol.bonuses );
+    ModelVolatiles* vol = &model->vol;
+    stack_destroy( vol->stack );
+    if ( SERVER_STANDALONE != vol->gi->serverRole ) {
+        cht_destroy( vol->chat );
     }
-    XP_FREE( model->vol.mpool, model->vol.tiles );
-    XP_FREE( model->vol.mpool, model );
+    /* is this it!? */
+    if ( !!vol->bonuses ) {
+        XP_FREE( vol->mpool, vol->bonuses );
+    }
+    XP_FREE( vol->mpool, vol->tiles );
+    XP_FREE( vol->mpool, model );
 } /* model_destroy */
 
 XP_U32
@@ -610,7 +639,7 @@ void
 model_setDictionary( ModelCtxt* model, XWEnv xwe, const DictionaryCtxt* dict )
 {
     const DictionaryCtxt* oldDict = model->vol.dict;
-    model->vol.dict = dict_ref( dict, xwe );
+    model->vol.dict = dict_ref( dict );
     
     if ( !!dict ) {
         setStackBits( model, dict );
@@ -634,7 +663,7 @@ model_setPlayerDicts( ModelCtxt* model, XWEnv xwe, const PlayerDicts* dicts )
             if ( oldDict != newDict ) {
                 XP_ASSERT( NULL == newDict || NULL == gameDict 
                            || dict_tilesAreSame( gameDict, newDict ) );
-                model->vol.dicts.dicts[ii] = dict_ref( newDict, xwe );
+                model->vol.dicts.dicts[ii] = dict_ref( newDict );
 
                 notifyDictListeners( model, xwe, ii, oldDict, newDict );
                 setStackBits( model, newDict );
@@ -1324,32 +1353,65 @@ void
 model_makeTurnFromMoveInfo( ModelCtxt* model, XWEnv xwe, XP_U16 playerNum,
                             const MoveInfo* newMove )
 {
-    XP_U16 col, row, ii;
-    XP_U16* other;
-    const MoveInfoTile* tinfo;
     Tile blank = dict_getBlankTile( model_getDictionary( model ) );
     XP_U16 numTiles = newMove->nTiles;
 
+    XP_U16 col, row;
     col = row = newMove->commonCoord; /* just assign both */
-    other = newMove->isHorizontal? &col: &row;
+    XP_U16* other = newMove->isHorizontal? &col: &row;
 
-    for ( tinfo = newMove->tiles, ii = 0; ii < numTiles; ++ii, ++tinfo ) {
-        XP_S16 tileIndex;
+    for ( int ii = 0; ii < numTiles; ++ii ) {
+        const MoveInfoTile* tinfo = &newMove->tiles[ii];
         Tile tile = tinfo->tile;
 
         if ( IS_BLANK(tile) ) {
             tile = blank;
         }
 
-        tileIndex = model_trayContains( model, playerNum, tile );
-
-        XP_ASSERT( tileIndex >= 0 );
+        XP_S16 tileIndex = model_trayContains( model, playerNum, tile );
+        if ( tileIndex < 0 ) {
+            XP_LOGFF( "error: tile with val %d not in tray", tile );
+            XP_ASSERT( 0 );
+        }
 
         *other = tinfo->varCoord;
         model_moveTrayToBoard( model, xwe, (XP_S16)playerNum, col, row, tileIndex,
                                (Tile)(tinfo->tile & TILE_VALUE_MASK) );
     }
 } /* model_makeTurnFromMoveInfo */
+
+void
+model_chatReceived( ModelCtxt* model, XWEnv xwe, XP_UCHAR* msg, XP_S16 from,
+                    XP_U32 timestamp )
+{
+    cht_chatReceived( model->vol.chat, xwe, msg, from, timestamp );
+}
+
+XP_U16
+model_countChats( ModelCtxt* model )
+{
+    return !!model->vol.chat ? cht_countChats( model->vol.chat ) : 0;
+}
+
+void
+model_getChat( ModelCtxt* model, XP_U16 nn, XP_UCHAR* buf, XP_U16* bufLen,
+               XP_S16* from, XP_U32* timestamp )
+{
+    cht_getChat( model->vol.chat, nn, buf, bufLen, from, timestamp );
+}
+
+void
+model_deleteChats( ModelCtxt* model )
+{
+    cht_deleteAll( model->vol.chat );
+}
+
+void
+model_addChat( ModelCtxt* model, XWEnv xwe, const XP_UCHAR* msg,
+               XP_S16 from, XP_U32 timestamp )
+{
+    cht_addChat( model->vol.chat, xwe, msg, from, timestamp );
+}
 
 void
 model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts, 
@@ -1554,7 +1616,7 @@ model_askBlankTile( ModelCtxt* model, XWEnv xwe, XP_U16 turn, XP_U16 col, XP_U16
     model_packTilesUtil( model, NULL, XP_FALSE,
                          &nUsed, tfaces, tiles );
 
-    util_notifyPickTileBlank( model->vol.util, xwe, turn, col, row,
+    util_notifyPickTileBlank( *model->vol.utilp, xwe, turn, col, row,
                               tfaces, nUsed );
     return tiles[0];
 } /* model_askBlankTile */
@@ -2044,12 +2106,48 @@ model_getPlayerTile( const ModelCtxt* model, XP_S16 turn, XP_S16 index )
     return player->trayTiles.tiles[index];
 } /* model_getPlayerTile */
 
+void
+model_setSecondsUsed( ModelCtxt* model, XP_U16 turn, XP_U16 newSeconds )
+{
+    model->players[turn].secondsUsed = newSeconds;
+}
+
+void
+model_augmentSecondsUsed( ModelCtxt* model, XP_U16 turn, XP_U16 bySeconds )
+{
+    model->players[turn].secondsUsed += bySeconds;
+}
+
+XP_U32
+model_getSecondsUsed( const ModelCtxt* model, XP_U16 turn )
+{
+    XP_U32 secondsUsed = model->players[turn].secondsUsed;
+    XP_LOGFF( "(turn: %d) -> %d", turn,  secondsUsed );
+    return secondsUsed;
+}
+
+XP_U16
+model_timePenalty( const ModelCtxt* model, XP_U16 playerNum )
+{
+    const CurGameInfo* gi = model->vol.gi;
+    XP_S16 seconds = (gi->gameSeconds / gi->nPlayers);
+    XP_U32 secondsUsed = model_getSecondsUsed( model, playerNum );
+    XP_U16 result = 0;
+
+    seconds -= secondsUsed;
+    if ( seconds < 0 ) {
+        seconds = -seconds;
+        seconds += 59;
+        result = (seconds/60) * 10;
+    }
+    return result;
+}
+
 const TrayTileSet*
 model_getPlayerTiles( const ModelCtxt* model, XP_S16 turn )
 {
-    const PlayerCtxt* player;
     XP_ASSERT( turn >= 0 );
-    player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
 
     return (const TrayTileSet*)&player->trayTiles;
 } /* model_getPlayerTile */
@@ -2234,6 +2332,8 @@ model_setTrayListener( ModelCtxt* model, TrayListener tl, void* data )
 void
 model_setDictListener( ModelCtxt* model, DictListener dl, void* data )
 {
+    XP_ASSERT( !model->vol.dictListenerFunc
+               || model->vol.dictListenerFunc == dl );
     model->vol.dictListenerFunc = dl;
     model->vol.dictListenerData = data;
 } /* model_setDictListener */
@@ -2455,7 +2555,7 @@ printMovePost( ModelCtxt* model, XWEnv xwe, XP_U16 XP_UNUSED(moveN),
 
             break;
         case PAUSE_TYPE:
-            util_formatPauseHistory( model->vol.util, xwe, stream, entry->u.pause.pauseType,
+            util_formatPauseHistory( *model->vol.utilp, xwe, stream, entry->u.pause.pauseType,
                                      entry->playerNum, closure->lastPauseWhen,
                                      entry->u.pause.when, entry->u.pause.msg );
             closure->lastPauseWhen = entry->u.pause.when;
@@ -2495,9 +2595,8 @@ makeTmpModel( const ModelCtxt* model, XWEnv xwe, XWStreamCtxt* stream,
               MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
               void* closure )
 {
-    ModelCtxt* tmpModel = model_make( MPPARM(model->vol.mpool) 
-                                      xwe, model_getDictionary(model), NULL,
-                                      model->vol.util, model_numCols(model) );
+    ModelCtxt* tmpModel = model_make( xwe, model_getDictionary(model), NULL,
+                                      model->vol.utilp, model_numCols(model) );
     tmpModel->loaner = model;
     model_setNPlayers( tmpModel, model->nPlayers );
 

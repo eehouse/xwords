@@ -168,9 +168,9 @@ void
 drawScoreBoard( BoardCtxt* board, XWEnv xwe )
 {
     if ( board->scoreBoardInvalid ) {
-        short ii;
 
         XP_U16 nPlayers = board->gi->nPlayers;
+        XP_LOGFF( "nPlayers = %d", nPlayers );
         XP_ASSERT( nPlayers <= MAX_NUM_PLAYERS );
         if ( nPlayers > 0 ) {
             ModelCtxt* model = board->model;
@@ -239,6 +239,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                 XP_MEMSET( &datum, 0, sizeof(datum) );
                 totalDim = 0;
                 XP_U16 missingPlayers = server_getMissingPlayers( board->server );
+                int ii;
                 for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
                     const LocalPlayer* lp = &board->gi->players[ii];
                     XP_Bool isMissing = 0 != ((1 << ii) & missingPlayers);
@@ -261,7 +262,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                     XP_ASSERT( !isMissing || dp->dsi.isRemote );
                     if ( dp->dsi.isRemote && isMissing ) {
                         XP_U16 len = VSIZE(dp->dsi.name);
-                        util_getInviteeName( board->util, xwe, ii, dp->dsi.name, &len );
+                        util_getInviteeName( *board->utilp, xwe, ii, dp->dsi.name, &len );
                         if ( !dp->dsi.name[0] || len == 0 ) {
                             const XP_UCHAR* tmp = dutil_getUserString( board->dutil, xwe,
                                                                        STR_PENDING_PLAYER );
@@ -284,6 +285,7 @@ drawScoreBoard( BoardCtxt* board, XWEnv xwe )
                 }
 
                 if ( 0 < totalDim ) {
+                    int ii;
                     gotPct = (*adjustDim * 100) / totalDim;
                     for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
                         if ( isVertical ) {
@@ -416,7 +418,7 @@ handlePenUpScore( BoardCtxt* board, XWEnv xwe, XP_U16 xx, XP_U16 yy, XP_Bool alt
     XP_S16 rectNum = figureScoreRectTapped( board, xx, yy );
 
     if ( rectNum == CURSOR_LOC_REM ) {
-        util_remSelected( board->util, xwe );
+        util_remSelected( *board->utilp, xwe );
     } else if ( --rectNum >= 0 ) {
         XP_Bool canSwitch = board->gameOver || board->allowPeek;
         if ( altDown || !canSwitch ) {
@@ -459,7 +461,7 @@ penTimerFiredScore( const BoardCtxt* board, XWEnv xwe )
         }
         text = buf;
 #else
-        util_playerScoreHeld( board->util, xwe, player );
+        util_playerScoreHeld( *board->utilp, xwe, player );
 #endif
     }
 

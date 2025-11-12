@@ -25,6 +25,7 @@
 #include "comtypes.h"
 #include "mqttcon.h"
 #include "strutils.h"
+#include "linuxmain.h"
 
 typedef struct _PageData {
     CommsConnType pageType;
@@ -172,6 +173,15 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
 #endif
         }
     }
+}
+
+static void
+handle_self( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkInviteState* state = (GtkInviteState*)closure;
+    *(state->nPlayersP) = 1;
+    makeSelfAddress( state->addr, state->globals->cGlobals.params );
+    gtk_main_quit();
 }
 
 static void
@@ -440,6 +450,10 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
                                  (GCallback)handle_ok, &state );
     gtk_box_pack_start( GTK_BOX(hbox), state.okButton, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox),
+                        makeButton( "Invite self", (GCallback)handle_self,
+                                    &state ),
+                        FALSE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox),
                         makeButton( "Cancel", (GCallback)handle_cancel,
                                     &state ),
                         FALSE, TRUE, 0 );
@@ -449,6 +463,8 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
+    gtk_window_set_transient_for( GTK_WINDOW(dialog),
+                                  GTK_WINDOW(globals->window) );
     gtk_dialog_add_action_widget( GTK_DIALOG(dialog), vbox, 0 );
 
     gtk_widget_show_all( dialog );

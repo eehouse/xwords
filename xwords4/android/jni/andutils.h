@@ -29,9 +29,7 @@
 #include "andglobals.h"
 
 
-/* callback for streams */
-void and_send_on_close( XWStreamCtxt* stream, XWEnv xwe, void* closure );
-XWStreamCtxt* and_empty_stream( MPFORMAL AndGameGlobals* globals );
+XWStreamCtxt* and_tmp_stream( XW_DUtilCtxt* dutil );
 
 typedef struct _SetInfo {
     const char* name; 
@@ -98,12 +96,18 @@ jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
 jobject makeObject( JNIEnv* env, const char* className, const char* initSig, ... );
 jobject makeObjectEmptyConstr( JNIEnv* env, const char* className );
 
+jobject makeJSummary( JNIEnv* env, const GameSummary* gs, const CurGameInfo* gi );
+jobject makeJSummaryRec( JNIEnv* env, jobject jsum, const GameSummary* gs,
+                         const CurGameInfo* gi );
+
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
+ConnTypeSetBits getTypesFromSet( JNIEnv* env, jobject jtypeset );
 void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
 void setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
                         const char* fldName );
-jobject addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr );
+jobject conTypesToJ( JNIEnv* env, ConnTypeSetBits types );
+
 jobjectArray makeAddrArray( JNIEnv* env, XP_U16 count,
                             const CommsAddrRec* addrs );
 jint jenumFieldToInt( JNIEnv* env, jobject jobj, const char* field, 
@@ -116,6 +120,8 @@ jint jEnumToInt( JNIEnv* env, jobject jenum );
 #define AANDS(a) (a), VSIZE(a)
 void loadNLI( JNIEnv* env, NetLaunchInfo* nli, jobject jnli );
 void setNLI( JNIEnv* env, jobject jnli, const NetLaunchInfo* nli );
+
+void loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp );
 
 XP_U32 getCurSeconds( JNIEnv* env );
 
@@ -139,6 +145,8 @@ typedef struct _MTPData {
 void msgAndTopicProc( void* closure, const XP_UCHAR* topic,
                       const XP_U8* msgBuf, XP_U16 msgLen, XP_U8 qos );
 jobject wrapResults( MTPData* mtp );
+
+char* getClassName( JNIEnv* env, jobject obj, char* out, int outLen );
 
 void raw_log( const char* func, const char* fmt, ... );
 #ifdef DEBUG

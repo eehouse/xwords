@@ -32,15 +32,22 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
+import java.lang.ref.WeakReference
 import java.text.DateFormat
 
 import org.eehouse.android.xw4.DlgDelegate.Action
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.JNIThread
 
 class ChatDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.chat, R.menu.chat_menu) {
-    private var mRowid: Long = 0
+    private var mGR: GameRef? = null
     private var mCurPlayer = 0
     private var mNames: Array<String>? = null
     private val mActivity: Activity
@@ -73,73 +80,70 @@ class ChatDelegate(delegator: Delegator) :
             }
         })
         val args = arguments!!
-        mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
+        mGR = GameRef(args.getLong(GameUtils.INTENT_KEY_GAMEREF))
         mCurPlayer = args.getInt(INTENT_KEY_PLAYER, -1)
         mNames = args.getStringArray(INTENT_KEY_NAMES)
         mLocals = args.getBooleanArray(INTENT_KEY_LOCS)
 
-        val title = getString(
-            R.string.chat_title_fmt,
-            GameUtils.getName(mActivity, mRowid)
-        )
-        setTitle(title)
+        // val title = getString(
+        //     R.string.chat_title_fmt,
+        //     GameUtils.getName(mActivity, mRowid)
+        // )
+        setTitle("fixme")
 
         initMsgView()
     } // init
 
     private fun initMsgView()
     {
-        mLayout = findViewById(R.id.history) as RecyclerView
-        mLayout?.let {
-            it.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
-            mAdapter = ChatViewAdapter()
-            it.setAdapter(mAdapter)
-            it.addOnLayoutChangeListener { vv, ll, tt, rr, bb, ol, ot, or, ob -> scrollDown() }
+        if ( null == mLayout ) {
+            mLayout = findViewById(R.id.history) as RecyclerView
+            mLayout?.let { layout ->
+                Log.d(TAG, "initMsgView(): got layout")
+                layout.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
+                CoroutineScope(Job() + Dispatchers.IO).launch {
+                    val count = mGR!!.getChatCount()
+                    withContext(Dispatchers.Main) {
+                        Log.d(TAG, "count: $count")
+                        mAdapter = ChatViewAdapter(count)
+                        layout.setAdapter(mAdapter)
+                        layout.addOnLayoutChangeListener { vv, ll, tt, rr, bb, ol, ot, or, ob -> scrollDown() }
+                    }
+                }
+            }
+            scrollDown()
         }
-        scrollDown()
+    }
+
+    fun reload() {
+        mLayout = null
+        initMsgView()
     }
 
     override fun onResume() {
+        Log.d(TAG, "onResume()")
         super.onResume()
-        s_visibleThis = this
-        val startAndEnd = IntArray(2)
-        val curMsg = DBUtils.getCurChat(
-            mActivity, mRowid,
-            mCurPlayer, startAndEnd
-        )
-        if (null != curMsg && 0 < curMsg.length) {
-            mEdit!!.setText(curMsg)
-            mEdit!!.setSelection(startAndEnd[0], startAndEnd[1])
-        }
+        s_visibleThis = WeakReference<ChatDelegate>(this)
+        initMsgView()
     }
 
     override fun onPause() {
         s_visibleThis = null
-        val curText = mEdit!!.getText().toString()
-        DBUtils.setCurChat(
-            mActivity, mRowid, mCurPlayer, curText,
-            mEdit!!.selectionStart,
-            mEdit!!.selectionEnd
-        )
         super.onPause()
     }
 
-    private fun scrollDown() = mLayout!!
-        .scrollToPosition(mAdapter!!.getItemCount()-1)
+    private fun scrollDown() {
+        mAdapter?.let { adapter ->
+            mLayout?.scrollToPosition(adapter.getItemCount()-1)
+        }
+    }
 
     private fun handleSend() {
-        JNIThread.getRetained(mRowid).use { thread ->
-            if (null != thread) {
-                val edit = mEdit!!
-                val text = edit.getText().toString()
-                thread.sendChat(text)
-                val ts = Utils.getCurSeconds()
-                DBUtils.appendChatHistory(mActivity, mRowid, text, mCurPlayer, ts)
-                edit.setText(null)
-                initMsgView()
-            } else {
-                Log.e(TAG, "null thread; unable to send chat")
-            }
+        mEdit!!.let { edit ->
+            val msg = edit.getText().toString()
+            mGR!!.sendChat( msg )
+            edit.setText(null)
+            reload()
         }
     }
 
@@ -169,24 +173,21 @@ class ChatDelegate(delegator: Delegator) :
         val handled =
             when (action) {
                 Action.CLEAR_ACTION -> {
-                    DBUtils.clearChatHistory(mActivity, mRowid)
-                    initMsgView()
+                    mGR!!.deleteChats()
+                    reload()
                     true
                 }
                 else -> super.onPosButton(action, *params)
-        }
+            }
         return handled
     }
 
     inner class ChatViewHolder(view: View): RecyclerView.ViewHolder(view) {
     }
 
-    inner class ChatViewAdapter() : RecyclerView.Adapter<ChatViewHolder>() {
-        val mData: ArrayList<DBUtils.HistoryPair>
-        init {
-            mData = DBUtils.getChatHistory(mActivity, mRowid, mLocals!!)
-        }
-
+    inner class ChatViewAdapter(private val mCount: Int)
+        : RecyclerView.Adapter<ChatViewHolder>()
+    {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)
             : ChatViewHolder
         {
@@ -197,22 +198,26 @@ class ChatDelegate(delegator: Delegator) :
         override fun onBindViewHolder(holder: ChatViewHolder,
                                       position: Int)
         {
-            val pair = mData[position]
             val row = holder.itemView as ViewGroup
-            fillRow(row, pair)
+            CoroutineScope(Job() + Dispatchers.IO).launch {
+                val from = IntArray(1)
+                val ts = IntArray(1)
+                val msg = mGR!!.getNthChat( position, from, ts )
+                withContext(Dispatchers.Main) {
+                    fillRow(row, msg, from[0], ts[0])
+                }
+            }
         }
 
         override fun getItemCount(): Int {
-            val size = mData.size
-            Log.d(TAG, "getItemCount() => $size")
-            return size
+            return mCount
         }
 
-        private fun fillRow(row: ViewGroup, pair: DBUtils.HistoryPair)
+        private fun fillRow(row: ViewGroup, msg: String, playerIndx: Int,
+                            timestamp: Int )
         {
-            row.findViewById<TextView>(R.id.chat_row_text).text = pair.msg
+            row.findViewById<TextView>(R.id.chat_row_text).text = msg
 
-            val playerIndx = pair.playerIndx
             if (mCurPlayer == playerIndx) {
                 row.setBackgroundColor(-0XDFDFE0)
             }
@@ -222,7 +227,7 @@ class ChatDelegate(delegator: Delegator) :
             row.findViewById<TextView>(R.id.chat_row_name)
                 .text = getString(R.string.chat_sender_fmt, name)
 
-            val tsSeconds = pair.ts.toLong()
+            val tsSeconds = timestamp.toLong()
             if (tsSeconds > 0) {
                 val now = 1000L * Utils.getCurSeconds()
                 val str = DateUtils
@@ -241,28 +246,24 @@ class ChatDelegate(delegator: Delegator) :
         private const val INTENT_KEY_PLAYER = "intent_key_player"
         private const val INTENT_KEY_NAMES = "intent_key_names"
         private const val INTENT_KEY_LOCS = "intent_key_locs"
-        private var s_visibleThis: ChatDelegate? = null
+        private var s_visibleThis: WeakReference<ChatDelegate>? = null
 
-        fun append(rowid: Long, msg: String, fromIndx: Int, tsSeconds: Long): Boolean {
-            var handled = false
-            s_visibleThis?.let {
-                handled = it.mRowid == rowid
-                if (handled) {
-                    Utils.playNotificationSound(it.mActivity)
-                    it.initMsgView()
-                }
-            }
-            return handled
+        fun reload(): Boolean {
+            return s_visibleThis?.get()?.let {
+                Utils.playNotificationSound(it.mActivity)
+                it.reload()
+                true
+            } ?: false
         }
 
         fun start(
             delegator: Delegator,
-            rowID: Long, curPlayer: Int,
+            gr: GameRef, curPlayer: Int,
             names: Array<String>?, locs: BooleanArray?
         ) {
             Assert.assertFalse(-1 == curPlayer)
             val bundle = Bundle()
-				.putLongAnd(GameUtils.INTENT_KEY_ROWID, rowID)
+				.putLongAnd(GameUtils.INTENT_KEY_GAMEREF, gr.gr)
 				.putIntAnd(INTENT_KEY_PLAYER, curPlayer)
 				.putStringArrayAnd(INTENT_KEY_NAMES, names)
 				.putBooleanArrayAnd(INTENT_KEY_LOCS, locs)

@@ -24,24 +24,24 @@
 void
 measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
 {
-    int i;
     XP_U16 maxLen = 0;
     XP_Bool done = XP_FALSE;
 
     int len = strlen(question);
     const char* end = question + len;
     const char* cur = question;
-    for ( i = 0; i < MAX_LINES && !done; ++i ) {
+    for ( int ii = 0; !done; ++ii ) {
+        XP_ASSERT( ii < MAX_LINES );
         len = strlen(cur);
 
         if ( len == 0 ) {
-            assert( i > 0 );
-            fip->nLines = i;
+            assert( ii > 0 );
+            fip->nLines = ii;
             fip->maxLen = maxLen;
             break;
         }
 
-        fip->line[i].substr = cur;
+        fip->line[ii].substr = cur;
 
         /* Now we need to break the line if 1) there's a <cr>; or 2) it's too
            long. */
@@ -56,7 +56,7 @@ measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
             assert( s > cur );  /* deal with this!! */
             len = s - cur;
         }
-        fip->line[i].len = len;
+        fip->line[ii].len = len;
         if ( maxLen < len ) {
             maxLen = len;
         }

@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.CurGameInfo
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
@@ -85,7 +86,8 @@ class NetLaunchInfo : Serializable {
         if (null == isoCodeStr) {
             val lang = bundle.getInt(MultiService.LANG, 0)
             if (0 != lang) {
-                isoCodeStr = XwJNI.lcToLocaleJ(lang).toString()
+                val code = Device.lcToLocale(lang)
+                isoCodeStr = ISOCode.newIf(code).toString()
             }
         }
         Assert.assertTrueNR(null != isoCodeStr)
@@ -109,105 +111,110 @@ class NetLaunchInfo : Serializable {
 
     constructor(context: Context, data: Uri?) : this() {
         m_valid = false
-        if (null != data) {
+        data?.let { data ->
             val scheme = data.scheme
             try {
                 if ("content" == scheme || "file" == scheme) {
-                    Assert.assertNotNull(context)
                     val resolver = context.contentResolver
-                    val `is` = resolver.openInputStream(data)
-                    val len = `is`!!.available()
+                    val istream = resolver.openInputStream(data)
+                    val len = istream!!.available()
                     val buf = ByteArray(len)
-                    `is`.read(buf)
+                    istream.read(buf)
 
                     val json = JSONObject(String(buf))
                     inviteID = json.getString(MultiService.INVITEID)
                 } else {
-                    var `val` = data.getQueryParameter(ADDRS_KEY)
-                    val hasAddrs = null != `val`
-                    _conTypes = if (hasAddrs) {
-                        Integer.decode(`val`)
-                    } else {
-                        EMPTY_SET
-                    }
-
-                    val supported = CommsConnTypeSet.getSupported(context)
-                    val addrs = CommsConnTypeSet(_conTypes)
-                    for (typ in supported) {
-                        if (hasAddrs && !addrs.contains(typ)) {
-                            continue
-                        }
-                        var doAdd: Boolean
-                        when (typ) {
-                            CommsConnType.COMMS_CONN_BT -> {
-                                btAddress = expand(data.getQueryParameter(BTADDR_KEY))
-                                btName = data.getQueryParameter(BTNAME_KEY)
-                                doAdd = !hasAddrs && null != btAddress
+                    scheme?.let { // if it's null, not a valid URI for us
+                        var pval = data.getQueryParameter(ADDRS_KEY)
+                        val hasAddrs = null != pval
+                        _conTypes =
+                            if (hasAddrs) {
+                                Integer.decode(pval)
+                            } else {
+                                EMPTY_SET
                             }
 
-                            CommsConnType.COMMS_CONN_RELAY -> {
-                                inviteID = data.getQueryParameter(ID_KEY)
-                                doAdd = !hasAddrs// && null != room
+                        val supported = CommsConnTypeSet.getSupported(context)
+                        val addrs = CommsConnTypeSet(_conTypes)
+                        for (typ in supported) {
+                            if (hasAddrs && !addrs.contains(typ)) {
+                                continue
                             }
-
-                            CommsConnType.COMMS_CONN_SMS -> {
-                                phone = data.getQueryParameter(PHONE_KEY)
-                                `val` = data.getQueryParameter(GSM_KEY)
-                                isGSM = null != `val` && 1 == Integer.decode(`val`)
-                                `val` = data.getQueryParameter(OSVERS_KEY)
-                                if (null != `val`) {
-                                    osVers = Integer.decode(`val`)
+                            var doAdd: Boolean
+                            when (typ) {
+                                CommsConnType.COMMS_CONN_BT -> {
+                                    btAddress = expand(data.getQueryParameter(BTADDR_KEY))
+                                    btName = data.getQueryParameter(BTNAME_KEY)
+                                    doAdd = !hasAddrs && null != btAddress
                                 }
-                                doAdd = !hasAddrs && null != phone
-                            }
 
-                            CommsConnType.COMMS_CONN_P2P -> {
-                                p2pMacAddress = data.getQueryParameter(P2P_MAC_KEY)
-                                doAdd = !hasAddrs && null != p2pMacAddress
-                            }
+                                CommsConnType.COMMS_CONN_RELAY -> {
+                                    inviteID = data.getQueryParameter(ID_KEY)
+                                    doAdd = !hasAddrs// && null != room
+                                }
 
-                            CommsConnType.COMMS_CONN_NFC -> doAdd = true
-                            CommsConnType.COMMS_CONN_MQTT -> {
-                                mqttDevID = data.getQueryParameter(MQTT_DEVID_KEY)
-                                doAdd = !hasAddrs && null != mqttDevID
-                            }
+                                CommsConnType.COMMS_CONN_SMS -> {
+                                    phone = data.getQueryParameter(PHONE_KEY)
+                                    pval = data.getQueryParameter(GSM_KEY)
+                                    isGSM = null != pval && 1 == Integer.decode(pval)
+                                    pval = data.getQueryParameter(OSVERS_KEY)
+                                    if (null != pval) {
+                                        osVers = Integer.decode(pval)
+                                    }
+                                    doAdd = !hasAddrs && null != phone
+                                }
 
-                            else -> {
-                                doAdd = false
-                                Log.d(TAG, "unexpected type: %s", typ)
-                                Assert.failDbg()
+                                CommsConnType.COMMS_CONN_P2P -> {
+                                    p2pMacAddress = data.getQueryParameter(P2P_MAC_KEY)
+                                    doAdd = !hasAddrs && null != p2pMacAddress
+                                }
+
+                                CommsConnType.COMMS_CONN_NFC -> doAdd = true
+                                CommsConnType.COMMS_CONN_MQTT -> {
+                                    mqttDevID = data.getQueryParameter(MQTT_DEVID_KEY)
+                                    doAdd = !hasAddrs && null != mqttDevID
+                                }
+
+                                else -> {
+                                    doAdd = false
+                                    Log.d(TAG, "unexpected type: %s", typ)
+                                    Assert.failDbg()
+                                }
+                            }
+                            if (doAdd) {
+                                addrs.add(typ)
                             }
                         }
-                        if (doAdd) {
-                            addrs.add(typ)
+                        _conTypes = addrs.toInt()
+
+                        removeUnsupported(supported)
+
+                        Log.d(TAG, "data: %s", data)
+                        dict = data.getQueryParameter(WORDLIST_KEY)
+                        isoCodeStr = data.getQueryParameter(ISO_KEY)
+                        Log.d(TAG, "got isoCodeStr: $isoCodeStr")
+                        if (null == isoCodeStr) {
+                            val langStr = data.getQueryParameter(LANG_KEY)
+                            Log.d(TAG, "langStr: $langStr")
+                            if (null != langStr && langStr != "0") {
+                                val lang = Integer.decode(langStr)
+                                isoCodeStr = Device.lcToLocale(lang).toString()
+                            }
                         }
+                        Assert.assertTrueNR(null != isoCodeStr) // firing
+
+                        val np = data.getQueryParameter(TOTPLAYERS_KEY)
+                        nPlayersT = Integer.decode(np)
+                        val nh = data.getQueryParameter(HEREPLAYERS_KEY)
+                        nPlayersH = if (nh == null) 1 else Integer.decode(nh)
+                        pval = data.getQueryParameter(GID_KEY)
+                        gameID = if (null == pval) 0 else Integer.decode(pval)
+                        pval = data.getQueryParameter(FORCECHANNEL_KEY)
+                        forceChannel = if (null == pval) 0 else Integer.decode(pval)
+                        gameName = data.getQueryParameter(NAME_KEY)
+                        pval = data.getQueryParameter(DUPMODE_KEY)
+                        dupeMode = null != pval && Integer.decode(pval) != 0
                     }
-                    _conTypes = addrs.toInt()
-
-                    removeUnsupported(supported)
-
-                    dict = data.getQueryParameter(WORDLIST_KEY)
-                    isoCodeStr = data.getQueryParameter(ISO_KEY)
-                    if (null == isoCodeStr) {
-                        val langStr = data.getQueryParameter(LANG_KEY)
-                        if (null != langStr && langStr != "0") {
-                            val lang = Integer.decode(langStr)
-                            isoCodeStr = XwJNI.lcToLocale(lang).toString()
-                        }
-                    }
-                    Assert.assertTrueNR(null != isoCodeStr)
-
-                    val np = data.getQueryParameter(TOTPLAYERS_KEY)
-                    nPlayersT = Integer.decode(np)
-                    val nh = data.getQueryParameter(HEREPLAYERS_KEY)
-                    nPlayersH = if (nh == null) 1 else Integer.decode(nh)
-                    `val` = data.getQueryParameter(GID_KEY)
-                    gameID = if (null == `val`) 0 else Integer.decode(`val`)
-                    `val` = data.getQueryParameter(FORCECHANNEL_KEY)
-                    forceChannel = if (null == `val`) 0 else Integer.decode(`val`)
-                    gameName = data.getQueryParameter(NAME_KEY)
-                    `val` = data.getQueryParameter(DUPMODE_KEY)
-                    dupeMode = null != `val` && Integer.decode(`val`) != 0
                 }
                 calcValid()
             } catch (ex: Exception) {
@@ -241,12 +248,13 @@ class NetLaunchInfo : Serializable {
     }
 
     constructor(gi: CurGameInfo) : this(
-        gi.gameID, gi.name, gi.isoCode(),
+        gi.gameID, gi.gameName, gi.isoCode(),
         gi.dictName, gi.nPlayers, gi.inDuplicateMode
     )
 
     constructor(context: Context, summary: GameSummary, gi: CurGameInfo) : this(gi) {
-        for (typ in summary.conTypes!!.types) {
+        Log.d(TAG, "<init>(gi: $gi)")
+        for (typ in gi.conTypes!!) {
             // Log.d( TAG, "NetLaunchInfo(): got type %s", typ );
             when (typ) {
                 CommsConnType.COMMS_CONN_BT -> addBTInfo(context)
@@ -440,7 +448,7 @@ class NetLaunchInfo : Serializable {
         if (null == isoCodeStr) {
             val lang = json.optInt(MultiService.LANG, 0)
             if (0 != lang) {
-                isoCodeStr = XwJNI.lcToLocale(lang)
+                isoCodeStr = Device.lcToLocale(lang)
             }
         }
         Assert.assertTrueNR(null != isoCodeStr)
@@ -616,7 +624,7 @@ class NetLaunchInfo : Serializable {
 
     fun addMQTTInfo() {
         add(CommsConnType.COMMS_CONN_MQTT)
-        mqttDevID = XwJNI.dvc_getMQTTDevID()
+        mqttDevID = MQTTUtils.getMQTTDevID()
     }
 
     val isValid: Boolean
@@ -754,12 +762,25 @@ class NetLaunchInfo : Serializable {
         }
 
         fun makeFrom(context: Context, data: String): NetLaunchInfo? {
-            var nli: NetLaunchInfo? = null
-            try {
-                nli = NetLaunchInfo(context, data)
-            } catch (jse: JSONException) {
-                Log.ex(TAG, jse)
-            }
+            val nli =
+                try {
+                    NetLaunchInfo(context, data)
+                } catch (jse: JSONException) {
+                    // Log.ex(TAG, jse)
+                    null
+                }
+            return nli
+        }
+
+        fun makeFrom(context: Context, data: Uri): NetLaunchInfo? {
+            val nli =
+                try {
+                    val nli = NetLaunchInfo(context, data)
+                    if (nli.isValid) nli else null
+                } catch (jse: JSONException) {
+                    Log.ex(TAG, jse)
+                    null
+                }
             return nli
         }
 

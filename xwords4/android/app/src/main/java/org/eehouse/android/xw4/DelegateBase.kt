@@ -36,6 +36,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import kotlinx.coroutines.CoroutineScope
 
 import java.lang.ref.WeakReference
 
@@ -49,6 +50,8 @@ import org.eehouse.android.xw4.MultiService.MultiEventListener
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.CurGameInfo
+import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.jni.XwJNI.GamePtr
@@ -91,7 +94,7 @@ abstract class DelegateBase @JvmOverloads constructor(
 
     open fun onCreateContextMenu(
         menu: ContextMenu, view: View,
-        menuInfo: ContextMenuInfo
+        ignoreMe: ContextMenuInfo?
     ) {}
 
     open fun onContextItemSelected(item: MenuItem): Boolean {
@@ -397,9 +400,9 @@ abstract class DelegateBase @JvmOverloads constructor(
         when (dlgID) {
             DlgID.DLG_CONNSTAT -> {
                 val ab = makeAlertBuilder()
-                val summary = params[0] as GameSummary
+                val gi = params[0] as CurGameInfo
                 val msg = params[1] as String
-                val conTypes = summary.conTypes
+                val conTypes = gi.conTypes
                 ab.setMessage(msg)
                     .setPositiveButton(android.R.string.ok, null)
 
@@ -551,6 +554,7 @@ abstract class DelegateBase @JvmOverloads constructor(
         action: Action, nli: NetLaunchInfo,
         nMissing: Int, nInvited: Int
     ) {
+        Log.d(TAG, "showInviteChoicesThen(nMissing=$nMissing, nInvited=$nInvited)")
         m_dlgDelegate.showInviteChoicesThen(action, nli, nMissing, nInvited)
     }
 
@@ -616,37 +620,40 @@ abstract class DelegateBase @JvmOverloads constructor(
         runIfVisible()
     }
 
-    fun onStatusClicked(gamePtr: GamePtr?) {
-        val addrs = XwJNI.comms_getAddrs(gamePtr)
-        val addr = if (null != addrs && 0 < addrs.size) addrs[0] else null
-        val summary = GameUtils.getSummary(mActivity, gamePtr!!.rowid, 1)
-        if (null != summary) {
-            val msg = ConnStatusHandler.getStatusText(
-                mActivity, (gamePtr), summary.gameID,
-                summary.conTypes, addr
-            )
+    fun onStatusClicked(gr: GameRef) {
+        launch {
+            val addrs = gr.getAddrs()
+            val summary = gr.getSummary()
+            val gi = gr.getGI()!!
+            summary?.let {
+                val addr = if (null != addrs && 0 < addrs.size) addrs[0] else null
+                val msg = ConnStatusHandler.getStatusText(
+                    mActivity, gr, summary.gameID,
+                    gi.conTypes, addr
+                )
 
-            post(Runnable {
-                if (null == msg) {
-                    askNoAddrsDelete()
-                } else {
-                    showDialogFragment(
-                        DlgID.DLG_CONNSTAT, summary,
-                        msg
-                    )
-                }
-            })
+                post(Runnable {
+                         if (null == msg) {
+                             askNoAddrsDelete()
+                         } else {
+                             showDialogFragment(
+                                 DlgID.DLG_CONNSTAT, gi,
+                                 msg
+                             )
+                         }
+                     })
+            }
         }
     }
 
     fun onStatusClicked(rowid: Long) {
         Log.d(TAG, "onStatusClicked(%d)", rowid)
-
-        GameWrapper.make(mActivity, rowid).use { gw ->
-            if (null != gw) {
-                onStatusClicked(gw.gamePtr())
-            }
-        }
+        Assert.fail()
+        // GameWrapper.make(mActivity, rowid).use { gw ->
+        //     if (null != gw) {
+        //         onStatusClicked(gw.gamePtr())
+        //     }
+        // }
     }
 
     protected fun askNoAddrsDelete() {
@@ -760,6 +767,10 @@ abstract class DelegateBase @JvmOverloads constructor(
     ) {
         // Assert.fail();
         Log.d(TAG, "inviteChoiceMade($action) not implemented")
+    }
+
+    fun launch( block: suspend CoroutineScope.() -> Unit) {
+        Utils.launch(block)
     }
 
     companion object {

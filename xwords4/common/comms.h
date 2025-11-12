@@ -24,7 +24,7 @@
 #include "commstyp.h"
 #include "mempool.h"
 #include "xwrelay.h"
-#include "server.h"
+#include "serverp.h"
 
 EXTERN_C_START
 
@@ -33,20 +33,6 @@ EXTERN_C_START
 
 typedef XP_U32 MsgID;           /* this is too big!!! PENDING */
 typedef XP_U8 XWHostID;
-
-typedef enum {
-    COMMS_CONN_NONE           /* I want errors on uninited case */
-    ,COMMS_CONN_IR            /* 1 */
-    ,COMMS_CONN_IP_DIRECT       /* 2 */
-    ,COMMS_CONN_RELAY           /* 3 */
-    ,COMMS_CONN_BT              /* 4 */
-    ,COMMS_CONN_SMS             /* 5 */
-    ,COMMS_CONN_P2P             /* a.k.a. Wifi direct */
-    ,COMMS_CONN_NFC             /* 7 */
-    ,COMMS_CONN_MQTT            /* 8 */
-
-    ,COMMS_CONN_NTYPES
-} CommsConnType;
 
 typedef enum {
     COMMS_RELAYSTATE_UNCONNECTED
@@ -71,42 +57,9 @@ typedef enum {
 # define IF_CH(a)
 #endif
 
-#ifdef XWFEATURE_COMMS_INVITE
-typedef XP_S16 (*TransportSendInvt)( XWEnv xwe, const NetLaunchInfo* nli,
-                                     XP_U32 createdStamp, const CommsAddrRec* addr,
-                                     CommsConnType conType, void* closure );
-#endif
-
-typedef XP_S16 (*TransportSendMsgs)( XWEnv xwe, const SendMsgsPacket* const msgs,
-                                     XP_U16 streamVersion, const CommsAddrRec* addr,
-                                     CommsConnType conType, XP_U32 gameID,
-                                     void* closure );
-
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( XWEnv xwe, void* closure );
 #endif
-
-#ifdef XWFEATURE_RELAY
-typedef void (*RelayStatusProc)( XWEnv xwe, void* closure, CommsRelayState newState );
-typedef void (*RelayConndProc)( XWEnv xwe, void* closure, XP_UCHAR* const room,
-                                XP_Bool reconnect,
-                                XP_U16 devOrder, /* 1 means created room, etc. */
-                                XP_Bool allHere, XP_U16 nMissing );
-typedef void (*RelayErrorProc)( XWEnv xwe, void* closure, XWREASON relayErr );
-typedef XP_Bool (*RelayNoConnProc)( XWEnv xwe, const XP_U8* buf, XP_U16 len,
-                                    const XP_UCHAR* msgNo,
-                                    const XP_UCHAR* relayID, void* closure );
-# ifdef RELAY_VIA_HTTP
-typedef void (*RelayRequestJoinProc)( XWEnv xwe, void* closure, const XP_UCHAR* devID,
-                                      const XP_UCHAR* room, XP_U16 nPlayersHere,
-                                      XP_U16 nPlayersTotal, XP_U16 seed,
-                                      XP_U16 lang );
-# endif
-#endif
-
-typedef void (*MsgCountChange)( XWEnv xwe, void* closure, XP_U16 msgCount,
-                                XP_Bool quashed );
-typedef void (*RoleChangeProc)( XWEnv xwe, void* closure, XP_Bool amNowGuest );
 
 typedef enum {
     COMMS_XPORT_FLAGS_NONE = 0
@@ -117,44 +70,14 @@ typedef enum {
 typedef XP_U32 (*FlagsProc)( XWEnv xwe, void* closure );
 #endif
 
-typedef struct _TransportProcs {
-# ifdef COMMS_XPORT_FLAGSPROC
-    FlagsProc getFlags;
-#else
-    XP_U32 flags;
-#endif
-    TransportSendMsgs sendMsgs;
-#ifdef XWFEATURE_COMMS_INVITE
-    TransportSendInvt sendInvt;
-#endif
-    MsgCountChange countChanged;
-#ifdef COMMS_HEARTBEAT
-    TransportReset reset;
-#endif
-#ifdef XWFEATURE_RELAY
-    RelayStatusProc rstatus;
-    RelayConndProc rconnd;
-    RelayErrorProc rerror;
-    RelayNoConnProc sendNoConn;
-# ifdef RELAY_VIA_HTTP
-    RelayRequestJoinProc requestJoin;
-# endif
-#endif
-    void* closure;
-} TransportProcs;
-
-CommsCtxt* comms_make( XWEnv xwe, XW_UtilCtxt* util,
-                       XP_Bool isServer,
+CommsCtxt* comms_make( XWEnv xwe, XW_UtilCtxt** utilp, XP_Bool isServer,
                        const CommsAddrRec* selfAddr,
                        const CommsAddrRec* hostAddr,
-                       const TransportProcs* procs,
 #ifdef XWFEATURE_RELAY
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
                        RoleChangeProc rcp, void* rcClosure,
 #endif
                        XP_U16 forceChannel );
-
-void comms_resetSame( CommsCtxt* comms, XWEnv xwe );
 
 void comms_destroy( CommsCtxt* comms, XWEnv xwe );
 
@@ -181,8 +104,7 @@ void comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ );
 XP_Bool comms_getIsHost( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
-                                 XW_UtilCtxt* util, XP_Bool isServer,
-                                 const TransportProcs* procs,
+                                 XW_UtilCtxt** utilp, XP_Bool isServer,
 #ifdef XWFEATURE_RELAY
                                  RoleChangeProc rcp, void* rcClosure,
 #endif
@@ -224,21 +146,12 @@ XP_Bool addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
 void comms_ackAny( CommsCtxt* comms, XWEnv xwe );
 #endif
 
-typedef struct _CommsMsgState {
-    struct AddressRecord* rec;
-    XP_U32 msgID;
-    XP_PlayerAddr channelNo;
-    XP_U16 len;
-#ifdef DEBUG
-    const CommsCtxt* comms;
-#endif
-    XP_UCHAR sum[36];
-} CommsMsgState;
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe,
                                    XWStreamCtxt* stream,
                                    const CommsAddrRec* addr, 
-                                   CommsMsgState* state );
+                                   CommsMsgState* state,
+                                   const MsgCountState* mcs );
 void comms_msgProcessed( CommsCtxt* comms, XWEnv xwe,
                          CommsMsgState* state, XP_Bool rejected );
 XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
@@ -262,10 +175,12 @@ void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );
-void types_addType( XP_U16* conTypes, CommsConnType type );
-void types_rmType( XP_U16* conTypes, CommsConnType type );
-XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
-XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
+
+
+void types_addType( ConnTypeSetBits* conTypes, CommsConnType type );
+void types_rmType( ConnTypeSetBits* conTypes, CommsConnType type );
+XP_Bool types_hasType( ConnTypeSetBits conTypes, CommsConnType type );
+XP_Bool types_iter( ConnTypeSetBits conTypes, CommsConnType* typp, XP_U32* state );
 
 const char* ConnType2Str( CommsConnType typ );
 
@@ -280,6 +195,7 @@ XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ,
                                XP_Bool send );
 void logAddr( XW_DUtilCtxt* dutil, const CommsAddrRec* addr,
               const char* caller );
+void logTypeSet( ConnTypeSetBits conTypes, XP_UCHAR buf[], XP_U16 bufLen );
 
 # else
 #  define comms_setAddrDisabled( comms, typ, send, enabled )

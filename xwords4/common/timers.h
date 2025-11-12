@@ -20,21 +20,14 @@
 #ifndef _TIMERS_H_
 #define _TIMERS_H_
 
-# ifdef DUTIL_TIMERS
-
 # include "dutil.h"
 
-void tmr_init( XW_DUtilCtxt* dutil );
-void tmr_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
-
 /* Pass false for fired if we're clearing unfired timers, e.g. on shutdown */
-typedef void (*TimerProc)(void* closure, XWEnv xwe, XP_Bool fired);
+typedef void (*TimerProc)(XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
+                          TimerKey key, XP_Bool fired);
 TimerKey tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhenMS,
                   TimerProc proc, void* closure );
-void tmr_fired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key );
+#define tmr_setIdle( dutil, xwe, proc, closure ) \
+    tmr_set( (dutil), (xwe), 0, (proc), closure )
 
-# else
-# define tmr_init( dutil )
-# define tmr_cleanup( dutil, xwe )
-# endif
 #endif

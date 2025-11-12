@@ -32,13 +32,13 @@
 /* Figure out how many lines there are and how wide the widest is.
  */
 int
-cursesask( WINDOW* parentWin, const char* question, short numButtons,
-           const char** buttons )
+cursesask( WINDOW* parentWin, short numButtons,
+           const char** buttons, const char* question )
 {
     XP_LOGFF( "(question=%s, parentWin=%p)", question, parentWin );
     XP_ASSERT( !!parentWin );
     WINDOW* confWin;
-    int x, y, rows, row, nLines;
+    int xx, yy, rows, row, nLines;
     int left, top;
     short newSelButton = 0;
     short curSelButton = 1;	/* force draw by being different */
@@ -48,26 +48,26 @@ cursesask( WINDOW* parentWin, const char* question, short numButtons,
     FormatInfo fi;
     int len;
 
-    getmaxyx( parentWin, y, x);
+    getmaxyx( parentWin, yy, xx);
     getbegyx( parentWin, top, left );
 
-    measureAskText( question, x-2, &fi );
+    measureAskText( question, xx-2, &fi );
     len = fi.maxLen;
     if ( len < MIN_WIDTH ) {
         len = MIN_WIDTH;
     }
 
     rows = fi.nLines;
-    maxWidth = x - (PAD*2) - 2; /* 2 for two borders */
+    maxWidth = xx - (PAD*2) - 2; /* 2 for two borders */
 
-    if ( len > x-2 ) {
+    if ( len > xx-2 ) {
         rows = (len / maxWidth) + 1;
         len = maxWidth;
     }
 
     nLines = ASK_HEIGHT + rows - 1;
-    confWin = newwin( nLines, len+(PAD*2), top + ((y/2) - (nLines/2)),
-                      left + ((x-len-2)/2) );
+    confWin = newwin( nLines, len+(PAD*2), top + ((yy/2) - (nLines/2)),
+                      left + ((xx-len-2)/2) );
     keypad( confWin, TRUE );
     wclear( confWin );
     box( confWin, '|', '-');
@@ -124,17 +124,31 @@ cursesask( WINDOW* parentWin, const char* question, short numButtons,
     delwin( confWin );
 
     /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( parentWin, (y/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
+    wtouchln( parentWin, (yy/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
     wrefresh( parentWin );
     return curSelButton;
 } /* cursesask */
+
+int
+cursesaskf( WINDOW* window, short numButtons, const char** buttons,
+            const char* fmt, ... )
+{
+    va_list args;
+    va_start( args, fmt );
+    gchar* msg = g_strdup_vprintf( fmt, args );
+    va_end( args );
+    int result = cursesask( window, numButtons, buttons, msg );
+    g_free( msg );
+    return result;
+ }
+
 
 void
 ca_inform( WINDOW* window, const char* message )
 {
     if ( !!window ) {
         const char* buttons[] = { "Ok" };
-        (void)cursesask( window, message, VSIZE(buttons), buttons );
+        (void)cursesask( window, VSIZE(buttons), buttons, message );
     }
 }
 

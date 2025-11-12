@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            >
+  <LinearLayout android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                >
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:text="Recovery Mode"
+              />
+
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  >
+      <Button android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/export_db"
+              android:text="Export DB"
+              />
+      <Button android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/import_db"
+              android:text="Import DB"
+              />
+    </LinearLayout>
+
+
+    <EditText android:id="@+id/query_edit"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:hint="query here"
+              />
+
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  >
+      <Button android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/loaddb"
+              android:text="Run query"
+              />
+      <Button android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/addquery"
+              android:text="Add Next"
+              />
+    </LinearLayout>
+
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/results"
+              />
+
+  </LinearLayout>
+</ScrollView>

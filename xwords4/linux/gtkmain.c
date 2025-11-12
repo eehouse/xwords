@@ -1,5 +1,5 @@
 /* 
- * Copyright 2000 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2025 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,14 +20,12 @@
 #ifdef PLATFORM_GTK
 
 #include "strutils.h"
-#include "smsproto.h"
 #include "main.h"
 #include "gtkmain.h"
 #include "gamesdb.h"
 #include "gtkboard.h"
 #include "linuxmain.h"
 #include "linuxutl.h"
-#include "relaycon.h"
 #include "mqttcon.h"
 #include "linuxsms.h"
 #include "gtkask.h"
@@ -37,25 +35,24 @@
 #include "gtkrmtch.h"
 #include "gsrcwrap.h"
 #include "extcmds.h"
+#include "gamemgr.h"
+#include "gtkedalr.h"
+#include "gtkaskgrp.h"
 
-static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
-                       XP_Bool isNew );
+static void onNewData( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew );
+static void buildGamesList( GtkAppGlobals* apg );
+
 static void updateButtons( GtkAppGlobals* apg );
-static void open_row( GtkAppGlobals* apg, sqlite3_int64 row, XP_Bool isNew );
+static void open_row( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew );
 
-static void
-recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
+#ifdef XWFEATURE_DEVICE_STORES
+static XP_Bool
+gameIsOpen( GtkAppGlobals* apg, GameRef gr )
 {
-    apg->cag.globalsList = g_slist_prepend( apg->cag.globalsList, globals );
-    globals->apg = apg;
+    XP_Bool found = NULL != globalsForGameRef( &apg->cag, gr, XP_FALSE );
+    return found;
 }
-
-static void
-recordClosed( GtkAppGlobals* apg, GtkGameGlobals* globals )
-{
-    apg->cag.globalsList = g_slist_remove( apg->cag.globalsList, globals );
-}
-
+#else
 static XP_Bool
 gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
 {
@@ -67,37 +64,59 @@ gameIsOpen( GtkAppGlobals* apg, sqlite3_int64 rowid )
     }
     return found;
 }
+#endif
 
 static GtkGameGlobals*
 findOpenGame( const GtkAppGlobals* apg, sqlite3_int64* rowid, XP_U32* gameID )
 {
+    XP_ASSERT(0);
     GtkGameGlobals* result = NULL;
     GSList* iter;
     for ( iter = apg->cag.globalsList; !!iter; iter = iter->next ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
         CommonGlobals* cGlobals = &globals->cGlobals;
-        if ( *rowid && cGlobals->rowid == *rowid ) {
+        if ( *rowid /* && cGlobals->rowid == *rowid*/ ) {
             result = globals;
             *gameID = cGlobals->gi->gameID;
             break;
         } else if ( gameID && cGlobals->gi->gameID == *gameID ) {
             result = globals;
-            *rowid = cGlobals->rowid;
+            // *rowid = cGlobals->rowid;
             break;
         }
     }
     return result;
 }
 
-enum { ROW_ITEM, ROW_THUMB, NAME_ITEM, CREATED_ITEM, GAMEID_ITEM,
-       LANG_ITEM, SEED_ITEM, ROLE_ITEM, CHANNEL_ITEM, CONN_ITEM,
-#ifdef XWFEATURE_RELAY
-       RELAYID_ITEM,
+enum {
+    ROW_THUMB,
+#ifdef XWFEATURE_DEVICE_STORES
+    GAMENAME_ITEM,
+    GAMEREF_ITEM,
+    CREATED_ITEM,
+    STATUS_ITEM,
+    GROUPNAME_ITEM,
+#else
+    ROW_ITEM,
+    NAME_ITEM, CREATED_ITEM,
+    SEED_ITEM, ROLE_ITEM,
+    CONN_ITEM,
+    NPACKETS_ITEM, OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM,
+    MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
 #endif
-       NPACKETS_ITEM, OVER_ITEM, TURN_ITEM,LOCAL_ITEM, NMOVES_ITEM,
-       NTOTAL_ITEM, MISSING_ITEM, LASTTURN_ITEM, DUPTIMER_ITEM,
-
-       N_ITEMS,
+    // GAMEID_ITEM,
+    TURN_ITEM,
+    NMOVES_ITEM,
+    LASTMOVE_ITEM,
+    LANG_ITEM,
+    CHANNEL_ITEM,
+    ROLE_ITEM,
+#ifdef XWFEATURE_DEVICE_STORES
+    CONTYPES_ITEM,
+#endif
+    NTOTAL_ITEM,
+       
+    N_ITEMS,
 };
 
 static void
@@ -105,9 +124,9 @@ foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
              GtkTreeIter* iter, gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
-    sqlite3_int64 rowid;
-    gtk_tree_model_get( model, iter, ROW_ITEM, &rowid, -1 );
-    apg->selRows = g_array_append_val( apg->selRows, rowid );
+    GameRef val;
+    gtk_tree_model_get( model, iter, GAMEREF_ITEM, &val, -1 );
+    apg->selRows = g_array_append_val( apg->selRows, val );
 }
 
 static void
@@ -122,37 +141,48 @@ tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 }
 
 static void
-row_activated_cb( GtkTreeView* tree_view, GtkTreePath* path,
+row_activated_cb( GtkTreeView* treeView, GtkTreePath* path,
                   GtkTreeViewColumn* XP_UNUSED(column), gpointer data )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)data;
-    XP_ASSERT( tree_view == GTK_TREE_VIEW(apg->listWidget) );
-    GtkTreeModel* model = gtk_tree_view_get_model( tree_view );
+    GtkTreeModel* model = gtk_tree_view_get_model( treeView );
     GtkTreeIter iter;
     if ( gtk_tree_model_get_iter( model, &iter, path ) ) {
-        sqlite3_int64 rowid;
-        gtk_tree_model_get( model, &iter, ROW_ITEM, &rowid, -1 );
-        open_row( apg, rowid, XP_FALSE );
+        GameRef gr;
+        gtk_tree_model_get( model, &iter, GAMEREF_ITEM, &gr, -1 );
+        open_row( apg, gr, XP_FALSE );
     }
 }
 
-static void
-removeRow( GtkAppGlobals* apg, sqlite3_int64 rowid )
+static bool
+findFor( GtkAppGlobals* apg, GameRef target, GtkTreeIter* foundP, GtkWidget** treeP )
 {
-    GtkTreeModel* model = 
-        gtk_tree_view_get_model(GTK_TREE_VIEW(apg->listWidget));
-    GtkTreeIter iter;
-    gboolean valid;
-    for ( valid = gtk_tree_model_get_iter_first( model, &iter );
-          valid;
-          valid = gtk_tree_model_iter_next( model, &iter ) ) {
-        sqlite3_int64 tmpid;
-        gtk_tree_model_get( model, &iter, ROW_ITEM, &tmpid, -1 );
-        if ( tmpid == rowid ) {
-            gtk_list_store_remove( GTK_LIST_STORE(model), &iter );
-            break;
+    bool valid = false;
+    GList* children = gtk_container_get_children(GTK_CONTAINER(apg->treesBox));
+    for( GList* child = children; !valid && child != NULL; child = g_list_next(child)) {
+        if ( GTK_IS_TREE_VIEW(child->data) ) {
+            GtkWidget* tree = child->data;
+            GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
+            GtkTreeIter iter;
+            for ( valid = gtk_tree_model_get_iter_first( model, &iter );
+                  valid;
+                  valid = gtk_tree_model_iter_next( model, &iter ) ) {
+                GameRef val;
+                gtk_tree_model_get( model, &iter, GAMEREF_ITEM, &val, -1 );
+                if ( val == target ) {
+                    if ( !!foundP ) {
+                        *foundP = iter;
+                    }
+                    if ( !!treeP ) {
+                        *treeP = tree;
+                    }
+                    break;
+                }
+            }
         }
     }
+    g_list_free( children );
+    return valid;
 }
 
 static void
@@ -179,54 +209,78 @@ static GtkWidget*
 init_games_list( GtkAppGlobals* apg )
 {
     GtkWidget* list = gtk_tree_view_new();
-    apg->listWidget = list;
-
-    addTextColumn( list, "Row", ROW_ITEM );
+    
     addImageColumn( list, "Snap", ROW_THUMB );
+#ifdef XWFEATURE_DEVICE_STORES
+    addTextColumn( list, "Name", GAMENAME_ITEM );
+    addTextColumn( list, "GameRef", GAMEREF_ITEM );
+    addTextColumn( list, "Created", CREATED_ITEM );
+    addTextColumn( list, "Status", STATUS_ITEM );
+    addTextColumn( list, "Group", GROUPNAME_ITEM );
+#else
+    addTextColumn( list, "Row", ROW_ITEM );
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Created", CREATED_ITEM );
-    addTextColumn( list, "GameID", GAMEID_ITEM );
-    addTextColumn( list, "Lang", LANG_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Role", ROLE_ITEM );
-    addTextColumn( list, "Channel", CHANNEL_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
-#ifdef XWFEATURE_RELAY
-    addTextColumn( list, "RelayID", RELAYID_ITEM );
-#endif
     addTextColumn( list, "nPackets", NPACKETS_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "Local", LOCAL_ITEM );
     addTextColumn( list, "NMoves", NMOVES_ITEM );
-    addTextColumn( list, "NTotal", NTOTAL_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
     addTextColumn( list, "LastTurn", LASTTURN_ITEM );
     addTextColumn( list, "DupTimerFires", DUPTIMER_ITEM );
+#endif
+    // addTextColumn( list, "GameID", GAMEID_ITEM );
+    addTextColumn( list, "Turn", TURN_ITEM );
+    addTextColumn( list, "#moves", NMOVES_ITEM );
+    addTextColumn( list, "Last move", LASTMOVE_ITEM );
+    addTextColumn( list, "Lang", LANG_ITEM );
+    addTextColumn( list, "Channel", CHANNEL_ITEM );
+    addTextColumn( list, "Role", ROLE_ITEM );
+#ifdef XWFEATURE_DEVICE_STORES
+    addTextColumn( list, "ConTypes", CONTYPES_ITEM );
+#endif
+    addTextColumn( list, "NTotal", NTOTAL_ITEM );
 
-    GtkListStore* store = gtk_list_store_new( N_ITEMS, 
-                                              G_TYPE_INT64,   /* ROW_ITEM */
+    GtkListStore* store = gtk_list_store_new( N_ITEMS,
                                               GDK_TYPE_PIXBUF,/* ROW_THUMB */
+#ifdef XWFEATURE_DEVICE_STORES
+                                              // G_TYPE_POINTER, /* GAMEREF_ITEM */
+                                              G_TYPE_STRING,  /* GAMENAME_ITEM */
+                                              G_TYPE_INT64,   /* GAMEREF_ITEM */
+                                              G_TYPE_STRING,  /* CREATED_ITEM */
+                                              G_TYPE_STRING,  /* STATUS_ITEM */
+                                              G_TYPE_STRING,  /* GROUPNAME_ITEM */
+#else
+                                              G_TYPE_INT64,   /* ROW_ITEM */
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
-                                              G_TYPE_STRING,  /* GAMEID_ITEM */
-                                              G_TYPE_STRING,  /* LANG_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_INT,     /* ROLE_ITEM */
-                                              G_TYPE_INT,     /* CHANNEL_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
-#ifdef XWFEATURE_RELAY
-                                              G_TYPE_STRING,  /*RELAYID_ITEM */
-#endif
                                               G_TYPE_INT,     /* NPACKETS_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_STRING,  /* LOCAL_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
-                                              G_TYPE_INT,     /* NTOTAL_ITEM */
                                               G_TYPE_INT,     /* MISSING_ITEM */
                                               G_TYPE_STRING,  /* LASTTURN_ITEM */
-                                              G_TYPE_STRING  /* DUPTIMER_ITEM */
+                                              G_TYPE_STRING,  /* DUPTIMER_ITEM */
+#endif
+                                              // G_TYPE_STRING,  /* GAMEID_ITEM */
+                                              G_TYPE_INT,     /* TURN_ITEM */
+                                              G_TYPE_INT,     /* NMOVES_ITEM */
+                                              G_TYPE_STRING,  /* LASTMOVE_ITEM */
+                                              G_TYPE_STRING,  /* LANG_ITEM */
+                                              G_TYPE_INT,     /* CHANNEL_ITEM */
+                                              G_TYPE_INT,     /* ROLE_ITEM */
+#ifdef XWFEATURE_DEVICE_STORES
+                                              G_TYPE_INT,     /* CONTYPES_ITEM */
+#endif
+                                              G_TYPE_INT     /* NTOTAL_ITEM */
                                               );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
@@ -242,14 +296,38 @@ init_games_list( GtkAppGlobals* apg )
     return list;
 }
 
-static void
-add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew, 
-             const GameInfo* gib )
+static GdkPixbuf*
+getSnapData( LaunchParams* params, GameRef gr )
 {
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
+    GdkPixbuf* result = NULL;
+    XW_DUtilCtxt* dutil = params->dutil;
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
+    if ( gr_getThumbData( dutil, gr, NULL_XWE, stream ) ) {
+        GInputStream* istr =
+            g_memory_input_stream_new_from_data( stream_getPtr(stream),
+                                                 stream_getSize(stream), NULL );
+        result = gdk_pixbuf_new_from_stream( istr, NULL, NULL );
+        g_object_unref( istr );
+    }
+    stream_destroy( stream );
+    return result;
+}
+
+static void
+add_to_list( LaunchParams* params, GtkWidget* list, GameRef gr )
+{
+    LOG_FUNC();
+    XP_ASSERT( gr );
+    GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(list));
     GtkListStore* store = GTK_LIST_STORE( model );
     GtkTreeIter iter;
     XP_Bool found = XP_FALSE;
+
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    XP_ASSERT( !findFor( apg, gr, NULL, NULL ) );
+
+#if 0
     if ( !isNew ) {
         for ( gboolean valid = gtk_tree_model_get_iter_first( model, &iter );
               valid;
@@ -262,99 +340,191 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
             }
         }
     }
-
+#endif
     if ( !found ) {
         gtk_list_store_append( store, &iter );
     }
 
-    gchar* localString = 0 <= gib->turn ? gib->turnLocal ? "YES"
-        : "NO" : "";
-
-    gchar createdStr[64] = {};
-    if ( 0 != gib->created ) {
-        formatSeconds( gib->created, createdStr, VSIZE(createdStr) );
-    }
-    gchar timeStr[64];
-    formatSeconds( gib->lastMoveTime, timeStr, VSIZE(timeStr) );
-    gchar timerStr[64] = {};
-    if ( gib->dupTimerExpires ) {
-        formatSeconds( gib->dupTimerExpires, timerStr, VSIZE(timeStr) );
-    }
+    const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
+    const GameSummary* sum = gr_getSummary( params->dutil, gr, NULL_XWE );
 
     gchar gameIDStr[16];
-    sprintf( gameIDStr, "%8X", gib->gameID );
+    sprintf( gameIDStr, "%8X", gi->gameID );
+
+    GdkPixbuf* snap = getSnapData( params, gr );
+
+    gchar* state;
+    if ( 0 <= sum->turn && 0 == sum->nMissing ) {      /* game's in play */
+        state = "in play";
+    } else if ( sum->gameOver ) {
+        state = "game over";
+    } else {
+        state = "initing";
+    }
+
+    gchar createdStr[64] = {};
+    if ( 0 != gi->created ) {
+        formatSeconds( gi->created, createdStr, VSIZE(createdStr) );
+    }
+    gchar lastMoveStr[64] = {};
+    if ( 0 != sum->lastMoveTime ) {
+        formatSeconds( sum->lastMoveTime, lastMoveStr, VSIZE(lastMoveStr) );
+    }
+
+    GroupRef grp = gr_getGroup(params->dutil, gr, NULL_XWE );
+    XP_UCHAR groupName[64];
+    gmgr_getGroupName( params->dutil, NULL_XWE, grp,
+                       groupName, VSIZE(groupName) );
 
     gtk_list_store_set( store, &iter, 
-                        ROW_ITEM, rowid,
-                        ROW_THUMB, gib->snap,
-                        NAME_ITEM, gib->name,
+                        ROW_THUMB, snap,
+                        GAMENAME_ITEM, gi->gameName,
+                        GAMEREF_ITEM, gr,
                         CREATED_ITEM, createdStr,
-                        GAMEID_ITEM, gameIDStr,
-                        LANG_ITEM, gib->isoCode,
-                        SEED_ITEM, gib->seed,
-                        ROLE_ITEM, gib->role,
-                        CHANNEL_ITEM, gib->channelNo,
-                        CONN_ITEM, gib->conn,
-#ifdef XWFEATURE_RELAY
-                        RELAYID_ITEM, gib->relayID,
-#endif
-                        TURN_ITEM, gib->turn,
-                        NPACKETS_ITEM, gib->nPending,
-                        OVER_ITEM, gib->gameOver,
-                        LOCAL_ITEM, localString,
-                        NMOVES_ITEM, gib->nMoves,
-                        NTOTAL_ITEM, gib->nTotal,
-                        MISSING_ITEM, gib->nMissing,
-                        LASTTURN_ITEM, timeStr,
-                        DUPTIMER_ITEM, timerStr,
+                        STATUS_ITEM, state,
+                        GROUPNAME_ITEM, groupName,
+                        // GAMEID_ITEM, gameIDStr,
+                        TURN_ITEM, sum->turn,
+                        NMOVES_ITEM, sum->nMoves,
+                        LASTMOVE_ITEM, lastMoveStr,
+                        LANG_ITEM, gi->isoCodeStr,
+                        CHANNEL_ITEM, gi->forceChannel,
+                        ROLE_ITEM, gi->serverRole,
+                        CONTYPES_ITEM, gi->conTypes,
+                        NTOTAL_ITEM, gi->nPlayers,
                         -1 );
-    XP_LOGF( "DONE adding" );
+    XP_LOGFF( "DONE adding" );
+}
+
+/* This is supposed to check that at least one of the selected games is not
+   in the archive. Later...  */
+static bool
+oneNotInArchive( GtkAppGlobals* apg )
+{
+    bool result = false;
+    XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+    for ( int ii = 0; ii < apg->selRows->len && !result; ++ii ) {
+        GameRef gr = g_array_index( apg->selRows, GameRef, ii );
+        result = !gr_isArchived( dutil, gr, NULL_XWE );
+    }
+
+    return result;
 }
 
 static void updateButtons( GtkAppGlobals* apg )
 {
     guint count = apg->selRows->len;
 
+    gtk_widget_set_sensitive( apg->renameButton, 1 == count );
     gtk_widget_set_sensitive( apg->openButton, 1 <= count );
     gtk_widget_set_sensitive( apg->rematchButton, 1 == count );
     gtk_widget_set_sensitive( apg->deleteButton, 1 <= count );
+    gtk_widget_set_sensitive( apg->moveToGroupButton, 1 <= count );
+    gtk_widget_set_sensitive( apg->archiveButton, oneNotInArchive(apg) );
+}
+
+void
+addGTKGame( LaunchParams* params, GameRef gr )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)
+        globalsForGameRef( params->cag, gr, XP_TRUE );
+    params->needsNewGame = XP_FALSE;
+    initBoardGlobalsGtk( globals, params, gr );
+
+    GtkWidget* gameWindow = globals->window;
+    gtk_widget_show( gameWindow );
+}
+
+static void
+newGameIn( GtkAppGlobals* apg, GroupRef grp )
+{
+    LaunchParams* params = apg->cag.params;
+    CurGameInfo gi = {};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+
+    CommsAddrRec selfAddr;
+    makeSelfAddress( &selfAddr, params );
+
+    if ( gtkNewGameDialog( params, &gi, &selfAddr, XP_TRUE, XP_FALSE ) ) {
+        LOG_GI( &gi, __func__ );
+        /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, grp, &gi, NULL );
+    }
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
 }
 
 static void
 handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LOG_FUNC();
-    GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
-    apg->cag.params->needsNewGame = XP_FALSE;
-    initBoardGlobalsGtk( globals, apg->cag.params, NULL );
+    newGameIn( apg, GROUP_DEFAULT );
+}
 
-    if ( gtkNewGameDialog( globals, globals->cGlobals.gi,
-                           &globals->cGlobals.selfAddr,
-                           XP_TRUE, XP_FALSE ) ) {
-        GtkWidget* gameWindow = globals->window;
-        globals->cGlobals.rowid = -1;
-        recordOpened( apg, globals );
-        gtk_widget_show( gameWindow );
-    } else {
-        freeGlobals( globals );
+static void
+handle_rename_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+    GameRef gr = g_array_index( apg->selRows, GameRef, 0 );
+    const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
+
+    XP_UCHAR name[64];
+    XP_SNPRINTF( name, VSIZE(name), "%s", gi->gameName );
+    if ( gtkEditAlert( apg->window, "Edit this game's name",
+                       name, VSIZE(name) ) ) {
+        gr_setGameName( dutil, gr, NULL_XWE, name );
     }
 }
 
 static void
-open_row( GtkAppGlobals* apg, sqlite3_int64 row, XP_Bool isNew )
+handle_newgroup_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
-    if ( -1 != row && !gameIsOpen( apg, row ) ) {
-        if ( isNew ) {
-            onNewData( apg, row, XP_TRUE );
-        }
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->cag.params;
 
-        apg->cag.params->needsNewGame = XP_FALSE;
-        GtkGameGlobals* globals = malloc( sizeof(*globals) );
-        initBoardGlobalsGtk( globals, apg->cag.params, NULL );
-        globals->cGlobals.rowid = row;
-        recordOpened( apg, globals );
-        gtk_widget_show( globals->window );
+    XP_UCHAR name[33] = "New Group";
+    if ( gtkEditAlert( apg->window, "Name of new group", name, VSIZE(name) ) ) {
+        gmgr_addGroup( params->dutil, NULL_XWE, name );
+    }
+}
+
+static void
+open_row( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew )
+{
+    if ( !!gr && !gameIsOpen( apg, gr ) ) {
+        LaunchParams* params = apg->cag.params;
+        const XP_UCHAR* missingNames[5] = {};
+        XP_U16 count = VSIZE(missingNames);
+        gr_missingDicts( params->dutil, gr, NULL_XWE, missingNames, &count );
+        if ( count == 0 ) {
+            if ( isNew ) {
+                onNewData( apg, gr, XP_TRUE );
+            }
+
+            params->needsNewGame = XP_FALSE;
+
+            GtkGameGlobals* globals = (GtkGameGlobals*)
+                globalsForGameRef( params->cag, gr, XP_TRUE );
+            initBoardGlobalsGtk( globals, params, gr );
+            gtk_widget_show( globals->window );
+        } else {
+            AskPair pairs[] = { {.txt = "Delete", .result = 1},
+                              {.txt = "Download", .result = 2},
+                              {.txt = "Ok", .result = 3},
+                              { NULL, 0 }
+            };
+            gchar* lst = g_strjoinv(", ", (gchar**)missingNames );
+            gchar* msg = g_strdup_printf( "This game is missing wordlist[s] %s.", lst );
+            switch ( gtkask( apg->window, msg, GTK_BUTTONS_NONE, pairs ) ) {
+            case 1:             /* delete */
+                gmgr_deleteGame( params->dutil, NULL_XWE, gr );
+                break;
+            case 2:
+            case 3:
+                break;
+            }
+            g_free( lst );
+            g_free( msg );
+        }
     }
 }
 
@@ -365,39 +535,32 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 
     GArray* selRows = apg->selRows;
     for ( int ii = 0; ii < selRows->len; ++ii ) {
+#ifdef XWFEATURE_DEVICE_STORES
+        GameRef row = g_array_index( selRows, GameRef, ii );
+#else
         sqlite3_int64 row = g_array_index( selRows, sqlite3_int64, ii );
+#endif
         open_row( apg, row, XP_FALSE );
     }
 }
 
 void
-make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
+make_rematch( GtkAppGlobals* apg, GameRef parent, XP_Bool archiveAfter,
+              XP_Bool deleteAfter )
 {
-    XP_Bool canRematch = server_canRematch( cGlobals->game.server, NULL );
-    XP_ASSERT( canRematch );
+    XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+    XP_Bool canRematch = gr_canRematch( dutil, parent, NULL_XWE, NULL );
 
     if ( canRematch ) {
         gchar gameName[128];
         int nameLen = VSIZE(gameName);
-        NewOrder no;
-        if ( gtkask_rematch( cGlobals, &no, gameName, &nameLen ) ) {
-            LaunchParams* params = apg->cag.params;
-            GtkGameGlobals* newGlobals = calloc( 1, sizeof(*newGlobals) );
-            initBoardGlobalsGtk( newGlobals, params, NULL );
-
-            XW_UtilCtxt* util = newGlobals->cGlobals.util;
-            const CommonPrefs* cp = &newGlobals->cGlobals.cp;
-            XP_UCHAR buf[64];
-            snprintf( buf, VSIZE(buf), "Game %lX", XP_RANDOM() % 256 );
-            game_makeRematch( &cGlobals->game, NULL_XWE, util, cp,
-                              &newGlobals->cGlobals.procs,
-                              &newGlobals->cGlobals.game, buf, &no );
-
-            linuxSaveGame( &newGlobals->cGlobals );
-            sqlite3_int64 rowid = newGlobals->cGlobals.rowid;
-            freeGlobals( newGlobals );
-
-            open_row( apg, rowid, XP_TRUE );
+        RematchOrder ro;
+        if ( gtkask_rematch( dutil, apg->window, parent, &ro,
+                             gameName, &nameLen ) ) {
+            GameRef gr = gr_makeRematch( dutil, parent, NULL_XWE, gameName,
+                                         ro, archiveAfter, deleteAfter );
+            addGTKGame( apg->cag.params, gr );
+            open_row( apg, gr, XP_TRUE );
         }
     }
 } /* make_rematch */
@@ -408,41 +571,68 @@ handle_rematch_button( GtkWidget* XP_UNUSED(widget), void* closure )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     GArray* selRows = apg->selRows;
     for ( int ii = 0; ii < selRows->len; ++ii ) {
-        sqlite3_int64 rowid = g_array_index( selRows, sqlite3_int64, ii );
-        GtkGameGlobals tmpGlobals;
-        if ( loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid ) ) {
-            make_rematch( apg, &tmpGlobals.cGlobals );
-        }
-        freeGlobals( &tmpGlobals );
+        GameRef gr = g_array_index( selRows, GameRef, ii );
+        make_rematch( apg, gr, XP_FALSE, XP_FALSE );
     }
 }
 
 static void
-delete_game( GtkAppGlobals* apg, sqlite3_int64 rowid )
+handle_movetogroup_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+
+    /* If we don't have selected games, skip */
+    guint nGames = apg->selRows->len;
+    if ( 0 < nGames ) {
+        GameRef grs[nGames];
+        for ( guint ii = 0; ii < nGames; ++ii ) {
+            grs[ii] = g_array_index( apg->selRows, GameRef, ii );
+        }
+
+        XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+        XP_U32 nGroups = gmgr_countGroups( dutil, NULL_XWE );
+        GroupRef grps[nGroups];
+        XP_UCHAR bufs[nGroups][32];
+        XP_UCHAR* names[nGroups];
+        for ( int ii = 0; ii < nGroups; ++ii ) {
+            grps[ii] = gmgr_getNthGroup( dutil, NULL_XWE, ii );
+            gmgr_getGroupName( dutil, NULL_XWE, grps[ii],
+                               bufs[ii], VSIZE(bufs[ii]) );
+            names[ii] = bufs[ii];
+        }
+
+        XP_U16 sel;
+        if ( gtkAskGroup( apg->window, names, nGroups, &sel ) ) {
+            gmgr_moveGames( dutil, NULL_XWE, grps[sel], grs, nGames );
+        }
+    }
+}
+
+static void
+handle_archive_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    guint nGames = apg->selRows->len;
+    if ( 0 < nGames ) {
+        GameRef grs[nGames];
+        for ( guint ii = 0; ii < nGames; ++ii ) {
+            grs[ii] = g_array_index( apg->selRows, GameRef, ii );
+        }
+        XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+        gchar* msg = "Are you sure you want to archive the selected game[s]? "
+            "Archived games do not send or receive messages in the background.";
+        if ( GTK_RESPONSE_YES == gtkask( apg->window, msg, GTK_BUTTONS_YES_NO, NULL ) ) {
+            gmgr_moveGames( dutil, NULL_XWE, GROUP_ARCHIVE, grs, nGames );
+        }
+    }
+}
+
+static void
+delete_game( GtkAppGlobals* apg, GameRef gr )
 {
     LaunchParams* params = apg->cag.params;
-    GameInfo gib;
-#ifdef DEBUG
-    XP_Bool success =
-#endif
-        gdb_getGameInfoForRow( params->pDb, rowid, &gib );
-    XP_ASSERT( success );
-#ifdef XWFEATURE_RELAY
-    XP_U32 clientToken = makeClientToken( rowid, gib.seed );
-#endif
-    removeRow( apg, rowid );
-    gdb_deleteGame( params->pDb, rowid );
-
-#ifdef XWFEATURE_RELAY
-    XP_UCHAR devIDBuf[64] = {};
-    gdb_fetch_safe( params->pDb, KEY_RDEVID, NULL, devIDBuf, sizeof(devIDBuf) );
-    if ( '\0' != devIDBuf[0] ) {
-        relaycon_deleted( params, devIDBuf, clientToken );
-    } else {
-        XP_LOGF( "%s: not calling relaycon_deleted: no relayID", __func__ );
-    }
-#endif
-    g_object_unref( gib.snap );
+    gmgr_deleteGame( params->dutil, NULL_XWE, gr );
+    buildGamesList( apg );
 }
 
 static void
@@ -450,13 +640,19 @@ handle_delete_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     guint len = apg->selRows->len;
-    for ( guint ii = 0; ii < len; ++ii ) {
-        sqlite3_int64 rowid = g_array_index( apg->selRows, sqlite3_int64, ii );
-        delete_game( apg, rowid );
+
+    XP_UCHAR buf[128];
+    XP_SNPRINTF( buf, VSIZE(buf), "Are you sure you want to delete the %d "
+                 "selected games", len );
+    if ( GTK_RESPONSE_YES == gtkask( apg->window, buf,
+                                     GTK_BUTTONS_YES_NO, NULL ) ) {
+        for ( guint ii = 0; ii < len; ++ii ) {
+            GameRef item = g_array_index( apg->selRows, GameRef, ii );
+            delete_game( apg, item );
+        }
+        apg->selRows = g_array_set_size( apg->selRows, 0 );
+        updateButtons( apg );
     }
-    apg->selRows = g_array_set_size( apg->selRows, 0 );
-    updateButtons( apg );
-    /* Need now to update the selection and sync the buttons */
 }
 
 static gint
@@ -475,10 +671,14 @@ handle_destroy( GtkWidget* XP_UNUSED(widget), gpointer data )
     for ( iter = apg->cag.globalsList; !!iter; iter = iter->next ) {
         GtkGameGlobals* globals = (GtkGameGlobals*)iter->data;
         destroy_board_window( NULL, globals );
-        // freeGlobals( globals );
+        cg_unref( &globals->cGlobals );
     }
     g_slist_free( apg->cag.globalsList );
 
+    int new_width, new_height;
+    gtk_window_get_size( GTK_WINDOW(apg->window), &new_width, &new_height);
+    apg->lastConfigure.width = new_width;
+    apg->lastConfigure.height = new_height;
     saveSize( &apg->lastConfigure, apg->cag.params->pDb, KEY_WIN_LOC );
 
     /* Quit via an idle proc, because other shutdown code inside
@@ -577,6 +777,169 @@ saveSize( const GdkEventConfigure* lastSize, sqlite3* pDb, const gchar* key )
 }
 #undef COORDS_FORMAT
 
+typedef struct _ThumbChangeData {
+    GameRef gr;
+    GtkAppGlobals* apg;
+} ThumbChangeData;
+
+static gint
+thumbChangeIdle( gpointer data )
+{
+    ThumbChangeData* tcd = (ThumbChangeData*)data;
+    GtkTreeIter found;
+    GtkWidget* tree;
+    if ( findFor( tcd->apg, tcd->gr, &found, &tree ) ) {
+        XP_LOGFF( "ready to update!!" );
+        GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
+        GtkListStore* store = GTK_LIST_STORE( model );
+
+        GdkPixbuf* snap = getSnapData( tcd->apg->cag.params, tcd->gr );
+        gtk_list_store_set( store, &found,
+                            ROW_THUMB, snap,
+                            -1 );
+    }
+    g_free( data );
+    return 0;                   /* don't run again */
+}
+
+static void
+onThumbChangedGTK( GtkAppGlobals* apg, GameRef gr )
+{
+    ThumbChangeData tcd = { .gr = gr,
+                            .apg = apg,
+    };
+    (void)g_idle_add( thumbChangeIdle, g_memdup2(&tcd, sizeof(tcd)) );
+}
+
+void
+onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    XP_Bool doBuild = XP_FALSE;
+    if ( getAndClear( GCE_ADDED, &gces ) ) {
+        doBuild = XP_TRUE;
+    }
+    if ( getAndClear( GCE_DELETED, &gces ) ) {
+        doBuild = XP_TRUE;
+    }
+    if ( getAndClear( GCE_CONFIG_CHANGED, &gces ) ) {
+        doBuild = XP_TRUE;
+    }
+    if ( getAndClear( GCE_PLAYER_JOINED, &gces ) ) {
+        doBuild = XP_TRUE;
+    }
+    if ( getAndClear( GCE_TURN_CHANGED, &gces ) ) {
+        doBuild = XP_TRUE;
+    }
+    if ( getAndClear( GCE_BOARD_CHANGED, &gces ) ) {
+        doBuild = XP_TRUE;
+        onThumbChangedGTK( apg, gr );
+    }
+    XP_ASSERT( !gces );         /* did we get them all? */
+
+    if ( doBuild ) {
+        buildGamesList( apg );
+    }
+}
+
+void
+onGroupChangedGTK( LaunchParams* params, GroupRef grp,
+                   GroupChangeEvents gces )
+{
+    XP_LOGFF( "grp: %d, gces: %x", grp, gces );
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    buildGamesList( apg );
+}
+
+void
+onGTKGroupRemoved( LaunchParams* params, GroupRef XP_UNUSED(grp) )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    buildGamesList( apg );
+}
+
+static gint
+buildGamesListIdle( gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    buildGamesList( apg );
+    return 0;                   /* don't run again */
+}
+
+void
+onGTKMissingDictAdded( LaunchParams* params, GameRef gr,
+                       const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    (void)g_idle_add( buildGamesListIdle, apg );
+}
+
+void
+onGTKDictGone( LaunchParams* params, GameRef gr, const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(gr=" GR_FMT ", dictName=%s)", gr, dictName );
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    (void)g_idle_add( buildGamesListIdle, apg );
+}
+
+void
+informMoveGTK( LaunchParams* params, GameRef gr, XWStreamCtxt* expl,
+               XWStreamCtxt* words )
+{
+    GtkWidget* parent;
+    CommonAppGlobals* cag = params->cag;
+    CommonGlobals* cGlobals = globalsForGameRef( cag, gr, XP_FALSE );
+
+    if ( !!cGlobals ) {
+        parent = ((GtkGameGlobals*)cGlobals)->window;
+    } else {
+        GtkAppGlobals* globals = (GtkAppGlobals*)cag;
+        parent = globals->window;
+    }
+
+    char* explStr = strFromStream( expl );
+    gchar* msg = g_strdup_printf( "informMove():\nexpl: %s", explStr );
+    if ( !!words ) {
+        char* wordsStr = strFromStream( words );
+        gchar* prev = msg;
+        gchar* postfix = g_strdup_printf( "words: %s", wordsStr );
+        free( wordsStr );
+        msg = g_strconcat( msg, postfix, NULL );
+        g_free( prev );
+        g_free( postfix );
+    }
+    (void)gtktell( parent, msg );
+    free( explStr );
+    g_free( msg );
+}
+
+void
+informGameOverGTK( LaunchParams* params, GameRef gr, XP_S16 quitter )
+{
+    CommonGlobals* cGlobals = globalsForGameRef( params->cag, gr, XP_FALSE );
+    if ( !!cGlobals ) {
+        GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
+
+        if ( params->printHistory ) {
+            catGameHistory( params, gr );
+        }
+
+        catFinalScores( params, gr, quitter );
+
+        if ( params->quitAfter >= 0 ) {
+            sleep( params->quitAfter );
+            destroy_board_window( NULL, globals );
+        } else if ( params->undoWhenDone ) {
+            XW_DUtilCtxt* dutil = params->dutil;
+            gr_handleUndo( dutil, cGlobals->gr, NULL_XWE, 0 );
+            gr_draw( dutil, cGlobals->gr, NULL_XWE );
+        } else if ( !params->skipGameOver ) {
+            gtkShowFinalScores( globals, XP_TRUE );
+        }
+    }
+}
+
 static void
 handle_known_players( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
 {
@@ -610,6 +973,221 @@ handle_mqttid_to_clip( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
     const gchar* devIDStr = mqttc_getDevIDStr( params );
     GtkClipboard* clipboard = gtk_clipboard_get( GDK_SELECTION_CLIPBOARD );
     gtk_clipboard_set_text( clipboard, devIDStr, strlen(devIDStr) );
+}
+
+#ifdef XWFEATURE_DEVICE_STORES
+/* static void */
+/* onGameProc( GameRef gr, XWEnv XP_UNUSED(xwe), void* closure ) */
+/* { */
+/*     GtkAppGlobals* apg = (GtkAppGlobals*)closure; */
+/*     onNewGameRef( apg, gr, XP_TRUE ); */
+/* } */
+#endif
+
+static void
+showGamesToggle( GtkWidget* toggle, void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->cag.params;
+    params->showGames = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+}
+
+static void
+skipGroupsToggle( GtkWidget* toggle, void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->cag.params;
+    params->skipGroups = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+    buildGamesList( apg );
+}
+
+typedef struct _GroupState {
+    GtkAppGlobals* apg;
+    LaunchParams* params;
+    GroupRef grp;
+} GroupState;
+
+static void
+hideCheckToggled( GtkWidget* toggle, void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    bool collapse = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+    gmgr_setGroupCollapsed( gs->params->dutil, NULL_XWE, gs->grp, collapse );
+}
+
+
+static void
+mkDefaultGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    gmgr_makeGroupDefault( gs->params->dutil, NULL_XWE, gs->grp );
+}
+
+static void
+addToGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    GtkAppGlobals* apg = gs->apg;
+    newGameIn( apg, gs->grp );
+}
+
+static void
+renameGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    XP_UCHAR name[64];
+    gmgr_getGroupName( gs->params->dutil, NULL_XWE, gs->grp,
+                       name, sizeof(name) );
+    if ( gtkEditAlert( gs->apg->window, "Edit your group's name", name, VSIZE(name) ) ) {
+        gmgr_setGroupName( gs->params->dutil, NULL_XWE, gs->grp, name );
+    }
+}
+
+static void
+upGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    gmgr_raiseGroup( gs->params->dutil, NULL_XWE, gs->grp );
+}
+
+static void
+downGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    gmgr_lowerGroup( gs->params->dutil, NULL_XWE, gs->grp );
+}
+
+static void
+sortGroupProc( GtkWidget* XP_UNUSED(widget), void* XP_UNUSED(closure) )
+{
+    LOG_FUNC();
+}
+
+static void
+deleteGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GroupState* gs = (GroupState*)closure;
+    XW_DUtilCtxt* dutil = gs->params->dutil;
+    if ( gs->grp == gmgr_getDefaultGroup( dutil ) ) {
+        gtktell( gs->apg->window, "The default group cannot be deleted." );
+    } else {
+        XP_U32 count = gmgr_getGroupGamesCount( dutil, NULL_XWE, gs->grp );
+        XP_UCHAR name[32];
+        gmgr_getGroupName( dutil, NULL_XWE, gs->grp, name, VSIZE(name) );
+        XP_UCHAR msg[256];
+        XP_SNPRINTF( msg, VSIZE(msg), "Are you sure you want to delete the group %s and its %d games",
+                     name, count );
+        if ( GTK_RESPONSE_YES == gtkask( gs->apg->window, msg, GTK_BUTTONS_YES_NO, NULL ) ) {
+            gmgr_deleteGroup( dutil, NULL_XWE, gs->grp );
+        }
+    }
+}
+
+static void
+addGroupMenuItem(GtkWidget* menu, const gchar* label,
+                 GCallback proc, void* closure )
+{
+    GtkWidget* item = gtk_menu_item_new_with_label( label );
+    gtk_widget_show(item);
+    g_signal_connect( item, "activate", G_CALLBACK(proc), closure );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menu), item );
+}
+
+static GtkWidget*
+mkGroupHeader( GtkAppGlobals* apg, GroupRef grp )
+{
+    LaunchParams* params = apg->cag.params;
+    GroupState* gs = g_malloc0( sizeof(*gs) );
+    gs->apg = apg;
+    gs->params = params;
+    gs->grp = grp;
+
+    GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+
+    XP_U32 nGames = gmgr_getGroupGamesCount( params->dutil, NULL_XWE, grp );
+    XP_UCHAR name[32];
+    gmgr_getGroupName( params->dutil, NULL_XWE, grp, name, VSIZE(name) );
+    GroupRef dflt = gmgr_getDefaultGroup( params->dutil );
+    XP_Bool isDefault = dflt == grp;
+    gchar all[128];
+    XP_SNPRINTF( all, VSIZE(all), "Group: %s; nGames: %d; grp: %d; dflt: %s ",
+                 name, nGames, grp, isDefault?"true":"false" );
+    GtkWidget* label = gtk_label_new( all );
+
+    gtk_container_add( GTK_CONTAINER(hbox), label );
+    gtk_widget_show( label );
+
+    GtkWidget* menuButton = gtk_menu_button_new();
+    GtkWidget* menu = gtk_menu_new();
+    addGroupMenuItem( menu, "Make default", (GCallback)mkDefaultGroupProc, gs );
+    addGroupMenuItem( menu, "Add game", (GCallback)addToGroupProc, gs );
+    addGroupMenuItem( menu, "Rename group", (GCallback)renameGroupProc, gs );
+    addGroupMenuItem( menu, "Delete group", (GCallback)deleteGroupProc, gs );
+    addGroupMenuItem( menu, "Move group up", (GCallback)upGroupProc, gs );
+    addGroupMenuItem( menu, "Move group down", (GCallback)downGroupProc, gs );
+    addGroupMenuItem( menu, "Set group sort order", (GCallback)sortGroupProc, gs );
+    gtk_menu_button_set_popup( GTK_MENU_BUTTON(menuButton), menu );
+
+    gtk_box_pack_end( GTK_BOX(hbox), menuButton, true, true, 0 );
+    gtk_widget_show( menuButton );
+
+    GtkWidget* hideCheck = gtk_check_button_new_with_label( "Collapse" );
+    gtk_box_pack_end( GTK_BOX(hbox), hideCheck, true, true, 0 );
+
+    gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(hideCheck),
+                                  gmgr_getGroupCollapsed(params->dutil,
+                                                         NULL_XWE, grp) );
+    g_signal_connect( hideCheck, "toggled",
+                      G_CALLBACK(hideCheckToggled), gs );
+    gtk_widget_show( hideCheck );
+
+    gtk_widget_show( hbox );
+    return hbox;
+}
+
+static void
+buildGamesList( GtkAppGlobals* apg )
+{
+    GtkWidget* treesBox = apg->treesBox;
+    GtkWidget* list = NULL;
+
+    /* remove all */
+    GList* children = gtk_container_get_children(GTK_CONTAINER(treesBox));
+    for( GList* iter = children; iter != NULL; iter = g_list_next(iter)) {
+        gtk_container_remove( GTK_CONTAINER(treesBox), GTK_WIDGET(iter->data) );
+    }
+    g_list_free(children);
+
+    LaunchParams* params = apg->cag.params;
+    if ( params->skipGroups ) {
+        XP_U16 count = gmgr_countGames( params->dutil, NULL_XWE );
+        for ( XP_U16 ii = 0; ii < count; ++ii ) {
+            GLItemRef ir = gmgr_getNthGame( params->dutil, NULL_XWE, ii );
+            if ( !list ) {
+                list = init_games_list( apg );
+            }
+            gtk_container_add( GTK_CONTAINER(treesBox), list );
+            gtk_widget_show( list );
+            add_to_list( params, list, gmgr_toGame( ir ) );
+        }
+    } else {
+        XP_U16 count = gmgr_countItems( params->dutil, NULL_XWE );
+        for ( XP_U16 ii = 0; ii < count; ++ii ) {
+            GLItemRef ir = gmgr_getNthItem( params->dutil, NULL_XWE, ii );
+            if ( gmgr_isGame( ir ) ) {
+                if ( !list ) {
+                    list = init_games_list( apg );
+                    gtk_container_add( GTK_CONTAINER(treesBox), list );
+                    gtk_widget_show( list );
+                }
+                add_to_list( params, list, gmgr_toGame( ir ) );
+            } else {
+                list = NULL;   /* clear so any additional games will get new list */
+                GtkWidget* header = mkGroupHeader( apg, gmgr_toGroup(ir) );
+                gtk_container_add( GTK_CONTAINER(treesBox), header );
+            }
+        }
+    }
 }
 
 static void
@@ -650,23 +1228,50 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 
+    {
+        GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+        gtk_widget_show( hbox );
+        gtk_container_add( GTK_CONTAINER(vbox), hbox );
+        {
+            GtkWidget* showNewcheck = gtk_check_button_new_with_label( "Show new games" );
+            gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(showNewcheck),
+                                          params->showGames );
+            g_signal_connect( showNewcheck, "toggled", G_CALLBACK(showGamesToggle),
+                              apg );
+            gtk_widget_show( showNewcheck );
+            gtk_container_add( GTK_CONTAINER(hbox), showNewcheck );
+        }
+        {
+            GtkWidget* skipGroupsCheck = gtk_check_button_new_with_label( "Skip Groups" );
+            gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(skipGroupsCheck),
+                                          params->skipGroups );
+            g_signal_connect( skipGroupsCheck, "toggled",
+                              G_CALLBACK(skipGroupsToggle), apg );
+            gtk_widget_show( skipGroupsCheck );
+            gtk_container_add( GTK_CONTAINER(hbox), skipGroupsCheck );
+        }
+    }
+
     GtkWidget* swin = gtk_scrolled_window_new( NULL, NULL );
     gboolean expand = TRUE;  // scrollable window gets all extra space
     gtk_box_pack_start( GTK_BOX(vbox), swin, expand, TRUE, 0 );
     gtk_widget_show( swin );
 
-    GtkWidget* list = init_games_list( apg );
-    gtk_container_add( GTK_CONTAINER(swin), list );
-    
-    gtk_widget_show( list );
+    apg->treesBox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+    gtk_widget_show( apg->treesBox );
+    gtk_container_add( GTK_CONTAINER(swin), apg->treesBox );
 
     if ( !!params->pDb ) {
-        GSList* games = gdb_listGames( params->pDb );
-        for ( GSList* iter = games; !!iter; iter = iter->next ) {
-            sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
-            onNewData( apg, *rowid, XP_TRUE );
-        }
-        gdb_freeGamesList( games );
+#ifdef XWFEATURE_DEVICE_STORES
+        buildGamesList( apg );
+#else
+        /* GSList* games = gdb_listGames( params->pDb ); */
+        /* for ( GSList* iter = games; !!iter; iter = iter->next ) { */
+        /*     sqlite3_int64* rowid = (sqlite3_int64*)iter->data; */
+        /*     onNewData( apg, *rowid, XP_TRUE ); */
+        /* } */
+        /* gdb_freeGamesList( games ); */
+#endif
     }
 
     GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
@@ -674,10 +1279,17 @@ makeGamesWindow( GtkAppGlobals* apg )
     gtk_container_add( GTK_CONTAINER(vbox), hbox );
 
     (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
+    (void)addButton( "New group", hbox, G_CALLBACK(handle_newgroup_button), apg );
+    apg->renameButton = addButton( "Rename", hbox,
+                                   G_CALLBACK(handle_rename_button), apg );
     apg->openButton = addButton( "Open", hbox, 
                                  G_CALLBACK(handle_open_button), apg );
     apg->rematchButton = addButton( "Rematch", hbox, 
                                     G_CALLBACK(handle_rematch_button), apg );
+    apg->moveToGroupButton = addButton( "Move to group", hbox,
+                                        G_CALLBACK(handle_movetogroup_button), apg );
+    apg->archiveButton = addButton( "Archive", hbox,
+                                    G_CALLBACK(handle_archive_button), apg );
     apg->deleteButton = addButton( "Delete", hbox, 
                                    G_CALLBACK(handle_delete_button), apg );
     (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
@@ -689,8 +1301,9 @@ makeGamesWindow( GtkAppGlobals* apg )
 static GtkWidget* 
 openDBFile( GtkAppGlobals* apg )
 {
+    XP_ASSERT(0);
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
-    initBoardGlobalsGtk( globals, apg->cag.params, NULL );
+    initBoardGlobalsGtk( globals, apg->cag.params, 0 );
 
     GtkWidget* window = globals->window;
     gtk_widget_show( window );
@@ -701,12 +1314,14 @@ static gint
 freeGameGlobals( gpointer data )
 {
     LOG_FUNC();
+
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
-    GtkAppGlobals* apg = globals->apg;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    GtkAppGlobals* apg = (GtkAppGlobals*)cGlobals->params->cag;
     if ( !!apg ) {
-        recordClosed( apg, globals );
+        forgetGameGlobals( &apg->cag, cGlobals );
     }
-    freeGlobals( globals );
+    cg_unref( cGlobals );
     return 0;                   /* don't run again */
 }
 
@@ -718,42 +1333,20 @@ windowDestroyed( GtkGameGlobals* globals )
 }
 
 static void
-onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
+onNewData( GtkAppGlobals* apg, GameRef XP_UNUSED(gr),
+           XP_Bool XP_UNUSED(isNew) )
 {
-    GameInfo gib;
-    if ( gdb_getGameInfoForRow( apg->cag.params->pDb, rowid, &gib ) ) {
-        add_to_list( apg->listWidget, rowid, isNew, &gib );
-        g_object_unref( gib.snap );
-    }
-}
-
-static XP_U16
-feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid, 
-               const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
-{
-    XP_U16 seed = 0;
-    XP_U32 ignored = 0;
-    GtkGameGlobals* globals = findOpenGame( apg, &rowid, &ignored );
-
-    if ( !!globals ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from );
-        seed = comms_getChannelSeed( globals->cGlobals.game.comms );
-    } else {
-        GtkGameGlobals tmpGlobals;
-        if ( loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid ) ) {
-            gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len, from );
-            seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms );
-            linuxSaveGame( &tmpGlobals.cGlobals );
-        }
-        freeGlobals( &tmpGlobals );
-    }
-    return seed;
+    buildGamesList( apg );
 }
 
 /* Stuff common to receiving invitations */
 static void
-gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli )
+gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* XP_UNUSED(nli) )
 {
+#ifdef XWFEATURE_DEVICE_STORES
+    XP_ASSERT(0);
+    XP_USE(apg);
+#else
     LOG_FUNC();
 
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
@@ -765,10 +1358,11 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli )
     CommsAddrRec selfAddr;
     makeSelfAddress( &selfAddr, params );
 
-    CommonPrefs* cp = &cGlobals->cp;
-    game_makeFromInvite( &cGlobals->game, NULL_XWE, nli,
-                         &selfAddr, cGlobals->util, cGlobals->draw,
-                         cp, &cGlobals->procs );
+    // CommonPrefs* cp = &cGlobals->cp;
+    XP_ASSERT(0);
+    // gr_makeFromInvite( cGlobals->gameRef, NULL_XWE, nli,
+    // &selfAddr, cGlobals->util, cGlobals->draw,
+    // cp, &cGlobals->procs );
 
     linuxSaveGame( cGlobals );
     sqlite3_int64 rowid = cGlobals->rowid;
@@ -777,6 +1371,7 @@ gameFromInvite( GtkAppGlobals* apg, const NetLaunchInfo* nli )
     open_row( apg, rowid, XP_TRUE );
 
     LOG_RETURN_VOID();
+#endif
 }
 
 void
@@ -858,39 +1453,6 @@ gtkNoticeRcvd( void* closure )
 }
 #endif
 
-static void
-smsInviteReceived( void* closure, const NetLaunchInfo* nli )
-{
-    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    XP_LOGFF( "(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, "
-              "nHere=%d, forceChannel=%d)", nli->gameName,
-              nli->gameID, nli->dict, nli->nPlayersT,
-              nli->nPlayersH, nli->forceChannel );
-
-    gameFromInvite( apg, nli );
-}
-
-void
-msgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID,
-                const XP_U8* buf, XP_U16 len )
-{
-    LOG_FUNC();
-    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    LaunchParams* params =  apg->cag.params;
-
-    sqlite3_int64 rowids[4];
-    int nRowIDs = VSIZE(rowids);
-    gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
-    XP_LOGFF( "found %d rows for gameID %d", nRowIDs, gameID );
-    if ( 0 == nRowIDs ) {
-        mqttc_notifyGameGone( params, &from->u.mqtt.devID, gameID );
-    } else {
-        for ( int ii = 0; ii < nRowIDs; ++ii ) {
-            feedBufferGTK( apg, rowids[ii], buf, len, from );
-        }
-    }
-}
-
 void
 gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
 {
@@ -898,6 +1460,11 @@ gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
     LaunchParams* params =  apg->cag.params;
 
     /* Do we have this game locally still? If not, ignore message */
+#ifdef XWFEATURE_DEVICE_STORES
+    XP_USE(params);
+    XP_USE(gameID);
+    XP_ASSERT(0);
+#else
     sqlite3_int64 rowids[4];
     int nRowIDs = VSIZE(rowids);
     gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
@@ -914,6 +1481,7 @@ gameGoneGTK( void* closure, const CommsAddrRec* XP_UNUSED(from), XP_U32 gameID )
             XP_LOGFF( "we need to call comms_setQuashed() here but don't have comms" );
         }
     }
+#endif
 }
 
 #ifdef XWFEATURE_RELAY
@@ -955,14 +1523,22 @@ gtkErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
 #endif
 
 void
-gtkOnGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime )
+gtkOnGameSaved( void* closure, GameRef gr, XP_Bool firstTime )
 {
+#ifdef XWFEATURE_DEVICE_STORES
+    XP_ASSERT(0);
+    XP_LOGFF("doing nothing");
+    XP_USE(closure);
+    XP_USE(gr);
+    XP_USE(firstTime);
+#else
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     GtkAppGlobals* apg = globals->apg;
     /* May not be recorded */
     if ( !!apg ) {
         onNewData( apg, rowid, firstTime );
     }
+#endif
 }
 
 static GtkAppGlobals* g_globals_for_signal = NULL;
@@ -980,13 +1556,11 @@ newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->cag.params;
     GtkGameGlobals* globals = calloc( 1, sizeof(*globals) );
-    initBoardGlobalsGtk( globals, params, NULL );
-
-    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, gi );
+    GameRef gr = gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, gi, NULL );
+    initBoardGlobalsGtk( globals, params, gr );
 
     GtkWidget* gameWindow = globals->window;
-    globals->cGlobals.rowid = -1;
-    recordOpened( apg, globals );
+    XP_ASSERT( globals->cGlobals.gr == gr );
     gtk_widget_show( gameWindow );
     *newGameIDP = globals->cGlobals.gi->gameID;
     return XP_TRUE;
@@ -1029,8 +1603,9 @@ sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
     GtkGameGlobals* globals = findOpenGame( apg, &rowid, &gameID );
     XP_Bool success;
 
+    XW_DUtilCtxt* dutil = apg->cag.params->dutil;
     if ( !!globals ) {
-        board_sendChat( globals->cGlobals.game.board, NULL_XWE, msg );
+        gr_sendChat( dutil, globals->cGlobals.gr, NULL_XWE, msg );
         success = XP_TRUE;
     } else {
         GtkGameGlobals tmpGlobals = {};
@@ -1040,7 +1615,7 @@ sendChatWrapper( void* closure, XP_U32 gameID, const char* msg )
         success = 1 == nRowIDs
             && loadGameNoDraw( &tmpGlobals, apg->cag.params, rowid );
         if ( success ) {
-            board_sendChat( tmpGlobals.cGlobals.game.board, NULL_XWE, msg );
+            gr_sendChat( dutil, tmpGlobals.cGlobals.gr, NULL_XWE, msg );
         }
         freeGlobals( &tmpGlobals );
     }
@@ -1072,6 +1647,11 @@ addInvitesWrapper( void* closure, XP_U32 gameID, XP_U16 nRemotes,
 static const CommonGlobals*
 getForGameIDWrapper( void* closure, XP_U32 gameID )
 {
+#ifdef XWFEATURE_DEVICE_STORES
+    XP_ASSERT(0);
+    XP_USE(closure);
+    XP_USE(gameID);
+#else
     CommonGlobals* result = NULL;
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
 
@@ -1090,13 +1670,14 @@ getForGameIDWrapper( void* closure, XP_U32 gameID )
         XP_LOGFF( "at bottom" );
     }
     return result;
+#endif
 }
 
 int
 gtkmain( LaunchParams* params )
 {
     GtkAppGlobals apg = {};
-    params->appGlobals = &apg;
+    params->cag = &apg.cag;
 
     g_globals_for_signal = &apg;
 
@@ -1148,27 +1729,19 @@ gtkmain( LaunchParams* params )
         }
 #endif
 
-        mqttc_init( params );
-
 #ifdef XWFEATURE_SMS
         gchar* myPhone;
         XP_U16 myPort;
         if ( parseSMSParams( params, &myPhone, &myPort ) ) {
-            SMSProcs smsProcs = {
-                .inviteReceived = smsInviteReceived,
-                .msgReceived = msgReceivedGTK,
-            };
-            linux_sms_init( params, myPhone, myPort, &smsProcs, &apg );
+            linux_sms_init( params, myPhone, myPort );
         } else {
             XP_LOGF( "not activating SMS: I don't have a phone" );
         }
 
         if ( params->runSMSTest ) {
             CommonGlobals cGlobals = {.params = params };
-            setupUtil( &cGlobals );
+            XP_ASSERT(0);       /* fix this (rewrite entirely?) */
             smsproto_runTests( params->mpool, NULL_XWE, cGlobals.params->dutil );
-            linux_util_vt_destroy( cGlobals.util );
-            free( cGlobals.util );
         }
 #endif
         makeGamesWindow( &apg );

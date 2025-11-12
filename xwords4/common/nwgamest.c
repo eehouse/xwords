@@ -35,7 +35,7 @@ struct NewGameCtx {
     NewGameSetColProc setColProc;
     NewGameGetColProc getColProc;
     NewGameSetAttrProc setAttrProc;
-    XW_UtilCtxt* util;
+    XW_DUtilCtxt* dutil;
     void* closure;
 
     /* Palm needs to store cleartext passwords separately in order to
@@ -69,14 +69,14 @@ static XP_Bool changeRole( NewGameCtx* ngc, XWEnv xwe,  DeviceRole role );
 static XP_Bool checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser );
 
 NewGameCtx*
-newg_make( MPFORMAL XP_Bool isNewGame, 
-           XW_UtilCtxt* util,
+newg_make( XP_Bool isNewGame, 
+           XW_DUtilCtxt* dutil,
            NewGameEnableColProc enableColProc, 
            NewGameEnableAttrProc enableAttrProc, 
            NewGameGetColProc getColProc, NewGameSetColProc setColProc,
            NewGameSetAttrProc setAttrProc, void* closure )
 {
-    NewGameCtx* result = XP_MALLOC( mpool, sizeof(*result) );
+    NewGameCtx* result = XP_MALLOC( dutil->mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
     result->enableColProc = enableColProc;
@@ -86,8 +86,8 @@ newg_make( MPFORMAL XP_Bool isNewGame,
     result->setAttrProc = setAttrProc;
     result->closure = closure;
     result->isNewGame = isNewGame;
-    result->util = util;
-    MPASSIGN(result->mpool, mpool);
+    result->dutil = dutil;
+    MPASSIGN(result->mpool, dutil->mpool);
 
     return result;
 } /* newg_make */
@@ -363,7 +363,7 @@ newg_juggle( NewGameCtx* ngc )
 } /* newg_juggle */
 
 static XP_Bool
-checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
+checkConsistent( NewGameCtx* ngc, XWEnv XP_UNUSED(xwe), XP_Bool warnUser )
 {
     XP_Bool consistent;
     XP_U16 ii;
@@ -380,7 +380,8 @@ checkConsistent( NewGameCtx* ngc, XWEnv xwe, XP_Bool warnUser )
         }
     }
     if ( !consistent && warnUser ) {
-        util_userError( ngc->util, xwe, ERR_REG_SERVER_SANS_REMOTE );
+        XP_ASSERT(0);
+        // util_userError( ngc->util, xwe, ERR_REG_SERVER_SANS_REMOTE );
     }
 
     /* Add other consistency checks, and error messages, here. */
@@ -541,8 +542,7 @@ setRoleStrings( NewGameCtx* ngc, XWEnv xwe )
         strID = STR_TOTALPLAYERS;
     }
 
-    value.ng_cp = dutil_getUserString( util_getDevUtilCtxt(ngc->util, xwe),
-                                       xwe, strID );
+    value.ng_cp = dutil_getUserString( ngc->dutil, xwe, strID );
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYHEADER, value );
 } /* setRoleStrings */
 

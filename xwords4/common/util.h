@@ -28,6 +28,7 @@
 #include "board.h"
 #include "comms.h"
 #include "dutil.h"
+#include "gameinfo.h"
 
 #include "xwrelay.h"
 
@@ -82,11 +83,12 @@ typedef XP_Bool (*UtilTimerProc)( void* closure, XWEnv xwe, XWTimerReason why );
 
 /* Platform-specific utility functions that need to be
  */
+typedef void (*UtilDestroy)( XW_UtilCtxt* uc, XWEnv xwe );
 typedef struct UtilVtable {
-    XWStreamCtxt* (*m_util_makeStreamFromAddr)( XW_UtilCtxt* uc, XWEnv xwe,
-                                                XP_PlayerAddr channelNo );
+    UtilDestroy m_util_destroy;
     void (*m_util_userError)( XW_UtilCtxt* uc, XWEnv xwe, UtilErrID id );
-
+    void (*m_util_countChanged)( XW_UtilCtxt* uc, XWEnv xwe,
+                                 XP_U16 count, XP_Bool quashed );
     void (*m_util_notifyMove)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* stream );
     void (*m_util_notifyTrade)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR** tiles,
                                 XP_U16 nTiles );
@@ -112,25 +114,16 @@ typedef struct UtilVtable {
 #endif
     void (*m_util_notifyDupStatus)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool amHost,
                                     const XP_UCHAR* msg );
-    void (*m_util_informMove)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 turn, 
-                               XWStreamCtxt* expl, XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc, XWEnv xwe );
     void (*m_util_informNetDict)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* isoCode,
                                   const XP_UCHAR* oldName, const XP_UCHAR* newName,
                                   const XP_UCHAR* newSum,
                                   XWPhoniesChoice phoniesAction );
-    void (*m_util_notifyGameOver)( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter );
 #ifdef XWFEATURE_HILITECELL
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 col, XP_U16 row );
 #endif
 
     XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc, XWEnv xwe );
-
-    void (*m_util_setTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why, XP_U16 when,
-                             UtilTimerProc proc, void* closure );
-    void (*m_util_clearTimer)( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why );
-
-    void (*m_util_requestTime)( XW_UtilCtxt* uc, XWEnv xwe );
 
     XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc, XWEnv xwe );
 
@@ -149,6 +142,8 @@ typedef struct UtilVtable {
                                        DupPauseType typ, XP_S16 turn,
                                        XP_U32 secsPrev, XP_U32 secsCur,
                                        const XP_UCHAR* msg );
+    void (*m_util_dictGone)( XW_UtilCtxt* uc, XWEnv xwe, const XP_UCHAR* dictName );
+
 
 #ifndef XWFEATURE_MINIWIN
     void (*m_util_bonusSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWBonusType bonus );
@@ -158,18 +153,14 @@ typedef struct UtilVtable {
     void (*m_util_cellSquareHeld)( XW_UtilCtxt* uc, XWEnv xwe, XWStreamCtxt* words );
 #endif
 
-    void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isHost,
-                                  const CommsAddrRec* hostAddr,
-                                  const CommsAddrRec* selfAddr, XP_U16 nDevs,
-                                  XP_U16 nMissing, XP_U16 nInvited,
-                                  XP_Bool fromRematch );
+    /* void (*m_util_informMissing)( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isHost, */
+    /*                               const CommsAddrRec* hostAddr, */
+    /*                               const CommsAddrRec* selfAddr, XP_U16 nDevs, */
+    /*                               XP_U16 nMissing, XP_U16 nInvited, */
+    /*                               XP_Bool fromRematch ); */
 
     void (*m_util_informWordsBlocked)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 nBadWords,
                                        XWStreamCtxt* words, const XP_UCHAR* dictName );
-
-    void (*m_util_getInviteeName)( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
-                                   XP_UCHAR* buf, XP_U16* bufLen );
-
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, XWEnv xwe, 
                                           XP_U16* min, XP_U16* max );
@@ -185,24 +176,32 @@ typedef struct UtilVtable {
     void (*m_util_engineStopping)( XW_UtilCtxt* uc, XWEnv xwe );
 #endif
 
-    XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc, XWEnv xwe );
+    // XW_DUtilCtxt* (*m_util_getDevUtilCtxt)( XW_UtilCtxt* uc, XWEnv xwe );
 
 } UtilVtable;
 
+typedef struct UtilTimerState UtilTimerState;
 
 struct XW_UtilCtxt {
     UtilVtable* vtable;
-
-    struct CurGameInfo* gameInfo;
-
-    void* closure;
-    MPSLOT
+    XW_DUtilCtxt* dutil;
+    UtilTimerState* uts;
+    const CurGameInfo* gi;
+    GameRef gr;
+    int refCount;
+#ifdef DEBUG
+    XP_Bool _inited;
+#endif
+#ifdef MEM_DEBUG
+    MemPoolCtx* _mpool;         /* remove this eventually */
+    // MPSLOT
+#endif
 };
 
-#define util_makeStreamFromAddr(uc,...)                         \
-    (uc)->vtable->m_util_makeStreamFromAddr((uc), __VA_ARGS__)
 #define util_userError(uc,...)                          \
     (uc)->vtable->m_util_userError((uc), __VA_ARGS__)
+#define util_countChanged(uc,...)                          \
+    (uc)->vtable->m_util_countChanged((uc), __VA_ARGS__)
 #define util_notifyMove(uc,...)                         \
     (uc)->vtable->m_util_notifyMove((uc), __VA_ARGS__)
 #define util_notifyTrade(uc,...)                                \
@@ -210,9 +209,20 @@ struct XW_UtilCtxt {
 #define util_notifyPickTileBlank( uc,...)                               \
     (uc)->vtable->m_util_notifyPickTileBlank( (uc), __VA_ARGS__ )
 
+#ifdef DEBUG
+XW_UtilCtxt* check_uc(XW_UtilCtxt* uc);
+# define CHECK_UC(UC) check_uc(UC)
+#else
+# define CHECK_UC(UC) UC
+#endif
+
+#define util_destroy(uc, ...)                             \
+    (uc)->vtable->m_util_destroy( (uc), __VA_ARGS__ )
+
 #define util_informNeedPickTiles( uc, ...) \
     (uc)->vtable->m_util_informNeedPickTiles( (uc), __VA_ARGS__ )
-
+#define util_makeStreamFromAddr(uc,...)                         \
+    (uc)->vtable->m_util_makeStreamFromAddr((uc), __VA_ARGS__)
 #define util_informNeedPassword( uc, ... )                              \
     (uc)->vtable->m_util_informNeedPassword( (uc), __VA_ARGS__ )
 
@@ -231,14 +241,10 @@ struct XW_UtilCtxt {
 
 #define util_notifyDupStatus(uc,...)                            \
     (uc)->vtable->m_util_notifyDupStatus( (uc), __VA_ARGS__ )
-#define util_informMove(uc,...)                         \
-    (uc)->vtable->m_util_informMove( (uc), __VA_ARGS__)
 #define util_informUndo(uc,...) \
     (uc)->vtable->m_util_informUndo( (uc), __VA_ARGS__)
 #define util_informNetDict(uc, ... )                      \
     (uc)->vtable->m_util_informNetDict( (uc), __VA_ARGS__)
-#define util_notifyGameOver( uc, ... )                  \
-    (uc)->vtable->m_util_notifyGameOver((uc), __VA_ARGS__)
 
 #ifdef XWFEATURE_HILITECELL
 # define util_hiliteCell( uc, ... ) \
@@ -247,13 +253,6 @@ struct XW_UtilCtxt {
 
 #define util_engineProgressCallback( uc, ... ) \
     (uc)->vtable->m_util_engineProgressCallback((uc), __VA_ARGS__)
-
-#define util_setTimer( uc, ... )                        \
-    (uc)->vtable->m_util_setTimer((uc), __VA_ARGS__ )
-#define util_clearTimer( uc, ... ) \
-    (uc)->vtable->m_util_clearTimer((uc), __VA_ARGS__)
-#define util_requestTime( uc, ... ) \
-    (uc)->vtable->m_util_requestTime((uc), __VA_ARGS__)
 
 #define util_altKeyDown( uc, ... )                 \
     (uc)->vtable->m_util_altKeyDown((uc), __VA_ARGS__)
@@ -267,6 +266,9 @@ struct XW_UtilCtxt {
 
 #define util_formatPauseHistory( uc, ...)                               \
     (uc)->vtable->m_util_formatPauseHistory( (uc), __VA_ARGS__)
+#define util_dictGone( uc, ...)                         \
+    (uc)->vtable->m_util_dictGone( (uc), __VA_ARGS__)
+
 #ifndef XWFEATURE_MINIWIN
 # define util_bonusSquareHeld( uc, ... )                                  \
     (uc)->vtable->m_util_bonusSquareHeld( (uc), __VA_ARGS__ )
@@ -278,12 +280,10 @@ struct XW_UtilCtxt {
     (uc)->vtable->m_util_cellSquareHeld( (uc), __VA_ARGS__)
 #endif
 
-#define util_informMissing( uc, ...)                    \
-    (uc)->vtable->m_util_informMissing((uc), __VA_ARGS__)
+/* #define util_informMissing( uc, ...)                    \ */
+/*     (uc)->vtable->m_util_informMissing((uc), __VA_ARGS__) */
 #define util_informWordsBlocked(uc, ...)                        \
     (uc)->vtable->m_util_informWordsBlocked( (uc), __VA_ARGS__)
-#define util_getInviteeName(uc, ... )              \
-    (uc)->vtable->m_util_getInviteeName( (uc), __VA_ARGS__ )
 
 #ifdef XWFEATURE_SEARCHLIMIT
 #define util_getTraySearchLimits(uc, ...) \
@@ -304,7 +304,41 @@ struct XW_UtilCtxt {
 # define util_engineStopping( uc, ... )
 # endif
 
-# define util_getDevUtilCtxt(uc, ...) \
-    (uc)->vtable->m_util_getDevUtilCtxt( (uc), __VA_ARGS__)
+# define util_getDevUtilCtxt(uc) ((uc)->dutil)
+
+void util_super_init( MPFORMAL XW_UtilCtxt* util, const CurGameInfo* gi,
+                      XW_DUtilCtxt* dutil, GameRef gr,
+                      UtilDestroy destProc );
+void util_super_cleanup( XW_UtilCtxt* util, XWEnv xwe );
+const CurGameInfo* util_getGI(XW_UtilCtxt* util);
+void util_clearTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why );
+void util_setTimer( XW_UtilCtxt* uc, XWEnv xwe, XWTimerReason why,
+                    XP_U16 inSecs, UtilTimerProc proc, void* closure );
+/* Replace me with something updating CurGameInfo with invitee names pending
+   their registration */
+void util_getInviteeName( XW_UtilCtxt* uc, XWEnv xwe, XP_U16 plyrNum,
+                          XP_UCHAR* buf, XP_U16* bufLen );
+
+XW_UtilCtxt* _util_ref( XW_UtilCtxt* util
+#ifdef DEBUG
+                    ,const char* proc, int line
+#endif
+                    );
+void _util_unref( XW_UtilCtxt* util, XWEnv xwe
+#ifdef DEBUG
+                    ,const char* proc, int line
+#endif
+                  );
+
+#ifdef DEBUG
+# define util_ref(UC) _util_ref((UC), __func__, __LINE__)
+# define util_unref(UC, XWE) _util_unref((UC), XWE, __func__, __LINE__)
+#else
+foo
+#endif
+
+# ifdef MEM_DEBUG
+MemPoolCtx* util_getMemPool( const XW_UtilCtxt* util, XWEnv xwe );
+# endif
 
 #endif

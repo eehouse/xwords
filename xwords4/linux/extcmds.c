@@ -24,10 +24,12 @@
 #include "device.h" 
 #include "strutils.h"
 #include "linuxmain.h"
+#include "linuxdict.h"
 #include "gamesdb.h"
 #include "dbgutil.h"
 #include "stats.h"
 #include "knownplyr.h"
+#include "gamemgr.h"
 
 static XP_U32
 castGid( cJSON* obj )
@@ -145,7 +147,8 @@ newGuestFromArgs( CmdWrapper* wr, cJSON* args )
     XP_U32 gameID = gidFromObject( args );
     cJSON* tmp = cJSON_GetObjectItem( args, "nPlayersT" );
     XP_U16 nPlayersT = tmp->valueint;
-    NetLaunchInfo nli = {.gameID = gameID,
+    NetLaunchInfo nli = {
+        .gameID = gameID,
         .nPlayersT = nPlayersT,
         .nPlayersH = 1,
     };
@@ -165,6 +168,15 @@ newGuestFromArgs( CmdWrapper* wr, cJSON* args )
     tmp = cJSON_GetObjectItem( args, "dict" );
     if ( !!tmp ) {
         XP_STRCAT( nli.dict, tmp->valuestring );
+
+        XW_DUtilCtxt* dutil = wr->params->dutil;
+        DictionaryCtxt* dict = linux_dictionary_make( MPPARM(dutil->mpool)
+                                                      wr->params, tmp->valuestring,
+                                                      XP_TRUE );
+        const XP_UCHAR* iso = dict_getISOCode( dict );
+        XP_STRCAT( nli.isoCodeStr, iso );
+        XP_LOGFF( "copied isoCode %s", nli.isoCodeStr );
+        dict_unref( dict, NULL_XWE );
     }
 
     (*wr->procs.newGuest)( wr->closure, &nli );
@@ -244,17 +256,28 @@ getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** order
 
     cJSON* gids = cJSON_GetObjectItem( args, "gids" );
     XP_Bool success = !!gids;
+    XW_DUtilCtxt* dutil = params->dutil;
     for ( int ii = 0 ; success && ii < cJSON_GetArraySize(gids) ; ++ii ) {
         XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
-
-        GameInfo gib = {};
-        if ( gdb_getGameInfoForGID( params->pDb, gameID, &gib ) ) {
+        GameRef grs[3];
+        XP_U16 nRefs = VSIZE(grs);
+        gmgr_getForGID( dutil, NULL_XWE, gameID, grs, &nRefs );
+        for ( int ii = 0; ii < nRefs; ++ii ) {
+            GameRef gr = grs[ii];
             cJSON* item = NULL;
             addGIDToObject( &item, gameID, "gid" );
-            cJSON_AddBoolToObject( item, "gameOver", gib.gameOver );
-            cJSON_AddNumberToObject( item, "nPending", gib.nPending );
-            cJSON_AddNumberToObject( item, "nMoves", gib.nMoves );
-            cJSON_AddNumberToObject( item, "nTiles", gib.nTiles );
+
+            XP_Bool gameOver = gr_getGameIsOver( dutil, gr, NULL_XWE );
+            cJSON_AddBoolToObject( item, "gameOver", gameOver );
+
+            XP_U16 nPending = gr_countPendingPackets( dutil, gr, NULL_XWE, NULL );
+            cJSON_AddNumberToObject( item, "nPending", nPending );
+
+            XP_S16 nMoves = gr_getNMoves( params->dutil, gr, NULL_XWE );
+            cJSON_AddNumberToObject( item, "nMoves", nMoves );
+
+            XP_S16 nTiles = gr_countTilesInPool( dutil, gr, NULL_XWE );
+            cJSON_AddNumberToObject( item, "nTiles", nTiles );
 
             cJSON_AddItemToArray( *states, item );
         }        
@@ -276,10 +299,10 @@ getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** order
                 if ( !cg ) {
                     continue;
                 }
-                const XWGame* game = &cg->game;
-                if ( server_getGameIsConnected( game->server ) ) {
+                if ( gr_getGameIsConnected( wr->params->dutil, cg->gr,
+                                            NULL_XWE ) ) {
                     const CurGameInfo* gi = cg->gi;
-                    LOGGI( gi, __func__ );
+                    LOG_GI( gi, __func__ );
                     cJSON* order = NULL;
                     addGIDToObject( &order, gameID, "gid" );
                     cJSON* players = cJSON_CreateArray();
@@ -316,8 +339,7 @@ getPlayersForArgs( CmdWrapper* wr, cJSON* args )
 
         const CommonGlobals* cg = (*wr->procs.getForGameID)( wr->closure, gameID );
         const CurGameInfo* gi = cg->gi;
-        LOGGI( gi, __func__ );
-        const XWGame* game = &cg->game;
+        LOG_GI( gi, __func__ );
 
         cJSON* players = cJSON_CreateArray();
         for ( int jj = 0; jj < gi->nPlayers; ++jj ) {
@@ -331,7 +353,7 @@ getPlayersForArgs( CmdWrapper* wr, cJSON* args )
             /* Roles: I don't think a guest in a 3- or 4-device game knows
                which of the other players is host. Host is who it sends its
                moves to, but is there an order there? */
-            XP_Bool isHost = game_getIsHost( game );
+            XP_Bool isHost = gr_getIsHost( wr->params->dutil, cg->gr, NULL_XWE );
             isHost = isHost && isLocal;
             cJSON_AddBoolToObject( playerObj, "isHost", isHost );
             
@@ -449,7 +471,6 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
         cJSON* reply = cJSON_CreateArray();
 
         cJSON* cmds = cJSON_Parse( buf );
-        g_free( buf );
         XP_LOGFF( "got msg with array of len %d", cJSON_GetArraySize(cmds) );
         for ( int ii = 0 ; ii < cJSON_GetArraySize(cmds) ; ++ii ) {
             cJSON* item = cJSON_GetArrayItem( cmds, ii );
@@ -535,6 +556,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
 
             /*(void)*/cJSON_AddItemToArray( reply, tmp );
         }
+        g_free( buf );
         cJSON_Delete( cmds );   /* this apparently takes care of all children */
 
         char* replyStr = cJSON_PrintUnformatted( reply );

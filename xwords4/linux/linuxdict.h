@@ -21,8 +21,8 @@
 #ifndef _LINUXDICT_H_
 #define _LINUXDICT_H_
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL XWEnv xwe,
-                                       const LaunchParams* mainParams,
+DictionaryCtxt* linux_dictionary_make( MPFORMAL const LaunchParams* mainParams,
                                        const char* dictFileName, 
                                        XP_Bool useMMap );
+void stripExtn( const char* name, char buf[], XP_U16 bufLen );
 #endif

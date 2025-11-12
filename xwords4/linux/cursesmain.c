@@ -54,20 +54,16 @@
 #include "draw.h"
 #include "board.h"
 #include "engine.h"
-/* #include "compipe.h" */
 #include "xwstream.h"
 #include "xwstate.h"
 #include "strutils.h"
-#include "server.h"
 #include "memstream.h"
 #include "util.h"
 #include "dbgutil.h"
 #include "linuxsms.h"
 #include "linuxudp.h"
 #include "gamesdb.h"
-#include "relaycon.h"
 #include "mqttcon.h"
-#include "smsproto.h"
 #include "device.h"
 #include "cursesmenu.h"
 #include "cursesboard.h"
@@ -75,6 +71,7 @@
 #include "gsrcwrap.h"
 #include "extcmds.h"
 #include "knownplyr.h"
+#include "gamemgr.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -114,17 +111,23 @@ struct CursesAppGlobals {
 };
 
 static bool handleOpenGame( void* closure, int key );
+static bool handleRematchGame( void* closure, int key );
 static bool handleNewGame( void* closure, int key );
 static bool handleDeleteGame( void* closure, int key );
 static bool handleSel( void* closure, int key );
+static bool copyDevID( void* closure, int key );
+static bool showThumb( void* closure, int key );
 
 const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
-    { handleNewGame, "New Game", "N", 'N' },
+    { handleNewGame, "New game", "N", 'N' },
     { handleOpenGame, "Open Sel.", "O", 'O' },
+    { handleRematchGame, "Rematch sel.", "R", 'R' },
     { handleDeleteGame, "Delete Sel.", "D", 'D' },
     { handleSel, "Select up", "J", 'J' },
     { handleSel, "Select down", "K", 'K' },
+    { copyDevID, "Copy devID", "C", 'C' },
+    { showThumb, "Show Thumb", "T", 'T' },
 /*     { handleResend, "Resend", "R", 'R' }, */
 /*     { handleSpace, "Raise focus", "<spc>", ' ' }, */
 /*     { handleRet, "Click/tap", "<ret>", '\r' }, */
@@ -253,7 +256,7 @@ static void
 invokeQuit( void* data )
 {
     LaunchParams* params = (LaunchParams*)data;
-    CursesAppGlobals* globals = (CursesAppGlobals*)params->appGlobals;
+    CursesAppGlobals* globals = (CursesAppGlobals*)params->cag;
     handleQuit( globals, 0 );
 }
 
@@ -271,12 +274,23 @@ handleOpenGame( void* closure, int XP_UNUSED(key) )
 {
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    const GameInfo* gi = cgl_getSel( aGlobals->gameList );
-    XP_ASSERT( !!gi );
+    GameRef gr = cgl_getSel( aGlobals->gameList );
+    XP_ASSERT( !!gr );
     cb_dims dims;
     figureDims( aGlobals, &dims );
-    cb_open( aGlobals->cbState, gi->rowid, &dims );
+    cb_open( aGlobals->cbState, gr, &dims );
     return XP_TRUE;
+}
+
+static bool
+handleRematchGame( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    GameRef gr = cgl_getSel( aGlobals->gameList );
+    (void)gr_makeRematch( aGlobals->cag.params->dutil, gr,
+                          NULL_XWE, "newName", RO_LOW_SCORE_FIRST,
+                          XP_TRUE, XP_FALSE );
+    return true;
 }
 
 static bool
@@ -316,7 +330,10 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     const CurGameInfo* gi = &aGlobals->cag.params->pgi;
     if ( !canMakeFromGI(gi) ) {
         ca_inform( aGlobals->mainWin, "Unable to create game (check params?)" );
-    } else if ( !cb_newGame( aGlobals->cbState, &dims, NULL, NULL ) ) {
+    } else if ( cb_newGame( aGlobals->cbState, gi, NULL ) ) {
+        /* do nothing; callbacks will result in add to list and, optionally,
+           opening */
+    } else {
         XP_ASSERT(0);
     }
     return XP_TRUE;
@@ -329,13 +346,13 @@ handleDeleteGame( void* closure, int XP_UNUSED(key) )
     const char* question = "Are you sure you want to delete the "
         "selected game? This action cannot be undone";
     const char* buttons[] = { "Cancel", "Ok", };
-    if ( 1 == cursesask( aGlobals->mainWin, question, /* ?? */
-                         VSIZE(buttons), buttons ) ) {
+    if ( 1 == cursesask( aGlobals->mainWin, VSIZE(buttons), buttons, question ) ) {
 
-        const GameInfo* gib = cgl_getSel( aGlobals->gameList );
-        if ( !!gib ) {
-            gdb_deleteGame( aGlobals->cag.params->pDb, gib->rowid );
-            cgl_remove( aGlobals->gameList, gib->rowid );
+        GameRef gr = cgl_getSel( aGlobals->gameList );
+        if ( !!gr ) {
+            gmgr_deleteGame( aGlobals->cag.params->dutil, NULL_XWE, gr );
+        } else {
+            XP_ASSERT(0);
         }
     }
     return XP_TRUE;
@@ -348,6 +365,35 @@ handleSel( void* closure, int key )
     XP_ASSERT( key == 'K' || key == 'J' );
     bool down = key == 'J';
     cgl_moveSel( aGlobals->gameList, down );
+    return true;
+}
+
+static bool
+copyDevID( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    // CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    const gchar* devIDStr = mqttc_getDevIDStr( aGlobals->cag.params );
+    ca_informf( aGlobals->mainWin, "Unable to copy \"%s\" yet...", devIDStr );
+    return true;
+}
+
+static bool
+showThumb( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    LaunchParams* params = aGlobals->cag.params;
+    GameRef gr = cgl_getSel( aGlobals->gameList );
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(params->mpool)
+                                                params->vtMgr );
+    if ( gr_getThumbData( params->dutil, gr, NULL_XWE, stream ) ) {
+        XP_UCHAR* str = strFromStream( stream );
+        ca_informf( aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
+                    gr, str );
+        free( str );
+    }
+    stream_destroy( stream );
+
     return true;
 }
 
@@ -1187,26 +1233,90 @@ onJoined( void* closure, const XP_UCHAR* connname, XWHostID hid )
 #endif
 
 void
-inviteReceivedCurses( void* closure, const NetLaunchInfo* invite )
+inviteReceivedCurses( void* closure, const NetLaunchInfo* nli )
 {
+    LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    sqlite3_int64 rowids[1];
-    int nRowIDs = VSIZE(rowids);
-    gdb_getRowsForGameID( aGlobals->cag.params->pDb, invite->gameID, rowids, &nRowIDs );
-    bool doIt = 0 == nRowIDs;
-    if ( ! doIt && !!aGlobals->mainWin ) {
-        XP_LOGFF( "duplicate invite; not creating game" );
-        /* const gchar* question = "Duplicate invitation received. Accept anyway?"; */
-        /* const char* buttons[] = { "Yes", "No" }; */
-        /* doIt = 0 == cursesask( aGlobals->mainWin, question, VSIZE(buttons), buttons ); */
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+
+    /*GameRef gr = */
+    gmgr_addForInvite( dutil, NULL_XWE, GROUP_DEFAULT, nli );
+}
+
+void
+onCursesGameOpened( CommonAppGlobals* cag, GameRef gr )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
+    cb_dims dims;
+    figureDims( aGlobals, &dims );
+    cb_open( aGlobals->cbState, gr, &dims );
+}
+
+void
+onGameChangedCurses( CommonAppGlobals* cag, GameRef gr, GameChangeEvents gces )
+{
+    LOG_FUNC();
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
+    XP_Bool doRefresh = XP_FALSE;
+
+    if ( getAndClear( GCE_ADDED, &gces ) ) {
+        if ( cag->params->showGames ) {
+            CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
+            /* close any open game */
+
+
+            /* open the new game */
+            cb_dims dims;
+            figureDims( aGlobals, &dims );
+            cb_open( aGlobals->cbState, gr, &dims );
+        }
     }
-    if ( doIt ) {
-        cb_dims dims;
-        figureDims( aGlobals, &dims );
-        cb_newFor( aGlobals->cbState, invite, &dims );
-    } else {
-        XP_LOGFF( "Not accepting duplicate invitation (nRowIDs(gameID=%X) was %d",
-                  invite->gameID, nRowIDs );
+    if ( getAndClear( GCE_DELETED, &gces ) ) {
+        doRefresh = XP_TRUE;
+    }
+    if ( doRefresh ) {
+        cgl_refresh( aGlobals->gameList );
+    }
+}
+
+void
+informMoveCurses( LaunchParams* params, XWStreamCtxt* expl )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)params->cag;
+    WINDOW* parent = globals->mainWin;
+    char* question = strFromStream( expl );
+    (void)ca_inform( parent, question );
+    free( question );
+}
+
+void
+informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    XW_DUtilCtxt* dutil = params->dutil;
+    CommonGlobals* cGlobals = globalsForGameRef( &aGlobals->cag, gr, XP_FALSE );
+
+    /* game belongs in cGlobals... */
+    if ( params->printHistory ) {
+        catGameHistory( params, gr );
+    }
+    catFinalScores( params, gr, quitter );
+
+    if ( params->quitAfter >= 0 ) {
+        sleep( params->quitAfter );
+        handleQuit( params->cag, 0 );
+    } else if ( params->undoWhenDone ) {
+        gr_handleUndo( dutil, gr, NULL_XWE, 0 );
+    } else if ( !params->skipGameOver && !!cGlobals ) {
+        /* This is modal.  Don't show if quitting */
+        cursesShowFinalScores( (CursesBoardGlobals*)cGlobals );
+    }
+
+    if ( params->rematchOnDone && !!cGlobals ) {
+        /* RematchOrder ro = !!params->rematchOrder */
+        /*     ? roFromStr(params->rematchOrder) : RO_NONE; */
+        // rematch_and_save_once( (CursesBoardGlobals*)cGlobals, ro );
+        XP_ASSERT(0);
     }
 }
 
@@ -1246,29 +1356,6 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     /* LOG_RETURN_VOID(); */
 }
 #endif
-
-static void
-smsInviteReceivedCurses( void* closure, const NetLaunchInfo* nli )
-{
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    inviteReceivedCurses( aGlobals, nli );
-}
-
-static void
-smsMsgReceivedCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID, 
-                      const XP_U8* buf, XP_U16 len )
-{
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    cb_feedGame( aGlobals->cbState, gameID, buf, len, from );
-}
-
-void
-mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
-                       XP_U32 gameID, const XP_U8* buf, XP_U16 len )
-{
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    cb_feedGame( aGlobals->cbState, gameID, buf, len, from );
-}
 
 void
 gameGoneCurses( void* XP_UNUSED(closure), const CommsAddrRec* XP_UNUSED(from),
@@ -1452,10 +1539,7 @@ newGameWrapper( void* closure, CurGameInfo* gi, XP_U32* newGameIDP )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
 
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-
-    return cb_newGame( aGlobals->cbState, &dims, gi, newGameIDP );
+    return cb_newGame( aGlobals->cbState, gi, newGameIDP );
 }
 
 static XP_Bool
@@ -1498,7 +1582,12 @@ makeRematchWrapper( void* closure, XP_U32 gameID, RematchOrder ro,
                     XP_U32* newGameIDP )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    return cb_makeRematch( aGlobals->cbState, gameID, ro, newGameIDP );
+    GameRef grs[1];
+    XP_U16 nRefs = VSIZE(grs);
+    gmgr_getForGID( ((CommonAppGlobals*)aGlobals)->params->dutil,
+                    NULL_XWE, gameID, grs, &nRefs );
+    XP_ASSERT( 1 == nRefs );
+    return cb_makeRematch( aGlobals->cbState, grs[0], ro, newGameIDP );
 }
 
 static XP_Bool
@@ -1563,8 +1652,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
     memset( &g_globals, 0, sizeof(g_globals) );
     g_globals.cag.params = params;
-    params->appGlobals = &g_globals;
-
+    params->cag = &g_globals.cag;
     params->cmdProcs.quit = invokeQuit;
 
     initCurses( &g_globals );
@@ -1575,8 +1663,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     g_globals.loop = g_main_loop_new( NULL, FALSE );
 
-    g_globals.cbState = cb_init( &g_globals, params, g_globals.menuState,
-                                 onGameSaved );
+    g_globals.cbState = cb_init( params, g_globals.menuState, onGameSaved );
 
     g_globals.gameList = cgl_init( params, g_globals.winWidth, params->cursesListWinHt );
     cgl_refresh( g_globals.gameList );
@@ -1635,17 +1722,12 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         linux_doInitialReg( params, idIsNew );
     }
 #endif
-    mqttc_init( params );
 
 #ifdef XWFEATURE_SMS
     gchar* myPhone = NULL;
     XP_U16 myPort = 0;
     if ( parseSMSParams( params, &myPhone, &myPort ) ) {
-        SMSProcs smsProcs = {
-            .inviteReceived = smsInviteReceivedCurses,
-            .msgReceived = smsMsgReceivedCurses,
-        };
-        linux_sms_init( params, myPhone, myPort, &smsProcs, &g_globals );
+        linux_sms_init( params, myPhone, myPort );
     }
 #endif
 
@@ -1657,8 +1739,8 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         /* Always open a game (at random). Without that it won't attempt to
            connect and stalls are likely in the test script case at least. If
            that's annoying when running manually add a launch flag */
-        cgl_setSel( g_globals.gameList, -1 );
-        handleOpenGame( &g_globals, 0 );
+        // cgl_setSel( g_globals.gameList, -1 );
+        // handleOpenGame( &g_globals, 0 );
     }
 
     g_main_loop_run( g_globals.loop );

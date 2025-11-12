@@ -19,6 +19,7 @@
 package org.eehouse.android.xw4.jni
 
 import android.graphics.Rect
+import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.jni.CommonPrefs.TileValueType
 
 interface DrawCtx {
@@ -33,6 +34,13 @@ interface DrawCtx {
         var isRemote: Boolean = false
         var isRobot: Boolean = false
     }
+
+    fun beginDraw(): Boolean {
+        Log.d("DrawCtx", "beginDraw() called")
+        return false
+    }
+
+    fun endDraw() {}
 
     fun scoreBegin(rect: Rect, numPlayers: Int, scores: IntArray, remCount: Int): Boolean
     fun measureRemText(rect: Rect, nTilesLeft: Int, width: IntArray, height: IntArray): Boolean
@@ -75,6 +83,11 @@ interface DrawCtx {
                      rect: Rect
     )
 
+    fun getThumbData(): ByteArray
+    // getDims: Should return width and height, but we're assuming here it's a
+    // square
+    fun getThumbSize(): Int
+
     fun dictChanged(dictPtr: Long)
 
     companion object {
@@ -99,5 +112,9 @@ interface DrawCtx {
         const val OBJ_BOARD: Int = 1
         const val OBJ_SCORE: Int = 2
         const val OBJ_TRAY: Int = 3
+
+        // DrawTarget: keep in sync with eponymous enum in common/ world
+        const val DT_SCREEN: Int = 1
+        const val DT_THUMB: Int = 2
     }
 }

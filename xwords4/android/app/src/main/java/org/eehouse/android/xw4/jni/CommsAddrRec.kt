@@ -405,7 +405,7 @@ class CommsAddrRec : Serializable {
             }
 
             CommsConnType.COMMS_CONN_P2P -> p2p_addr = WiDirService.getMyMacAddress(context)
-            CommsConnType.COMMS_CONN_MQTT -> mqtt_devID = XwJNI.dvc_getMQTTDevID()
+            CommsConnType.COMMS_CONN_MQTT -> mqtt_devID = MQTTUtils.getMQTTDevID()
             CommsConnType.COMMS_CONN_NFC -> {}
             else -> Assert.failDbg()
         }
@@ -426,9 +426,10 @@ class CommsAddrRec : Serializable {
         }
 
         fun getSelfAddr(context: Context, gi: CurGameInfo): CommsAddrRec? {
-            return if (CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole) null else getSelfAddr(
-                context
-            )
+            val addrRec =
+                if (CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole) null as CommsAddrRec?
+                else getSelfAddr(context)
+            return addrRec
         }
     }
 }

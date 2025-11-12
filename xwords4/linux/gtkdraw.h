@@ -24,13 +24,16 @@
 
 #include "draw.h"
 
-DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkGameGlobals* globals );
+#define THUMB_WIDTH 150
+#define THUMB_HEIGHT 150
 
+DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkGameGlobals* globals,
+                          DrawTarget dt );
 void draw_gtk_status( GtkDrawCtx* draw, char ch );
 void frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect );
-void addSurface( GtkDrawCtx* dctx, int width, int height );
-void removeSurface( GtkDrawCtx* dctx );
-void getImage( GtkDrawCtx* dctx, XWStreamCtxt* stream );
+void addSurface( DrawCtx* dctx, int width, int height );
+XP_Bool gtk_draw_does_offscreen(GtkDrawCtx* draw);
+cairo_surface_t* gtk_draw_get_surface( GtkDrawCtx* draw );
 
 #endif
 #endif

@@ -23,7 +23,6 @@
 #include "cursesboard.h"
 #include "linuxmain.h"
 #include "linuxutl.h"
-#include "relaycon.h"
 #include "mqttcon.h"
 #include "cursesask.h"
 #include "cursesmenu.h"
@@ -35,21 +34,19 @@
 #include "linuxsms.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "gamemgr.h"
+#include "curseschat.h"
 
 typedef struct CursesBoardState {
-    CursesAppGlobals* aGlobals;
     LaunchParams* params;
     CursesMenuState* menuState;
     OnGameSaved onGameSaved;
-
-    GSList* games;
 } CursesBoardState;
 
 struct CursesBoardGlobals {
     CommonGlobals cGlobals;
     CursesBoardState* cbState;
     CursesMenuState* menuState; /* null if we're not using menus */
-    int refCount;
 
     union {
         struct {
@@ -73,12 +70,9 @@ struct CursesBoardGlobals {
 };
 
 static CursesBoardGlobals* findOrOpen( CursesBoardState* cbState,
-                                       sqlite3_int64 rowid,
-                                       const CurGameInfo* gi,
+                                       GameRef gr,
                                        const CommsAddrRec* addrP );
 static void enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims );
-static CursesBoardGlobals* ref( CursesBoardGlobals* bGlobals );
-static void unref( CursesBoardGlobals* bGlobals );
 static void setupBoard( CursesBoardGlobals* bGlobals );
 static void initMenus( CursesBoardGlobals* bGlobals );
 static void disposeDraw( CursesBoardGlobals* bGlobals );
@@ -114,40 +108,19 @@ static bool handleRootKeyShow( void* closure, int key );
 static bool handleRootKeyHide( void* closure, int key );
 #endif
 static bool sendInvite( void* closure, int key );
-
-#ifdef XWFEATURE_RELAY
-static void relay_connd_curses( XWEnv xwe, void* closure, XP_UCHAR* const room,
-                                XP_Bool reconnect, XP_U16 devOrder,
-                                XP_Bool allHere, XP_U16 nMissing );
-static void relay_status_curses( XWEnv xwe, void* closure, CommsRelayState state );
-static void relay_error_curses( XWEnv xwe, void* closure, XWREASON relayErr );
-static XP_Bool relay_sendNoConn_curses( XWEnv xwe, const XP_U8* msg, XP_U16 len,
-                                        const XP_UCHAR* msgNo,
-                                        const XP_UCHAR* relayID, void* closure );
-#endif
-static void curses_countChanged( XWEnv xwe, void* closure, XP_U16 newCount,
-                                 XP_Bool quashed );
-static XP_U32 curses_getFlags( XWEnv xwe, void* closure );
-#ifdef RELAY_VIA_HTTP
-static void relay_requestJoin_curses( void* closure, const XP_UCHAR* devID,
-                                      const XP_UCHAR* room, XP_U16 nPlayersHere,
-                                      XP_U16 nPlayersTotal, XP_U16 seed, XP_U16 lang );
-#endif
+static bool openChat( void* closure, int key );
 
 static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
                                  XP_U32* newGameIDP );
-static void disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList );
+static void disposeBoard( CursesBoardGlobals* bGlobals );
 static void initCP( CommonGlobals* cGlobals );
-static CursesBoardGlobals* commonInit( CursesBoardState* cbState,
-                                       sqlite3_int64 rowid,
-                                       const CurGameInfo* gip );
+static CursesBoardGlobals* commonInit( CursesBoardState* cbState, GameRef gr );
 
 CursesBoardState*
-cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
-         CursesMenuState* menuState, OnGameSaved onGameSaved )
+cb_init( LaunchParams* params, CursesMenuState* menuState,
+         OnGameSaved onGameSaved )
 {
     CursesBoardState* result = g_malloc0( sizeof(*result) );
-    result->aGlobals = aGlobals;
     result->params = params;
     result->menuState = menuState;
     result->onGameSaved = onGameSaved;
@@ -157,63 +130,86 @@ cb_init( CursesAppGlobals* aGlobals, LaunchParams* params,
 void
 cb_resized( CursesBoardState* cbState, const cb_dims* dims )
 {
-    for ( GSList* iter = cbState->games; !!iter; iter = iter->next ) {
+    CommonAppGlobals* cag = cbState->params->cag;
+    for ( GSList* iter = cag->globalsList; !!iter; iter = iter->next ) {
         CursesBoardGlobals* one = (CursesBoardGlobals*)iter->data;
         disposeDraw( one );
         enableDraw( one, dims );
     }
 }
 
-static gint
-inviteIdle( gpointer data )
-{
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
-    LaunchParams* params = bGlobals->cGlobals.params;
-    if ( !!params->connInfo.sms.inviteePhones
-#ifdef XWFEATURE_RELAY
-         || !!params->connInfo.relay.inviteeRelayIDs
-#endif
-         || !!params->connInfo.mqtt.inviteeDevIDs ) {
-        sendInvite( bGlobals, 0 );
-    }
-    return FALSE;
-}
+/* static gint */
+/* inviteIdle( gpointer data ) */
+/* { */
+/*     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data; */
+/*     LaunchParams* params = bGlobals->cGlobals.params; */
+/*     if ( !!params->connInfo.sms.inviteePhones */
+/* #ifdef XWFEATURE_RELAY */
+/*          || !!params->connInfo.relay.inviteeRelayIDs */
+/* #endif */
+/*          || !!params->connInfo.mqtt.inviteeDevIDs ) { */
+/*         sendInvite( bGlobals, 0 ); */
+/*     } */
+/*     return FALSE; */
+/* } */
 
 void
-cb_open( CursesBoardState* cbState, sqlite3_int64 rowid, const cb_dims* dims )
+cb_open( CursesBoardState* cbState, GameRef gr, const cb_dims* dims )
 {
     LOG_FUNC();
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpen( cbState, gr, NULL );
     initMenus( bGlobals );
     enableDraw( bGlobals, dims );
     setupBoard( bGlobals );
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( !!cGlobals->game.comms ) {
-        comms_resendAll( cGlobals->game.comms, NULL_XWE, COMMS_CONN_NONE, XP_FALSE );
-    }
-    if ( bGlobals->cGlobals.params->forceInvite ) {
-        (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals );
-    }
+    LaunchParams* params = cGlobals->params;
+    /* if ( gr_haveComms(params->dutil, cGlobals->gameRef, NULL_XWE ) ) { */
+    /*     gr_resendAll( params->dutil, cGlobals->gameRef, NULL_XWE, */
+    /*                   COMMS_CONN_NONE, XP_FALSE ); */
+    /* } */
+    /* if ( params->forceInvite ) { */
+    /*     (void)ADD_ONETIME_IDLE( inviteIdle, bGlobals ); */
+    /* } */
+    DrawCtx* draw = cGlobals->draw;
+    XP_ASSERT( !!draw );
+    gr_setDraw( params->dutil, cGlobals->gr, NULL_XWE, draw,
+                cGlobals->util );
 }
 
 bool
-cb_newGame( CursesBoardState* cbState, const cb_dims* dims,
-            const CurGameInfo* gi, XP_U32* newGameIDP )
+cb_newGame( CursesBoardState* cbState, const CurGameInfo* gi,
+            XP_U32* newGameIDP )
 {
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, -1, gi, NULL );
-    if ( !!bGlobals ) {
-        initMenus( bGlobals );
-        enableDraw( bGlobals, dims );
-        setupBoard( bGlobals );
+    LOG_FUNC();
+    XW_DUtilCtxt* dutil = cbState->params->dutil;
+    GameRef gr = gmgr_newFor( dutil, NULL_XWE, GROUP_DEFAULT, gi, NULL );
+    if ( !!newGameIDP ) {
+        const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
+        *newGameIDP = gi->gameID;
     }
-    XP_Bool success = NULL != bGlobals;
+    return XP_TRUE;
+}
 
-    if ( success && !!newGameIDP ) {
-        *newGameIDP = bGlobals->cGlobals.gi->gameID;
+/* Close the board, but don't dispose of its globals, which belong to the util
+   instance that belongs to common/gameref */
+static void
+closeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
+{
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    LaunchParams* params = cGlobals->params;
+    gr_setDraw( params->dutil, cGlobals->gr, NULL_XWE, NULL, NULL );
+    disposeDraw( bGlobals );
+
+    CursesBoardState* cbState = bGlobals->cbState;
+    if ( !!cbState && !!cbState->menuState ) {
+        cmenu_pop( cbState->menuState );
     }
 
-    return success;
+    if ( rmFromList && !!cbState ) {
+        CommonAppGlobals* cag = cbState->params->cag;
+        forgetGameGlobals( cag, &bGlobals->cGlobals );
+    }
 }
 
 void
@@ -222,21 +218,16 @@ cb_newFor( CursesBoardState* cbState, const NetLaunchInfo* nli,
 {
     LaunchParams* params = cbState->params;
 
-    CommsAddrRec selfAddr;
-    makeSelfAddress( &selfAddr, params );
-
-    CursesBoardGlobals* bGlobals = commonInit( cbState, -1, NULL );
+    GameRef gr = gmgr_addForInvite( params->dutil, NULL_XWE,
+                                    GROUP_DEFAULT, nli );
+    CursesBoardGlobals* bGlobals = commonInit( cbState, gr );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     initCP( cGlobals );
-    if ( game_makeFromInvite( &cGlobals->game, NULL_XWE, nli, &selfAddr,
-                              cGlobals->util, (DrawCtx*)NULL,
-                              &cGlobals->cp, &cGlobals->procs ) ) {
-        linuxSaveGame( cGlobals );
-    } else {
-        XP_ASSERT( 0 );
-    }
 
-    disposeBoard( bGlobals, XP_TRUE );
+    linuxSaveGame( cGlobals );
+
+    // disposeBoard( bGlobals, XP_TRUE );
+    // cg_unref( cGlobals );
 }
 
 const MenuList g_allMenuList[] = {
@@ -268,6 +259,7 @@ const MenuList g_boardMenuList[] = {
     { handleReplace, "uNdo cur", "N", 'N' },
 
     { sendInvite, "invitE", "E", 'E' },
+    { openChat, "chAt", "A", 'A' },
 
     { NULL, NULL, NULL, '\0'}
 };
@@ -312,8 +304,6 @@ changeMenuForFocus( CursesBoardGlobals* bGlobals, BoardObjectType focussed )
 } /* changeMenuForFocus */
 #endif
 
-static void setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util );
-
 static void
 initMenus( CursesBoardGlobals* bGlobals )
 {
@@ -324,21 +314,23 @@ initMenus( CursesBoardGlobals* bGlobals )
 }
 
 static void
-onGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime )
+onGameSaved( void* XP_UNUSED(closure), GameRef XP_UNUSED(gr), XP_Bool XP_UNUSED(firstTime) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    /* onCursesGameSaved( bGlobals->aGlobals, rowid ); */
+    XP_ASSERT(0);
+    /* CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure; */
+    /* CommonGlobals* cGlobals = &bGlobals->cGlobals; */
+    /* LaunchParams* params = cGlobals->params; */
+    /* /\* onCursesGameSaved( bGlobals->aGlobals, rowid ); *\/ */
 
-    BoardCtxt* board = cGlobals->game.board;
-    board_invalAll( board );
-    board_draw( board, NULL_XWE );
-    /* May not be recorded */
-    XP_ASSERT( cGlobals->rowid == rowid );
-    // cGlobals->rowid = rowid;
+    /* // BoardCtxt* board = gr_getGame(cGlobals->gr)->board; */
+    /* gr_invalAll( params->dutil, cGlobals->gr, NULL_XWE ); */
+    /* gr_draw( params->dutil, cGlobals->gr, NULL_XWE ); */
+    /* /\* May not be recorded *\/ */
+    /* // XP_ASSERT( cGlobals->rowid == rowid ); */
+    /* // cGlobals->rowid = rowid; */
 
-    CursesBoardState* cbState = bGlobals->cbState;
-    (*cbState->onGameSaved)( cbState->aGlobals, rowid, firstTime );
+    /* CursesBoardState* cbState = bGlobals->cbState; */
+    /* (*cbState->onGameSaved)( cbState->aGlobals, rowid, firstTime ); */
 }
 
 static gboolean
@@ -370,53 +362,44 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
 }
 
 static void
-initTProcsCurses( CommonGlobals* cGlobals )
+freeCursesBoardGlobals( CommonGlobals* cGlobals )
 {
-    cGlobals->procs.closure = cGlobals;
-    cGlobals->procs.sendMsgs = linux_send;
-#ifdef XWFEATURE_COMMS_INVITE
-    cGlobals->procs.sendInvt = linux_send_invt;
-#endif
-#ifdef COMMS_HEARTBEAT
-    cGlobals->procs.reset = linux_reset;
-#endif
-#ifdef XWFEATURE_RELAY
-    cGlobals->procs.rstatus = relay_status_curses;
-    cGlobals->procs.rconnd = relay_connd_curses;
-    cGlobals->procs.rerror = relay_error_curses;
-    cGlobals->procs.sendNoConn = relay_sendNoConn_curses;
-#endif
-    cGlobals->procs.countChanged = curses_countChanged;
-    cGlobals->procs.getFlags = curses_getFlags;
-# ifdef RELAY_VIA_HTTP
-    cGlobals->procs.requestJoin = relay_requestJoin_curses;
-#endif
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
+    disposeBoard( bGlobals );
+}
+
+CommonGlobals*
+allocCursesBoardGlobals()
+{
+    CursesBoardGlobals* bGlobals = g_malloc0( sizeof(*bGlobals) );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    cg_init( cGlobals, freeCursesBoardGlobals );
+    return cGlobals;
 }
 
 static CursesBoardGlobals*
-commonInit( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gip )
+commonInit( CursesBoardState* cbState, GameRef gr )
 {
-    CursesBoardGlobals* bGlobals = g_malloc0( sizeof(*bGlobals) );
-    XP_LOGFF( "alloc'd bGlobals %p", bGlobals );
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cbState->params;
+    CommonAppGlobals* cag = params->cag;
+    CommonGlobals* cGlobals = globalsForGameRef( cag, gr, XP_TRUE );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
 
-    cGlobals->gi = &cGlobals->_gi;
-    gi_copy( MPPARM(params->mpool) cGlobals->gi, !!gip? gip : &params->pgi );
+    XP_LOGFF( "found bGlobals %p", bGlobals );
+    XP_ASSERT( !!bGlobals );
 
-    cGlobals->rowid = rowid;
+    XP_ASSERT( cGlobals->gr == gr );
     bGlobals->cbState = cbState;
-    cGlobals->params = params;
-    setupUtil( cGlobals );
-    setupCursesUtilCallbacks( bGlobals, cGlobals->util );
+    XP_ASSERT( cGlobals->params == params );
+
+    cGlobals->gi = gr_getGI( params->dutil, gr, NULL_XWE );
+    XP_ASSERT( !!cGlobals->gi );
 
     cGlobals->socketAddedClosure = bGlobals;
     cGlobals->onSave = onGameSaved;
     cGlobals->onSaveClosure = bGlobals;
     cGlobals->addAcceptor = curses_socket_acceptor;
 
-    initTProcsCurses( cGlobals );
     makeSelfAddress( &cGlobals->selfAddr, params );
 
     return bGlobals;
@@ -426,7 +409,7 @@ static void
 disposeDraw( CursesBoardGlobals* bGlobals )
 {
     if ( !!bGlobals->boardWin ) {
-        cursesDrawCtxtFree( bGlobals->cGlobals.draw );
+        draw_unref( bGlobals->cGlobals.draw, NULL_XWE );
         wclear( bGlobals->boardWin );
         wrefresh( bGlobals->boardWin );
         delwin( bGlobals->boardWin );
@@ -434,49 +417,15 @@ disposeDraw( CursesBoardGlobals* bGlobals )
 }
 
 static void
-disposeBoard( CursesBoardGlobals* bGlobals, XP_Bool rmFromList )
+disposeBoard( CursesBoardGlobals* bGlobals )
 {
-    XP_LOGFF( "passed bGlobals %p", bGlobals );
-    /* XP_ASSERT( 0 == bGlobals->refCount ); */
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    XP_ASSERT( 0 == cGlobals->refCount );
+    XP_LOGFF( "passed bGlobals %p", bGlobals );
 
-    disposeDraw( bGlobals );
-
-    if ( !!bGlobals->cbState->menuState ) {
-        cmenu_pop( bGlobals->cbState->menuState );
-    }
-
-    game_dispose( &cGlobals->game, NULL_XWE );
-    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) cGlobals->gi );
-
-    disposeUtil( cGlobals );
-
-    if ( rmFromList ) {
-        CursesBoardState* cbState = bGlobals->cbState;
-        cbState->games = g_slist_remove( cbState->games, bGlobals ); /* no!!! */
-    }
-
-    /* onCursesBoardClosing( bGlobals->aGlobals, bGlobals ); */
     XP_LOGFF( "freeing globals: %p", bGlobals );
+    forgetGameGlobals( cGlobals->params->cag, cGlobals );
     g_free( bGlobals );
-}
-
-static CursesBoardGlobals*
-ref( CursesBoardGlobals* bGlobals )
-{
-    ++bGlobals->refCount;
-    XP_LOGFF( "refCount now %d", bGlobals->refCount );
-    return bGlobals;
-}
-
-static void
-unref( CursesBoardGlobals* bGlobals )
-{
-    --bGlobals->refCount;
-    XP_LOGFF( "refCount now %d", bGlobals->refCount );
-    if ( 0 == bGlobals->refCount ) {
-        disposeBoard( bGlobals, XP_TRUE );
-    }
 }
 
 static int
@@ -521,54 +470,43 @@ setupBoard( CursesBoardGlobals* bGlobals )
     LOG_FUNC();
     /* positionSizeStuff( bGlobals ); */
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    BoardCtxt* board = cGlobals->game.board;
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
     const int width = bGlobals->winWidth;
     const int height = bGlobals->winHeight;
 
     XP_U16 fontWidth, fontHt;
-    const DictionaryCtxt* dict = model_getDictionary( cGlobals->game.model );
-    getFromDict( dict, &fontWidth, &fontHt );
-    BoardDims dims;
-    board_figureLayout( board, NULL_XWE, cGlobals->gi,
-                        0, 0, width, height, 100,
-                        150, 200, /* percents */
-                        width*75/100,
-                        fontWidth, fontHt,
-                        XP_FALSE, &dims );
-    board_applyLayout( board, NULL_XWE, &dims );
-    XP_LOGFF( "calling board_draw()" );
-    board_invalAll( board );
-    board_draw( board, NULL_XWE );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    const DictionaryCtxt* dict =
+        gr_getDictionary( dutil, cGlobals->gr, NULL_XWE );
+    if ( !!dict ) {
+        getFromDict( dict, &fontWidth, &fontHt );
+        BoardDims dims;
+        gr_figureLayout( dutil, cGlobals->gr, NULL_XWE, 
+                         0, 0, width, height, 100,
+                         150, 200, /* percents */
+                         width*75/100,
+                         fontWidth, fontHt,
+                         XP_FALSE, &dims );
+        gr_applyLayout( dutil, cGlobals->gr, NULL_XWE, &dims );
+        XP_LOGFF( "calling board_draw()" );
+        /* gr_invalAll( dutil, cGlobals->gr, NULL_XWE ); */
+        /* gr_draw( dutil, cGlobals->gr, NULL_XWE ); */
+    }
 }
 
 static void
 initCP( CommonGlobals* cGlobals )
 {
     const LaunchParams* params = cGlobals->params;
-    cGlobals->cp.showBoardArrow = XP_TRUE;
-    cGlobals->cp.showRobotScores = params->showRobotScores;
-    cGlobals->cp.hideTileValues = params->hideValues;
-    cGlobals->cp.skipMQTTAdd = params->skipMQTTAdd;
-    cGlobals->cp.skipCommitConfirm = params->skipCommitConfirm;
-    cGlobals->cp.sortNewTiles = params->sortNewTiles;
-    cGlobals->cp.showColors = params->showColors;
-    cGlobals->cp.allowPeek = params->allowPeek;
-#ifdef XWFEATURE_SLOW_ROBOT
-    cGlobals->cp.robotThinkMin = params->robotThinkMin;
-    cGlobals->cp.robotThinkMax = params->robotThinkMax;
-    cGlobals->cp.robotTradePct = params->robotTradePct;
-#endif
-#ifdef XWFEATURE_ROBOTPHONIES
-    cGlobals->cp.makePhonyPct = params->makePhonyPct;
-#endif
+    cpFromLP( &cGlobals->cp, params );
 }
 
 static CursesBoardGlobals*
-initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
+initNoDraw( CursesBoardState* cbState, GameRef gr,
+            const CommsAddrRec* returnAddr )
 {
     LOG_FUNC();
-    CursesBoardGlobals* result = commonInit( cbState, rowid, gi );
+    CursesBoardGlobals* result = commonInit( cbState, gr );
     CommonGlobals* cGlobals = &result->cGlobals;
 
     if ( !!returnAddr ) {
@@ -577,10 +515,8 @@ initNoDraw( CursesBoardState* cbState, sqlite3_int64 rowid,
 
     initCP( cGlobals );
 
-    if ( linuxOpenGame( cGlobals ) ) {
-         result = ref( result );
-    } else {
-        disposeBoard( result, XP_TRUE );
+    if ( !linuxOpenGame( cGlobals ) ) {
+        disposeBoard( result );
         result = NULL;
     }
     return result;
@@ -591,106 +527,76 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
 {
     LOG_FUNC();
     XP_ASSERT( !!dims );
+    XP_ASSERT( !bGlobals->boardWin );
     bGlobals->boardWin = newwin( dims->height, dims->width, dims->top, 0 );
     getmaxyx( bGlobals->boardWin, bGlobals->winHeight, bGlobals->winWidth );
 
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if( !!bGlobals->boardWin ) {
-        cGlobals->draw = cursesDrawCtxtMake( bGlobals->boardWin );
-        board_setDraw( cGlobals->game.board, NULL_XWE, cGlobals->draw );
+        cGlobals->draw =
+            cursesDrawCtxtMake( bGlobals->cGlobals.params,
+                                bGlobals->boardWin, cGlobals->gr,
+                                DT_SCREEN );
     }
 
     setupBoard( bGlobals );
 }
 
-CursesBoardGlobals*
-findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID,
-                     const CurGameInfo* gi, const CommsAddrRec* returnAddr )
+static CursesBoardGlobals*
+findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID )
 {
-    CursesBoardGlobals* result = NULL;
-    sqlite3_int64 rowids[2];
-    int nRowIDs = VSIZE(rowids);
-    gdb_getRowsForGameID( cbState->params->pDb, gameID, rowids, &nRowIDs );
-    XP_ASSERT( 0 <= nRowIDs && nRowIDs <= 1 );
-    if ( 1 == nRowIDs ) {
-        result = findOrOpen( cbState, rowids[0], gi, returnAddr );
-    }
-    return result;
+    GameRef grs[1];
+    XP_U16 nRefs = VSIZE(grs);
+    gmgr_getForGID( cbState->params->dutil, NULL_XWE, gameID, grs, &nRefs );
+    return nRefs == 1 ? findOrOpen( cbState, grs[0], NULL ) : NULL;
 }
 
 const CommonGlobals*
 cb_getForGameID( CursesBoardState* cbState, XP_U32 gameID )
 {
-    CursesBoardGlobals* cbg = findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* cbg = findOrOpenForGameID( cbState, gameID );
     CommonGlobals* result = &cbg->cGlobals;
     // XP_LOGFF( "(%X) => %p", gameID, result );
     return result;
 }
 
 static CursesBoardGlobals*
-findOrOpen( CursesBoardState* cbState, sqlite3_int64 rowid,
-            const CurGameInfo* gi, const CommsAddrRec* returnAddr )
+findOrOpen( CursesBoardState* cbState, GameRef gr,
+            const CommsAddrRec* returnAddr )
 {
-    CursesBoardGlobals* result = NULL;
-    for ( GSList* iter = cbState->games;
-          rowid >= 0 && !!iter && !result; iter = iter->next ) {
-        CursesBoardGlobals* one = (CursesBoardGlobals*)iter->data;
-        if ( one->cGlobals.rowid == rowid ) {
-            result = one;
-        }
-    }
-
+    CommonGlobals* cGlobals = globalsForGameRef( cbState->params->cag,
+                                                 gr, XP_FALSE );
+    CursesBoardGlobals* result = (CursesBoardGlobals*)cGlobals;
     if ( !result ) {
-        result = initNoDraw( cbState, rowid, gi, returnAddr );
-        if ( !!result ) {
-            setupBoard( result );
-            cbState->games = g_slist_append( cbState->games, result );
-        }
+        result = initNoDraw( cbState, gr, returnAddr ); /* adds to list */
+        XP_ASSERT( !!result );
+        setupBoard( result );
     }
     return result;
 }
 
-bool
-cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed,
-            const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
-{
-    LOG_FUNC();
-    CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL, NULL );
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
-    bool success = 0 == expectSeed || seed == expectSeed;
-    if ( success ) {
-        gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
-    } else {
-        XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed );
-    }
-    return success;
-}
-
-void
-cb_feedGame( CursesBoardState* cbState, XP_U32 gameID,
-             const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
-{
-    sqlite3_int64 rowids[4];
-    int nRows = VSIZE( rowids );
-    LaunchParams* params = cbState->params;
-    gdb_getRowsForGameID( params->pDb, gameID, rowids, &nRows );
-    XP_LOGFF( "found %d rows for gameID %X", nRows, gameID );
-    for ( int ii = 0; ii < nRows; ++ii ) {
-#ifdef DEBUG
-        bool success =
-#endif
-            cb_feedRow( cbState, rowids[ii], 0, buf, len, from );
-        XP_ASSERT( success );
-    }
-}
+/* bool */
+/* cb_feedRow( CursesBoardState* cbState, sqlite3_int64 rowid, XP_U16 expectSeed, */
+/*             const XP_U8* buf, XP_U16 len, const CommsAddrRec* from ) */
+/* { */
+    /* LOG_FUNC(); */
+    /* CursesBoardGlobals* bGlobals = findOrOpen( cbState, rowid, NULL ); */
+    /* CommonGlobals* cGlobals = &bGlobals->cGlobals; */
+    /* XP_U16 seed = gr_getChannelSeed( cGlobals->params->dutil, cGlobals->gr ); */
+    /* bool success = 0 == expectSeed || seed == expectSeed; */
+    /* if ( success ) { */
+    /*     gameGotBuf( cGlobals, XP_TRUE, buf, len, from ); */
+    /* } else { */
+    /*     XP_LOGFF( "msg for seed %d but I opened %d", expectSeed, seed ); */
+    /* } */
+    /* return success; */
+/* } */
 
 void
 cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
                const CommsAddrRec destAddrs[] )
 {
-    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID,
-                                                        NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     linux_addInvites( cGlobals, nRemotes, destAddrs );
 }
@@ -699,8 +605,7 @@ XP_Bool
 cb_makeRematch( CursesBoardState* cbState, XP_U32 gameID, RematchOrder ro,
                 XP_U32* newGameIDP )
 {
-    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID,
-                                                        NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
     XP_Bool success = rematch_and_save( bGlobals, ro, newGameIDP );
     return success;
 }
@@ -709,8 +614,8 @@ XP_Bool
 cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID, XP_Bool tryTrade )
 {
     XP_LOGFF( "(tryTrade: %s)", boolToStr(tryTrade));
-    CursesBoardGlobals* bGlobals =
-        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
+    XP_LOGFF( "bGlobals: %p", bGlobals );
     XP_Bool success = !!bGlobals
         && linux_makeMoveIf( &bGlobals->cGlobals, tryTrade );
 
@@ -721,11 +626,11 @@ cb_makeMoveIf( CursesBoardState* cbState, XP_U32 gameID, XP_Bool tryTrade )
 XP_Bool
 cb_sendChat( CursesBoardState* cbState, XP_U32 gameID, const char* msg )
 {
-    CursesBoardGlobals* bGlobals =
-        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
     XP_Bool success = !!bGlobals;
     if ( success ) {
-        board_sendChat( bGlobals->cGlobals.game.board, NULL_XWE, msg );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        gr_sendChat( cGlobals->params->dutil, cGlobals->gr, NULL_XWE, msg );
     }
     return success;
 }
@@ -733,13 +638,13 @@ cb_sendChat( CursesBoardState* cbState, XP_U32 gameID, const char* msg )
 XP_Bool
 cb_undoMove( CursesBoardState* cbState, XP_U32 gameID )
 {
-    CursesBoardGlobals* bGlobals =
-        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
     XP_Bool success = !!bGlobals;
     if ( success ) {
         XP_U16 limit = 0;
-        success = server_handleUndo( bGlobals->cGlobals.game.server,
-                                     NULL_XWE, limit );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        success = gr_handleUndo( cGlobals->params->dutil, cGlobals->gr,
+                                 NULL_XWE, limit );
     }
     return success;
 }
@@ -747,27 +652,33 @@ cb_undoMove( CursesBoardState* cbState, XP_U32 gameID )
 XP_Bool
 cb_resign( CursesBoardState* cbState, XP_U32 gameID )
 {
-    CursesBoardGlobals* bGlobals =
-        findOrOpenForGameID( cbState, gameID, NULL, NULL );
+    CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
     XP_Bool success = !!bGlobals;
     if ( success ) {
-        server_endGame( bGlobals->cGlobals.game.server, NULL_XWE );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        gr_endGame( cGlobals->params->dutil, cGlobals->gr, NULL_XWE );
     }
     return success;
 }
 
-static void
-kill_board( gpointer data )
-{
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
-    linuxSaveGame( &bGlobals->cGlobals );
-    disposeBoard( bGlobals, XP_FALSE );
-}
+/* static void */
+/* kill_board( gpointer data ) */
+/* { */
+/*     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data; */
+/*     CommonGlobals* cGlobals = &bGlobals->cGlobals; */
+/*     linuxSaveGame( cGlobals ); */
+/*     cg_unref( cGlobals ); */
+/* } */
 
 void
-cb_closeAll( CursesBoardState* cbState )
+cb_closeAll( CursesBoardState* XP_UNUSED(cbState) )
 {
-    g_slist_free_full( cbState->games, kill_board );
+    /* LOG_FUNC(); */
+    /* GSList** listLoc = gamesListLocFromCBS( cbState ); */
+    /* if ( !!*listLoc ) { */
+    /*     g_slist_free_full( *listLoc, kill_board ); */
+    /*     *listLoc = NULL; */
+    /* } */
 }
 
 static void
@@ -791,15 +702,17 @@ curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 p
                                  XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row),
                                  const XP_UCHAR** texts, XP_U16 nTiles )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
+    CommonAppGlobals* cag = getCag( uc );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForGameRef( cag, uc->gr, XP_FALSE );
     char query[128];
-    char* playerName = globals->cGlobals.gi->players[playerNum].name;
+    char* playerName = bGlobals->cGlobals.gi->players[playerNum].name;
 
     snprintf( query, sizeof(query), 
               "Pick tile for %s! (Tab or type letter to select "
               "then hit <cr>.)", playerName );
 
-    /*index = */curses_askLetter( globals->boardWin, query, texts, nTiles );
+    /*index = */curses_askLetter( bGlobals->boardWin, query, texts, nTiles );
     // return index;
 } /* util_userPickTile */
 
@@ -830,7 +743,8 @@ curses_util_informNeedPickTiles( XW_UtilCtxt* XP_UNUSED(uc),
 static void
 curses_util_userError( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), UtilErrID id )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
+    CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
+    CursesBoardGlobals* globals = (CursesBoardGlobals*)cGlobals;
     XP_Bool silent;
     const XP_UCHAR* message = linux_getErrString( id, &silent );
 
@@ -848,14 +762,15 @@ ask_move( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const char* answers[] = {"Ok", "Cancel", NULL};
 
-    if ( 0 == cursesask( bGlobals->boardWin, cGlobals->question,
-                         VSIZE(answers)-1, answers ) ) {
-        BoardCtxt* board = cGlobals->game.board;
+    if ( 0 == cursesask( bGlobals->boardWin,  VSIZE(answers)-1, answers,
+                         cGlobals->question ) ) {
+        // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
         PhoniesConf pc = { .confirmed = XP_TRUE };
-        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
-            board_draw( board, NULL_XWE );
-            linuxSaveGame( &bGlobals->cGlobals );
-        }
+        XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+        gr_commitTurn( dutil, cGlobals->gr, NULL_XWE, &pc, XP_TRUE, NULL );//  ) {
+            /* gr_draw( dutil, cGlobals->gr, NULL_XWE ); */
+        /*     linuxSaveGame( &bGlobals->cGlobals ); */
+        /* } */
     }
 
     return FALSE;
@@ -877,22 +792,30 @@ curses_util_yOffsetChange( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                            XP_U16 oldOffset, XP_U16 newOffset )
 {
     if ( 0 != newOffset ) {
-        CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-        if ( !!bGlobals->boardWin ) {
-            ca_informf( bGlobals->boardWin, "%s(oldOffset=%d, newOffset=%d)", __func__,
-                        oldOffset, newOffset );
+        CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
+        if ( !!cGlobals ) {
+            CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
+            if ( !!bGlobals->boardWin ) {
+                ca_informf( bGlobals->boardWin, "%s(oldOffset=%d, newOffset=%d)",
+                            __func__, oldOffset, newOffset );
+            }
         }
     }
 } /* curses_util_yOffsetChange */
 
+static void
+curses_util_dictGone( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
+                      const XP_UCHAR* dictName )
+{
+    XP_LOGFF( "(dictName: %s)", dictName );
+}
+
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 static void
-curses_util_turnChanged( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
+curses_util_turnChanged( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
                          XP_S16 XP_UNUSED_DBG(newTurn) )
 {
     XP_LOGFF( "(newTurn=%d)", newTurn );
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    linuxSaveGame( &bGlobals->cGlobals );
 }
 #endif
 
@@ -908,7 +831,9 @@ curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                                   "Turn lost: %s; key=%d", player, strs,
                                   boolToStr(turnLost), bwKey );
 
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
+
     if ( !!bGlobals->boardWin ) {
         ca_inform( bGlobals->boardWin, msg );
     } else {
@@ -918,11 +843,21 @@ curses_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     g_free( msg );
 } /* curses_util_notifyIllegalWord */
 
+static void
+curses_util_countChanged( XW_UtilCtxt* uc, XWEnv xwe,
+                          XP_U16 count, XP_Bool quashed )
+{
+    XP_LOGFF( "(gr: %lX, count: %d, quashed: %s)", uc->gr, count,
+              boolToStr(quashed) );
+    XP_USE(xwe);
+}
+
 /* this needs to change!!! */
 static void
 curses_util_notifyMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* stream )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* globals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
     CommonGlobals* cGlobals = &globals->cGlobals;
     XP_U16 len = stream_getSize( stream );
     XP_ASSERT( len <= VSIZE(cGlobals->question) );
@@ -938,14 +873,15 @@ ask_trade( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
     const char* buttons[] = { "Ok", "Cancel" };
-    if (0 == cursesask( bGlobals->boardWin, cGlobals->question,
-                        VSIZE(buttons), buttons ) ) {
-        BoardCtxt* board = cGlobals->game.board;
+    if (0 == cursesask( bGlobals->boardWin, VSIZE(buttons), buttons,
+                        cGlobals->question ) ) {
+        // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
         PhoniesConf pc = { .confirmed = XP_TRUE };
-        if ( board_commitTurn( board, NULL_XWE, &pc, XP_TRUE, NULL ) ) {
-            board_draw( board, NULL_XWE );
-            linuxSaveGame( cGlobals );
-        }
+        XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+        gr_commitTurn( dutil, cGlobals->gr, NULL_XWE, &pc, XP_TRUE, NULL );// ) {
+        /*     gr_draw( dutil, cGlobals->gr, NULL_XWE ); */
+        /*     linuxSaveGame( cGlobals ); */
+        /* } */
     }
     return FALSE;
 }
@@ -954,7 +890,8 @@ static void
 curses_util_notifyTrade( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                          const XP_UCHAR** tiles, XP_U16 nTiles )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* globals = (CursesBoardGlobals*)
+        globalsForUtil(uc, XP_FALSE);
     formatConfirmTrade( &globals->cGlobals, tiles, nTiles );
     (void)ADD_ONETIME_IDLE( ask_trade, globals );
 }
@@ -967,44 +904,35 @@ curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe),
     /* nothing to do if we don't have a scrollbar */
 } /* curses_util_trayHiddenChange */
 
-static void
+void
 cursesShowFinalScores( CursesBoardGlobals* bGlobals )
 {
-    XWStreamCtxt* stream;
-    XP_UCHAR* text;
+    if ( !!bGlobals->boardWin ) {
+        XWStreamCtxt* stream;
+        XP_UCHAR* text;
 
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
-                                  cGlobals->params->vtMgr );
-    server_writeFinalScores( cGlobals->game.server, NULL_XWE, stream );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
+                                      cGlobals->params->vtMgr );
+        XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+        gr_writeFinalScores( dutil, cGlobals->gr, NULL_XWE, stream );
 
-    text = strFromStream( stream );
+        text = strFromStream( stream );
 
-    (void)ca_inform( bGlobals->boardWin, text );
+        (void)ca_inform( bGlobals->boardWin, text );
 
-    free( text );
-    stream_destroy( stream );
+        free( text );
+        stream_destroy( stream );
+    }
 } /* cursesShowFinalScores */
 
-static void
-curses_util_informMove( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
-                        XP_S16 XP_UNUSED(turn), XWStreamCtxt* expl,
-                        XWStreamCtxt* XP_UNUSED(words))
-{
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    if ( !!bGlobals->boardWin ) {
-        char* question = strFromStream( expl );
-        (void)ca_inform( bGlobals->boardWin, question );
-        free( question );
-    }
-}
-
-static void
+void
 curses_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                              XP_Bool XP_UNUSED(amHost),
                              const XP_UCHAR* msg )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
     if ( !!bGlobals->boardWin ) {
         ca_inform( bGlobals->boardWin, msg );
     }
@@ -1013,31 +941,32 @@ curses_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 static void
 curses_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
     if ( !!bGlobals->boardWin ) {
         ca_inform( bGlobals->boardWin, "informUndo(): undo was done" );
     }
 }
 
-static void
-rematch_and_save_once( CursesBoardGlobals* bGlobals, RematchOrder ro )
-{
-    LOG_FUNC();
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+/* static void */
+/* rematch_and_save_once( CursesBoardGlobals* bGlobals, RematchOrder ro ) */
+/* { */
+/*     LOG_FUNC(); */
+/*     CommonGlobals* cGlobals = &bGlobals->cGlobals; */
 
-    int32_t alreadyDone;
-    gchar key[128];
-    snprintf( key, sizeof(key), "%X/rematch_done", cGlobals->gi->gameID );
-    if ( gdb_fetchInt( cGlobals->params->pDb, key, &alreadyDone )
-         && 0 != alreadyDone ) {
-        XP_LOGFF( "already rematched game %X", cGlobals->gi->gameID );
-    } else {
-        if ( rematch_and_save( bGlobals, ro, NULL ) ) {
-            gdb_storeInt( cGlobals->params->pDb, key, 1 );
-        }
-    }
-    LOG_RETURN_VOID();
-}
+/*     int32_t alreadyDone; */
+/*     gchar key[128]; */
+/*     snprintf( key, sizeof(key), "%X/rematch_done", cGlobals->gi->gameID ); */
+/*     if ( gdb_fetchInt( cGlobals->params->pDb, key, &alreadyDone ) */
+/*          && 0 != alreadyDone ) { */
+/*         XP_LOGFF( "already rematched game %X", cGlobals->gi->gameID ); */
+/*     } else { */
+/*         if ( rematch_and_save( bGlobals, ro, NULL ) ) { */
+/*             gdb_storeInt( cGlobals->params->pDb, key, 1 ); */
+/*         } */
+/*     } */
+/*     LOG_RETURN_VOID(); */
+/* } */
 
 static XP_Bool
 rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
@@ -1045,60 +974,60 @@ rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
 {
     LOG_FUNC();
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    CursesBoardState* cbState = bGlobals->cbState;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
 
-    CursesBoardGlobals* bGlobalsNew = commonInit( cbState, -1, NULL );
+    XP_UCHAR* newName = "newName";
+    GameRef newGR = gr_makeRematch( dutil, cGlobals->gr, NULL_XWE, newName,
+                                    ro, XP_TRUE, XP_FALSE );
 
-    NewOrder no;
-    server_figureOrder( cGlobals->game.server, ro, &no );
-
-    XP_Bool success = game_makeRematch( &cGlobals->game, NULL_XWE,
-                                        bGlobalsNew->cGlobals.util,
-                                        &cGlobals->cp, &bGlobalsNew->cGlobals.procs,
-                                        &bGlobalsNew->cGlobals.game, "newName", &no );
+    XP_Bool success = !!newGR;
     if ( success ) {
         if ( !!newGameIDP ) {
-            *newGameIDP = bGlobalsNew->cGlobals.gi->gameID;
+            const CurGameInfo* gi = gr_getGI( dutil, newGR, NULL_XWE );
+            *newGameIDP = gi->gameID;
         }
-        linuxSaveGame( &bGlobalsNew->cGlobals );
     }
-    disposeBoard( bGlobalsNew, XP_TRUE );
     LOG_RETURNF( "%s", boolToStr(success) );
     return success;
 }
 
-static void
-curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter )
-{
-    LOG_FUNC();
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    LaunchParams* params = cGlobals->params;
-    board_draw( cGlobals->game.board, xwe );
+/* static void */
+/* curses_util_notifyGameOver( XW_UtilCtxt* uc, XWEnv xwe, XP_S16 quitter ) */
+/* { */
+/*     LOG_FUNC(); */
+/*     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*) */
+/*         globalsForUtil( uc, XP_FALSE ); */
+/*     if ( !!bGlobals ) { */
+/*         CommonGlobals* cGlobals = &bGlobals->cGlobals; */
+/*         LaunchParams* params = cGlobals->params; */
+/*         XW_DUtilCtxt* dutil = params->dutil; */
+/*         // XWGame* game = gr_getGame( cGlobals->gr ); */
+/*         gr_draw( dutil, cGlobals->gr, xwe ); */
 
-    /* game belongs in cGlobals... */
-    if ( params->printHistory ) {
-        catGameHistory( cGlobals );
-    }
+/*         /\* game belongs in cGlobals... *\/ */
+/*         if ( params->printHistory ) { */
+/*             catGameHistory( cGlobals ); */
+/*         } */
 
-    catFinalScores( cGlobals, quitter );
+/*         catFinalScores( cGlobals, quitter ); */
 
-    if ( params->quitAfter >= 0 ) {
-        sleep( params->quitAfter );
-        handleQuit( bGlobals->cbState->aGlobals, 0 );
-    } else if ( params->undoWhenDone ) {
-        server_handleUndo( cGlobals->game.server, xwe, 0 );
-    } else if ( !params->skipGameOver && !!bGlobals->boardWin ) {
-        /* This is modal.  Don't show if quitting */
-        cursesShowFinalScores( bGlobals );
-    }
+/*         if ( params->quitAfter >= 0 ) { */
+/*             sleep( params->quitAfter ); */
+/*             handleQuit( cGlobals->params->cag, 0 ); */
+/*         } else if ( params->undoWhenDone ) { */
+/*             gr_handleUndo( dutil, cGlobals->gr, xwe, 0 ); */
+/*         } else if ( !params->skipGameOver && !!bGlobals->boardWin ) { */
+/*             /\* This is modal.  Don't show if quitting *\/ */
+/*             cursesShowFinalScores( bGlobals ); */
+/*         } */
 
-    if ( params->rematchOnDone ) {
-        RematchOrder ro = !!params->rematchOrder
-            ? roFromStr(params->rematchOrder) : RO_NONE;
-        rematch_and_save_once( bGlobals, ro );
-    }
-} /* curses_util_notifyGameOver */
+/*         if ( params->rematchOnDone ) { */
+/*             RematchOrder ro = !!params->rematchOrder */
+/*                 ? roFromStr(params->rematchOrder) : RO_NONE; */
+/*             rematch_and_save_once( bGlobals, ro ); */
+/*         } */
+/*     } */
+/* } /\* curses_util_notifyGameOver *\/ */
 
 static void
 curses_util_informNetDict( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
@@ -1129,9 +1058,12 @@ static XP_Bool
 curses_util_hiliteCell( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                         XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-    if ( globals->cGlobals.params->sleepOnAnchor ) {
-        usleep( 10000 );
+    CursesBoardGlobals* globals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
+    if ( !!globals ) {
+        if ( globals->cGlobals.params->sleepOnAnchor ) {
+            usleep( 10000 );
+        }
     }
     return XP_TRUE;
 } /* curses_util_hiliteCell */
@@ -1152,14 +1084,16 @@ curses_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe) )
 static void
 curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
-    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+    CommonGlobals* cGlobals = (CommonGlobals*)
+        globalsForUtil( uc, XP_FALSE );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)cGlobals;
     XWStreamCtxt* stream;
     XP_UCHAR* text;
 
-    stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+    stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
                                   cGlobals->params->vtMgr );
-    board_formatRemainingTiles( cGlobals->game.board, NULL_XWE, stream );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_formatRemainingTiles( dutil, cGlobals->gr, NULL_XWE, stream );
 
     text = strFromStream( stream );
 
@@ -1188,10 +1122,13 @@ curses_util_bonusSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 static void
 curses_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 player )
 {
-    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)uc->closure;
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
     LastMoveInfo lmi;
-    if ( model_getPlayersLastScore( bGlobals->cGlobals.game.model, NULL_XWE,
-                                    player, &lmi ) ) {
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    if ( gr_getPlayersLastScore( dutil, cGlobals->gr,
+                                 NULL_XWE, player, &lmi ) ) {
         XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );
         (void)ca_inform( bGlobals->boardWin, buf );
@@ -1204,7 +1141,7 @@ curses_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                             XWStreamCtxt* words )
 {
     XP_USE( uc );
-    catOnClose( words, NULL_XWE, NULL );
+    catAndClose( words );
     fprintf( stderr, "\n" );
 }
 #endif
@@ -1218,27 +1155,32 @@ curses_util_informWordsBlocked( XW_UtilCtxt* XP_UNUSED(uc), XWEnv XP_UNUSED(xwe)
     XP_LOGFF( "(nBadWords=%d, dict=%s)", nBadWords, dictName );
 }
 
-#ifdef XWFEATURE_CHAT
 static void
 curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
                       const XP_UCHAR* const XP_UNUSED_DBG(msg),
                       XP_S16 XP_UNUSED_DBG(from),
                       XP_U32 XP_UNUSED(timestamp) )
 {
-    CursesBoardGlobals* globals = (CursesBoardGlobals*)uc->closure;
-    globals->nChatsSent = 0;
-# ifdef DEBUG
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
+        globalsForUtil( uc, XP_FALSE );
+    bGlobals->nChatsSent = 0;
     XP_LOGFF( "got \"%s\" from player[%d]", msg, from );
-# endif
-}
-#endif
 
-static void
-setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    WINDOW* win = bGlobals->boardWin;
+    if ( !!win ) {
+        XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+        curses_openChat( win, dutil, cGlobals->gr );
+    }
+}
+
+void
+cb_setupUtilCallbacks( XW_UtilCtxt* util )
 {
-    util->closure = bGlobals;
+    // util->closure = bGlobals;
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = curses_util_##NAM
     SET_PROC(userError);
+    SET_PROC(countChanged);
     SET_PROC(notifyMove);
     SET_PROC(notifyTrade);
     SET_PROC(notifyPickTileBlank);
@@ -1246,14 +1188,14 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
     SET_PROC(informNeedPassword);
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);
+    SET_PROC(dictGone);
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     SET_PROC(turnChanged);
 #endif
     SET_PROC(notifyDupStatus);
-    SET_PROC(informMove);
     SET_PROC(informUndo);
     SET_PROC(informNetDict);
-    SET_PROC(notifyGameOver);
+    // SET_PROC(notifyGameOver);
 #ifdef XWFEATURE_HILITECELL
     SET_PROC(hiliteCell);
 #endif
@@ -1274,9 +1216,7 @@ setupCursesUtilCallbacks( CursesBoardGlobals* bGlobals, XW_UtilCtxt* util )
 #ifdef XWFEATURE_SEARCHLIMIT
     SET_PROC(getTraySearchLimits);
 #endif
-#ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
-#endif
 #undef SET_PROC
 
     assertTableFull( util->vtable, sizeof(*util->vtable), "curses util" );
@@ -1287,9 +1227,9 @@ handleFlip( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( board_flip( cGlobals->game.board ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_flip( dutil, cGlobals->gr, NULL_XWE );
 
     return XP_TRUE;
 } /* handleFlip */
@@ -1306,10 +1246,9 @@ handleBackspace( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
     XP_Bool handled;
-    if ( board_handleKey( cGlobals->game.board, NULL_XWE,
-                          XP_CURSOR_KEY_DEL, &handled ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_handleKey( dutil, cGlobals->gr, NULL_XWE,
+                  XP_CURSOR_KEY_DEL, &handled );
     return XP_TRUE;
 } /* handleBackspace */
 
@@ -1318,8 +1257,9 @@ handleUndo( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( server_handleUndo( cGlobals->game.server, NULL_XWE, 0 ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    if ( gr_handleUndo( dutil, cGlobals->gr, NULL_XWE, 0 ) ) {
+        gr_draw( dutil, cGlobals->gr, NULL_XWE );
     }
     return XP_TRUE;
 } /* handleUndo */
@@ -1328,9 +1268,9 @@ static bool
 handleReplace( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
-    if ( board_replaceTiles( cGlobals->game.board, NULL_XWE ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_replaceTiles( dutil, cGlobals->gr, NULL_XWE );
     return XP_TRUE;
 } /* handleReplace */
 
@@ -1391,8 +1331,8 @@ inviteList( CommonGlobals* cGlobals, CommsAddrRec* myAddr, GSList* invitees,
                 XP_ASSERT(0);
             }
 #ifdef XWFEATURE_COMMS_INVITE
-            comms_invite( cGlobals->game.comms, NULL_XWE, &nli,
-                          &destAddr, XP_TRUE );
+            XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+            gr_invite( dutil, cGlobals->gr, NULL_XWE, &nli, &destAddr, XP_TRUE );
 #endif
         }
     }
@@ -1410,9 +1350,9 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
     CommsAddrRec selfAddr;
-    CommsCtxt* comms = cGlobals->game.comms;
-    XP_ASSERT( comms );
-    comms_getSelfAddr( comms, &selfAddr );
+    // CommsCtxt* comms = _getGame(cGlobals->gr)->comms;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &selfAddr );
 
     gint forceChannel = 1;
     const XP_U16 nPlayers = params->connInfo.inviteeCounts[forceChannel-1];
@@ -1439,9 +1379,11 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     /* Try sending to self, using the phone number or relayID of this device */
 /* <<<<<<< HEAD */
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_SMS ) ) {
-        linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
+        // linux_sms_invite( params, &nli, selfAddr.u.sms.phone, selfAddr.u.sms.port );
+        XP_ASSERT(0);
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
-        mqttc_invite( params, &nli, mqttc_getDevID( params ) );
+        XP_ASSERT(0);
+        // mqttc_invite( params, &nli, mqttc_getDevID( params ) );
 #ifdef XWFEATURE_RELAY
     } else if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
 /* ======= */
@@ -1464,14 +1406,26 @@ sendInvite( void* closure, int XP_UNUSED(key) )
 }
 
 static bool
+openChat( void* closure, int XP_UNUSED(key) )
+{
+    LOG_FUNC();
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    curses_openChat( bGlobals->boardWin, dutil, cGlobals->gr );
+    return XP_TRUE;
+}
+
+static bool
 handleCommit( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    if ( board_commitTurn( cGlobals->game.board, NULL_XWE, NULL,
-                           XP_FALSE, NULL ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_commitTurn( dutil, cGlobals->gr, NULL_XWE, NULL, XP_FALSE, NULL );
+    /*     gr_draw( dutil, cGlobals->gr, NULL_XWE ); */
+    /* } */
     return XP_TRUE;
 } /* handleCommit */
 
@@ -1479,9 +1433,9 @@ static bool
 handleJuggle( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
-    if ( board_juggleTray( cGlobals->game.board, NULL_XWE ) ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_juggleTray( dutil, cGlobals->gr, NULL_XWE );
     return XP_TRUE;
 } /* handleJuggle */
 
@@ -1489,14 +1443,15 @@ static bool
 handleHide( void* closure, int XP_UNUSED(key) )
 {
     CommonGlobals* cGlobals = &((CursesBoardGlobals*)closure)->cGlobals;
-    XW_TrayVisState curState = 
-        board_getTrayVisState( cGlobals->game.board );
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    XW_TrayVisState curState = gr_getTrayVisState( dutil, cGlobals->gr, NULL_XWE );
 
     bool draw = curState == TRAY_REVEALED
-        ? board_hideTray( cGlobals->game.board, NULL_XWE )
-        : board_showTray( cGlobals->game.board, NULL_XWE );
+        ? gr_hideTray( dutil, cGlobals->gr, NULL_XWE )
+        : gr_showTray( dutil, cGlobals->gr, NULL_XWE );
     if ( draw ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
+        gr_draw( dutil, cGlobals->gr, NULL_XWE );
     }
 
     return XP_TRUE;
@@ -1504,10 +1459,10 @@ handleHide( void* closure, int XP_UNUSED(key) )
 
 #ifdef KEYBOARD_NAV
 static void
-checkAssignFocus( BoardCtxt* board )
+checkAssignFocus( XW_DUtilCtxt* dutil, GameRef gr )
 {
-    if ( OBJ_NONE == board_getFocusOwner(board) ) {
-        board_focusChanged( board, NULL_XWE, OBJ_BOARD, XP_TRUE );
+    if ( OBJ_NONE == gr_getFocusOwner(dutil, gr, NULL_XWE) ) {
+        gr_focusChanged( dutil, gr, NULL_XWE, OBJ_BOARD, XP_TRUE );
     }
 }
 
@@ -1515,23 +1470,21 @@ static XP_Bool
 handleFocusKey( CursesBoardGlobals* bGlobals, XP_Key key )
 {
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    checkAssignFocus( cGlobals->game.board );
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    checkAssignFocus( dutil, cGlobals->gr );
 
     XP_Bool handled;
-    XP_Bool draw = board_handleKey( cGlobals->game.board, NULL_XWE,
-                                    key, &handled );
+    gr_handleKey( dutil, cGlobals->gr, NULL_XWE, key, &handled );
     if ( !handled ) {
         BoardObjectType nxt;
         BoardObjectType order[] = { OBJ_BOARD, OBJ_SCORE, OBJ_TRAY };
-        draw = linShiftFocus( cGlobals, key, order, &nxt ) || draw;
+        linShiftFocus( cGlobals, key, order, &nxt );
         if ( nxt != OBJ_NONE ) {
             changeMenuForFocus( bGlobals, nxt );
         }
     }
 
-    if ( draw ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
     return XP_TRUE;
 } /* handleFocusKey */
 
@@ -1570,15 +1523,14 @@ handleHint( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     XP_Bool redo;
-    XP_Bool draw = board_requestHint( cGlobals->game.board, NULL_XWE,
- #ifdef XWFEATURE_SEARCHLIMIT
-                                      XP_FALSE,
- #endif
-                                      XP_FALSE, &redo );
-    if ( draw ) {
-        board_draw( cGlobals->game.board, NULL_XWE );
-    }
+    gr_requestHint( dutil, cGlobals->gr, NULL_XWE,
+#ifdef XWFEATURE_SEARCHLIMIT
+                    XP_FALSE,
+#endif
+                    XP_FALSE, &redo );
     return XP_TRUE;
 }
 
@@ -1614,8 +1566,7 @@ static gboolean
 idle_close_game( gpointer data )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)data;
-    linuxSaveGame( &bGlobals->cGlobals );
-    unref( bGlobals );
+    closeBoard( bGlobals, XP_TRUE );
     return FALSE;
 }
 
@@ -1631,11 +1582,14 @@ static bool
 handleSpace( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    BoardCtxt* board = bGlobals->cGlobals.game.board;
-    checkAssignFocus( board );
+    // BoardCtxt* board = gr_getGame(bGlobals->cGlobals.gameRef)->board;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    GameRef gr = cGlobals->gr;
+    checkAssignFocus( dutil, gr );
     XP_Bool handled;
-    (void)board_handleKey( board, NULL_XWE, XP_RAISEFOCUS_KEY, &handled );
-    board_draw( board, NULL_XWE );
+    (void)gr_handleKey( dutil, gr, NULL_XWE, XP_RAISEFOCUS_KEY, &handled );
+    gr_draw( dutil, gr, NULL_XWE );
     return XP_TRUE;
 } /* handleSpace */
 
@@ -1643,12 +1597,13 @@ static bool
 handleRet( void* closure, int key )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
-    BoardCtxt* board = bGlobals->cGlobals.game.board;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    GameRef gr = cGlobals->gr;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    // BoardCtxt* board = gr_getGame(bGlobals->cGlobals.gameRef)->board;
     XP_Bool handled;
     XP_Key xpKey = (key & ALT_BIT) == 0 ? XP_RETURN_KEY : XP_ALTRETURN_KEY;
-    if ( board_handleKey( board, NULL_XWE, xpKey, &handled ) ) {
-        board_draw( board, NULL_XWE );
-    }
+    gr_handleKey( dutil, gr, NULL_XWE, xpKey, &handled );
     return XP_TRUE;
 } /* handleRet */
 
@@ -1658,10 +1613,11 @@ handleShowVals( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
-    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->util->mpool)
+    XWStreamCtxt* stream = mem_stream_make_raw( MPPARM(cGlobals->params->mpool)
                                                 cGlobals->params->vtMgr );
-    server_formatDictCounts( bGlobals->cGlobals.game.server, NULL_XWE,
-                             stream, 5, XP_FALSE );
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    gr_formatDictCounts( dutil, cGlobals->gr, NULL_XWE,
+                         stream, 5, XP_FALSE );
     const XP_U8* data = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
     XP_UCHAR buf[len + 1];
@@ -1709,44 +1665,4 @@ relay_sendNoConn_curses( XWEnv XP_UNUSED(xwe), const XP_U8* msg, XP_U16 len,
     }
     return success;
 } /* relay_sendNoConn_curses */
-#endif
-
-#ifdef RELAY_VIA_HTTP
-static void
-relay_requestJoin_curses( void* closure, const XP_UCHAR* devID, const XP_UCHAR* room,
-                          XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                          XP_U16 seed, XP_U16 lang )
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    relaycon_join( cGlobals->params, devID, room, nPlayersHere, nPlayersTotal,
-                   seed, lang, onJoined, globals );
-}
-#endif
-
-static void
-curses_countChanged( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
-                     XP_U16 XP_UNUSED_DBG(newCount),
-                     XP_Bool XP_UNUSED_DBG(quashed) )
-{
-    /* discon_ok2.py depends on this log entry */
-    XP_LOGFF( "(newCount=%d, quashed=%s)", newCount, boolToStr(quashed) );
-}
-
-#ifdef COMMS_XPORT_FLAGSPROC
-static XP_U32
-curses_getFlags( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure) )
-{
-    return COMMS_XPORT_FLAGS_HASNOCONN;
-}
-#endif
-
-#ifdef XWFEATURE_RELAY
-static void
-relay_status_curses( XWEnv XP_UNUSED(xwe), void* XP_UNUSED(closure),
-                     CommsRelayState XP_UNUSED_DBG(state) )
-{
-    /* CommonGlobals* cGlobals = (CommonGlobals*)closure; */
-    // bGlobals->commsRelayState = state;
-    XP_LOGFF( "got status: %s", CommsRelayState2Str(state) );
-}
 #endif
