@@ -1244,4 +1244,9 @@
     <string name="confirm_clear_lps">Sind Sie sicher, dass die gespeicherten “erlaubten falsche Wörter” gelöscht werden sollen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.</string>
     <string name="legalphonies_title_fmt">Erlaubte falsche Wörter für %1$s</string>
     <string name="gamel_menu_logstore_prune">Gespeicherte Protokolle entfernen</string>
+
+    <string name="pref_item_allowMulti_title">Erlaube doppelte Spiele-IDs</string>
+    <string name="pref_item_allowMulti_summary">Gewöhnlich heißt das,
+    Einladungen vom selben Gerät anzunehmen</string>
+
 </resources>

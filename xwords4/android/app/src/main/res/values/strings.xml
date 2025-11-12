@@ -2949,4 +2949,10 @@
   <string name="show_kaservicedied_body">Post a notification when the
   Move Checker is stopped (usually because it’s been too long since a
   move was sent or received.)</string>
+
+  <!-- A mostly-for-debugging preference controlling whether a device
+       is allowed to invite itself to a game. -->
+  <string name="pref_item_allowMulti_title">Allow duplicate gameIDs</string>
+  <string name="pref_item_allowMulti_summary">Usually this means
+  accepting invitations from the same device</string>
 </resources>
