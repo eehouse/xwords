@@ -83,7 +83,6 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/dictiter.c   \
 	$(COMMON_PATH)/dictmgr.c    \
 	$(COMMON_PATH)/mscore.c     \
-	$(COMMON_PATH)/vtabmgr.c    \
 	$(COMMON_PATH)/strutils.c   \
 	$(COMMON_PATH)/engine.c     \
 	$(COMMON_PATH)/board.c      \

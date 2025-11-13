@@ -33,8 +33,7 @@ XW_DUtilCtxt* makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
                          EnvThreadInfo* ti,
 #endif
-                         jobject j_dutil, VTableMgr* vtMgr,
-                         JNIUtilCtxt* jniutil, void* closure );
+                         jobject j_dutil, JNIUtilCtxt* jniutil, void* closure );
 void destroyDUtil( XW_DUtilCtxt** dutilp, JNIEnv* env );
 
 XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv* env, jobject jutil,

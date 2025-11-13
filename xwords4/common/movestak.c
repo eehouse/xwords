@@ -38,7 +38,6 @@ extern "C" {
 #endif
 
 struct StackCtxt {
-    VTableMgr* vtmgr;
     XWStreamCtxt* data;
     XWStreamPos   top;
     XWStreamPos cachedPos;
@@ -109,13 +108,12 @@ stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
 }
 
 StackCtxt*
-stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDuplicateMode )
+stack_make( MPFORMAL XP_U16 nPlayers, XP_Bool inDuplicateMode )
 {
     StackCtxt* result = (StackCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
     if ( !!result ) {
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->mpool, mpool);
-        result->vtmgr = vtmgr;
         result->nPlayers = nPlayers;
         result->inDuplicateMode = inDuplicateMode;
     }
@@ -218,8 +216,8 @@ stack_copy( const StackCtxt* stack )
     XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(stack->mpool) );
     stack_writeToStream( stack, stream );
 
-    newStack = stack_make( MPPARM(stack->mpool) stack->vtmgr,
-                           stack->nPlayers, stack->inDuplicateMode );
+    newStack = stack_make( MPPARM(stack->mpool) stack->nPlayers,
+                           stack->inDuplicateMode );
     stack_loadFromStream( newStack, stream );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
     strm_destroy( stream );

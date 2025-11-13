@@ -574,7 +574,7 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey ke
 }
 
 XW_DUtilCtxt*
-linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
+linux_dutils_init( MPFORMAL void* closure )
 {
     LinDUtilCtxt* lduc = XP_CALLOC( mpool, sizeof(*lduc) );
 
@@ -582,7 +582,6 @@ linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure )
 
     MUTEX_INIT( &lduc->timersMutex, XP_TRUE );
 
-    super->vtMgr = vtMgr;
     super->closure = closure;
 
 # define SET_PROC(nam) \

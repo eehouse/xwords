@@ -27,7 +27,6 @@
 #ifdef XWFEATURE_RELAY
 # include "xwrelay.h"
 #endif
-#include "vtabmgr.h"
 #include "commstyp.h"
 #include "nlityp.h"
 #include "cJSON.h"
@@ -180,7 +179,6 @@ struct XW_DUtilCtxt {
     void* kpCtxt;
     MutexState kpMutex;
 #endif
-    VTableMgr* vtMgr;
 #ifdef DEBUG
     XP_U32 magic;
 #endif
@@ -189,9 +187,6 @@ struct XW_DUtilCtxt {
 
 void dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe );
 void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
-
-/* This one cheats: direct access */
-#define dutil_getVTManager(duc) (duc)->vtMgr
 
 #define dutil_getCurSeconds(duc, ...)               \
     (duc)->vtable.m_dutil_getCurSeconds((duc), __VA_ARGS__)

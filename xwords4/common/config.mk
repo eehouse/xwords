@@ -54,7 +54,6 @@ COMMON5 = \
 	$(COMMONOBJDIR)/movestak.o \
 	$(COMMONOBJDIR)/strutils.o \
 	$(COMMONOBJDIR)/bufqueue.o \
-	$(COMMONOBJDIR)/vtabmgr.o \
 	$(COMMONOBJDIR)/dictmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
 	$(COMMONOBJDIR)/msgchnk.o \

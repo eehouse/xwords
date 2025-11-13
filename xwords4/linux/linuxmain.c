@@ -2000,10 +2000,7 @@ initParams( LaunchParams* params )
     params->mpool = mpool_make(__func__);
 #endif
 
-    params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
-
-    params->dutil = linux_dutils_init( MPPARM(params->mpool) params->vtMgr,
-                                       params );
+    params->dutil = linux_dutils_init( MPPARM(params->mpool) params );
 }
 
 static void
@@ -2058,7 +2055,6 @@ static void
 freeParams( LaunchParams* params )
 {
     linux_dutils_free( &params->dutil );
-    vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
 
     gdb_close( params->pDb );
     params->pDb = NULL;

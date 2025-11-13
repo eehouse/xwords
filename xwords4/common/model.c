@@ -300,7 +300,6 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
         stack_init( vol->stack, vol->gi->nPlayers, vol->gi->inDuplicateMode );
     } else {
         vol->stack = stack_make( MPPARM(vol->mpool)
-                                 dutil_getVTManager(vol->dutil),
                                  vol->gi->nPlayers, vol->gi->inDuplicateMode );
     }
 } /* model_setSize */

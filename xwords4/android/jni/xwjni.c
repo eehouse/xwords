@@ -78,7 +78,6 @@ typedef struct _JNIGlobalState {
     EnvThreadInfo ti;
     JavaVM* jvm;
 #endif
-    VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
     JNIUtilCtxt* jniutil;
     XP_Bool mpoolInUse;
@@ -373,10 +372,8 @@ Java_org_eehouse_android_xw4_jni_Device_initJNIState
                                                               sizeof(*globalState) );
     map_init( MPPARM(mpool) &globalState->ti, env );
     globalState->jniutil = makeJNIUtil( MPPARM(mpool) env, TI_IF(&globalState->ti) jniu );
-    globalState->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
     globalState->dutil = makeDUtil( MPPARM(mpool) env, TI_IF(&globalState->ti)
-                                    jdutil, globalState->vtMgr,
-                                    globalState->jniutil, NULL );
+                                    jdutil, globalState->jniutil, NULL );
     MPASSIGN( globalState->mpool, mpool );
     setGlobalState( env, globalState );
     // LOG_RETURNF( "%p", globalState );
@@ -395,7 +392,6 @@ Java_org_eehouse_android_xw4_jni_Device_cleanupJNIState
         MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
         ASSERT_ENV( &globalState->ti, env );
-        vtmgr_destroy( MPPARM(mpool) globalState->vtMgr );
         destroyDUtil( &globalState->dutil, env );
         destroyJNIUtil( env, &globalState->jniutil );
         map_destroy( &globalState->ti );

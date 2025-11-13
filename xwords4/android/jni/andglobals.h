@@ -20,7 +20,6 @@
 #ifndef _ANDGLOBALS_H_
 #define _ANDGLOBALS_H_
 
-#include "vtabmgr.h"
 #include "dictnry.h"
 #include "game.h"
 
@@ -31,7 +30,6 @@ typedef struct _JNIState JNIState;
 #endif
 
 typedef struct _AndGameGlobals {
-    VTableMgr* vtMgr;
     CurGameInfo* gi;
     DrawCtx* dctx;
     XW_UtilCtxt* util;

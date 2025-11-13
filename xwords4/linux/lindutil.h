@@ -21,7 +21,7 @@
 
 #include "dutil.h"
 
-XW_DUtilCtxt* linux_dutils_init( MPFORMAL VTableMgr* vtMgr, void* closure );
+XW_DUtilCtxt* linux_dutils_init( MPFORMAL void* closure );
 void linux_dutils_free( XW_DUtilCtxt** ducp );
 
 #endif

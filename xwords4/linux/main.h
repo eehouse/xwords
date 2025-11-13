@@ -30,7 +30,6 @@
 #include "comtypes.h"
 #include "util.h"
 #include "game.h"
-#include "vtabmgr.h"
 #include "dutil.h"
 #include "gameref.h"
 #include "lindmgr.h"
@@ -93,7 +92,6 @@ typedef struct _LaunchParams {
 #endif
     const char* cmdsSocket;
 
-    VTableMgr* vtMgr;
     XW_DUtilCtxt* dutil;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;

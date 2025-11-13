@@ -1214,8 +1214,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #ifdef MAP_THREAD_TO_ENV
            EnvThreadInfo* ti,
 #endif
-           jobject jdutil, VTableMgr* vtMgr,
-           JNIUtilCtxt* jniutil, void* closure )
+           jobject jdutil, JNIUtilCtxt* jniutil, void* closure )
 {
     AndDUtil* dutil = (AndDUtil*)XP_CALLOC( mpool, sizeof(*dutil) );
     XW_DUtilCtxt* super = &dutil->dutil;
@@ -1225,7 +1224,6 @@ makeDUtil( MPFORMAL JNIEnv* env,
 #endif
     dutil->jniutil = jniutil;
     dutil->dutil.closure = closure;
-    dutil->dutil.vtMgr = vtMgr;
 
     if ( NULL != jdutil ) {
         dutil->jdutil = (*env)->NewGlobalRef( env, jdutil );

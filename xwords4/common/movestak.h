@@ -23,7 +23,6 @@
 #include "comtypes.h"
 #include "model.h"
 #include "dutil.h"
-#include "vtabmgr.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -82,7 +81,7 @@ typedef struct _StackEntry {
 
 typedef struct StackCtxt StackCtxt;
 
-StackCtxt* stack_make( MPFORMAL VTableMgr* vtmgr, XP_U16 nPlayers, XP_Bool inDuplicateMode );
+StackCtxt* stack_make( MPFORMAL XP_U16 nPlayers, XP_Bool inDuplicateMode );
 void stack_destroy( StackCtxt* stack );
 
 void stack_init( StackCtxt* stack, XP_U16 nPlayers, XP_Bool inDuplicateMode );
