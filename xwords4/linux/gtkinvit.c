@@ -298,6 +298,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
 /* } */
 /* #endif */
 
+#ifdef XWFEATURE_SMS
 static GtkWidget*
 makeSMSPage( GtkInviteState* state, PageData* data )
 {
@@ -320,7 +321,8 @@ makeSMSPage( GtkInviteState* state, PageData* data )
     gtk_widget_show( vbox );
 
     return vbox;
-} /* makeBTPage */
+} /* makeSMSPage */
+#endif
 
 #ifdef XWFEATURE_KNOWNPLAYERS
 static GtkWidget*

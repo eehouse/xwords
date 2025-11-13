@@ -1778,8 +1778,9 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
         relaycon_cleanup( params );
     }
 #endif
-
+#ifdef XWFEATURE_SMS
     linux_sms_cleanup( params );
+#endif
     mqttc_cleanup( params );
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */

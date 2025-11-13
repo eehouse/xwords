@@ -146,9 +146,11 @@ typedef struct _DUtilVtable {
     XP_S16 (*m_dutil_sendViaMQTT)( XW_DUtilCtxt* duc, XWEnv xwe,
                                    const XP_UCHAR* topic, const XP_U8* buf,
                                    XP_U16 len, XP_U8 qos );
+#ifdef XWFEATURE_SMS
     XP_S16 (*m_dutil_sendViaNBS)( XW_DUtilCtxt* duc, XWEnv xwe,
                                   const XP_U8* buf, XP_U16 len,
                                   const XP_UCHAR* phone, XP_U16 port );
+#endif
     XP_S16 (*m_dutil_sendViaBT)( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_U8* buf, XP_U16 len,
                                  const XP_UCHAR* hostName,
@@ -262,8 +264,10 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_startMQTTListener((duc), __VA_ARGS__)
 #define dutil_sendViaMQTT(duc, ...)                         \
     (duc)->vtable.m_dutil_sendViaMQTT((duc), __VA_ARGS__)
-#define dutil_sendViaNBS(duc, ...)                          \
+#ifdef XWFEATURE_SMS
+# define dutil_sendViaNBS(duc, ...)                          \
     (duc)->vtable.m_dutil_sendViaNBS((duc), __VA_ARGS__)
+#endif
 #define dutil_sendViaBT(duc, ...)                       \
     (duc)->vtable.m_dutil_sendViaBT((duc), __VA_ARGS__)
 #define dutil_sendViaNFC(duc, ...)                          \

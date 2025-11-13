@@ -388,6 +388,7 @@ sendInviteViaMQTT( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                      invitee, nli );
 }
 
+#ifdef XWFEATURE_SMS
 typedef struct _RetryClosure {
     CHUNK_CMD cmd;
     XP_U16 port;
@@ -479,7 +480,7 @@ sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                  nli->gameID, "invite" );
     strm_destroy( stream );
 }
-
+#endif
 
 /* static ForEachAct */
 /* addBTMsgProc( void* elem, void* closure, XWEnv xwe ) */
@@ -508,10 +509,12 @@ dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     case COMMS_CONN_MQTT:
         sendInviteViaMQTT( dutil, xwe, nli, &addr->u.mqtt.devID );
         break;
+#ifdef XWFEATURE_SMS
     case COMMS_CONN_SMS:
         sendInviteViaNBS( dutil, xwe, nli, addr->u.sms.phone,
                           addr->u.sms.port );
         break;
+#endif
     case COMMS_CONN_BT:
         sendInviteViaBT( dutil, xwe, nli, addr->u.bt.hostName,
                          &addr->u.bt.btAddr );
@@ -537,6 +540,7 @@ sendMsgViaMQTT(XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* addressee,
                             gameID, streamVersion );
 }
 
+#ifdef XWFEATURE_SMS
 static void
 sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
                const SendMsgsPacket* const packets,
@@ -557,6 +561,7 @@ sendMsgViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe,
                      packet->msgNo );
     }
 }
+#endif
 
 static void
 sendMsgsViaNFC( XW_DUtilCtxt* dutil, XWEnv xwe,
@@ -582,9 +587,11 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
         sendMsgViaMQTT( dutil, xwe, &addr->u.mqtt.devID, packets,
                         gameID, streamVersion );
         break;
+#ifdef XWFEATURE_SMS
     case COMMS_CONN_SMS:
         sendMsgViaNBS( dutil, xwe, packets, addr, gameID );
         break;
+#endif
     case COMMS_CONN_NFC:
         sendMsgsViaNFC( dutil, xwe, packets, gameID );
         break;
@@ -1139,6 +1146,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     LOG_RETURN_VOID();
 } /* dvc_parseMQTTPacket */
 
+#ifdef XWFEATURE_SMS
 void
 dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                     const CommsAddrRec* fromAddr,
@@ -1182,6 +1190,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
         cnk_freeMsgArray( state, msgArr );
     }
 } /* dvc_parseSMSPacket */
+#endif
 
 void
 dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,

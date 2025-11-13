@@ -946,6 +946,7 @@ sendConnect( CommsCtxt* comms, XWEnv xwe
              )
 {
     CommsConnType typ;
+    XP_USE(xwe);
     for ( XP_U32 st = 0; addr_iter( &comms->selfAddr, &typ, &st ); ) {
         switch( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -1304,6 +1305,8 @@ addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
               const CommsAddrRec* addr2 )
 {
     LOG_FUNC();
+    XP_USE(dutil);
+    XP_USE(xwe);
     /* Empty addresses are the same only if both are empty */
     XP_Bool same = addr1->_conTypes == 0 && addr2->_conTypes == 0;
 

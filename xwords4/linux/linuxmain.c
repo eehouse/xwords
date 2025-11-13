@@ -1065,6 +1065,7 @@ cpFromLP( CommonPrefs* cp, const LaunchParams* params )
 #endif
 }
 
+#ifdef XWFEATURE_SMS
 XP_Bool
 parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
 {
@@ -1091,6 +1092,7 @@ parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
     }
     return NULL != *myPhone && 0 < *myPort;
 }
+#endif
 
 #ifdef XWFEATURE_RELAY
 static int
@@ -2119,12 +2121,14 @@ makeSelfAddress( CommsAddrRec* selfAddr, LaunchParams* params )
             dvc_getMQTTDevID( params->dutil, NULL_XWE, &selfAddr->u.mqtt.devID );
             XP_ASSERT( 0 != selfAddr->u.mqtt.devID );
             break;
+#ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
             XP_ASSERT( !!params->connInfo.sms.myPhone[0] );
             XP_STRCAT( selfAddr->u.sms.phone, params->connInfo.sms.myPhone );
             XP_ASSERT( 1 == params->connInfo.sms.port ); /* It's ignored, but keep it 1 */
             selfAddr->u.sms.port = params->connInfo.sms.port;
             break;
+#endif
         case COMMS_CONN_BT: {
             BTHostPair hp;
             lbt_setToSelf( params, &hp );

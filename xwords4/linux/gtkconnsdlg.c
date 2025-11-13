@@ -281,6 +281,7 @@ makeIPDirPage( GtkConnsState* state, PageData* data )
 }
 #endif
 
+#ifdef XWFEATURE_SMS
 static GtkWidget*
 makeSMSPage( GtkConnsState* state, PageData* data )
 {
@@ -304,6 +305,7 @@ makeSMSPage( GtkConnsState* state, PageData* data )
 
     return vbox;
 } /* makeSMSPage */
+#endif
 
 static GtkWidget*
 makeMQTTPage( GtkConnsState* state, PageData* data )

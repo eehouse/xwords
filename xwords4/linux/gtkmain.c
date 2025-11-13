@@ -960,8 +960,9 @@ setWindowTitle( GtkAppGlobals* apg )
     if ( !!params->dbName ) {
         strcat( title, params->dbName );
     }
+    int len;
 #ifdef XWFEATURE_SMS
-    int len = strlen( title );
+    len = strlen( title );
     snprintf( &title[len], VSIZE(title) - len, " (phone: %s, port: %d)", 
               params->connInfo.sms.myPhone, params->connInfo.sms.port );
 #endif

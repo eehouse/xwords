@@ -106,12 +106,12 @@ linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
         dvc_getMQTTDevID( duc, xwe, &devID );
         addr_addMQTT( addr, &devID );
     }
-
+#ifdef XWFEATURE_SMS
     if ( !!params->connInfo.sms.myPhone ) {
         addr_addSMS( addr, params->connInfo.sms.myPhone,
                      params->connInfo.sms.port );
     }
-
+#endif
     /* Some test for this? */
     if ( !params->disableBT ) {
         BTHostPair hp;
@@ -454,6 +454,7 @@ linux_dutil_sendViaNFC( XW_DUtilCtxt* duc, XWEnv xwe,
     return -1;
 }
 
+#ifdef XWFEATURE_SMS
 static XP_S16
 linux_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                         const XP_U8* buf, XP_U16 len,
@@ -463,6 +464,7 @@ linux_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     linux_sms_enqueue( params, buf, len, phone, port );
     return -1;
 }
+#endif
 
 static void
 linux_dutil_onKnownPlayersChange( XW_DUtilCtxt* XP_UNUSED(duc),
@@ -630,7 +632,9 @@ linux_dutils_init( MPFORMAL void* closure )
     SET_PROC(sendViaMQTT);
     SET_PROC(sendViaBT);
     SET_PROC(sendViaNFC);
+#ifdef XWFEATURE_SMS
     SET_PROC(sendViaNBS);
+#endif
     SET_PROC(onKnownPlayersChange);
     SET_PROC(onGameChanged);
     SET_PROC(getCommonPrefs);
