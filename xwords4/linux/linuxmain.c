@@ -979,6 +979,7 @@ linux_getCurSeconds()
      return (XP_U32)time(NULL);//tv.tv_sec;
 }
 
+#ifdef XWFEATURE_RELAY
 const XP_UCHAR*
 linux_getDevID( LaunchParams* params, DevIDType* typ )
 {
@@ -1004,7 +1005,6 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     return result;
 }
 
-#ifdef XWFEATURE_RELAY
 void
 linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
 {

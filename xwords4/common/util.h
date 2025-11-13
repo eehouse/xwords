@@ -29,8 +29,9 @@
 #include "comms.h"
 #include "dutil.h"
 #include "gameinfo.h"
-
-#include "xwrelay.h"
+#ifdef XWFEATURE_RELAY
+# include "xwrelay.h"
+#endif
 
 #define LETTER_NONE '\0'
 

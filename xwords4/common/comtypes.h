@@ -114,6 +114,10 @@
 /* search for FIX_NEXT_VERSION_CHANGE each time this is changed */
 #define CUR_STREAM_VERS STREAM_VERS_BIGGERGI
 
+#ifndef MAX_INVITE_LEN
+# define MAX_INVITE_LEN 31
+#endif
+
 typedef struct XP_Rect {
     XP_S16 left;
     XP_S16 top;

@@ -234,7 +234,7 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 /*     case INFO_REMOTE_CONNECTED: */
 /*         message = "Another device has joined the game"; */
 /*         break; */
-
+#ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
         *silent = XP_TRUE;
         message = "XWRELAY_ERROR_LOST_OTHER";
@@ -295,7 +295,7 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
     case ERR_RELAY_BASE + XWRELAY_ERROR_DEADGAME:
         message = "Game is listed as dead on relay.";
         break;
-
+#endif
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";

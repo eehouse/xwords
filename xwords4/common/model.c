@@ -331,9 +331,6 @@ model_destroy( ModelCtxt* model, XWEnv xwe )
 XP_U32
 model_getHash( const ModelCtxt* model )
 {
-#ifndef STREAM_VERS_HASHSTREAM
-    XP_USE(version);
-#endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
     return stack_getHash( stack );

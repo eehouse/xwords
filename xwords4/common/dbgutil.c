@@ -159,6 +159,7 @@ dbg_logstream( const XWStreamCtxt* stream, const char* func, int line )
     }
 }
 
+#ifdef XWFEATURE_RELAY
 const char*
 devIDTypeToStr(DevIDType typ)
 {
@@ -176,6 +177,7 @@ devIDTypeToStr(DevIDType typ)
         XP_ASSERT(0);
     }
 }
+#endif
 
 typedef void (*ProcPtr)();
 void

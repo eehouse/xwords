@@ -22,7 +22,9 @@
 #define _NLITYP_H_
 
 #include "comtypes.h"
-#include "xwrelay.h"
+#ifdef XWFEATURE_RELAY
+# include "xwrelay.h"
+#endif
 
 typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 

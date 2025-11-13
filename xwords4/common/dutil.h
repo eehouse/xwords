@@ -24,7 +24,9 @@
 #include <pthread.h>
 
 #include "comtypes.h"
-#include "xwrelay.h"
+#ifdef XWFEATURE_RELAY
+# include "xwrelay.h"
+#endif
 #include "vtabmgr.h"
 #include "commstyp.h"
 #include "nlityp.h"

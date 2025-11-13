@@ -21,7 +21,9 @@
 #define _COMMSTYP_H_
 
 #include "comtypes.h"
-#include "xwrelay.h"
+#ifdef XWFEATURE_RELAY
+# include "xwrelay.h"
+#endif
 
 #define MAX_HOSTNAME_LEN 63
 #define MAX_PHONE_LEN    31
@@ -40,7 +42,6 @@ typedef struct _IpRelay {
     XP_Bool seeksPublicRoom;
     XP_Bool advertiseRoom;
 } IpRelay;
-
 
 typedef enum {
     COMMS_CONN_NONE           /* I want errors on uninited case */

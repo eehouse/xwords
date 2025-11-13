@@ -23,7 +23,9 @@
 #include "comtypes.h"
 #include "commstyp.h"
 #include "mempool.h"
-#include "xwrelay.h"
+#ifdef XWFEATURE_RELAY
+# include "xwrelay.h"
+#endif
 #include "contrlrp.h"
 
 
@@ -196,7 +198,9 @@ const char* ConnType2Str( CommsConnType typ );
 # ifdef DEBUG
 XWStreamCtxt* comms_getStats( RELCONST CommsCtxt* comms );
 const char* CommsRelayState2Str( CommsRelayState state );
+#ifdef XWFEATURE_RELAY
 const char* XWREASON2Str( XWREASON reason );
+#endif
 
 void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ, 
                             XP_Bool send, XP_Bool enabled );

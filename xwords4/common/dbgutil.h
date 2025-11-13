@@ -43,7 +43,9 @@ const XP_UCHAR* whyToStr( XWTimerReason why );
 
 
 void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
+#ifdef XWFEATURE_RELAY
 const char* devIDTypeToStr(DevIDType typ);
+#endif
 void assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
                          Tile blankTile );
 void fmtTileSet(const TrayTileSet* tts, XP_UCHAR buf[], XP_U16 bufLen);
