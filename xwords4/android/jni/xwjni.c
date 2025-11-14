@@ -521,7 +521,6 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     }
 } /* setJGI */
 
-#ifdef COMMON_LAYOUT
 static const SetInfo bd_ints[] = { ARR_MEMBER( BoardDims, left ),
                                    ARR_MEMBER( BoardDims, top ),
                                    ARR_MEMBER( BoardDims, width ),
@@ -552,7 +551,6 @@ dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
 {
     setInts( env, jdims, (void*)in, AANDS(bd_ints) );
 }
-#endif
 
 static XWStreamCtxt*
 streamFromJStream( MPFORMAL JNIEnv* env, jbyteArray jstream )

@@ -134,13 +134,11 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XWEnv xwe,
 static XP_S16 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace );
 #endif
 
-#ifdef COMMON_LAYOUT
 static void board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
                           XP_U16 width, XP_U16 height, XP_U16 maxCellSize,
                           XP_Bool leftHanded );
 static void board_setTrayLoc( BoardCtxt* board, XWEnv xwe, XP_U16 trayLeft, XP_U16 trayTop,
                               XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles );
-#endif
 
 #ifdef KEYBOARD_NAV
 static XP_Bool board_moveCursor( BoardCtxt* board, XWEnv xwe, XP_Key cursorKey,
@@ -438,7 +436,6 @@ board_drawThumb( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx )
     board_destroy( newBoard, xwe, XP_FALSE );
 }
 
-#ifdef COMMON_LAYOUT
 # if 0
 static void
 printDims( const BoardDims* dimsp )
@@ -645,7 +642,6 @@ board_applyLayout( BoardCtxt* board, XWEnv xwe, const BoardDims* dims )
     board_setTrayLoc( board, xwe, dims->trayLeft, dims->trayTop,
                       dims->trayWidth, dims->trayHt, dims->traySize );
 }
-#endif
 
 void
 board_setCallbacks( BoardCtxt* board, XWEnv xwe )

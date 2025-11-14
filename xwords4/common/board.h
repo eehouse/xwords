@@ -53,31 +53,12 @@ void board_reset( BoardCtxt* board, XWEnv xwe );
 
 void board_drawThumb( const BoardCtxt* board, XWEnv xwe, DrawCtx* dctx );
 
-    /* Layout.  Either done internally or by client */
-#ifdef COMMON_LAYOUT
-
 void board_figureLayout( BoardCtxt* board, XWEnv xwe, const CurGameInfo* gi,
                          XP_U16 bLeft, XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
                          XP_U16 colPctMax, XP_U16 scorePct, XP_U16 trayPct,
                          XP_U16 scoreWidth, XP_U16 fontWidth, XP_U16 fontHt,
                          XP_Bool squareTiles, /* out */ BoardDims* dimsp );
 void board_applyLayout( BoardCtxt* board, XWEnv xwe, const BoardDims* dims );
-
-#endif
-
-/* These four aren't needed if COMMON_LAYOUT defined */
-#ifndef COMMON_LAYOUT
-void board_setPos( BoardCtxt* board, XWEnv xwe, XP_U16 left, XP_U16 top,
-                   XP_U16 width, XP_U16 height, XP_U16 maxCellSize, 
-                   XP_Bool leftHanded );
-void board_setScoreboardLoc( BoardCtxt* board, 
-                             XP_U16 scoreLeft, XP_U16 scoreTop,
-                             XP_U16 scoreWidth, XP_U16 scoreHeight,
-                             XP_Bool divideHorizontally );
-void board_setTrayLoc( BoardCtxt* board, XWEnv xwe,
-                       XP_U16 trayLeft, XP_U16 trayTop,
-                       XP_U16 trayWidth, XP_U16 trayHeight, XP_U16 nTiles );
-#endif
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XWEnv xwe, XP_U16 newOffset );
