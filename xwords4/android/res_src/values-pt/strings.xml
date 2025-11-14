@@ -2358,4 +2358,6 @@
     <string name="gamel_menu_legalPhonies">Palavras falsas permitidas</string>
     <string name="confirm_clear_lps">Tem certeza que deseja limpar todas as “palavras falsas permitidas” gravadas?\n\nEsta ação não pode ser desfeita.</string>
     <string name="legalphonies_title_fmt">Palavras falsas permitidas para %1$s</string>
+    <string name="pref_item_allowMulti_title">Permitir gameIDs duplicados</string>
+    <string name="pref_item_allowMulti_summary">Normalmente isso significa aceitar convites do mesmo dispositivo</string>
 </resources>
