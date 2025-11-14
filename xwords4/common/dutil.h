@@ -175,10 +175,8 @@ struct XW_DUtilCtxt {
     MsgChunker* smsChunkerState;
     MsgChunker* btChunkerState;
     GameMgrState* gameMgrState; /* owned by gamemgr.c */
-#ifdef XWFEATURE_KNOWNPLAYERS   /* owned by knownplyr.c */
     void* kpCtxt;
     MutexState kpMutex;
-#endif
 #ifdef DEBUG
     XP_U32 magic;
 #endif

@@ -617,13 +617,11 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
 
     if ( gd->comms && gd->ctrlr ) {
         XP_ASSERT( comms_getIsHost(gd->comms) == ctrl_getIsHost(gd->ctrlr) );
-#ifdef XWFEATURE_KNOWNPLAYERS
         const XP_U32 created = gi->created;
         if ( 0 != created
              && ctrl_getGameIsConnected( gd->ctrlr ) ) {
             ctrl_gatherPlayers( gd->ctrlr, xwe, created );
         }
-#endif
         XP_Bool quashed;
         if ( 0 < comms_countPendingPackets( gd->comms, &quashed )
              && !quashed ) {

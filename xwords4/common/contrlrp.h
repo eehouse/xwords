@@ -180,9 +180,7 @@ void ctrl_setRematchOrder( CtrlrCtxt* ctrlr, const RematchInfo* ri );
 
 XP_Bool ctrl_isFromRematch( const CtrlrCtxt* ctrlr );
 
-#ifdef XWFEATURE_KNOWNPLAYERS
 void ctrl_gatherPlayers( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U32 created );
-#endif
 
 #ifdef CPLUS
 }

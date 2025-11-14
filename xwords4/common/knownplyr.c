@@ -17,8 +17,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef XWFEATURE_KNOWNPLAYERS
-
 #include "knownplyr.h"
 #include "strutils.h"
 #include "comms.h"
@@ -517,4 +515,3 @@ kplr_cleanup( XW_DUtilCtxt* dutil )
         XP_FREEP( dutil->mpool, statep );
     }
 }
-#endif

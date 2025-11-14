@@ -4578,7 +4578,6 @@ ctrl_isFromRematch( const CtrlrCtxt* ctrlr )
     return 0 != (ctrlr->nv.flags & MASK_IS_FROM_REMATCH);
 }
 
-#ifdef XWFEATURE_KNOWNPLAYERS
 void
 ctrl_gatherPlayers( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U32 created )
 {
@@ -4612,7 +4611,6 @@ ctrl_gatherPlayers( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U32 created )
         }
     }
 }
-#endif
 
 #ifdef DEBUG
 static void

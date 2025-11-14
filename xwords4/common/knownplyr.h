@@ -26,7 +26,6 @@
 /* XP_UCHAR** knpl_listPlayers( XW_DUtilCtxt* dctxt, uint_t* nNames ); */
 /* void knpl_freePlayers( XW_DUtilCtxt* dctxt, XP_UCHAR** names ); */
 
-# ifdef XWFEATURE_KNOWNPLAYERS
 
 typedef enum {
     KP_OK,
@@ -53,7 +52,5 @@ KP_Rslt kplr_deletePlayer( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* name 
 
 XP_Bool kplr_addAddr( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
                       const XP_UCHAR* name, XP_U32 modTime );
-# else
-#  define kplr_cleanup( dutil )
-# endif
+
 #endif
