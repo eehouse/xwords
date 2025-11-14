@@ -1256,4 +1256,6 @@
     </plurals>
     <string name="expl_notagain_keepalive">Crosswords vai receber jogadas de outros jogadores mais rapidamente se ativar a nova função Verificador de Jogadas. O botão Mais informações vai dizer como.</string>
     <string name="show_kaservicedied_body">Postar uma notificação quando o Verificador de Jogadas parar (geralmente porque faz muito tempo desde que uma jogada foi feita ou recebida.)</string>
+    <string name="pref_item_allowMulti_title">Permitir gameIDs duplicados</string>
+    <string name="pref_item_allowMulti_summary">Geralmente isto significa aceitar convites do mesmo dispositivo</string>
 </resources>
