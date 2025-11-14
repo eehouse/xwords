@@ -1139,4 +1139,6 @@
     <string name="title_ka_menuwhen">Увімкнути пункт меню Move Checker</string>
     <string name="ka_menuwhen_never">Ніколи</string>
     <string name="show_kaservicedied_body">Опублікуйте сповіщення, коли засіб перевірки ходу зупинено (зазвичай через те, що минуло занадто багато часу з моменту відправлення або отримання ходу)</string>
+    <string name="pref_item_allowMulti_title">Дозволити дублікати ідентифікаторів ігор</string>
+    <string name="pref_item_allowMulti_summary">Зазвичай це означає прийняття запрошень з того самого пристрою</string>
 </resources>
