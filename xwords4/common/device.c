@@ -309,7 +309,6 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* state = (DevCtxt*)dutil->devCtxt;
     if ( NULL == state ) {
-#ifdef XWFEATURE_DEVICE
         dutil->devCtxt = state = XP_CALLOC( dutil->mpool, sizeof(*state) );
 
         XWStreamCtxt* stream = dvc_makeStream( dutil );
@@ -329,7 +328,6 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
             XP_LOGFF( "empty stream!!" );
         }
         strm_destroy( stream );
-#endif
     }
 
     // LOG_RETURNF( "%p", state );
@@ -344,7 +342,6 @@ dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv xwe )
     return state->mqttQOS;
 }
 
-#ifdef XWFEATURE_DEVICE
 static void
 dvcStoreLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* state )
 {
@@ -364,7 +361,6 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
     dvcStoreLocked( dutil, xwe, state );
     END_WITH_MUTEX();
 }
-#endif
 
 typedef struct _MsgTopicData {
     XW_DUtilCtxt* dutil;

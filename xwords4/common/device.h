@@ -26,11 +26,7 @@
 #include "gameref.h"
 
 // void device_load( XW_DUtilCtxt dctxt );
-# ifdef XWFEATURE_DEVICE
 void dvc_store( XW_DUtilCtxt* dctxt, XWEnv xwe );
-# else
-#  define dvc_store(dctxt, xwe)
-# endif
 
 XP_S16 dvc_sendInvite( XW_DUtilCtxt* duc, XWEnv xwe, const NetLaunchInfo* nli,
                        XP_U32 createdStamp, const CommsAddrRec* addr,

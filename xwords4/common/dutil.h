@@ -80,12 +80,10 @@ typedef struct _DUtilVtable {
     void (*m_dutil_getKeysLike)( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_UCHAR* prefix, OnGotKey proc,
                                  void* closure );
-# ifdef XWFEATURE_DEVICE
     /* 10 */
     void (*m_dutil_forEach)( XW_DUtilCtxt* duc, XWEnv xwe,
                              const XP_UCHAR* keys[],
                              OnOneProc proc, void* closure );
-#endif
 #ifdef XWFEATURE_SMS
     /* 11 */
     XP_Bool (*m_dutil_phoneNumbersSame)( XW_DUtilCtxt* uc, XWEnv xwe, const XP_UCHAR* p1,

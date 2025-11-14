@@ -473,7 +473,6 @@ and_dutil_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe,
     DUTIL_CBK_TAIL();
 }
 
-#ifdef XWFEATURE_DEVICE
 static void
 and_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                    OnOneProc proc, void* closure )
@@ -486,7 +485,6 @@ and_dutil_forEach( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
 /* { */
 /*     XP_ASSERT(0); */
 /* } */
-#endif
 
 static void
 and_util_notifyIllegalWords( XW_UtilCtxt* uc, XWEnv xwe,
@@ -1239,10 +1237,8 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(loadPtr);
     SET_DPROC(removeStored);
     SET_DPROC(getKeysLike);
-# ifdef XWFEATURE_DEVICE
     SET_DPROC(forEach);
     // SET_DPROC(remove);
-# endif
 
 #ifdef XWFEATURE_SMS
     SET_DPROC(phoneNumbersSame);

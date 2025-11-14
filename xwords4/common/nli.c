@@ -17,8 +17,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef NATIVE_NLI
-
 #include "nli.h"
 #include "comms.h"
 #include "strutils.h"
@@ -527,5 +525,4 @@ logNLI( const NetLaunchInfo* nli, const char* callerFunc, const int callerLine )
     XP_STRCAT( buf, "}" );
     XP_LOGF( "%s", buf );
 }
-# endif
 #endif
