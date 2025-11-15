@@ -109,8 +109,10 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
         _ps.file = __FILE__;                                            \
         _ps.thread = _self;                                             \
         if ( 0 != _prev && _self != _prev ) {                           \
-            XP_LOGFF( "oops: new thead %lX on top of old %lX", _self, _prev ); \
-            XP_LOGFF( "new proc: %s; old: %s", __func__, _ps.prev->proc ); \
+            XP_LOGFF( "oops: new thead %p on top of old %p",            \
+                      (void*)_self, (void*)_prev );                     \
+            XP_LOGFF( "new proc: %s; old: %s", __func__,                \
+                      _ps.prev->proc );                                 \
             XP_ASSERT(0);                                               \
         }                                                               \
         _gd->ps = &_ps;                                                 \
