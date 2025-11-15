@@ -295,10 +295,8 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, XWEnv xwe, BTIPMsgType msgTyp
                                  void* data, int dlen, const XP_UCHAR* msgNo );
 #endif
 
-#if defined XWFEATURE_COMMSACK
 static void sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
                           const CommsConnType filter );
-#endif
 static inline XP_Bool IS_INVITE(const MsgQueueElem* elem)
 {
     return 0 == elem->smp.len;
@@ -1197,9 +1195,7 @@ comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken )
                          "lastMsgRcd (%d)", rec->lastMsgSaved, rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
-#ifdef XWFEATURE_COMMSACK
         comms_ackAny( comms, xwe );  /* might not want this for all transports */
-#endif
     }
     END_WITH_MUTEX();
 }
@@ -1552,7 +1548,6 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
     return newElem;
 } /* makeElemWithID */
 
-#ifdef XWFEATURE_COMMS_INVITE
 static MsgQueueElem*
 makeInviteElem( CommsCtxt* comms, XWEnv xwe,
                 XP_PlayerAddr channelNo, const NetLaunchInfo* nli )
@@ -1565,7 +1560,6 @@ makeInviteElem( CommsCtxt* comms, XWEnv xwe,
     dutil_md5sum( comms->dutil, xwe, newElem->smp.buf, sizeof(*nli), &newElem->sb );
     return newElem;
 }
-#endif
 
 XP_U16
 comms_getChannelSeed( CommsCtxt* comms )
@@ -1581,7 +1575,6 @@ comms_getChannelSeed( CommsCtxt* comms )
     return result;
 }
 
-#ifdef XWFEATURE_COMMS_INVITE
 /* We're adding invites to comms so they'll be persisted and resent etc. can
    work in common code. Rule will be there's only one invitation present per
    channel (remote device.) We'll add a channel if necessary. Then if there is
@@ -1854,7 +1847,6 @@ comms_inviteeNames( CommsCtxt* comms, XWEnv xwe,
     forEachElem( (CommsCtxt*)comms, getNamesProc, &gnd );
     END_WITH_MUTEX();
 }
-#endif
 
 /* Send a message using the sequentially next MsgID.  Save the message so
  * resend can work. */
@@ -2232,16 +2224,13 @@ sendMsg( const CommsCtxt* comms, XWEnv xwe, MsgQueueElem* elem,
                         continue;
                     }
 
-                    if ( 0 ) {
-#ifdef XWFEATURE_COMMS_INVITE
-                    } else if ( isInvite ) {
+                    if ( isInvite ) {
                         NetLaunchInfo nli;
                         XP_MEMCPY( &nli, elem->smp.buf, sizeof(nli) );
                         XP_ASSERT( 0 != elem->smp.createdStamp );
                         nSent = dvc_sendInvite( comms->dutil, xwe, &nli,
                                                 elem->smp.createdStamp,
                                                 &addr, typ );
-#endif
                     } else {
                         SendMsgsPacket* head = NULL;
                         if ( COMMS_CONN_MQTT == typ ) {
@@ -2353,7 +2342,6 @@ comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter, XP_Bool forc
     return count;
 }
 
-#ifdef XWFEATURE_COMMSACK
 static void
 ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force,
             const CommsConnType filter )
@@ -2391,9 +2379,6 @@ comms_ackAny( CommsCtxt* comms, XWEnv xwe )
 {
     ackAnyImpl( comms, xwe, XP_FALSE, COMMS_CONN_NONE );
 }
-#else
-# define ackAnyImpl( comms, xwe, force, filter )
-#endif
 
 # define CASESTR(s) case s: return #s
 
@@ -3379,7 +3364,6 @@ comms_gameJoined( CommsCtxt* comms, XWEnv xwe, const XP_UCHAR* connname, XWHostI
 }
 #endif
 
-#ifdef XWFEATURE_COMMSACK
 static void
 sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
               const CommsConnType filter )
@@ -3394,7 +3378,6 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
     }
     END_WITH_MUTEX();
 } /* sendEmptyMsg */
-#endif
 
 #ifdef RELAY_HEARTBEAT
 static XP_Bool

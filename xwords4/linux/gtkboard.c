@@ -898,7 +898,6 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     }
 } /* handle_resend */
 
-#ifdef XWFEATURE_COMMSACK
 static void
 handle_ack( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
@@ -906,7 +905,6 @@ handle_ack( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     XW_DUtilCtxt* dutil = globals->cGlobals.params->dutil;
     gr_ackAny( dutil, gr, NULL_XWE );
 }
-#endif
 
 #ifdef DEBUG
 static void
@@ -1026,10 +1024,8 @@ makeMenus( GtkGameGlobals* globals )
 
     (void)createAddItem( fileMenu, "Resend", 
                          (GCallback)handle_resend, globals );
-#ifdef XWFEATURE_COMMSACK
     (void)createAddItem( fileMenu, "ack any", 
                          (GCallback)handle_ack, globals );
-#endif
 # ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
                          (GCallback)handle_commstats, globals );

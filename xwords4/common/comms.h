@@ -128,7 +128,6 @@ void comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken );
 
 void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
 void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
-#ifdef XWFEATURE_COMMS_INVITE
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                    const CommsAddrRec* destAddr, XP_Bool sendNow );
 void comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites );
@@ -138,7 +137,6 @@ typedef struct _InviteeNames {
 } InviteeNames;
 void comms_inviteeNames( CommsCtxt* comms, XWEnv xwe, InviteeNames* names );
 
-#endif
 XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
                         XP_Bool force );
@@ -149,10 +147,7 @@ void comms_getChannelAddr( const CommsCtxt* comms, XP_PlayerAddr channelNo,
 XP_Bool addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
                       const CommsAddrRec* addr2 );
 
-#ifdef XWFEATURE_COMMSACK
 void comms_ackAny( CommsCtxt* comms, XWEnv xwe );
-#endif
-
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe,
                                    XWStreamCtxt* stream,

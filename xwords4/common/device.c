@@ -709,19 +709,15 @@ mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe )
     const XP_UCHAR* topics[4] = {};
 
     int count = 0;
-#ifdef MQTT_DEV_TOPICS
     /* First, the main device topic */
     topics[count++] = buf0;
-#endif
 
-#ifdef MQTT_GAMEID_TOPICS
     /* Then the pattern that includes gameIDs */
     XP_UCHAR buf1[64];
     size_t siz = XP_SNPRINTF( buf1, VSIZE(buf1), "%s/+", buf0 );
     XP_ASSERT( siz < VSIZE(buf1) );
     XP_USE(siz);
     topics[count++] = buf1;
-#endif
 
     /* Finally, the control pattern */
     XP_UCHAR buf2[64];
@@ -763,7 +759,6 @@ addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
     strm_putU8( stream, cmd );
 }
 
-#ifdef MQTT_GAMEID_TOPICS
 static void
 addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
                     XWStreamCtxt* stream )
@@ -777,7 +772,6 @@ addProto3HeaderCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 
     strm_putU8( stream, cmd );
 }
-#endif
 
 static void
 callProc( MsgAndTopicProc proc, void* closure, const XP_UCHAR* topic,
@@ -803,18 +797,14 @@ makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
     nli_saveToStream( nli, stream );
 
     XP_U8 qos = dvc_getQOS( dutil, xwe );
-#ifdef MQTT_DEV_TOPICS
     callProc( proc, closure, devTopic, stream, qos );
-#endif
 
-#ifdef MQTT_GAMEID_TOPICS
     XP_UCHAR gameTopic[64];
     size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                               "%s/%X", devTopic, nli->gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
     callProc( proc, closure, gameTopic, stream, qos );
-#endif
 
     strm_destroy( stream );
 }
@@ -825,7 +815,6 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const NetLaunchInfo* nli )
 {
     ASSERT_MAGIC();
-#ifdef MQTT_GAMEID_TOPICS
     MQTTDevID myID;
     dvc_getMQTTDevID( dutil, xwe, &myID );
     XP_UCHAR devTopic[32];
@@ -836,7 +825,6 @@ dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
     callProc( proc, closure, gameTopic, NULL, dvc_getQOS(dutil, xwe) );
-#endif
 }
 
 static XP_S16
@@ -924,18 +912,14 @@ dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_U8 qos = dvc_getQOS( dutil, xwe );
     XWStreamCtxt* stream = dvc_makeStream( dutil );
     addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
-#ifdef MQTT_DEV_TOPICS
     callProc( proc, closure, devTopic, stream, qos );
-#endif
 
-#ifdef MQTT_GAMEID_TOPICS
     XP_UCHAR gameTopic[64];
     size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
                               "%s/%X", devTopic, gameID );
     XP_ASSERT( siz < VSIZE(gameTopic) );
     XP_USE(siz);
     callProc( proc, closure, gameTopic, stream, qos );
-#endif
 
     strm_destroy( stream );
 }
