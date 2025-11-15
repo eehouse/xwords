@@ -1313,10 +1313,12 @@ addrsAreSame( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr1,
             case COMMS_CONN_MQTT:
                 same = addr1->u.mqtt.devID == addr2->u.mqtt.devID;
                 break;
+#ifdef XWFEATURE_SMS
             case COMMS_CONN_SMS:
                 same = addr1->u.sms.port == addr2->u.sms.port
                     && dutil_phoneNumbersSame( dutil, xwe, addr1->u.sms.phone, addr2->u.sms.phone );
                 break;
+#endif
             case COMMS_CONN_BT:
                 same = 0 == XP_STRCMP( addr1->u.bt.hostName, addr2->u.bt.hostName );
                 break;
