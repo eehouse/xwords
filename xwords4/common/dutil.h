@@ -140,7 +140,8 @@ typedef struct _DUtilVtable {
                               const XP_UCHAR* dictName );
     void (*m_dutil_startMQTTListener)( XW_DUtilCtxt* duc, XWEnv xwe,
                                        const MQTTDevID* devID,
-                                       const XP_UCHAR** topics, XP_U8 qos );
+                                       XP_U16 nTopics, const XP_UCHAR** topics,
+                                       XP_U8 qos );
     XP_S16 (*m_dutil_sendViaMQTT)( XW_DUtilCtxt* duc, XWEnv xwe,
                                    const XP_UCHAR* topic, const XP_U8* buf,
                                    XP_U16 len, XP_U8 qos );

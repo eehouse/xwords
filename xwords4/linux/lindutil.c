@@ -378,43 +378,29 @@ linux_dutil_dictGone( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
     XP_USE( params );
 }
 
-typedef struct _MQTTParams {
-    LaunchParams* params;
-    const XP_UCHAR* topics[8];
-    MQTTDevID devID;
-    XP_U8 qos;
-} MQTTParams;
-
 static gint
 startMQTT( gpointer data )
 {
-    MQTTParams* mqttp = (MQTTParams*)data;
-    mqttc_init( mqttp->params, &mqttp->devID, mqttp->topics, mqttp->qos );
+    MQTTStartParams* mqttp = (MQTTStartParams*)data;
+    mqttc_init( mqttp );
 
-    for ( int ii = 0; ; ++ii ) {
-        XP_UCHAR* topic = (XP_UCHAR*)mqttp->topics[ii];
-        if ( !topic ) { break; }
-        g_free( topic );
-    }
     g_free( mqttp );
     return FALSE;
 }
 
 static void
 linux_dutil_startMQTTListener( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
-                               const MQTTDevID* devID, const XP_UCHAR** topics,
+                               const MQTTDevID* devID,
+                               XP_U16 nTopics, const XP_UCHAR** topics,
                                XP_U8 qos )
 {
-    MQTTParams* mqttp = g_malloc0( sizeof(*mqttp) );
+    MQTTStartParams* mqttp = g_malloc0( sizeof(*mqttp) );
     mqttp->params = (LaunchParams*)duc->closure;
     mqttp->devID = *devID;
     mqttp->qos = qos;
-    for ( int ii = 0; ; ++ii ) {
-        const XP_UCHAR* topic = topics[ii];
-        if ( !topic ) {
-            break;
-        }
-        mqttp->topics[ii] = g_strdup(topic);
+    mqttp->nTopics = nTopics;
+    for ( int ii = 0; ii < nTopics; ++ii ) {
+        mqttp->topics[ii] = g_ref_string_new( topics[ii] );
     }
     ADD_ONETIME_IDLE( startMQTT, mqttp );
 }

@@ -1014,7 +1014,7 @@ and_dutil_dictGone( XW_DUtilCtxt* duc, XWEnv xwe,
 
 static void
 and_dutil_startMQTTListener( XW_DUtilCtxt* duc, XWEnv xwe,
-                             const MQTTDevID* devID,
+                             const MQTTDevID* devID, XP_U16 nTopics,
                              const XP_UCHAR** topics, XP_U8 qos )
 {
     LOG_FUNC();
@@ -1026,11 +1026,6 @@ and_dutil_startMQTTListener( XW_DUtilCtxt* duc, XWEnv xwe,
     formatMQTTDevID( devID, buf, VSIZE(buf) );
     jstring jdevID = (*env)->NewStringUTF( env, buf );
 
-    XP_U16 nTopics = 0;
-    for ( int ii = 0; ; ++ii ) {
-        if (!topics[ii]) { break; }
-        ++nTopics;
-    }
     jobjectArray jTopics = makeStringArray( env, nTopics, topics );
 
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, jdevID, jTopics, qos );

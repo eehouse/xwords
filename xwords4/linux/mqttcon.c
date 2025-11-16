@@ -31,7 +31,7 @@ struct MQTTConStorage {
     struct  {
         MQTTDevID clientID;
         gchar clientIDStr[32];
-        gchar* topics[5];
+        const gchar* topics[5];
         int nTopics;
         XP_U8 qos;
     } config;
@@ -302,7 +302,7 @@ connect_callback( struct mosquitto* mosq, void* userdata,
     int mid;
     int err = mosquitto_subscribe_multiple( mosq, &mid,
                                             storage->config.nTopics,
-                                            storage->config.topics,
+                                            (gchar**)storage->config.topics,
                                             storage->config.qos, 0, NULL );
     XP_LOGFF( "mosquitto_subscribe(topics[0]=%s, etc) => %s, mid=%d",
               storage->config.topics[0],
@@ -347,25 +347,21 @@ log_callback( struct mosquitto *mosq, void *userdata, int level,
 }
 
 void
-mqttc_init( LaunchParams* params, const MQTTDevID* devID, const XP_UCHAR** topics,
-            XP_U8 qos )
+mqttc_init( const MQTTStartParams* mqttParams )
 {
     LOG_FUNC();
+    LaunchParams* params = mqttParams->params;
     if ( types_hasType( params->conTypes, COMMS_CONN_MQTT ) ) {
         MQTTConStorage* storage = getStorage( params );
 
-        loadClientID( storage, devID );
+        loadClientID( storage, &mqttParams->devID );
 
-        for ( int ii = 0; ii < VSIZE(storage->config.topics); ++ii ) {
-            const XP_UCHAR* topic = topics[ii];
-            if (!topic) {
-                break;
-            }
-            storage->config.topics[ii] = g_strdup( topics[ii] );
-            ++storage->config.nTopics;
+        storage->config.nTopics = mqttParams->nTopics;
+        for ( int ii = 0; ii < mqttParams->nTopics; ++ii ) {
+            storage->config.topics[ii] = mqttParams->topics[ii];
         }
 
-        storage->config.qos = qos;
+        storage->config.qos = mqttParams->qos;
 
         int err = mosquitto_lib_init();
         XP_LOGFF( "mosquitto_lib_init() => %d", err );

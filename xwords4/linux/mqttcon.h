@@ -23,8 +23,14 @@
 #include "main.h"
 #include "nli.h"
 
-void mqttc_init( LaunchParams* params, const MQTTDevID* devID,
-                 const XP_UCHAR** topics, XP_U8 qos );
+typedef struct {
+    LaunchParams* params;
+    const XP_UCHAR* topics[8];
+    XP_U16 nTopics;
+    MQTTDevID devID;
+    XP_U8 qos;
+} MQTTStartParams;
+void mqttc_init( const MQTTStartParams* mqttParams );
 void mqttc_cleanup( LaunchParams* params );
 
 const MQTTDevID* mqttc_getDevID( LaunchParams* params );

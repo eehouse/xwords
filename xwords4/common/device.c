@@ -730,7 +730,7 @@ mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     XP_U8 qos = dvc_getQOS( dutil, xwe );
 
-    dutil_startMQTTListener( dutil, xwe, &devid, topics, qos );
+    dutil_startMQTTListener( dutil, xwe, &devid, count, topics, qos );
 }
 
 typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
