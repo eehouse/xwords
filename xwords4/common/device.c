@@ -124,6 +124,24 @@ dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts )
 }
 
 void
+dvc_loadPtr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+             void* data, XP_U32* lenp )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+    dutil_loadPtr( dutil, xwe, key, data, lenp );
+}
+
+void
+dvc_storePtr( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+              const void* data, XP_U16 len )
+{
+    XP_UCHAR key[256];
+    formatKeys( keys, key, VSIZE(key), XP_FALSE );
+    dutil_storePtr( dutil, xwe, key, data, len );
+}
+
+void
 dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
                  XWStreamCtxt* stream )
 {
@@ -152,7 +170,7 @@ dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
 }
 
 void
-dvc_removeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
+dvc_removeStored( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
 {
     XP_UCHAR key[256];
     formatKeys( keys, key, VSIZE(key), XP_FALSE );

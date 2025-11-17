@@ -25,7 +25,7 @@
 
 void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
                       XWStreamCtxt* stream );
-void dvc_removeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] );
+void dvc_removeStored( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] );
 void dvc_parseKey( XP_UCHAR* buf, XP_UCHAR* parts[], XP_U16* nParts );
 XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                               const XP_UCHAR* keys[] );

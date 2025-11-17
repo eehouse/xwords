@@ -98,10 +98,14 @@ GameRef dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                             XWStreamCtxt* stream, const CurGameInfo* gi,
                             XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp);
 
+XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[]);
 void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                       const XP_UCHAR* keys[], XWStreamCtxt* stream );
-XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[]);
-void dvc_removeStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[] );
+void dvc_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
+                  void* data, XP_U32* lenp );
+void dvc_storePtr( XW_DUtilCtxt* dutil, XWEnv xwe,
+                   const XP_UCHAR* keys[], const void* data, XP_U16 len );
+void dvc_removeStored( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[] );
 void dvc_getKeysLike( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                       OnGotKey proc, void* closure );
 

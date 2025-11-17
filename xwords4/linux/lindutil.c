@@ -777,7 +777,7 @@ linux_dutil_storePtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     LaunchParams* params = (LaunchParams*)duc->closure;
     sqlite3* pDb = params->pDb;
 
-    gchar* b64 = g_base64_encode( data, len);
+    gchar* b64 = g_base64_encode( data, len );
     gdb_store( pDb, key, b64 );
     g_free( b64 );
 }
@@ -793,25 +793,26 @@ linux_dutil_loadPtr( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     gint buflen = 0;
     FetchResult res = gdb_fetch( pDb, key, NULL, NULL, &buflen );
     if ( res == BUFFER_TOO_SMALL ) { /* expected: I passed 0 */
-        if ( 0 == *lenp ) {
-            *lenp = buflen;
-        } else {
-            gchar* tmp = XP_MALLOC( duc->mpool, buflen );
-            gint tmpLen = buflen;
-            res = gdb_fetch( pDb, key, NULL, tmp, &tmpLen );
-            XP_ASSERT( buflen == tmpLen );
-            XP_ASSERT( res == SUCCESS );
-            XP_ASSERT( tmp[buflen-1] == '\0' );
+        gchar* tmp = g_malloc( buflen );
+        gint tmpLen = buflen;
+        res = gdb_fetch( pDb, key, NULL, tmp, &tmpLen );
+        XP_ASSERT( buflen == tmpLen );
+        XP_ASSERT( res == SUCCESS );
+        XP_ASSERT( tmp[buflen-1] == '\0' );
 
-            gsize out_len;
-            guchar* binp = g_base64_decode( tmp, &out_len );
-            if ( out_len <= *lenp ) {
-                XP_MEMCPY( data, binp, out_len );
-                *lenp = out_len;
-            }
-            XP_FREEP( duc->mpool, &tmp );
-            g_free( binp );
+        gsize out_len;
+        guchar* binp = g_base64_decode( tmp, &out_len );
+
+        if ( 0 == *lenp ) {
+            /* We need to convert from base64 to know the size? */
+            *lenp = out_len;
+        } else if ( out_len <= *lenp ) {
+            XP_ASSERT( !!data );
+            XP_MEMCPY( data, binp, out_len );
+            *lenp = out_len;
         }
+        g_free( tmp );
+        g_free( binp );
     } else {
         *lenp = 0;              /* doesn't exist */
     }
