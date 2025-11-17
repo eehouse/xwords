@@ -147,32 +147,35 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
     GR_HEADER_END()                             \
 
 static void
-loadCommsOnce(XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
+loadCommsOnce( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     if ( !gd->commsLoaded ) {
-        gd->commsLoaded = XP_TRUE;
-        const CurGameInfo* gi = &gd->gi;
-        if ( ROLE_STANDALONE != gi->deviceRole ) {
-            XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
-            if ( !!stream ) {
-                XP_U8 strVersion = strm_getU8( stream );
-                XP_LOGFF( "strVersion: 0x%X", strVersion );
-                strm_setVersion( stream, strVersion );
-                gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
-                                                  gi->deviceRole != ROLE_ISGUEST,
-                                                  gi->forceChannel );
-                strm_destroy( stream );
+        if ( gmgr_markLoading( duc, xwe, gd->gr ) ) {
+            gd->commsLoaded = XP_TRUE;
+            const CurGameInfo* gi = &gd->gi;
+            if ( ROLE_STANDALONE != gi->deviceRole ) {
+                XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
+                if ( !!stream ) {
+                    XP_U8 strVersion = strm_getU8( stream );
+                    XP_LOGFF( "strVersion: 0x%X", strVersion );
+                    strm_setVersion( stream, strVersion );
+                    gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
+                                                      gi->deviceRole != ROLE_ISGUEST,
+                                                      gi->forceChannel );
+                    strm_destroy( stream );
+                } else {
+                    XP_Bool isClient = ROLE_ISGUEST == gi->deviceRole;
+                    const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
+                    CommsAddrRec selfAddr = {0};
+                    dutil_getSelfAddr( duc, xwe, &selfAddr );
+                    XW_UtilCtxt** utilp = &gd->util;
+                    gd->comms = comms_make( xwe, utilp, gi->deviceRole != ROLE_ISGUEST,
+                                            &selfAddr, hostAddr, gi->forceChannel );
+                }
             } else {
-                XP_Bool isClient = ROLE_ISGUEST == gi->deviceRole;
-                const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
-                CommsAddrRec selfAddr = {0};
-                dutil_getSelfAddr( duc, xwe, &selfAddr );
-                XW_UtilCtxt** utilp = &gd->util;
-                gd->comms = comms_make( xwe, utilp, gi->deviceRole != ROLE_ISGUEST,
-                                        &selfAddr, hostAddr, gi->forceChannel );
+                XP_ASSERT( !gd->comms );
             }
-        } else {
-            XP_ASSERT( !gd->comms );
+            gmgr_markLoaded( duc, xwe, gd->gr );
         }
     }
 }
@@ -1476,6 +1479,24 @@ gr_getCreated( DUTIL_GR_XWE )
     GR_HEADER();
     result = util_getGI(gd->util)->created;
     GR_HEADER_END();
+    return result;
+}
+
+void
+gr_setSafeToOpen( DUTIL_GR_XWE, XP_Bool safe )
+{
+    if ( safe ) {
+        gmgr_markLoaded( duc, xwe, gr );
+    } else {
+        gmgr_markLoading( duc, xwe, gr );
+    }
+}
+
+XP_Bool
+gr_getSafeToOpen( DUTIL_GR_XWE )
+{
+    XP_Bool result = XP_FALSE;
+    result = !gmgr_loadAborted( duc, xwe, gr );
     return result;
 }
 

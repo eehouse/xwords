@@ -33,6 +33,7 @@
 #define KEY_STATE "state"
 #define KEY_GAMES "games"
 #define KEY_DATA "data"
+#define KEY_LOADING "pending"
 #define KEY_GRP "grp"
 #define KEY_GROUPS "groups"
 #define KEY_IDS "ids"
@@ -722,7 +723,8 @@ gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 {
     XP_LOGFF( "(" GR_FMT ")", gr );
     // First, create the keys since that requires live gr
-    const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP, KEY_SUM, };
+    const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP,
+                              KEY_SUM, KEY_LOADING, };
     KeyStore ks[VSIZE(midKeys)];
     for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
         mkKeys( gr, &ks[ii], midKeys[ii] );
@@ -740,7 +742,7 @@ gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 
     // Finally clear the data
     for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
-        dvc_removeStream( duc, xwe, ks[ii].keys );
+        dvc_removeStored( duc, xwe, ks[ii].keys );
     }
 
     postOnGroupChanged( duc, xwe, grp, GRCE_GAME_REMOVED );
@@ -780,7 +782,7 @@ grFromKey( const XP_UCHAR* key )
 
     GameRef gr;
     sscanf( parts[1], GR_FMT, &gr );
-    XP_LOGFF( "scanned gameRef " GR_FMT " from str %s", gr, parts[1] );
+    // XP_LOGFF( "scanned gameRef " GR_FMT " from str %s", gr, parts[1] );
     return gr;
 }
 
@@ -826,6 +828,49 @@ gmgr_loadData( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
     mkKeys( gr, &ks, KEY_DATA );
     XWStreamCtxt* stream = dvc_loadStream( duc, xwe, ks.keys );
     return stream;
+}
+
+static XP_Bool
+isPending( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_LOADING );
+
+    XP_U32 len = 0;
+    dvc_loadPtr( duc, xwe, ks.keys, NULL, &len );
+    XP_ASSERT( len == 0 || len == 1 );
+    XP_Bool result = len == 1;
+    return result;
+}
+
+XP_Bool
+gmgr_loadAborted( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    return isPending( duc, xwe, gr );
+}
+
+XP_Bool
+gmgr_markLoading( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    XP_Bool success = !isPending( duc, xwe, gr );
+    if ( success ) {
+        KeyStore ks;
+        mkKeys( gr, &ks, KEY_LOADING );
+        XP_U8 tmp = 1;
+        dvc_storePtr( duc, xwe, ks.keys, &tmp, sizeof(tmp) );
+        XP_ASSERT( isPending( duc, xwe, gr ) );
+    }
+    return success;
+}
+
+void
+gmgr_markLoaded( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    XP_ASSERT( isPending( duc, xwe, gr ) );
+
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_LOADING );
+    dvc_removeStored( duc, xwe, ks.keys );
 }
 
 GroupRef

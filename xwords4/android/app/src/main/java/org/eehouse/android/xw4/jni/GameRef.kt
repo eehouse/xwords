@@ -481,19 +481,15 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         return result
     }
 
-    suspend fun safeToOpen(): Boolean {
-        return 0 == failedOpenCount()
-    }
-
-    suspend fun failedOpenCount(): Int {
+    suspend fun getSafeToOpen(): Boolean {
         return Device.await {
-            gr_failedOpenCount(jniState, gr)
-        } as Int
+            gr_getSafeToOpen(jniState, gr)
+        } as Boolean
     }
 
-    fun setOpenCount(count: Int) {
-        Device.post {
-            gr_setOpenCount(jniState, gr, count)
+    fun setSafeToOpen(safe: Boolean) {
+        return Device.post {
+            gr_setSafeToOpen(jniState, gr, safe)
         }
     }
 
@@ -699,7 +695,9 @@ class GameRef(val gr: Long): Parcelable, Serializable {
                                                      addr: CommsAddrRec, host: String,
                                                      prefix: String): String?
         @JvmStatic
-        private external fun gr_failedOpenCount(jniState: Long, gr: Long): Int
+        private external fun gr_getSafeToOpen(jniState: Long, gr: Long): Boolean
+        @JvmStatic
+        private external fun gr_setSafeToOpen(jniState: Long, gr: Long, safe: Boolean)
         @JvmStatic
         private external fun gr_setOpenCount(jniState: Long, gr: Long, count: Int)
     }

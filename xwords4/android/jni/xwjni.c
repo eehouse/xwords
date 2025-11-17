@@ -2189,15 +2189,24 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1getPendingPacketsFor
     return result;
 }
 
-JNIEXPORT jint JNICALL
-Java_org_eehouse_android_xw4_jni_GameRef_gr_1failedOpenCount
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_GameRef_gr_1getSafeToOpen
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr)
 {
-    jint result;
+    jboolean result;
     DVC_HEADER(jniGlobalPtr);
-    result = 0;                 /* FIXME */
+    result = gr_getSafeToOpen( DUTIL_GR_ENV );
     DVC_HEADER_END();
     return result;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_GameRef_gr_1setSafeToOpen
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jboolean jsafe)
+{
+    DVC_HEADER(jniGlobalPtr);
+    gr_setSafeToOpen( DUTIL_GR_ENV, jsafe );
+    DVC_HEADER_END();
 }
 
 JNIEXPORT void JNICALL

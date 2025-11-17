@@ -172,9 +172,10 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
         }
     }
 
-    fun showHaveChat(haveChat: Boolean = true) {
+    suspend fun showHaveChat(haveChat: Boolean = true) {
         val resID =
-            if ( haveChat) R.drawable.green_chat__gen
+            if ( !mGR!!.getSafeToOpen() ) android.R.drawable.stat_sys_warning
+            else if ( haveChat) R.drawable.green_chat__gen
             else 0
         findViewById<ImageView>(R.id.has_chat_marker)
             .setImageResource(resID)
@@ -337,25 +338,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
         setTypeIcon()
 
-        // Let's use the chat-icon space for an ALERT icon when we're
-        // quarantined. Not ready for non-debug use though, as it shows up
-        // periodically as a false positive. Chat icon wins if both should
-        // be displayed, mostly because of the false positives.
-        // val resID =
-        //     if (summary.hasChat) {
-        //         R.drawable.green_chat__gen
-        //     } else if (BuildConfig.NON_RELEASE && !mGR!!.safeToOpen()) {
-        //         android.R.drawable.stat_sys_warning
-        //     } else 0
-        // findViewById<ImageView>(R.id.has_chat_marker).setImageResource(resID)
         showHaveChat(summary.hasChat)
-
-        if (BuildConfig.NON_RELEASE) {
-            val quarCount = mGR!!.failedOpenCount()
-            findViewById<TextView>(R.id.corrupt_count_marker).text =
-                // 1 is normal: means the game's open.
-                if (quarCount <= 1) "" else "$quarCount"
-        }
 
         if (XWPrefs.moveCountEnabled(mContext)) {
             val tv = findViewById<View>(R.id.n_pending) as TextView

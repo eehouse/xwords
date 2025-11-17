@@ -55,6 +55,10 @@ void gmgr_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
 void gmgr_onDictRemoved( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName );
 GroupRef gmgr_getArchiveGroup( XW_DUtilCtxt* duc );
 
+XP_Bool gmgr_loadAborted( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+XP_Bool gmgr_markLoading( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+void gmgr_markLoaded( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+
 #ifdef CPLUS
 }
 #endif

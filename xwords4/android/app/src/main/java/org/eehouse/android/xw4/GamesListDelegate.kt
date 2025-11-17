@@ -1134,7 +1134,7 @@ class GamesListDelegate(delegator: Delegator) :
         Log.d(TAG, "openWithChecks()")
         if (!BoardDelegate.gameIsOpen(gr)) {
             launch {
-                if (gr.safeToOpen()) {
+                if (gr.getSafeToOpen()) {
                     Log.d(TAG, "openWithChecks(): safe")
                     makeNotAgainBuilder(R.string.key_notagain_newselect,
                                         Action.OPEN_GAME,
@@ -1289,7 +1289,7 @@ class GamesListDelegate(delegator: Delegator) :
             Action.OPEN_GAME -> doOpenGame(params[0] as GameRef)
             Action.QUARANTINE_CLEAR -> {
                 val gr = params[0] as GameRef
-                gr.setOpenCount(0)
+                gr.setSafeToOpen(true)
                 openWithChecks(gr)
             }
 
@@ -2107,7 +2107,7 @@ class GamesListDelegate(delegator: Delegator) :
                 // NetUtils.copyAndLaunchGamePage(mActivity, summary.gameID)
             }
 
-            R.id.games_game_markbad -> selRowIDs[0].setOpenCount(1)
+            R.id.games_game_markbad -> selRowIDs[0].setSafeToOpen(false)
             else -> handled = false
         }
         if (dropSels) {
@@ -2224,8 +2224,8 @@ class GamesListDelegate(delegator: Delegator) :
             var reloadNeeded = false
             for (flag in flags) {
                 when (flag) {
-                    GameChangeEvent.GCE_CHAT_ARRIVED -> {
-                        runOnUiThread { view.showHaveChat() }
+                    GameChangeEvent.GCE_CHAT_ARRIVED -> launch {
+                        view.showHaveChat()
                     }
                     else -> {
                         Log.d(TAG, "not handling $flag")

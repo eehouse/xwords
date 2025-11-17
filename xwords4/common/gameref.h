@@ -31,6 +31,8 @@ void gr_setUtil( XW_DUtilCtxt* dutil, GameRef gr, XWEnv xwe, XW_UtilCtxt* util )
 
 /* Game */
 XP_U32 gr_getCreated( DUTIL_GR_XWE );
+XP_Bool gr_getSafeToOpen( DUTIL_GR_XWE );
+void gr_setSafeToOpen( DUTIL_GR_XWE, XP_Bool safe );
 const CurGameInfo* gr_getGI( DUTIL_GR_XWE );
 void gr_setGI( DUTIL_GR_XWE, const CurGameInfo* gip );
 void gr_setGameName( DUTIL_GR_XWE, const XP_UCHAR* newName );
