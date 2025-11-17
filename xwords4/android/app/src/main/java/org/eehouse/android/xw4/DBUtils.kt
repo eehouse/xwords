@@ -781,7 +781,7 @@ object DBUtils {
         return rowid
     }
 
-    data class GameVals(val name: String, val group: Long,
+    data class GameVals(val name: String?, val group: Long,
                         val bytes: ByteArray) {}
 
     fun loadGame(context: Context, rowid: Long): GameVals? {

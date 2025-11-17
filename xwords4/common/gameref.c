@@ -744,7 +744,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
             gi.created = created;
         }
         
-        if ( STREAM_VERS_BIGGERGI > strVersion ) {
+        if ( !!gameName && STREAM_VERS_BIGGERGI > strVersion ) {
             str2ChrArray( gi.gameName, gameName );
         }
         LOG_GI( &gi, __func__ );

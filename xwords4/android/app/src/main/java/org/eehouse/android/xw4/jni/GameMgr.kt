@@ -199,7 +199,7 @@ object GameMgr {
         return result
     }
 
-    suspend fun convertGame(name: String, grp: GroupRef,
+    suspend fun convertGame(name: String?, grp: GroupRef,
                             bytes: ByteArray): GameRef? {
         val gr = Device.await {
             val jniState = Device.ptrGlobals()
@@ -295,7 +295,7 @@ object GameMgr {
     @JvmStatic
     private external fun gmgr_getGroup(jniState: Long, name: String): Int
     @JvmStatic
-    private external fun gmgr_convertGame(jniState: Long, name: String, grp: Int,
+    private external fun gmgr_convertGame(jniState: Long, name: String?, grp: Int,
                                           bytes: ByteArray): Long
     @JvmStatic
     private external fun gmgr_makeGroupDefault(jniState: Long, grp: Int)

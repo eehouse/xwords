@@ -1338,11 +1338,16 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1convertGame
     DVC_HEADER(jniGlobalPtr);
     XWStreamCtxt* stream =
         streamFromJStream( MPPARM(globalState->dutil->mpool) env, jstream );
-    const XP_UCHAR* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    const XP_UCHAR* name = NULL;
+    if ( !!jname ) {
+        name = (*env)->GetStringUTFChars( env, jname, NULL );
+    }
     GroupRef grp = (GroupRef)jgrp;
     GameRef gr = gmgr_convertGame( globalState->dutil, env, grp, name, stream );
     result = gr;
-    (*env)->ReleaseStringUTFChars( env, jname, name );
+    if ( !!jname ) {
+        (*env)->ReleaseStringUTFChars( env, jname, name );
+    }
     strm_destroy( stream );
     DVC_HEADER_END();
     return result;
