@@ -23,11 +23,14 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import org.eehouse.android.xw4.jni.Knowns
+import androidx.core.view.doOnAttach
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 import org.json.JSONException
 import org.json.JSONObject
 
+import org.eehouse.android.xw4.jni.Knowns
 import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = PeerStatusView::class.java.simpleName
@@ -39,72 +42,70 @@ class PeerStatusView(private val mContext: Context, aset: AttributeSet?) :
     private var mGameID = 0
     private var mSelfDevID: String? = null
 
+    init {
+        // For some reason calling from onFinishInflate() isn't always
+        // working. This seems better.
+        doOnAttach {
+            mFinished = true;
+            startThreadOnce()
+        }
+    }
+
     fun configure(gameID: Int, devID: String) {
         mGameID = gameID
         mSelfDevID = devID
         startThreadOnce()
     }
 
-    override fun onFinishInflate() {
-        mFinished = true
-        startThreadOnce()
-    }
-
     private fun startThreadOnce() {
         if (mFinished && null != mSelfDevID) {
-            launch {
+            launch(Dispatchers.IO) {
                 fetchAndDisplay()
             }
         }
     }
 
     private suspend fun fetchAndDisplay() {
-        var userStr: String? = null
-        val params = JSONObject()
-        try {
-            params.put("gid16", String.format("%X", mGameID))
-            params.put("devid", mSelfDevID)
+        val userStr =
+            try {
+                val params = JSONObject()
+                params.put("gid16", String.format("%X", mGameID))
+                params.put("devid", mSelfDevID)
 
-            val conn = NetUtils.makeHttpMQTTConn(mContext, "peers")
-            val resStr = NetUtils.runConn(conn, params, true)
-            Log.d(TAG, "runConn(ack) => %s", resStr)
+                val conn = NetUtils.makeHttpMQTTConn(mContext, "peers")
+                val resStr = NetUtils.runConn(conn, params, true)
+                Log.d(TAG, "runConn(ack) => %s", resStr)
 
-            resStr?.let {
-                JSONObject(it).optJSONArray("results")?.let {
-                    val lines: MutableList<String?> = ArrayList()
-                    for (ii in 0 until it.length()) {
-                        val line = it.getJSONObject(ii)
-                        val mqttID = line.getString("devid")
-                        val age = line.getString("age")
-                        var name = Knowns.nameForMqttDev(mqttID)
-                        if (null == name) {
-                            name = if (mSelfDevID == mqttID) {
-                                LocUtils.getString(mContext, R.string.selfName)
-                            } else {
-                                mqttID
-                            }
+                resStr?.let {
+                    JSONObject(it).optJSONArray("results")?.let {
+                        val lines: MutableList<String?> = ArrayList()
+                        for (ii in 0 until it.length()) {
+                            val line = it.getJSONObject(ii)
+                            val mqttID = line.getString("devid")
+                            val age = line.getString("age")
+                            val name = Knowns.nameForMqttDev(mqttID)
+                                ?:
+                                if (mSelfDevID == mqttID) {
+                                    LocUtils.getString(mContext, R.string.selfName)
+                                } else {
+                                    mqttID
+                                }
+                            lines.add(String.format("%s: %s", name, age))
                         }
-                        lines.add(String.format("%s: %s", name, age))
+                        TextUtils.join("\n", lines)
                     }
-                    userStr = TextUtils.join("\n", lines)
                 }
+            } catch (je: JSONException) {
+                Log.ex(TAG, je)
+                null
+            } catch (npe: NullPointerException) {
+                Log.ex(TAG, npe)
+                null
             }
-        } catch (je: JSONException) {
-            Log.ex(TAG, je)
-        } catch (npe: NullPointerException) {
-            Log.ex(TAG, npe)
-        }
+            ?: LocUtils.getString(mContext, R.string.no_peers_info)
 
-        val activity = DelegateBase.hasLooper
-        if (null != activity) {
-            val finalUserStr = userStr ?: LocUtils.getString(mContext, R.string.no_peers_info)
-            activity.runOnUiThread(Runnable {
-                val tv = findViewById<View>(R.id.status) as TextView
-                tv.text = finalUserStr
-            })
-        } else {
-            Log.d(TAG, "no activity found")
+        withContext(Dispatchers.Main) {
+            findViewById<TextView>(R.id.status)?.text = userStr
         }
     }
 }
-// Nothing to see here

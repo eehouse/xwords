@@ -362,21 +362,19 @@ class BoardDelegate(delegator: Delegator) :
                     .create()
             }
 
-//             DlgID.MQTT_PEERS -> {
-//                 val psv = inflate(R.layout.peers_status) as PeerStatusView
-//                 val selfAddr = XwJNI.comms_getSelfAddr(mJniGamePtr)
-//                 psv.configure(mGi!!.gameID, selfAddr.mqtt_devID!!)
-//                 ab
-//                     .setTitle(R.string.menu_about_peers)
-//                     .setView(psv)
-//                     .setPositiveButton(android.R.string.ok, null)
-//                     .setNegativeButton(R.string.button_refresh) { dlg, bttn ->
-//                         showDialogFragment(
-//                             DlgID.MQTT_PEERS
-//                         )
-//                     }
-//                     .create()
-//             }
+            DlgID.MQTT_PEERS -> {
+                val selfAddr = params[0] as CommsAddrRec
+                val psv = inflate(R.layout.peers_status) as PeerStatusView
+                psv.configure(mGi!!.gameID, selfAddr.mqtt_devID!!)
+                ab
+                    .setTitle(R.string.menu_about_peers)
+                    .setView(psv)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setNegativeButton(R.string.button_refresh) { dlg, bttn ->
+                        showDialogFragment(DlgID.MQTT_PEERS, selfAddr)
+                    }
+                    .create()
+            }
 
 //             DlgID.ASK_DUP_PAUSE -> {
 //                 val isPause = params[0] as Boolean
@@ -1291,7 +1289,10 @@ class BoardDelegate(delegator: Delegator) :
                     )
 
                     R.id.netstat_copyurl -> NetUtils.gameURLToClip(mActivity, mGi!!.gameID)
-                    R.id.netstat_peers -> showDialogFragment(DlgID.MQTT_PEERS)
+                    R.id.netstat_peers -> launch {
+                        val selfAddr = mGR!!.getSelfAddr()
+                        showDialogFragment(DlgID.MQTT_PEERS, selfAddr)
+                    }
                     R.id.netstat_unquash -> {
                         launch {
                             mGR!!.setQuashed(false)

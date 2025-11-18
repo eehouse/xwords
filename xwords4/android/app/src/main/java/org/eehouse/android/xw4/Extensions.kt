@@ -115,7 +115,7 @@ fun View.launch(disp: CoroutineDispatcher = Dispatchers.Main,
                 block: suspend CoroutineScope.() -> Unit) {
     findViewTreeLifecycleOwner()
         ?.lifecycleScope
-        ?.launch{block()}
+        ?.launch(disp){block()}
         ?: run {Log.d("Extensions", "*** UNABLE TO RUN $block ***")}
 }
 

@@ -2405,6 +2405,23 @@ Java_org_eehouse_android_xw4_jni_Knowns_kplr_1getAddr
     return jaddr;
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_Knowns_kplr_1nameForMqttDev
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname )
+{
+    jstring result = NULL;
+    DVC_HEADER(jniGlobalPtr);
+    const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    const XP_UCHAR* tmpName = kplr_nameForMqttDev( globalState->dutil, env, name );
+    if ( !!tmpName ) {
+        result = (*env)->NewStringUTF( env, tmpName );
+    }
+    (*env)->ReleaseStringUTFChars( env, jname, name );
+
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_Knowns_kplr_1renamePlayer
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jOldName, jstring jNewName )
