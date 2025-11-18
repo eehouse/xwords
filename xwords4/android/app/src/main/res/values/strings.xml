@@ -1749,7 +1749,7 @@
     <!-- Debug-only menuitem to launch net status info -->
     <string name="menu_net_stat">Network status</string>
     <!-- Debug-only menuitem to copy game status URL to clipboard -->
-    <string name="menu_net_url">Copy URL</string>
+    <string name="menu_net_url">Copy Traffic URL</string>
     <!-- Debug-only menuitem to show remote device status -->
     <string name="menu_about_peers">Peer status</string>
     <!-- When you choose the above menu, a dialog comes up and shows

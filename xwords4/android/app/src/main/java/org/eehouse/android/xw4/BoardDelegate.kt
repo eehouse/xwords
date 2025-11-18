@@ -1278,6 +1278,9 @@ class BoardDelegate(delegator: Delegator) :
             if (!mSummary!!.quashed) {
                 popup.menu.removeItem(R.id.netstat_unquash)
             }
+            if (0 == mSummary!!.nPacketsPending) {
+                popup.menu.removeItem(R.id.netstat_qrcode)
+            }
             popup.setOnMenuItemClickListener { item ->
                 var handled = true
                 when (item.itemId) {
