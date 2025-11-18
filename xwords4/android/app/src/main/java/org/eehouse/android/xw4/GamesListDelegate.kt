@@ -801,7 +801,7 @@ class GamesListDelegate(delegator: Delegator) :
                 view.onButtonPressed(object : ButtonCallbacks {
                     override fun onUseKnown(knownName: String, gameName: String) {
                         Assert.assertTrueNR(!standalone)
-                        view.launch {
+                        launch {
                             Knowns.getAddr(knownName)?.let { addr ->
                                 launchLikeRematch(addr, gameName)
                             }
@@ -3023,7 +3023,6 @@ class GamesListDelegate(delegator: Delegator) :
                 if ( item.isGame() ) {
                     mGR = item.toGame()
                     val selected = m_mySIS!!.selGames.contains(mGR)
-                    Log.d(TAG, "calling load...")
                     mGameListElem.load(mGR!!, this@GamesListDelegate,
                                        adapter.mFieldId, mHandler, selected,
                                        scope)
