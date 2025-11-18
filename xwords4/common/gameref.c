@@ -676,6 +676,20 @@ makeGameID( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 curID )
     return newID;
 }
 
+static void
+connectClientProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
+                   TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        /* gr is expected by the macro GR_HEADER_WITH  */
+        GameRef gr = (GameRef)closure;
+        GR_HEADER_WITH(MODEL);
+        /* No need to do anything here... */
+        XP_ASSERT( !!gd->ctrlr );
+        GR_HEADER_END();
+    }
+}
+
 GameRef
 gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
               const CurGameInfo* gip, const CommsAddrRec* hostAddr )
@@ -719,13 +733,21 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
 
             gmgr_addGame( duc, xwe, gd, gr );
             gmgr_addToGroup( duc, xwe, gr, gd->grp );
+
+            /* If we're a client, we need our whole state to be created and
+               loaded so we can register with the inviter/host. This fixes
+               client games not connecting until something like drawing their
+               thumbnail forces full data creation. */
+            if ( gd->gi.deviceRole == ROLE_ISGUEST ) {
+                tmr_setIdle( duc, xwe, connectClientProc, (void*)gr );
+            }
         }
     } else {
         LOG_GI( gip, __func__ );
         XP_LOGFF( "failing: bad gi" );
     }
     return gr;
-}
+} /* gr_makeForGI */
 
 #ifdef XWFEATURE_GAMEREF_CONVERT
 GameRef
