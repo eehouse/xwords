@@ -37,13 +37,17 @@ import org.eehouse.android.xw4.loc.LocUtils
 object Perms23 {
     private val TAG: String = Perms23::class.java.simpleName
 
-    @JvmField
     val NBS_PERMS: Array<Perm> = arrayOf(
         Perm.SEND_SMS,
         Perm.READ_SMS,
         Perm.RECEIVE_SMS,
         Perm.READ_PHONE_NUMBERS,
         Perm.READ_PHONE_STATE,
+    )
+
+    val BT_PERMS: Array<Perm> = arrayOf(
+        Perm.BLUETOOTH_CONNECT,
+        Perm.BLUETOOTH_SCAN,
     )
 
     private val sManifestMap: MutableMap<Perm?, Boolean> = HashMap()
@@ -261,6 +265,12 @@ object Perms23 {
     fun haveNBSPerms(context: Context): Boolean {
         val result = havePermissions(context, *NBS_PERMS)
         Log.d(TAG, "haveNBSPerms() => %b", result)
+        return result
+    }
+
+    fun haveBTPerms(context: Context): Boolean {
+        val result = havePermissions(context, *BT_PERMS)
+        Log.d(TAG, "haveBTPerms() => %b", result)
         return result
     }
 

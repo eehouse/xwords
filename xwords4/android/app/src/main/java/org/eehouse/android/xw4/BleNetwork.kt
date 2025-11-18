@@ -141,8 +141,10 @@ object BleNetwork {
 
     fun sendPacket(context: Context, name: String?, mac: String?, packet: ByteArray) {
         Log.d(TAG, "sendPacket($name, $mac, len=${packet.size})")
-        getRemoteDevice(name, mac)?.let {
-            getGattFor(context, it).enqueue(packet)
+        if ( Perms23.haveBTPerms(context) ) {
+            getRemoteDevice(name, mac)?.let {
+                getGattFor(context, it).enqueue(packet)
+            }
         }
     }
 
