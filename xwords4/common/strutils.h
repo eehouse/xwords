@@ -175,11 +175,11 @@ XP_Bool b64ToBinStreams( XWStreamCtxt* out, XWStreamCtxt* in );
 GameRef formatGR( XP_U32 gameID, DeviceRole role );
 
 XP_UCHAR* formatMQTTDevTopic( const MQTTDevID* devid, XP_UCHAR* buf,
-                                    XP_U16 bufLen );
+                              XP_U16 bufLen );
 XP_UCHAR* formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf,
-                                     XP_U16 bufLen );
+                               XP_U16 bufLen );
 XP_UCHAR* formatMQTTDevID( const MQTTDevID* devid, XP_UCHAR* buf,
-                                 XP_U16 bufLen );
+                           XP_U16 bufLen );
 XP_Bool strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result );
 
 #ifdef DEBUG

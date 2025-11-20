@@ -2412,9 +2412,14 @@ Java_org_eehouse_android_xw4_jni_Knowns_kplr_1nameForMqttDev
     jstring result = NULL;
     DVC_HEADER(jniGlobalPtr);
     const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
-    const XP_UCHAR* tmpName = kplr_nameForMqttDev( globalState->dutil, env, name );
-    if ( !!tmpName ) {
-        result = (*env)->NewStringUTF( env, tmpName );
+
+    MQTTDevID devID;
+    if ( strToMQTTCDevID( name, &devID ) ) {
+        const XP_UCHAR* tmpName = kplr_nameForMqttDev( globalState->dutil,
+                                                       env, &devID );
+        if ( !!tmpName ) {
+            result = (*env)->NewStringUTF( env, tmpName );
+        }
     }
     (*env)->ReleaseStringUTFChars( env, jname, name );
 
