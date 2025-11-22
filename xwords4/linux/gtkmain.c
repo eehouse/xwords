@@ -357,7 +357,9 @@ updateRow( LaunchParams* params, GameRef gr,
     GdkPixbuf* snap = getSnapData( params, gr );
 
     gchar* state;
-    if ( 0 <= sum->turn && 0 == sum->nMissing ) {      /* game's in play */
+    if ( !gr_getSafeToOpen( params->dutil, gr, NULL_XWE ) ) {
+        state = "marked";
+    } else if ( 0 <= sum->turn && 0 == sum->nMissing ) {      /* game's in play */
         state = "in play";
     } else if ( sum->gameOver ) {
         state = "game over";
@@ -637,38 +639,54 @@ open_row( GtkAppGlobals* apg, GameRef gr, XP_Bool isNew )
 {
     if ( !!gr && !gameIsOpen( apg, gr ) ) {
         LaunchParams* params = apg->cag.params;
-        const XP_UCHAR* missingNames[5] = {};
-        XP_U16 count = VSIZE(missingNames);
-        gr_missingDicts( params->dutil, gr, NULL_XWE, missingNames, &count );
-        if ( count == 0 ) {
-            if ( isNew ) {
-                onNewData( apg, gr );
-            }
-
-            params->needsNewGame = XP_FALSE;
-
-            GtkGameGlobals* globals = (GtkGameGlobals*)
-                globalsForGameRef( params->cag, gr, XP_TRUE );
-            initBoardGlobalsGtk( globals, params, gr );
-            gtk_widget_show( globals->window );
-        } else {
-            AskPair pairs[] = { {.txt = "Delete", .result = 1},
-                              {.txt = "Download", .result = 2},
-                              {.txt = "Ok", .result = 3},
-                              { NULL, 0 }
+        XW_DUtilCtxt* dutil = params->dutil;
+        XP_Bool unsafe = !gr_getSafeToOpen( dutil, gr, NULL_XWE );
+        if ( unsafe ) {
+            AskPair pairs[] = { {.txt = "Open anyway", .result = 1},
+                                {.txt = "Cancel", .result = 2},
+                                { NULL, 0 }
             };
-            gchar* lst = g_strjoinv(", ", (gchar**)missingNames );
-            gchar* msg = g_strdup_printf( "This game is missing wordlist[s] %s.", lst );
-            switch ( gtkask( apg->window, msg, GTK_BUTTONS_NONE, pairs ) ) {
-            case 1:             /* delete */
-                gmgr_deleteGame( params->dutil, NULL_XWE, gr );
-                break;
-            case 2:
-            case 3:
-                break;
+            const gchar* msg = "This game is marked as bad. Open anyway?";
+            if ( 1 == gtkask( apg->window, msg, GTK_BUTTONS_NONE, pairs ) ) {
+                gr_setSafeToOpen( dutil, gr, NULL_XWE, XP_TRUE );
+                updateListFor( apg, gr );
+                unsafe = XP_FALSE;
             }
-            g_free( lst );
-            g_free( msg );
+        }
+        if ( !unsafe ) {
+            const XP_UCHAR* missingNames[5] = {};
+            XP_U16 count = VSIZE(missingNames);
+            gr_missingDicts( params->dutil, gr, NULL_XWE, missingNames, &count );
+            if ( count == 0 ) {
+                if ( isNew ) {
+                    onNewData( apg, gr );
+                }
+
+                params->needsNewGame = XP_FALSE;
+
+                GtkGameGlobals* globals = (GtkGameGlobals*)
+                    globalsForGameRef( params->cag, gr, XP_TRUE );
+                initBoardGlobalsGtk( globals, params, gr );
+                gtk_widget_show( globals->window );
+            } else {
+                AskPair pairs[] = { {.txt = "Delete", .result = 1},
+                                    {.txt = "Download", .result = 2},
+                                    {.txt = "Ok", .result = 3},
+                                    { NULL, 0 }
+                };
+                gchar* lst = g_strjoinv(", ", (gchar**)missingNames );
+                gchar* msg = g_strdup_printf( "This game is missing wordlist[s] %s.", lst );
+                switch ( gtkask( apg->window, msg, GTK_BUTTONS_NONE, pairs ) ) {
+                case 1:             /* delete */
+                    gmgr_deleteGame( params->dutil, NULL_XWE, gr );
+                    break;
+                case 2:
+                case 3:
+                    break;
+                }
+                g_free( lst );
+                g_free( msg );
+            }
         }
     }
 }
@@ -680,11 +698,7 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 
     GArray* selRows = apg->selRows;
     for ( int ii = 0; ii < selRows->len; ++ii ) {
-#ifdef XWFEATURE_DEVICE_STORES
         GameRef row = g_array_index( selRows, GameRef, ii );
-#else
-        sqlite3_int64 row = g_array_index( selRows, sqlite3_int64, ii );
-#endif
         open_row( apg, row, XP_FALSE );
     }
 }
@@ -768,6 +782,21 @@ handle_archive_button( GtkWidget* XP_UNUSED(widget), void* closure )
             "Archived games do not send or receive messages in the background.";
         if ( GTK_RESPONSE_YES == gtkask( apg->window, msg, GTK_BUTTONS_YES_NO, NULL ) ) {
             gmgr_moveGames( dutil, NULL_XWE, GROUP_ARCHIVE, grs, nGames );
+        }
+    }
+}
+
+static void
+handle_mark_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    guint nGames = apg->selRows->len;
+    if ( 0 < nGames ) {
+        XW_DUtilCtxt* dutil = apg->cag.params->dutil;
+        for ( guint ii = 0; ii < nGames; ++ii ) {
+            GameRef gr = g_array_index( apg->selRows, GameRef, ii );
+            gr_setSafeToOpen( dutil, gr, NULL_XWE, XP_FALSE );
+            updateListFor( apg, gr );
         }
     }
 }
@@ -1457,6 +1486,8 @@ makeGamesWindow( GtkAppGlobals* apg )
                                         G_CALLBACK(handle_movetogroup_button), apg );
     apg->archiveButton = addButton( "Archive", hbox,
                                     G_CALLBACK(handle_archive_button), apg );
+    apg->archiveButton = addButton( "Mark", hbox,
+                                    G_CALLBACK(handle_mark_button), apg );
     apg->deleteButton = addButton( "Delete", hbox, 
                                    G_CALLBACK(handle_delete_button), apg );
     (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
