@@ -126,7 +126,7 @@ void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
                           XP_U16 saveToken );
 void comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken );
 
-void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
+XP_Bool addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
 void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
 void comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
                    const CommsAddrRec* destAddr, XP_Bool sendNow );

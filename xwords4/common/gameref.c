@@ -27,6 +27,7 @@
 #include "timers.h"
 #include "dictmgrp.h"
 #include "dbgutil.h"
+#include "utilsp.h"
 
 #define FLAG_HASCOMMS 0x01
 
@@ -690,9 +691,10 @@ connectClientProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
     }
 }
 
-GameRef
-gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
-              const CurGameInfo* gip, const CommsAddrRec* hostAddr )
+static GameRef
+makeForGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
+               const CurGameInfo* gip, const CommsAddrRec* hostAddr,
+               XP_Bool skipIdle )
 {
     GameRef gr = 0;
     CurGameInfo gi = *gip;
@@ -738,7 +740,7 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
                loaded so we can register with the inviter/host. This fixes
                client games not connecting until something like drawing their
                thumbnail forces full data creation. */
-            if ( gd->gi.deviceRole == ROLE_ISGUEST ) {
+            if ( !skipIdle && gd->gi.deviceRole == ROLE_ISGUEST ) {
                 tmr_setIdle( duc, xwe, connectClientProc, (void*)gr );
             }
         }
@@ -749,22 +751,34 @@ gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
     return gr;
 } /* gr_makeForGI */
 
+GameRef
+gr_makeForGI( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grp,
+              const CurGameInfo* gip, const CommsAddrRec* hostAddr )
+{
+    return makeForGIImpl( duc, xwe, grp, gip, hostAddr, XP_FALSE );
+}
+
 #ifdef XWFEATURE_GAMEREF_CONVERT
 GameRef
 gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
                 const XP_UCHAR* gameName, XWStreamCtxt* stream )
 {
     LOG_FUNC();
-    XP_U8 strVersion = strm_getU8( stream );
+    XP_U8 strVersion;
+    if ( !strm_gotU8( stream, &strVersion ) ) GOTO_FAIL();
     XP_LOGFF( "got strVersion: 0x%x", strVersion );
     strm_setVersion( stream, strVersion );
-    GameRef gr;
+    GameRef gr = 0;
     {
-        CurGameInfo gi = gi_readFromStream2( stream );
+        CurGameInfo gi;
+        if ( !gi_gotFromStream( stream, &gi ) ) GOTO_FAIL();
         LOG_GI( &gi, __func__ );
 
-        XP_U32 created = strVersion < STREAM_VERS_GICREATED
-            ? 0 : strm_getU32( stream );
+        XP_U32 created = 0;
+        if ( STREAM_VERS_GICREATED <= strVersion
+             && !strm_gotU32( stream, &created ) ) {
+            GOTO_FAIL();
+        }
         if ( created && !gi.created ) {
             gi.created = created;
         }
@@ -779,7 +793,7 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
                overwrite conTypes below anyway */
             types_addType( &gi.conTypes, COMMS_CONN_NFC );
         }
-        gr = gr_makeForGI( duc, xwe, grpp, &gi, NULL );
+        gr = makeForGIImpl( duc, xwe, grpp, &gi, NULL, XP_TRUE );
     }
     
     if ( !!gr ) {
@@ -790,9 +804,10 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
 
         XP_Bool hasComms;
         if ( strVersion < STREAM_VERS_GICREATED ) {
-            hasComms = strm_getU8( stream );
+            if ( !strm_gotU8( stream, &hasComms ) ) GOTO_FAIL();
         } else {
-            XP_U8 flags = strm_getU8( stream );
+            XP_U8 flags;
+            if ( !strm_gotU8( stream, &flags ) ) GOTO_FAIL();
             hasComms = flags & FLAG_HASCOMMS;
         }
 
@@ -801,9 +816,11 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
            was newly created, our own default hostAddress is it??? */
         if ( hasComms ) {
             XP_ASSERT( !gd->comms );
-            gd->comms = comms_makeFromStream( xwe, stream, &util,
+            CommsCtxt* comms = comms_makeFromStream( xwe, stream, &util,
                                               gi->deviceRole != ROLE_ISGUEST,
                                               gi->forceChannel );
+            if ( !comms ) GOTO_FAIL();
+            gd->comms = comms;
             gd->commsLoaded = XP_TRUE;
             ConnTypeSetBits conTypes = 0;
 
@@ -873,6 +890,15 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
 
         util_unref( util, xwe );
     }
+
+    goto done;
+ fail:
+    /* cleanup, including removing any record of this game */
+    if ( !!gr ) {
+        gmgr_deleteGame( duc, xwe, gr );
+        gr = 0;
+    }
+ done:
     LOG_RETURNF( GR_FMT, gr );
     return gr;
 } /* gr_convertGame */

@@ -36,6 +36,7 @@
 #include "nli.h"
 #include "dllist.h"
 #include "xwmutex.h"
+#include "utilsp.h"
 
 #define HEARTBEAT_NONE 0
 
@@ -53,7 +54,6 @@
 /* Low two bits treated as channel, third as short-term flag indicating
  * sender's role; rest can be random to aid detection of duplicate packets. */
 #define CHANNEL_MASK 0x0003
-
 
 #ifndef INITIAL_CLIENT_VERS
 # define INITIAL_CLIENT_VERS 2
@@ -584,40 +584,55 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
     END_WITH_MUTEX();
 } /* comms_setConnID */
 
-static void
+static XP_Bool
 addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ )
 {
+    XP_Bool success = XP_FALSE;
     XP_U16 version = strm_getVersion( stream );
     switch( typ ) {
     case COMMS_CONN_NONE:
         break;
     case COMMS_CONN_BT:
-        stringFromStreamHere( stream, addrP->u.bt.hostName,
-                              sizeof(addrP->u.bt.hostName) );
-        stringFromStreamHere( stream, addrP->u.bt.btAddr.chars,
-                              sizeof(addrP->u.bt.btAddr.chars) );
+        if ( !gotStringFromStreamHere( stream, addrP->u.bt.hostName,
+                                      sizeof(addrP->u.bt.hostName))
+             || !gotStringFromStreamHere( stream, addrP->u.bt.btAddr.chars,
+                                          sizeof(addrP->u.bt.btAddr.chars) ) ) {
+            GOTO_FAIL();
+        }
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
     case COMMS_CONN_IP_DIRECT:
-        stringFromStreamHere( stream, addrP->u.ip.hostName_ip,
-                              sizeof(addrP->u.ip.hostName_ip) );
-        addrP->u.ip.ipAddr_ip = strm_getU32( stream );
-        addrP->u.ip.port_ip = strm_getU16( stream );
+        if ( !gotStringFromStreamHere( stream, addrP->u.ip.hostName_ip,
+                                       sizeof(addrP->u.ip.hostName_ip) )
+             || !strm_gotU32( stream, &addrP->u.ip.ipAddr_ip )
+             || !strm_gotU16( stream, &addrP->u.ip.port_ip ) ) {
+            GOTO_FAIL();
+        }
         break;
     case COMMS_CONN_RELAY: {
         IpRelay ip_relay = {};
         if ( version < STREAM_VERS_NORELAY ) {
-            stringFromStreamHere( stream, ip_relay.invite,
-                                  sizeof(ip_relay.invite) );
-            stringFromStreamHere( stream, ip_relay.hostName,
-                                  sizeof(ip_relay.hostName) );
-            ip_relay.ipAddr = strm_getU32( stream );
-            ip_relay.port = strm_getU16( stream );
+            if ( !gotStringFromStreamHere( stream, ip_relay.invite,
+                                           sizeof(ip_relay.invite) ) 
+                 || !gotStringFromStreamHere( stream, ip_relay.hostName,
+                                              sizeof(ip_relay.hostName) )
+                 || !strm_gotU32( stream, &ip_relay.ipAddr )
+                 || !strm_gotU16( stream, &ip_relay.port ) ) {
+                GOTO_FAIL();
+            }
             if ( version >= STREAM_VERS_DICTLANG ) {
-                ip_relay.seeksPublicRoom = strm_getBits( stream, 1 );
-                ip_relay.advertiseRoom = strm_getBits( stream, 1 );
+                XP_U32 tmp;
+                if ( !strm_gotBits( stream, 1, &tmp ) ) {
+                    GOTO_FAIL();
+                }
+                ip_relay.seeksPublicRoom = tmp;
+                      
+                if (!strm_gotBits( stream, 1, &tmp ) ) {
+                    GOTO_FAIL();
+                }
+                ip_relay.advertiseRoom = tmp;
             }
 #ifdef XWFEATURE_RELAY
             XP_MEMCPY( &addrP->u.ip_relay, &ip_relay, sizeof(ip_relay) );
@@ -626,31 +641,45 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
     }
         break;
     case COMMS_CONN_SMS:
-        stringFromStreamHere( stream, addrP->u.sms.phone, 
-                              sizeof(addrP->u.sms.phone) );
-        addrP->u.sms.port = strm_getU16( stream );
+        if ( !gotStringFromStreamHere( stream, addrP->u.sms.phone, 
+                                       sizeof(addrP->u.sms.phone) )
+             || !strm_gotU16( stream, &addrP->u.sms.port ) ) {
+            GOTO_FAIL();
+        }
         break;
     case COMMS_CONN_P2P:
-        stringFromStreamHere( stream, addrP->u.p2p.mac_addr,
-                              sizeof(addrP->u.p2p.mac_addr) );
+        if ( !gotStringFromStreamHere( stream, addrP->u.p2p.mac_addr,
+                                       sizeof(addrP->u.p2p.mac_addr) ) ) {
+            GOTO_FAIL();
+        }
         break;
     case COMMS_CONN_NFC:
         break;
     case COMMS_CONN_MQTT:
-        strm_getBytes( stream, &addrP->u.mqtt.devID, sizeof(addrP->u.mqtt.devID) );
+        if ( !strm_gotBytes( stream, &addrP->u.mqtt.devID,
+                             sizeof(addrP->u.mqtt.devID) ) ) {
+            GOTO_FAIL();
+        }
         break;
     default:
         /* shut up, compiler */
         break;
     }
+    success = XP_TRUE;
+ fail:
+    return success;
 } /* addrFromStreamOne */
 
-void
+XP_Bool
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_FALSE;
     XP_MEMSET( addrP, 0, sizeof(*addrP) );
-    XP_U8 tmp = strm_getU8( stream );
     XP_U16 version = strm_getVersion( stream );
+    XP_U8 tmp;
+    if ( !strm_gotU8( stream, &tmp ) ) {
+        GOTO_FAIL();
+    }
     XP_ASSERT( 0 < version );
     if ( STREAM_VERS_MULTIADDR > version && (COMMS_CONN_NONE != tmp) ) {
         tmp = 1 << (tmp - 1);
@@ -659,9 +688,14 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
-        addrFromStreamOne( addrP, stream, typ );
+        if ( !addrFromStreamOne( addrP, stream, typ ) ) {
+            GOTO_FAIL();
+        }
     }
     // ASSERT_ADDR_OK( addrP );
+    success = XP_TRUE;
+ fail:
+    return success;
 }
 
 static void
@@ -708,13 +742,18 @@ removeRelayIf( CommsCtxt* comms, XWEnv xwe )
 
 /* Looking toward a time when we store only the first couple of bits of
    channelNo. Not possible yet, though. */
-static XP_U16
-readChannelNo( const CommsCtxt* XP_UNUSED_DBG(comms), XWStreamCtxt* stream )
+static XP_Bool
+readChannelNo( const CommsCtxt* XP_UNUSED_DBG(comms), XWStreamCtxt* stream,
+               XP_U16* channelNoP )
 {
-    XP_U16 tmp = strm_getU16( stream );
-    CNO_FMT(buf, tmp);
-    COMMS_LOGFF( "=> %s", buf );
-    return tmp; //  & CHANNEL_MASK;
+    XP_U16 tmp;
+    XP_Bool success = strm_gotU16( stream, &tmp );
+    if ( success ) {
+        CNO_FMT(buf, tmp);
+        COMMS_LOGFF( "=> %s", buf );
+    }
+    *channelNoP = tmp; //  & CHANNEL_MASK;
+    return success;
 }
 
 static void
@@ -733,19 +772,26 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
                       XP_U16 forceChannel )
 {
     LOG_FUNC();
+    XP_U32 tmp32;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
 #endif
 
     XP_U16 version = strm_getVersion( stream );
+    XP_LOGFF( "version: 0x%x", version );
 
-    XP_U8 flags = strm_getU8( stream );
+    XP_U8 flags;
+    if ( !strm_gotU8( stream, &flags ) ) {
+        GOTO_FAIL();
+    }
     if ( version < STREAM_VERS_GICREATED ) {
         flags = 0;
     }
 
     CommsAddrRec selfAddr = {};
-    addrFromStream( &selfAddr, stream );
+    if ( !addrFromStream( &selfAddr, stream ) ) {
+        GOTO_FAIL();
+    }
     if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT )
          && 0 == selfAddr.u.mqtt.devID ) {
         XW_DUtilCtxt* dutil = util_getDevUtilCtxt( *utilp );
@@ -753,11 +799,13 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     }
     ASSERT_ADDR_OK( &selfAddr );
 
-    XP_U16 nPlayersHere, nPlayersTotal;
+    XP_U32 nPlayersHere, nPlayersTotal;
     if ( version >= STREAM_VERS_DEVIDS
          || addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
-        nPlayersHere = (XP_U16)strm_getBits( stream, 4 );
-        nPlayersTotal = (XP_U16)strm_getBits( stream, 4 );
+        if ( !strm_gotBits( stream, 4, &nPlayersHere )
+             || !strm_gotBits( stream, 4, &nPlayersTotal ) ) {
+            GOTO_FAIL();
+        }
     } else {
         nPlayersHere = 0;
         nPlayersTotal = 0;
@@ -775,57 +823,96 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     logAddrComms( comms, &selfAddr, __func__ );
     comms->flags = flags;
 
-    comms->connID = strm_getU32( stream );
+    if ( !strm_gotU32( stream, &comms->connID ) ) {
+        GOTO_FAIL();
+    }
     XP_ASSERT( comms->streamVersion == 0 );
     if ( version >= STREAM_VERS_MSGSTREAMVERS ) {
-        comms->streamVersion = strm_getU16( stream );
+        if (!strm_gotU16( stream, &comms->streamVersion ) ) {
+            GOTO_FAIL();
+        }
     }
 
-    comms->nextChannelNo = readChannelNo( comms, stream );
+    if ( !readChannelNo( comms, stream, &comms->nextChannelNo ) ) {
+        GOTO_FAIL();
+    }
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
     } else {
-        comms->channelSeed = strm_getU16( stream );
+        if ( !strm_gotU16( stream, &comms->channelSeed ) ) {
+            GOTO_FAIL();
+        }
     }
     if ( STREAM_VERS_COMMSBACKOFF <= version ) {
-        comms->resendBackoff = strm_getU16( stream );
-        comms->nextResend = strm_getU32( stream );
+        if ( !strm_gotU16( stream,  &comms->resendBackoff )
+             || !strm_gotU32( stream, &comms->nextResend ) ) {
+            GOTO_FAIL();
+        }
     }
     if ( addr_hasType( &selfAddr, COMMS_CONN_RELAY ) ) {
-        comms->rr.myHostID = strm_getU8( stream );
+        if ( !strm_gotU8( stream, &comms->rr.myHostID ) ) {
+            GOTO_FAIL();
+        }
         COMMS_LOGFFV( "loaded myHostID: %d", comms->rr.myHostID );
-        stringFromStreamHere( stream, comms->rr.connName, 
-                              sizeof(comms->rr.connName) );
+        if ( !gotStringFromStreamHere( stream, comms->rr.connName,
+                                       sizeof(comms->rr.connName) ) ) {
+            GOTO_FAIL();
+        }
     }
 
-    XP_U16 queueLen = strm_getU8( stream );
-
-    XP_U16 nAddrRecs = strm_getU8( stream );
+    XP_U8 queueLen, nAddrRecs;
+    if ( !strm_gotU8( stream, &queueLen )
+         || !strm_gotU8( stream, &nAddrRecs ) ) {
+        GOTO_FAIL();
+    }
+    COMMS_LOGFFV( "queueLen: %d", queueLen );
     COMMS_LOGFFV( "nAddrRecs: %d", nAddrRecs );
+
     AddressRecord** prevsAddrNext = &comms->recs;
     for ( int ii = 0; ii < nAddrRecs; ++ii ) {
+        XP_LOGFF( "getting addr rec %d", ii );
         AddressRecord* rec = (AddressRecord*)
             XP_CALLOC( mpool, sizeof(*rec));
 
-        addrFromStream( &rec->addr, stream );
+        if ( !addrFromStream( &rec->addr, stream ) ) {
+            GOTO_FAIL();
+        }
 
         if ( STREAM_VERS_SMALLCOMMS <= version ) {
-            rec->nextMsgID = strm_getU32VL( stream );
-            rec->lastMsgSaved = rec->lastMsgRcd = strm_getU32VL( stream );
-            rec->flags = strm_getU16( stream );
+            if ( !strm_gotU32VL( stream, &rec->nextMsgID )
+                 || !strm_gotU32VL( stream, &rec->lastMsgRcd )
+                 || !strm_gotU16( stream, &rec->flags ) ) {
+                GOTO_FAIL();
+            }
+            rec->lastMsgSaved = rec->lastMsgRcd;
         } else {
-            rec->nextMsgID = strm_getU16( stream );
-            rec->lastMsgSaved = rec->lastMsgRcd = strm_getU16( stream );
+            XP_U16 tmp16;
+            if ( !strm_gotU16( stream, &tmp16 ) ) {
+                GOTO_FAIL();
+            }
+            rec->nextMsgID = tmp16;
+            if ( !strm_gotU16( stream, &tmp16 ) ) {
+                GOTO_FAIL();
+            }
+            rec->lastMsgSaved = rec->lastMsgRcd = tmp16;
         }
 #ifdef LOG_COMMS_MSGNOS
         COMMS_LOGFFV( "read lastMsgRcd of %d for addr %d", rec->lastMsgRcd, ii );
 #endif
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
-            rec->lastMsgAckd = strm_getU16( stream );
+            XP_U16 tmp16;
+            if ( !strm_gotU16( stream, &tmp16 ) ) {
+                GOTO_FAIL();
+            }
+            rec->lastMsgAckd = tmp16;
         }
-        rec->channelNo = readChannelNo( comms, stream );
+        if ( !readChannelNo( comms, stream, &rec->channelNo ) ) {
+            GOTO_FAIL();
+        }
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
-            rec->rr.hostID = strm_getU8( stream );
+            if ( !strm_gotU8( stream, &rec->rr.hostID ) ) {
+                GOTO_FAIL();
+            }
         }
 
         // CNO_FMT( cbuf, rec->channelNo );
@@ -839,16 +926,25 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     for ( int ii = 0; ii < queueLen; ++ii ) {
         MsgQueueElem* msg = (MsgQueueElem*)XP_CALLOC( mpool, sizeof(*msg) );
 
-        msg->channelNo = readChannelNo( comms, stream );
+        if ( !readChannelNo( comms, stream, &msg->channelNo ) ) {
+            GOTO_FAIL();
+        }
         if ( version >= STREAM_VERS_SMALLCOMMS ) {
-            msg->msgID = strm_getU32VL( stream );
-            msg->smp.len = strm_getU32VL( stream );
+            if ( !strm_gotU32VL( stream, &msg->msgID )
+                 || !strm_gotU32VL( stream, &tmp32 ) ) {
+                GOTO_FAIL();
+            }
+            msg->smp.len = tmp32;
         } else {
-            msg->msgID = strm_getU32( stream );
-            msg->smp.len = strm_getU16( stream );
+            if ( !strm_gotU32( stream, &msg->msgID )
+                 || !strm_gotU16( stream, &msg->smp.len ) ) {
+                GOTO_FAIL();
+            }
         }
         if ( version >= STREAM_VERS_MSGTIMESTAMP ) {
-            msg->smp.createdStamp = strm_getU32( stream );
+            if ( !strm_gotU32( stream, &msg->smp.createdStamp ) ) {
+                GOTO_FAIL();
+            }
         }
         if ( 0 == msg->smp.createdStamp ) {
             msg->smp.createdStamp = dutil_getCurSeconds( comms->dutil, xwe );
@@ -859,9 +955,15 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         XP_U16 len = msg->smp.len;
         if ( 0 == len ) {
             XP_ASSERT( isServer );
-            XP_U32 nliLen = strm_getU32VL( stream );
+            XP_U32 nliLen;
+            if ( !strm_gotU32VL( stream, &nliLen ) ) {
+                GOTO_FAIL();
+            }
             XWStreamCtxt* nliStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
-            strm_getFromStream( nliStream, stream, nliLen );
+            if ( !strm_gotFromStream( nliStream, stream, nliLen ) ) {
+                strm_destroy( nliStream );
+                GOTO_FAIL();
+            }
             NetLaunchInfo nli;
             if ( nli_makeFromStream( &nli, nliStream ) ) {
                 msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, sizeof(nli) );
@@ -873,7 +975,10 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
             strm_destroy( nliStream );
         } else {
             msg->smp.buf = (XP_U8*)XP_MALLOC( mpool, len );
-            strm_getBytes( stream, (XP_U8*)msg->smp.buf, len );
+            if ( !strm_gotBytes( stream, (XP_U8*)msg->smp.buf, len ) ) {
+                XP_FREEP( mpool, &msg->smp.buf );
+                GOTO_FAIL();
+            }
         }
         dutil_md5sum( comms->dutil, xwe, msg->smp.buf, len, &msg->sb );
         XP_ASSERT( NULL == msg->smp.next );
@@ -893,7 +998,10 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
         for ( CommsConnType typ = (CommsConnType)0; typ < VSIZE(comms->disableds); ++typ ) {
             if ( typ < COMMS_CONN_NFC || addr_hasType( &comms->selfAddr, typ ) ) {
                 for ( int ii = 0; ii < VSIZE(comms->disableds[0]); ++ii ) {
-                    comms->disableds[typ][ii] = 0 != strm_getBits( stream, 1 );
+                    if ( !strm_gotBits( stream, 1, &tmp32 ) ) {
+                        GOTO_FAIL();
+                    }
+                    comms->disableds[typ][ii] = 0 != tmp32;
                 }
             }
         }
@@ -905,8 +1013,15 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     }
 
     listRecs( comms, __func__ );
-
     COMMS_LOGFF( "=>%p", comms );
+    goto done;
+ fail:
+    XP_LOGFF( "calling comms_destroy" );
+    comms_destroy( comms, xwe );
+    XP_LOGFF( "back from comms_destroy" );
+    comms = NULL;
+ done:
+    LOG_RETURNF( "%p", comms );
     return comms;
 } /* comms_makeFromStream */
 

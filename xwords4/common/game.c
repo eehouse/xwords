@@ -26,6 +26,7 @@
 #include "device.h"
 #include "gamemgr.h"
 #include "gamerefp.h"
+#include "utilsp.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -768,7 +769,18 @@ gi_getLocalPlayer( const CurGameInfo* gi, XP_S16 fromHint )
 void
 gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi )
 {
-    XP_MEMSET( gi, 0, sizeof(*gi) );
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        gi_gotFromStream( stream, gi );
+    XP_ASSERT( success );
+}
+
+XP_Bool
+gi_gotFromStream( XWStreamCtxt* stream, CurGameInfo* gip )
+{
+    CurGameInfo gi = {};
+    XP_Bool success = XP_FALSE;
     XP_U16 strVersion = strm_getVersion( stream );
     XP_U16 nColsNBits;
     XP_ASSERT( 0 < strVersion );
@@ -780,107 +792,164 @@ gi_readFromStream( XWStreamCtxt* stream, CurGameInfo* gi )
 #endif
 
     if ( STREAM_VERS_BIGGERGI <= strVersion ) {
-        stringFromStreamHere( stream, gi->gameName, VSIZE(gi->gameName) );
+        if ( !gotStringFromStreamHere( stream, gi.gameName,
+                                       VSIZE(gi.gameName) ) ) {
+            GOTO_FAIL();
+        }
     }
 
-    stringFromStreamHere( stream, gi->dictName, VSIZE(gi->dictName) );
+    if ( !gotStringFromStreamHere( stream, gi.dictName,
+                                   VSIZE(gi.dictName) ) ) {
+        GOTO_FAIL();
+    }
 
-    gi->nPlayers = (XP_U8)strm_getBits( stream, NPLAYERS_NBITS );
-    gi->boardSize = (XP_U8)strm_getBits( stream, nColsNBits );
+    XP_U32 tmp32;
+
+    if ( !strm_gotBits( stream, NPLAYERS_NBITS, &tmp32 ) ) GOTO_FAIL();
+    gi.nPlayers = tmp32;
+    if ( !strm_gotBits( stream, nColsNBits, &tmp32 ) ) GOTO_FAIL();
+    gi.boardSize = tmp32;
     if ( STREAM_VERS_NINETILES <= strVersion ) {
-        gi->traySize = (XP_U8)strm_getBits( stream, NTILES_NBITS_9 );
-        gi->bingoMin = (XP_U8)strm_getBits( stream, NTILES_NBITS_9 );
+        if ( !strm_gotBits( stream, NTILES_NBITS_9, &tmp32 ) ) GOTO_FAIL();
+        gi.traySize = tmp32;
+        if ( !strm_gotBits( stream, NTILES_NBITS_9, &tmp32 ) ) GOTO_FAIL();
+        gi.bingoMin = tmp32;
     } else {
-        gi->traySize = gi->bingoMin = 7;
+        gi.traySize = gi.bingoMin = 7;
     }
-    gi->deviceRole = (DeviceRole)strm_getBits( stream, 2 );
-    /* XP_LOGF( "%s: read deviceRole of %d", __func__, gi->deviceRole ); */
-    gi->hintsNotAllowed = strm_getBits( stream, 1 );
-    if ( strVersion < STREAM_VERS_ROBOTIQ ) {
-        (void)strm_getBits( stream, 2 );
-    }
-    gi->phoniesAction = (XWPhoniesChoice)strm_getBits( stream, 2 );
-    gi->timerEnabled = strm_getBits( stream, 1 );
+    if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    gi.deviceRole = (DeviceRole)tmp32;
+    /* XP_LOGF( "%s: read deviceRole of %d", __func__, gi.deviceRole ); */
 
-    gi->inDuplicateMode = strVersion >= STREAM_VERS_DUPLICATE
-        ? strm_getBits( stream, 1 )
-        : XP_FALSE;
-    gi->tradeSub7 = strVersion >= STREAM_VERS_SUBSEVEN
-        ? strm_getBits( stream, 1 )
-        : XP_FALSE;
-    if ( strVersion >= STREAM_VERS_41B4 ) {
-        gi->allowPickTiles = strm_getBits( stream, 1 );
-        gi->allowHintRect = strm_getBits( stream, 1 );
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    gi.hintsNotAllowed = tmp32;
+    if ( strVersion < STREAM_VERS_ROBOTIQ ) {
+        if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    }
+    if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    gi.phoniesAction = (XWPhoniesChoice)tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    gi.timerEnabled = tmp32;
+
+    gi.inDuplicateMode = XP_FALSE;
+    if ( strVersion >= STREAM_VERS_DUPLICATE ) {
+        if ( ! strm_gotBits( stream, 1, &tmp32 ) ) {
+            GOTO_FAIL();
+        }
+        gi.inDuplicateMode = (XP_Bool)tmp32;
+    }
+
+    if ( strVersion >= STREAM_VERS_SUBSEVEN ) {
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        gi.tradeSub7 = tmp32;
     } else {
-        gi->allowPickTiles = XP_FALSE;
-        gi->allowHintRect = XP_FALSE;
+        gi.tradeSub7 =  XP_FALSE;
+    }
+    if ( strVersion >= STREAM_VERS_41B4 ) {
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        gi.allowPickTiles = tmp32;
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        gi.allowHintRect =tmp32;
+    } else {
+        gi.allowPickTiles = XP_FALSE;
+        gi.allowHintRect = XP_FALSE;
     }
 
     if ( STREAM_VERS_BIGGERGI <= strVersion ) {
-        gi->fromRematch = strm_getBits( stream, 1 );
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        gi.fromRematch = tmp32;
     }
 
     if ( strVersion >= STREAM_VERS_BLUETOOTH ) {
-        gi->confirmBTConnect = strm_getBits( stream, 1 );
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        gi.confirmBTConnect = tmp32;
     } else {
-        gi->confirmBTConnect = XP_TRUE; /* safe given all the 650s out there. */
+        gi.confirmBTConnect = XP_TRUE; /* safe given all the 650s out there. */
     }
 
     if ( STREAM_VERS_MULTIADDR <= strVersion ) {
-        gi->forceChannel = strm_getBits( stream, 2 );
+        if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+        gi.forceChannel = tmp32;
     }
-    gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
-        strm_getU16( stream ) : strm_getU32( stream );
-    // XP_LOGFF( "read forceChannel: %d for gid %X", gi->forceChannel, gi->gameID );
+
+    if ( strVersion < STREAM_VERS_BLUETOOTH2 ) {
+        XP_U16 tmp16;
+        if ( !strm_gotU16( stream, &tmp16 ) ) GOTO_FAIL();
+        gi.gameID = tmp16;
+    } else {
+        if ( !strm_gotU32( stream, &gi.gameID ) ) GOTO_FAIL();
+    }
 
     if ( STREAM_VERS_BIGGERGI <= strVersion
-         && gi->deviceRole != ROLE_STANDALONE ) {
-        gi->conTypes = strm_getU16( stream );
+         && gi.deviceRole != ROLE_STANDALONE ) {
+        if ( !strm_gotU16( stream, &gi.conTypes ) ) GOTO_FAIL();
     }
 
     if ( STREAM_VERS_GI_ISO <= strVersion ) {
-        stringFromStreamHere( stream, gi->isoCodeStr, VSIZE(gi->isoCodeStr) );
+        if ( !gotStringFromStreamHere( stream, gi.isoCodeStr,
+                                       VSIZE(gi.isoCodeStr) ) ) {
+            GOTO_FAIL();
+        }
     } else if ( STREAM_VERS_DICTLANG <= strVersion ) {
-        XP_LangCode dictLang = strm_getU8( stream );
+        XP_LangCode dictLang;
+        if ( !strm_gotU8( stream, &dictLang ) ) GOTO_FAIL();
         const XP_UCHAR* isoCode = lcToLocale( dictLang );
         XP_ASSERT( !!isoCode );
-        XP_STRNCPY( gi->isoCodeStr, isoCode, VSIZE(gi->isoCodeStr) );
-        XP_LOGFF( "upgrading; faked isoCode: %s", gi->isoCodeStr );
+        XP_STRNCPY( gi.isoCodeStr, isoCode, VSIZE(gi.isoCodeStr) );
+        XP_LOGFF( "upgrading; faked isoCode: %s", gi.isoCodeStr );
     }
 
-    if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
-        gi->gameSeconds = strm_getU16( stream );
+    if ( gi.timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
+        if ( !strm_gotU16( stream, &gi.gameSeconds ) ) GOTO_FAIL();
     }
 
     if ( STREAM_VERS_BIGGI <= strVersion ) {
-        gi->created = strm_getU32( stream );
-        XP_ASSERT( gi->created );
+        if ( !strm_gotU32( stream, &gi.created ) ) GOTO_FAIL();
+        XP_ASSERT( gi.created );
     } else {
-        XP_ASSERT( 0 == gi->created );
+        XP_ASSERT( 0 == gi.created );
     }
 
-    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        LocalPlayer* pl = &gi->players[ii];
-        stringFromStreamHere( stream, pl->name, VSIZE(pl->name) );
+    for ( int ii = 0; ii < gi.nPlayers; ++ii ) {
+        LocalPlayer* pl = &gi.players[ii];
+        if ( !gotStringFromStreamHere( stream, pl->name, VSIZE(pl->name) ) ) {
+            GOTO_FAIL();
+        }
 
-        stringFromStreamHere( stream, pl->password, VSIZE(pl->password) );
+        if ( !gotStringFromStreamHere( stream, pl->password, VSIZE(pl->password) ) ) {
+            GOTO_FAIL();
+        }
 
         if ( strVersion >= STREAM_VERS_PLAYERDICTS ) {
-            stringFromStreamHere( stream, pl->dictName, VSIZE(pl->dictName) );
+            if ( !gotStringFromStreamHere( stream, pl->dictName, VSIZE(pl->dictName) ) ) {
+                GOTO_FAIL();
+            }
         }
 
         if ( STREAM_VERS_BIGGERGI > strVersion ) {
-            strm_getU16( stream ); /* consume it */
+            XP_U16 ignore;
+            if ( !strm_gotU16( stream, &ignore ) ) { /* consume it */
+                GOTO_FAIL();
+            }
         }
-        pl->robotIQ = ( strVersion < STREAM_VERS_ROBOTIQ )
-            ? (XP_U8)strm_getBits( stream, 1 )
-            : strm_getU8( stream );
-        pl->isLocal = strm_getBits( stream, 1 );
+        if ( strVersion < STREAM_VERS_ROBOTIQ ) {
+            if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+            pl->robotIQ = tmp32;
+        } else {
+            if ( !strm_gotU8( stream, &pl->robotIQ ) ) GOTO_FAIL();
+        }
+        if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+        pl->isLocal = tmp32;
     }
 
-    XP_ASSERT( !!gi->isoCodeStr[0] );
-} /* gi_readFromStream */
+    XP_ASSERT( !!gi.isoCodeStr[0] );
+    success = XP_TRUE;
+    *gip = gi;
+ fail:
+    return success;
+} /* gi_gotFromStream */
 
+/* PENDING Get rid of this */
 CurGameInfo
 gi_readFromStream2( XWStreamCtxt* stream )
 {
