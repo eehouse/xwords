@@ -136,54 +136,96 @@ strm_getU32( XWStreamCtxt* stream )
 } /* strm_getU32 */
 
 static XP_Bool
-getOneBit( XWStreamCtxt* stream )
+gotOneBit( XWStreamCtxt* stream, XP_Bool* setP )
 {
-    XP_U8 mask, rack;
-    XP_Bool result;
+    XP_Bool success = XP_FALSE;
 
     if ( stream->nReadBits == 0 ) {
+        if ( stream->curReadPos >= stream->nBytesWritten ) {
+            goto failure;
+        }
         ++stream->curReadPos;
     }
-    XP_ASSERT( stream->curReadPos <= stream->nBytesWritten );
 
-    rack = stream->buf[stream->curReadPos-1];
-    mask = 1 << stream->nReadBits++;
-    result = (rack & mask) != 0;
+    XP_U8 rack = stream->buf[stream->curReadPos-1];
+    XP_U8 mask = 1 << stream->nReadBits++;
+    *setP = (rack & mask) != 0;
 
     if ( stream->nReadBits == 8 ) {
         stream->nReadBits = 0;
     }
-    return result;
-} /* getOneBit */
+    success = XP_TRUE;
+ failure:
+    return success;
+} /* gotOneBit */
 
 XP_U32
 strm_getBits( XWStreamCtxt* stream, XP_U16 nBits )
 {
-    XP_U32 mask;
-    XP_U32 result = 0;
+    XP_U32 result;
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        strm_gotBits( stream, nBits, &result );
+    XP_ASSERT(success);
+    return result;
+} /* strm_getBits */
 
-    for ( mask = 1L; nBits--; mask <<= 1 ) {
-        if ( getOneBit( stream ) ) {
+XP_Bool
+strm_gotBits( XWStreamCtxt* stream, XP_U16 nBits, XP_U32* bits )
+{
+    XP_Bool success = XP_FALSE;
+    XP_ASSERT( nBits <= 32 );
+    XP_U32 result = 0;
+    for ( XP_U32 mask = 1L; nBits--; mask <<= 1 ) {
+        XP_Bool set;
+        if ( !gotOneBit( stream, &set ) ) {
+            goto failure;
+        }
+        if ( set ) {
             result |= mask;
         }
     }
 
-    return result;
-} /* strm_getBits */
+    success = XP_TRUE;
+    *bits = result;
+ failure:
+    return success;
+}
 
 XP_U32
 strm_getU32VL( XWStreamCtxt* stream )
 {
+    XP_U32 u32;
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        strm_gotU32VL( stream, &u32 );
+    XP_ASSERT(success);
+    return u32;
+} /* strm_getU32VL */
+
+XP_Bool
+strm_gotU32VL( XWStreamCtxt* stream, XP_U32* val )
+{
+    XP_Bool success = XP_FALSE;
     XP_U32 result = 0;
     for ( int ii = 0; ; ++ii ) {
-        XP_U8 byt = strm_getBits( stream, 8 * sizeof(byt) );
+        XP_U32 byt;
+        if ( !strm_gotBits( stream, 8, &byt ) ) {
+            goto failure;
+        }
         result |= (byt & 0x7F) << (7 * ii);
         if ( 0 == (byt & 0x80) ) {
             break;
         }
     }
-    return result;
-} /* strm_getU32VL */
+    *val = result;
+
+    success = XP_TRUE;
+ failure:
+    return success;
+}
 
 #if defined DEBUG
 void
@@ -352,19 +394,33 @@ strm_putU32VL( XWStreamCtxt* stream, XP_U32 data )
 
 void
 strm_getFromStream( XWStreamCtxt* stream, XWStreamCtxt* src,
-                        XP_U16 nBytes )
+                    XP_U16 nBytes )
 {
+    (void)strm_gotFromStream( stream, src, nBytes );
+} /* strm_getFromStream */
+
+XP_Bool
+strm_gotFromStream( XWStreamCtxt* stream, XWStreamCtxt* src,
+                    XP_U16 nBytes )
+{
+    XP_Bool success = XP_FALSE;
     while ( nBytes > 0 ) {
         XP_U8 buf[256];
         XP_U16 len = sizeof(buf);
         if ( nBytes < len ) {
             len = nBytes;
         }
-        strm_getBytes( src, buf, len );// fix to use strm_getPtr()?
+        if ( !strm_gotBytes( src, buf, len ) ) {
+            goto fail;
+        }
         strm_putBytes( stream, buf, len );
         nBytes -= len;
     }
-} /* strm_getFromStream */
+
+    success = XP_TRUE;
+ fail:
+    return success;
+}
 
 XP_U16
 strm_getSize( const XWStreamCtxt* stream )

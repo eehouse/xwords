@@ -40,7 +40,9 @@ void strm_getBytes( XWStreamCtxt* dctx, void* where, XP_U16 count );
 XP_U16 strm_getU16( XWStreamCtxt* dctx );
 XP_U32 strm_getU32( XWStreamCtxt* dctx );
 XP_U32 strm_getU32VL( XWStreamCtxt* dctx );
+XP_Bool strm_gotU32VL( XWStreamCtxt* dctx, XP_U32* val );
 XP_U32 strm_getBits( XWStreamCtxt* dctx, XP_U16 nBits );
+XP_Bool strm_gotBits( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32* bits );
 #if defined DEBUG
 void strm_copyBits( const XWStreamCtxt* dctx, XWStreamPos endPos,
                     XP_U8* buf, XP_U16* len );
@@ -57,6 +59,8 @@ void strm_putBits( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits );
 
 void strm_getFromStream( XWStreamCtxt* dctx, XWStreamCtxt* src,
                          XP_U16 nBytes );
+XP_Bool strm_gotFromStream( XWStreamCtxt* dctx, XWStreamCtxt* src,
+                            XP_U16 nBytes );
 
 XWStreamPos strm_getPos( const XWStreamCtxt* dctx, PosWhich which );
 XWStreamPos strm_setPos( XWStreamCtxt* dctx, PosWhich which, 

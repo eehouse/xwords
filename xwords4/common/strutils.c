@@ -540,30 +540,56 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
     return str;
 } /* makeStringFromStream */
 
-XP_U16
+void
 stringFromStreamHereImpl( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen
 #ifdef DEBUG
                           , const char* func, int line
 #endif
                           )
 {
+    XP_USE(func);
+    XP_USE(line);
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        gotStringFromStreamHere( stream, buf, buflen );
+    XP_ASSERT( success );
+}
+
+XP_Bool
+gotStringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
+{
+    XP_Bool success = XP_FALSE;
+
     XP_U16 version = strm_getVersion( stream );
 
-    XP_U32 len = version < STREAM_VERS_NORELAY ? strm_getU8( stream )
-        : strm_getU32VL( stream );
+    XP_U32 len;
+    if ( version < STREAM_VERS_NORELAY ) {
+        XP_U8 len8;
+        if ( !strm_gotU8( stream, &len8 ) ) {
+            goto failure;
+        }
+        len = len8;
+    } else if ( !strm_gotU32VL( stream, &len ) ) {
+        goto failure;
+    }
+
     if ( len > 0 ) {
         if ( buflen < len ) {
-            XP_LOGFF( "BAD: buflen %d < len %d (from %s(), line %d)", buflen, len, func, line );
-            XP_ASSERT(0);       /* firing */
+            goto failure;
         }
         if ( len >= buflen ) {
             /* better to leave stream in bad state than overwrite stack */
             len = buflen - 1;
         }
-        strm_getBytes( stream, buf, len );
+        if ( !strm_gotBytes( stream, buf, len ) ) {
+            goto failure;
+        }
     }
     buf[len] = '\0';
-    return len;
+    success = XP_TRUE;
+ failure:
+    return success;
 }
 
 void
