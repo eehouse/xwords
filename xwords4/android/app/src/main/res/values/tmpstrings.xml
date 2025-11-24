@@ -49,4 +49,6 @@
 
   <string name="list_item_messages">Pending messages</string>
 
+  <string name="convert_button_fmt">%1$s (%2$d games)</string>
+
 </resources>

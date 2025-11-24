@@ -14,22 +14,27 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
+  <RadioGroup android:id="@+id/groups_group"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              >
+  </RadioGroup>
+
   <LinearLayout android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 >
     <Button android:id="@+id/convert_one"
-            android:text="@string/button_convertOne"
             style="@style/evenly_spaced_horizontal"
             />
     <Button android:id="@+id/convert_all"
-            android:text="@string/button_convertAll"
             style="@style/evenly_spaced_horizontal"
             />
-    <Button android:id="@+id/delete_old"
+    <!--Button android:id="@+id/delete_old"
             android:text="@string/button_deleteOld"
             style="@style/evenly_spaced_horizontal"
-            />
+            /-->
   </LinearLayout>
 
 
