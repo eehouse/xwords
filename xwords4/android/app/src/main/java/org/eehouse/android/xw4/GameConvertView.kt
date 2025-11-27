@@ -33,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import java.io.Serializable
 
 import org.eehouse.android.xw4.jni.GameMgr
+import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -42,7 +43,8 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     : LinearLayout( mContext, attrs ), View.OnClickListener,
     RadioGroup.OnCheckedChangeListener
 {
-    private var mMap: Map<String, Map<GameRef, Long>>? = null
+    private data class GroupGames(val groupID: Long, val games: ArrayList<Long>)
+    private var mMap: Map<String, GroupGames>? = null
     private var mGroup: RadioGroup? = null
     private var mGroupName: String? = null
     private var mGroupIndex: Int = -1
@@ -70,21 +72,25 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     private suspend fun convert(doAll: Boolean, groupName: String? = null) {
         Log.d(TAG, "convert($groupName)")
+        val mmap = mMap!!
         if (null == groupName || groupName.equals(mAllText) ) {
-            for (name in mMap!!.keys) {
-                convert(doAll, name)
+            for (key in mmap.keys) {
+                convert(doAll, key)
                 if (!doAll) break
             }
         } else {
-            mMap!![groupName]?.let { games ->
-                // First create the group
-                val grp = GameMgr.getGroup(groupName)
-                    ?: run {
-                        Log.d(TAG, "converting group $groupName")
-                        GameMgr.addGroup(groupName)
+            mmap[groupName]?.let { groupGames ->
+                // First create the group if necessary
+                val grp =
+                    if (groupGames.groupID == DBUtils.getArchiveGroup(context)) {
+                        GroupRef.GROUP_ARCHIVE
+                    } else {
+                        GameMgr.getGroup(groupName)
+                            ?: GameMgr.addGroup(groupName)
                     }
-                // Now a game
-                for (rowid in games.values) {
+
+                // Now add games
+                for (rowid in groupGames.games) {
                     val newGr = DBUtils.loadGame(context, rowid)?.let {
                         GameMgr.convertGame(it.name, grp, it.bytes)
                     }
@@ -95,42 +101,6 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
         updateExpl()
     }
-        
-        // launch() {
-        //     val map = mMap!!
-
-        //     // create a groups mapping to use with games
-        //     val gmap = HashMap<Long, GameMgr.GroupRef>()
-        //     val groupID = XWPrefs.getDefaultNewGameGroup(context)
-        //     DBUtils.getGroups(context).map { entry ->
-        //         val ggi = entry.value!!
-        //         var grp = GameMgr.getGroup(ggi.m_name)
-        //         if (null == grp) {
-        //             Log.d(TAG, "converting group ${ggi.m_name}")
-        //             grp = GameMgr.addGroup(ggi.m_name)
-        //         } else {
-        //             Log.d(TAG, "group ${ggi.m_name} already exists")
-        //         }
-        //         gmap.put(entry.key, grp)
-        //     }
-
-        //     // games...
-        //     var done = false
-        //     for (gr in map.keys) {
-        //         val rowid = map[gr]!!
-        //         if (! done) {
-        //             DBUtils.loadGame(context, rowid)?.let { gv ->
-        //                 val group = gmap.get(gv.group)!!
-        //                 Log.d(TAG, "converting to $gr")
-        //                 val newGr = GameMgr.convertGame(gv.name, group, gv.bytes)
-        //                 done = newGr != null && !doAll
-        //                 Assert.assertTrueNR(null == newGr || newGr!!.equals(gr))
-        //             }
-        //         }
-        //     }
-        // }
-    //     updateExpl()
-    // }
 
     private fun updateButtons() {
         mGroupName?.let {
@@ -168,15 +138,15 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         mGroup?.let { group ->
             launch {
                 mMap = updateState()
-                val map = mMap!!
-                val numGames = map.values.sumOf{it.size}
+                val mmap = mMap!!
+                val numGames = mmap.values.sumOf{it.games.size}
                 val txt = LocUtils.getString(context, R.string.game_convert_expl, numGames )
                 findViewById<TextView>(R.id.convert_expl).text = txt
 
                 group.removeAllViews()
                 addButton(mAllText!!, numGames)
-                map.map { (groupName, games) ->
-                    addButton(groupName, games.size)
+                mmap.map { (name, groupGames) ->
+                    addButton(name, groupGames.games.size)
                 }
             }
         }
@@ -185,23 +155,23 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     // PENDING: should cache this state and modify the map as the conversion
     // progresses. We'll see if my 500-game archive requires something more
     // effecient.
-    private suspend fun updateState(): Map<String, Map<GameRef, Long>> {
-        val result = HashMap<String, HashMap<GameRef, Long>>()
+    private suspend fun updateState(): Map<String, GroupGames> {
+        val result = HashMap<String, GroupGames>()
         DBUtils.getGroups(context).map { (groupID, info) ->
             info?.let { info ->
                 val groupName = info.m_name
-                val needsConvert = HashMap<GameRef, Long>()
+                val needsConvert = ArrayList<Long>()
                 DBUtils.getGroupGames(context, groupID).map { rowid ->
                     DBUtils.loadGame(context, rowid)?.let { gv ->
                         val gr = GameMgr.figureGR(gv.bytes)
                         val exists = GameMgr.gameExists(gr)
                         if (!exists) {
-                            needsConvert[gr] = rowid
+                            needsConvert.add(rowid)
                         }
                     }
                 }
                 if ( 0 < needsConvert.size ) {
-                    result[groupName] = needsConvert
+                    result[groupName] = GroupGames(groupID, needsConvert)
                     Log.d(TAG, "added ${needsConvert.size} games for group $groupName")
                 }
             }

@@ -310,6 +310,7 @@ void
 gmgr_addToGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )
 {
     checkDefault( duc, &grp );
+    checkMakeArchive( duc, xwe, &grp );
     addToGroup( duc, xwe, gr, grp );
 }
 
@@ -1587,14 +1588,14 @@ gameIDFromGR( GameRef gr )
 static void
 checkMakeArchive( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp )
 {
-    GroupRef grp = *grpp;
-    if ( grp == GROUP_ARCHIVE ) {
+    if ( GROUP_ARCHIVE == *grpp ) {
         GameMgrState* gs = duc->gameMgrState;
         if ( !gs->archiveGrp ) {
             const XP_UCHAR* groupName =
                 dutil_getUserString( duc, xwe, STRS_GROUPS_ARCHIVE );
             GroupRef agroup = gmgr_addGroup( duc, xwe, groupName );
             gs->archiveGrp = agroup;
+            scheduleSaveState( duc, xwe );
         }
         *grpp = gs->archiveGrp;
     }
