@@ -453,9 +453,13 @@ strm_getHash( const XWStreamCtxt* stream, XWStreamPos pos )
     return hash;
 } /* strm_getHash */
 
+/* PENDING: should strm_getPtr be taking POS_READ into account? getSize()
+ * does, and the two are often used together.
+ */
 const XP_U8*
 strm_getPtr( const XWStreamCtxt* stream )
 {
+    XP_ASSERT( 0 == strm_getPos(stream, POS_READ) );
     return stream->buf;
 } /* strm_getPtr */
 
