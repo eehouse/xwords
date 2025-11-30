@@ -45,7 +45,7 @@ void board_setCallbacks( BoardCtxt* board, XWEnv xwe );
 void board_setDraw( BoardCtxt* board, XWEnv xwe, DrawCtx* draw );
 DrawCtx* board_getDraw( const BoardCtxt* board );
 
-void board_destroy( BoardCtxt* board, XWEnv xwe, XP_Bool ownsUtil );
+void board_destroyp( BoardCtxt** board, XWEnv xwe, XP_Bool ownsUtil );
 
 void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 

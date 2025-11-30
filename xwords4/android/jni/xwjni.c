@@ -694,7 +694,7 @@ Java_org_eehouse_android_xw4_jni_TmpDict_dict_1getTilesInfo
     MemPoolCtx* mpool = GETMPOOL( globalState );
 #endif
     DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
-    XWStreamCtxt* stream = strm_make( MPPARM(mpool) 0 );
+    XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(mpool) );
     dict_writeTilesInfo( dict, 15, stream );
     result = streamToJString( env, stream, XP_TRUE );
     DVC_HEADER_END();
@@ -1756,11 +1756,9 @@ JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1getThumbData
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr)
 {
-    LOG_FUNC();
     jbyteArray result = NULL;
     DVC_HEADER(jniGlobalPtr);
     and_tmp_stream( globalState->dutil );
-    XP_LOGFF( "calling gr_getThumbData");
     XWStreamCtxt* stream = gr_getThumbData( DUTIL_GR_ENV );
     if ( !!stream ) {
         result = streamToBArray( env, stream );

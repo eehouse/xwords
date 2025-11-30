@@ -552,21 +552,24 @@ set_reset_timer( CommsCtxt* comms, XWEnv xwe )
 #endif  /* XWFEATURE_RELAY */
 
 void
-comms_destroy( CommsCtxt* comms, XWEnv xwe )
+comms_destroyp( CommsCtxt** commsp, XWEnv xwe )
 {
-    WITH_MUTEX(&comms->mutex);
-    /* did I call comms_stop()? */
-    XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
-               || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
+    if ( !!*commsp ) {
+        CommsCtxt* comms = *commsp;
+        WITH_MUTEX(&comms->mutex);
+        /* did I call comms_stop()? */
+        XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
+                   || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
-    cleanupInternal( comms );
-    cleanupAddrRecs( comms );
+        cleanupInternal( comms );
+        cleanupAddrRecs( comms );
 
-    util_clearTimer( *comms->utilp, xwe, TIMER_COMMS );
+        util_clearTimer( *comms->utilp, xwe, TIMER_COMMS );
 
-    END_WITH_MUTEX();
-    MUTEX_DESTROY( &comms->mutex );
-    XP_FREE( comms->mpool, comms );
+        END_WITH_MUTEX();
+        MUTEX_DESTROY( &comms->mutex );
+        XP_FREEP( comms->mpool, commsp );
+    }
 } /* comms_destroy */
 
 void
@@ -1017,9 +1020,8 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     goto done;
  fail:
     XP_LOGFF( "calling comms_destroy" );
-    comms_destroy( comms, xwe );
+    comms_destroyp( &comms, xwe );
     XP_LOGFF( "back from comms_destroy" );
-    comms = NULL;
  done:
     LOG_RETURNF( "%p", comms );
     return comms;

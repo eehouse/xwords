@@ -82,7 +82,7 @@ CommsCtxt* comms_make( XWEnv xwe, XW_UtilCtxt** utilp, XP_Bool isServer,
 #endif
                        XP_U16 forceChannel );
 
-void comms_destroy( CommsCtxt* comms, XWEnv xwe );
+void comms_destroyp( CommsCtxt** commsp, XWEnv xwe );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion );
 

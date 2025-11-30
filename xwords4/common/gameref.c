@@ -60,7 +60,7 @@ struct GameData {
     CommsCtxt* comms;
     CommsAddrRec hostAddr; /* hack: store until can init game */
     XWStreamCtxt* thumbData;
-
+    XWStreamCtxt* convStream;
     XP_Bool dictsSought;   /* don't keep looking for missing stuff */
     const DictionaryCtxt* dict;
     PlayerDicts playerDicts;
@@ -74,12 +74,33 @@ struct GameData {
 /* Not persisted, so add/remove at will */
 typedef enum { GD, GI, SUM, UTIL, COMMS, DICTS, MODEL, BOARD, } NeedsLevel;
 
+#ifdef DEBUG
+# define CASE_STR(c)  case c: return #c
+const XP_UCHAR* NL2Str(NeedsLevel nl) {
+    switch(nl) {
+        CASE_STR(GD);
+        CASE_STR(GI);
+        CASE_STR(SUM);
+        CASE_STR(UTIL);
+        CASE_STR(COMMS);
+        CASE_STR(DICTS);
+        CASE_STR(MODEL);
+        CASE_STR(BOARD);
+    }
+    XP_ASSERT(0);
+    return NULL;
+}
+#undef CASE_STR
+#endif
+
 static GameData* loadToLevel( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
                               NeedsLevel nl, XP_Bool* loaded,
                               XP_Bool* deleted );
+static void loadDataFromStream( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
+                                XWStreamCtxt* stream );
 static void makeData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd );
 static void loadData( XW_DUtilCtxt* duc, XWEnv xwe,
-                      GameData* gd, XWStreamCtxt** streamp );
+                      GameData* gd, XWStreamCtxt* stream );
 static void setGIImpl( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
                        const CurGameInfo* gip );
 
@@ -148,22 +169,36 @@ static XW_UtilCtxt* makeDummyUtil( XW_DUtilCtxt* duc, GameData* gd );
     GR_HEADER_END()                             \
 
 static void
+loadCommsFromStream( XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
+{
+    const CurGameInfo* gi = &gd->gi;
+    gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
+                                      gi->deviceRole != ROLE_ISGUEST,
+                                      gi->forceChannel );
+}
+
+static void
 loadCommsOnce( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     if ( !gd->commsLoaded ) {
         if ( gmgr_markLoading( duc, xwe, gd->gr ) ) {
             gd->commsLoaded = XP_TRUE;
             const CurGameInfo* gi = &gd->gi;
+
+            /* Load this in case we'll need it later, even if standalone  */
+            XP_ASSERT( !gd->convStream );
+            gd->convStream = gmgr_loadConvert( duc, xwe, gd->gr );
+
             if ( ROLE_STANDALONE != gi->deviceRole ) {
                 XWStreamCtxt* stream = gmgr_loadComms( duc, xwe, gd->gr );
                 if ( !!stream ) {
                     XP_U8 strVersion = strm_getU8( stream );
                     XP_LOGFF( "strVersion: 0x%X", strVersion );
                     strm_setVersion( stream, strVersion );
-                    gd->comms = comms_makeFromStream( xwe, stream, &gd->util,
-                                                      gi->deviceRole != ROLE_ISGUEST,
-                                                      gi->forceChannel );
+                    loadCommsFromStream( xwe, gd, stream );
                     strm_destroy( stream );
+                } else if ( !!gd->convStream ) {
+                    loadCommsFromStream( xwe, gd, gd->convStream );
                 } else {
                     XP_Bool isClient = ROLE_ISGUEST == gi->deviceRole;
                     const CommsAddrRec* hostAddr = isClient ? &gd->hostAddr : NULL;
@@ -220,6 +255,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
     GameData* gd = gmgr_getForRef( duc, xwe, gr, deletedP );
     XP_Bool loaded = XP_TRUE;
     for ( NeedsLevel nl = 0; nl <= target; ++nl ) {
+        // XP_LOGFF( "nl: %s", NL2Str(nl) );
         switch ( nl ) {
         case GD:
             if ( !gd ) {
@@ -282,14 +318,19 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
         case MODEL:
             if ( !gd->model ) {
                 XWStreamCtxt* stream = gmgr_loadData( duc, xwe, gr );
-                if ( !stream ) {
-                    makeData( duc, xwe, gd );
+                if ( !!stream ) {
+                    loadData( duc, xwe, gd, stream );
+                    strm_destroy( stream );
+                } else {
+                    if ( !!gd->convStream ) { /* not set */
+                        loadDataFromStream( duc, xwe, gd, gd->convStream );
+                    } else {
+                        makeData( duc, xwe, gd );
+                    }
                     if ( !!gd->model ) {
                         summarize( duc, xwe, gd );
                         setSaveTimer( duc, xwe, gd, gr );
                     }
-                } else {
-                    loadData( duc, xwe, gd, &stream );
                 }
             }
             if ( !gd->model ) {
@@ -304,6 +345,7 @@ loadToLevel( DUTIL_GR_XWE, NeedsLevel target,
             XP_LOGFF( "Unexpected NeedsLevel %d", nl );
             XP_ASSERT(0);
         }
+        // XP_LOGFF( "nl: done with %s", NL2Str(nl) );
     }
  done:
     *loadedP = loaded;
@@ -316,16 +358,17 @@ typedef struct _SaveTimerData {
 } SaveTimerData;
 
 static void
-saveTimerProc(XW_DUtilCtxt* duc, XWEnv xwe, void* closure, TimerKey XP_UNUSED(key),
-              XP_Bool fired)
+saveTimerProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
+               TimerKey XP_UNUSED(key), XP_Bool fired )
 {
     SaveTimerData* std = (SaveTimerData*)closure;
+    GameData* gd = std->gd;
+    XP_ASSERT( std->gr == gd->gr );
     if ( fired ) {
         XP_LOGFF( "calling gr_save()");
         SaveTimerData* std = (SaveTimerData*)closure;
 
         gr_save( duc, std->gr, xwe );
-
     }
     std->gd->saveTimerKey = 0;
     XP_FREE( duc->mpool, closure );
@@ -414,8 +457,7 @@ unloadComms( GameData* gd, XWEnv xwe )
 {
     if ( !!gd->comms ) {
         comms_stop( gd->comms );
-        comms_destroy( gd->comms, xwe );
-        gd->comms = NULL;
+        comms_destroyp( &gd->comms, xwe );
         gd->commsLoaded = XP_FALSE;
     }
 }
@@ -424,18 +466,14 @@ static void
 unloadData( GameData* gd, XWEnv xwe )
 {
     if ( !!gd->board ) {
-        board_destroy( gd->board, xwe, XP_FALSE );
-        gd->board = NULL;
+        board_destroyp( &gd->board, xwe, XP_FALSE );
         if ( !!gd->comms ) {
             comms_stop( gd->comms );
-            comms_destroy( gd->comms, xwe );
-            gd->comms = NULL;
+            comms_destroyp( &gd->comms, xwe );
             gd->commsLoaded = XP_FALSE;
         }
-        model_destroy( gd->model, xwe );
-        ctrl_destroy( gd->ctrlr );
-        gd->model = NULL;
-        gd->ctrlr = NULL;
+        model_destroyp( &gd->model, xwe );
+        ctrl_destroyp( &gd->ctrlr );
     }
 }
 
@@ -446,6 +484,7 @@ destroyData( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe,
     if ( !!gd ) {
         unloadData( gd, xwe );
         strm_destroyp(  &gd->thumbData );
+        strm_destroyp(  &gd->convStream );
 
         unloadComms( gd, xwe );
 
@@ -596,29 +635,27 @@ resendAllProc( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe, void* closure,
 }
 
 static void
-loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
+loadDataFromStream( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
+                    XWStreamCtxt* stream )
 {
     const CurGameInfo* gi = &gd->gi;
-    XP_ASSERT( gi_isValid(gi) );
-    XP_ASSERT( START_OF_STREAM == strm_getPos( *streamp, POS_READ ) );
-    XP_U8 strVersion = strm_getU8( *streamp );
-    XP_LOGFF( "strVersion: 0x%X", strVersion );
-    strm_setVersion( *streamp, strVersion );
-
     XP_ASSERT( gi->gameID );
     XP_ASSERT( gi->created );
     if ( !gd->dict ) {
         goto exit;
     }
 
-    gd->model = model_makeFromStream( xwe, *streamp, gd->dict,
+    gd->model = model_makeFromStream( xwe, stream, gd->dict,
                                       &gd->playerDicts, &gd->util );
-    gd->ctrlr = ctrl_makeFromStream( xwe, *streamp,
-                                        gd->model, gd->comms,
-                                        &gd->util, gi->nPlayers );
-    gd->board = board_makeFromStream( xwe, *streamp, gd->model,
+    if ( !gd->model ) GOTO_FAIL();
+    gd->ctrlr = ctrl_makeFromStream( xwe, stream, gd->model, gd->comms,
+                                     &gd->util, gi->nPlayers );
+    if ( !gd->ctrlr ) GOTO_FAIL();
+    gd->board = board_makeFromStream( xwe, stream, gd->model,
                                       gd->ctrlr, NULL, &gd->util,
                                       gi->nPlayers );
+    if ( !gd->board ) GOTO_FAIL();
+
     finishSetup( duc, xwe, gd );
 
     if ( gd->comms && gd->ctrlr ) {
@@ -635,10 +672,27 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
         }
     }
 
+    goto exit;
+ fail:
+    board_destroyp( &gd->board, xwe, XP_FALSE );
+    ctrl_destroyp( &gd->ctrlr );
+    model_destroyp( &gd->model, xwe );
  exit:
-    strm_destroyp( streamp );
     return;
-} /* loadData */
+} /* loadDataFromStream */
+
+static void
+loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt* stream )
+{
+    const CurGameInfo* gi = &gd->gi;
+    XP_ASSERT( gi_isValid(gi) );
+    XP_ASSERT( START_OF_STREAM == strm_getPos( stream, POS_READ ) );
+    XP_U8 strVersion = strm_getU8( stream );
+    XP_LOGFF( "strVersion: 0x%X", strVersion );
+    strm_setVersion( stream, strVersion );
+
+    loadDataFromStream( duc, xwe, gd, stream );
+}
 
 static XP_U32
 makeGameID( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 curID )
@@ -763,11 +817,12 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
                 const XP_UCHAR* gameName, XWStreamCtxt* stream )
 {
     LOG_FUNC();
+    GameRef gr = 0;
+
     XP_U8 strVersion;
     if ( !strm_gotU8( stream, &strVersion ) ) GOTO_FAIL();
     XP_LOGFF( "got strVersion: 0x%x", strVersion );
     strm_setVersion( stream, strVersion );
-    GameRef gr = 0;
     {
         CurGameInfo gi;
         if ( !gi_gotFromStream( stream, &gi ) ) GOTO_FAIL();
@@ -802,40 +857,41 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
         XW_UtilCtxt* util = makeDummyUtil( duc, gd );
 
         XP_Bool hasComms;
+        XP_U8 flags;
+        if ( !strm_gotU8( stream, &flags ) ) GOTO_FAIL();
         if ( strVersion < STREAM_VERS_GICREATED ) {
-            if ( !strm_gotU8( stream, &hasComms ) ) GOTO_FAIL();
+            hasComms = flags;
         } else {
-            XP_U8 flags;
-            if ( !strm_gotU8( stream, &flags ) ) GOTO_FAIL();
             hasComms = flags & FLAG_HASCOMMS;
         }
+
+        XWStreamPos commsStart = strm_getPos( stream, POS_READ );
 
         /* If we're loading old code, we need to figure out the conTypes field of
            the gi. If the game's in play, we can get it from addresses. But if it
            was newly created, our own default hostAddress is it??? */
         if ( hasComms ) {
-            XP_ASSERT( !gd->comms );
             CommsCtxt* comms = comms_makeFromStream( xwe, stream, &util,
-                                              gi->deviceRole != ROLE_ISGUEST,
-                                              gi->forceChannel );
+                                                     gi->deviceRole != ROLE_ISGUEST,
+                                                     gi->forceChannel );
+            strm_setPos( stream, POS_READ, commsStart );
             if ( !comms ) GOTO_FAIL();
-            gd->comms = comms;
-            gd->commsLoaded = XP_TRUE;
-            ConnTypeSetBits conTypes = 0;
 
+            ConnTypeSetBits conTypes = 0;
             CommsAddrRec addrs[gi->nPlayers];
             XP_U16 nRecs = VSIZE(addrs);
-            comms_getAddrs( gd->comms, addrs, &nRecs );
+            comms_getAddrs( comms, addrs, &nRecs );
             for ( int ii = 0; ii < nRecs; ++ii ) {
                 conTypes |= addrs[ii]._conTypes;
                 XP_LOGFF( "conTypes now 0x%x", conTypes );
             }
             if ( !conTypes ) {
                 CommsAddrRec selfAddr;
-                comms_getSelfAddr( gd->comms, &selfAddr );
+                comms_getSelfAddr( comms, &selfAddr );
                 conTypes |= selfAddr._conTypes;
             }
             XP_LOGFF( "conTypes now 0x%x", conTypes );
+            comms_destroyp( &comms, xwe );
 
             /* Now add it to gi */
             CurGameInfo tmpGI = *gi;
@@ -843,51 +899,12 @@ gr_convertGame( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef* grpp,
             LOG_GI( &tmpGI, __func__ );
             setGIImpl( duc, xwe, gd, &tmpGI );
         }
-
-        /* Now let's write the rest of the stream out so we can save it in the
-           correct format */
-        {
-            loadDictsOnce( duc, xwe, gd );
-            XP_ASSERT( !!gd->dict );
-            gd->model = model_makeFromStream( xwe, stream, gd->dict,
-                                              &gd->playerDicts, &gd->util );
-            gd->ctrlr = ctrl_makeFromStream( xwe, stream,
-                                             gd->model, gd->comms,
-                                             &gd->util, gd->gi.nPlayers );
-            gd->board = board_makeFromStream( xwe, stream, gd->model,
-                                              gd->ctrlr, NULL, &gd->util,
-                                              gd->gi.nPlayers );
-
-            XWStreamCtxt* commsStream = !!gd->comms ? dvc_makeStream(duc) : NULL;
-            XWStreamCtxt* dataStream = dvc_makeStream(duc);
-            gr_dataToStream( duc, gr, xwe, commsStream, dataStream, 0 );
-            gmgr_saveStreams( duc, xwe, gr, &commsStream, &dataStream, 0 );
-
-            unloadData( gd, xwe );
-            // unloadComms( gd, xwe );
-
-            /* board_destroy( gd->board, xwe, XP_FALSE ); */
-            /* gd->board = NULL; */
-            /* ctrl_destroy( gd->ctrlr ); */
-            /* gd->ctrlr = NULL; */
-            /* model_destroy( gd->model, xwe ); */
-            /* gd->model = NULL; */
-            /* if ( !!gd->comms ) { */
-            /*     comms_destroy( gd->comms, xwe ); */
-            /*     gd->comms = NULL; */
-            /*     gd->commsLoaded = XP_FALSE; */
-            /* } */
-        }
-
-        XP_Bool loaded;
-#ifdef DEBUG
-        GameData* gd1 =
-#endif
-            loadToLevel( duc, gr, xwe, MODEL, &loaded, NULL );
-        XP_ASSERT( gd1 == gd );
-        XP_ASSERT( loaded );
-
         util_unref( util, xwe );
+
+        /* Now save the rest of the stream in a special field so that IFF this
+           game is ever loaded (many in Archive won't be) we will be able to
+           recover in the normal way from things like a missing dict.*/
+        gmgr_saveConvert( duc, xwe, gr, stream );
     }
 
     goto done;
@@ -1166,7 +1183,9 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
     if ( result ) {
         XP_Bool haveCtrlr = !!gd->ctrlr;
         if ( !haveCtrlr ) {
-            loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
+            GameData* gd2 = loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
+            XP_ASSERT( gd2 == gd );
+            XP_ASSERT( !!gd2->ctrlr );
         }
         if ( haveCtrlr ) {
             XP_Bool needsChatNotify = XP_FALSE;;
@@ -2302,44 +2321,48 @@ updateSummary( XW_DUtilCtxt* duc, XWEnv xwe,
 static void
 summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
-    const CurGameInfo* gi = &gd->gi;
-    GameSummary sum = {};
     CtrlrCtxt* ctrlr = gd->ctrlr;
-    sum.turn = ctrl_getCurrentTurn( ctrlr, &sum.turnIsLocal );
-    XP_LOGFF( "turn now %d", sum.turn );
-    sum.lastMoveTime = ctrl_getLastMoveTime(ctrlr);
-    sum.gameOver = ctrl_getGameIsOver( ctrlr );
-    sum.nMoves = model_getNMoves( gd->model );
-    sum.dupTimerExpires = ctrl_getDupTimerExpires( ctrlr );
-    sum.canRematch = ctrl_canRematch( ctrlr, &sum.canOfferRO );
+    if ( !!ctrlr ) {
+        const CurGameInfo* gi = &gd->gi;
+        GameSummary sum = {};
+        sum.turn = ctrl_getCurrentTurn( ctrlr, &sum.turnIsLocal );
+        XP_LOGFF( "turn now %d", sum.turn );
+        sum.lastMoveTime = ctrl_getLastMoveTime(ctrlr);
+        sum.gameOver = ctrl_getGameIsOver( ctrlr );
+        sum.nMoves = model_getNMoves( gd->model );
+        sum.dupTimerExpires = ctrl_getDupTimerExpires( ctrlr );
+        sum.canRematch = ctrl_canRematch( ctrlr, &sum.canOfferRO );
 
-    /* Copied from our storage, for now */
-    sum.collapsed = gd->sum.collapsed;
-    sum.hasChat = gd->sum.hasChat;
+        /* Copied from our storage, for now */
+        sum.collapsed = gd->sum.collapsed;
+        sum.hasChat = gd->sum.hasChat;
 
-    model_getCurScores( gd->model, &sum.scores, XP_TRUE );
+        model_getCurScores( gd->model, &sum.scores, XP_TRUE );
 
-    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-        const LocalPlayer* lp  = &gi->players[ii];
-        if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
-            if ( '\0' != sum.opponents[0] ) {
-                XP_STRCAT( sum.opponents, ", " );
-            }
-            const XP_UCHAR* name = lp->name;
-            if ( !!name[0] ) {
-                XP_STRCAT( sum.opponents, name );
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+            const LocalPlayer* lp  = &gi->players[ii];
+            if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
+                if ( '\0' != sum.opponents[0] ) {
+                    XP_STRCAT( sum.opponents, ", " );
+                }
+                const XP_UCHAR* name = lp->name;
+                if ( !!name[0] ) {
+                    XP_STRCAT( sum.opponents, name );
+                }
             }
         }
-    }
-    if ( !!gd->comms ) {
-        sum.missingPlayers = ctrl_getMissingPlayers( ctrlr );
-        sum.nPacketsPending =
-            comms_countPendingPackets( gd->comms, &sum.quashed );
-        ctrl_setReMissing( ctrlr, &sum );
-    }
+        if ( !!gd->comms ) {
+            sum.missingPlayers = ctrl_getMissingPlayers( ctrlr );
+            sum.nPacketsPending =
+                comms_countPendingPackets( gd->comms, &sum.quashed );
+            ctrl_setReMissing( ctrlr, &sum );
+        }
 
-    updateSummary( duc, xwe, gd, &sum );
-    gd->sumLoaded = XP_TRUE;
+        updateSummary( duc, xwe, gd, &sum );
+        gd->sumLoaded = XP_TRUE;
+    } else {
+        XP_LOGFF( "ctrlr null; skipping" );
+    }
 }
 
 static void
@@ -2378,37 +2401,59 @@ sumToStream( XWStreamCtxt* stream, const GameSummary* sum, XP_U16 nPlayers )
 static XP_Bool
 gotSumFromStream( GameSummary* sump, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_FALSE;
     XP_ASSERT( START_OF_STREAM == strm_getPos( stream, POS_READ ) );
-    strm_setVersion( stream, strm_getU8(stream) );
+    XP_U8 version;
+    if ( !strm_gotU8( stream, &version ) ) GOTO_FAIL();
+    strm_setVersion( stream, version );
 
     GameSummary sum = {};
-    XP_U16 nPlayers = 1 + strm_getBits( stream, 2 );
-    sum.turnIsLocal = strm_getBits( stream, 1 );
-    sum.gameOver = strm_getBits( stream, 1 );
-    sum.quashed = strm_getBits( stream, 1 );
-    sum.canRematch = strm_getBits( stream, 1 );
-    sum.canOfferRO = strm_getBits( stream, 1 );
+    XP_U32 tmp32;
+    if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    XP_U16 nPlayers = 1 + tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    sum.turnIsLocal = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL()
+    sum.gameOver = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL(); /* here */
+    sum.quashed = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    sum.canRematch = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    sum.canOfferRO = tmp32;
 
-    sum.turn = strm_getBits( stream, 3 ) - 1;
-    sum.missingPlayers = strm_getBits( stream, 4 );
-    sum.nMissing = strm_getBits( stream, 2 );
-    sum.nInvited = strm_getBits( stream, 2 );
-    sum.collapsed = strm_getBits( stream, 1 );
-    sum.hasChat = strm_getBits( stream, 1 );
+    if ( !strm_gotBits( stream, 3, &tmp32 ) ) GOTO_FAIL();
+    sum.turn = tmp32 - 1;
+    if ( !strm_gotBits( stream, 4, &tmp32 ) ) GOTO_FAIL();
+    sum.missingPlayers = tmp32;
+    if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    sum.nMissing = tmp32;
+    if ( !strm_gotBits( stream, 2, &tmp32 ) ) GOTO_FAIL();
+    sum.nInvited = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    sum.collapsed = tmp32;
+    if ( !strm_gotBits( stream, 1, &tmp32 ) ) GOTO_FAIL();
+    sum.hasChat = tmp32;
 
-    sum.nPacketsPending = strm_getU32VL( stream );
-    sum.lastMoveTime = strm_getU32( stream );
-    sum.dupTimerExpires = strm_getU32( stream );
-    sum.nMoves = strm_getU32VL( stream ) - 4;
+    if ( !strm_gotU32VL( stream, &sum.nPacketsPending ) ) GOTO_FAIL();
+    if ( !strm_gotU32( stream, &sum.lastMoveTime ) ) GOTO_FAIL();
+    if ( !strm_gotU32( stream, (XP_U32*)&sum.dupTimerExpires ) ) GOTO_FAIL();
+    if ( !strm_gotU32VL( stream, &tmp32 ) ) GOTO_FAIL();
+    sum.nMoves = tmp32 - 4;
 
     for ( int ii = 0; ii < nPlayers; ++ii ) {
-        sum.scores.arr[ii] = strm_getU16( stream );
+        if ( !strm_gotU16( stream, (XP_U16*)&sum.scores.arr[ii] ) ) GOTO_FAIL();
     }
 
-    stringFromStreamHere( stream, sum.opponents, VSIZE(sum.opponents) );
+    if ( !gotStringFromStreamHere( stream, sum.opponents, VSIZE(sum.opponents) ) ) {
+        GOTO_FAIL();
+    }
 
     *sump = sum;
-    return XP_TRUE;
+    success = XP_TRUE;
+ fail:
+    XP_ASSERT( success );       /* shouldn't happen now? */
+    return success;
 }
 
 XP_U16
@@ -2604,6 +2649,10 @@ gr_saveSucceeded( DUTIL_GR_XWE, XP_U16 saveToken )
     GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {
         comms_saveSucceeded( gd->comms, xwe, saveToken );
+    }
+    if ( !!gd->ctrlr && !!gd->convStream ) {
+        strm_destroyp( &gd->convStream );
+        gmgr_rmConvert( duc, xwe, gr );
     }
     GR_HEADER_END();
 }

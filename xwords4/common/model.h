@@ -84,7 +84,7 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_forceStack7Tiles( ModelCtxt* model );
-void model_destroy( ModelCtxt* model, XWEnv xwe );
+void model_destroyp( ModelCtxt** model, XWEnv xwe );
 XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
 XP_Bool model_popToHash( ModelCtxt* model, XWEnv xwe, const XP_U32 hash,

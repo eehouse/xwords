@@ -44,6 +44,10 @@ void gmgr_saveGI( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 XWStreamCtxt* gmgr_loadComms( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+void gmgr_saveConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                       XWStreamCtxt* stream );
+XWStreamCtxt* gmgr_loadConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
+void gmgr_rmConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 void gmgr_storeSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XWStreamCtxt* stream );
 
 void gmgr_rmFromGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp );

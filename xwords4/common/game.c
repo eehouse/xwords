@@ -896,7 +896,7 @@ gi_gotFromStream( XWStreamCtxt* stream, CurGameInfo* gip )
         const XP_UCHAR* isoCode = lcToLocale( dictLang );
         XP_ASSERT( !!isoCode );
         XP_STRNCPY( gi.isoCodeStr, isoCode, VSIZE(gi.isoCodeStr) );
-        XP_LOGFF( "upgrading; faked isoCode: %s", gi.isoCodeStr );
+        // XP_LOGFF( "upgrading; faked isoCode: %s", gi.isoCodeStr );
     }
 
     if ( gi.timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {

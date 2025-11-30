@@ -41,7 +41,7 @@ void ctrl_writeToStream( const CtrlrCtxt* ctrlr, XWStreamCtxt* stream );
 
 void ctrl_setUtil( CtrlrCtxt* ctrlr, XWEnv xwe, XW_UtilCtxt* util );
 void ctrl_reset( CtrlrCtxt* ctrlr, XWEnv xwe, CommsCtxt* comms );
-void ctrl_destroy( CtrlrCtxt* ctrlr );
+void ctrl_destroyp( CtrlrCtxt** ctrlr );
 
 void ctrl_prefsChanged( CtrlrCtxt* ctrlr, const CommonPrefs* cp );
 #ifdef XWFEATURE_RELAY

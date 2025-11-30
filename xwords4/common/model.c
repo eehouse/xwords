@@ -166,7 +166,8 @@ model_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     }
 #endif
 
-    stack_loadFromStream( vol->stack, stream );
+    XP_Bool success = stack_loadFromStream( vol->stack, stream );
+    XP_ASSERT( success );
 
     if ( flags & HAVE_CHAT_BIT ) {
         cht_loadFromStream( vol->chat, xwe, stream );
@@ -311,20 +312,24 @@ model_forceStack7Tiles( ModelCtxt* model )
 }
 
 void
-model_destroy( ModelCtxt* model, XWEnv xwe )
+model_destroyp( ModelCtxt** modelp, XWEnv xwe )
 {
-    model_unrefDicts( model, xwe );
-    ModelVolatiles* vol = &model->vol;
-    stack_destroy( vol->stack );
-    if ( ROLE_STANDALONE != vol->gi->deviceRole ) {
-        cht_destroy( vol->chat );
+    if ( !!*modelp ) {
+        ModelCtxt* model = *modelp;
+        model_unrefDicts( model, xwe );
+        ModelVolatiles* vol = &model->vol;
+        stack_destroy( vol->stack );
+        if ( ROLE_STANDALONE != vol->gi->deviceRole ) {
+            cht_destroy( vol->chat );
+        }
+        /* is this it!? */
+        if ( !!vol->bonuses ) {
+            XP_FREE( vol->mpool, vol->bonuses );
+        }
+        XP_FREE( vol->mpool, vol->tiles );
+        XP_FREE( vol->mpool, model );
+        *modelp = NULL;
     }
-    /* is this it!? */
-    if ( !!vol->bonuses ) {
-        XP_FREE( vol->mpool, vol->bonuses );
-    }
-    XP_FREE( vol->mpool, vol->tiles );
-    XP_FREE( vol->mpool, model );
 } /* model_destroy */
 
 XP_U32
@@ -2579,7 +2584,8 @@ copyStack( const ModelCtxt* model, StackCtxt* destStack,
 
     strm_setVersion( stream, stack_getVersion(srcStack) );
     stack_writeToStream( srcStack, stream );
-    stack_loadFromStream( destStack, stream );
+    XP_Bool success = stack_loadFromStream( destStack, stream );
+    XP_ASSERT( success );
     XP_ASSERT( stack_getVersion(destStack) == stack_getVersion( srcStack ) );
 
     strm_destroy( stream );
@@ -2615,7 +2621,7 @@ model_writeGameHistory( ModelCtxt* model, XWEnv xwe,
 
     ModelCtxt* tmpModel = makeTmpModel( model, xwe, stream, printMovePre,
                                         printMovePost, &closure );
-    model_destroy( tmpModel, xwe );
+    model_destroyp( &tmpModel, xwe );
 
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
@@ -2663,7 +2669,7 @@ scoreLastMove( ModelCtxt* model, XWEnv xwe, MoveInfo* moveInfo, XP_U16 howMany,
     score = figureMoveScore( tmpModel, xwe, turn, moveInfo, (EngineCtxt*)NULL,
                              (XWStreamCtxt*)NULL, &notifyInfo );
 
-    model_destroy( tmpModel, xwe );
+    model_destroyp( &tmpModel, xwe );
 
     lmi->score = score;
     XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
@@ -2820,7 +2826,7 @@ model_listWordsThrough( ModelCtxt* model, XWEnv xwe, XP_U16 col, XP_U16 row,
     }
     strm_putU8( stream, '\0' ); /* null-terminate for good luck */
 
-    model_destroy( tmpModel, xwe );
+    model_destroyp( &tmpModel, xwe );
     return found;
 } /* model_listWordsThrough */
 #endif

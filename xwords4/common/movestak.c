@@ -24,6 +24,7 @@
 #include "movestak.h"
 #include "strutils.h"
 #include "dbgutil.h"
+#include "utilsp.h"
 
 /* HASH_STREAM: It should be possible to hash the move stack by simply hashing
    the stream from the beginning to the top of the undo stack (excluding
@@ -130,9 +131,10 @@ stack_destroy( StackCtxt* stack )
     XP_FREE( stack->mpool, stack );
 } /* stack_destroy */
 
-void
+XP_Bool
 stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_FALSE;
     /* Problem: the moveType field is getting bigger to support
      * DUP_MOVE_TYPE. So 3 bits are needed rather than 2.  I can't use the
      * parent stream's version since the parent stream is re-written each time
@@ -142,9 +144,10 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
      * first bit's set, the stream was created by code that assumes 3 bits for
      * the moveType field.
      */
-    XP_U16 nBytes = strm_getU16( stream );
+    XP_U16 nBytes;
+    if ( !strm_gotU16( stream, &nBytes ) ) GOTO_FAIL();
     if ( (HAVE_FLAGS_MASK & nBytes) != 0 ) {
-        stack->flags = strm_getU8( stream );
+        if ( !strm_gotU8( stream, &stack->flags ) ) GOTO_FAIL();
         stack->typeBits = 3;
     } else {
         XP_ASSERT( 0 == stack->flags );
@@ -155,22 +158,29 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
     if ( nBytes > 0 ) {
         XP_U8 stackVersion = STREAM_VERS_NINETILES - 1;
         if ( STREAM_VERS_NINETILES <= strm_getVersion(stream) ) {
-            stackVersion = strm_getU8( stream );
+            if ( !strm_gotU8( stream, &stackVersion ) ) GOTO_FAIL();
             XP_LOGFF( "read stackVersion: %d from stream", stackVersion );
             XP_ASSERT( stackVersion <= CUR_STREAM_VERS );
         }
-        stack->highWaterMark = strm_getU16( stream );
-        stack->nEntries = strm_getU16( stream );
-        stack->top = strm_getU32( stream );
+        if ( !strm_gotU16( stream, &stack->highWaterMark ) ) GOTO_FAIL();
+        if ( !strm_gotU16( stream, &stack->nEntries ) ) GOTO_FAIL();
+        if ( !strm_gotU32( stream, &stack->top ) ) GOTO_FAIL();
         stack->data = strm_make_raw( MPPARM_NOCOMMA(stack->mpool) );
 
-        strm_getFromStream( stack->data, stream, nBytes );
+        XP_LOGFF( "loading %d bytes from stream of size %d", nBytes, strm_getSize(stream) );
+        if ( !strm_gotFromStream( stack->data, stream, nBytes ) ) GOTO_FAIL();
         strm_setVersion( stack->data, stackVersion );
     } else {
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
     }
     CLEAR_DIRTY( stack );
+    success = XP_TRUE;
+    goto done;
+ fail:
+    strm_destroyp( &stack->data );
+ done:
+    return success;
 } /* stack_loadFromStream */
 
 void
@@ -218,7 +228,8 @@ stack_copy( const StackCtxt* stack )
 
     newStack = stack_make( MPPARM(stack->mpool) stack->nPlayers,
                            stack->inDuplicateMode );
-    stack_loadFromStream( newStack, stream );
+    XP_Bool success = stack_loadFromStream( newStack, stream );
+    XP_ASSERT( success );
     stack_setBitsPerTile( newStack, stack->bitsPerTile );
     strm_destroy( stream );
     return newStack;

@@ -29,3 +29,13 @@
     }
 
 #endif
+
+#ifdef LOG_STREAM_HISTORY
+# define FLF_FORMALS , const char* func, int line, const char* file
+# define FLF_PARAMS , func, line, file
+# define FLF_ARGS , __func__, __LINE__, __FILE__
+#else
+# define FLF_FORMALS
+# define FLF_PARAMS
+# define FLF_ARGS
+#endif

@@ -763,8 +763,7 @@ dump_board( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     // ModelCtxt* model =  gr_getGame(globals->cGlobals.gr)->model;
     CommonGlobals* cGlobals = &globals->cGlobals;
     XWStreamCtxt* stream = 
-        strm_make( MPPARM(cGlobals->params->mpool)
-                   CHANNEL_NONE );
+        strm_make_raw( MPPARM_NOCOMMA(cGlobals->params->mpool) );
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     gr_writeToTextStream( dutil, cGlobals->gr, NULL_XWE, stream );
     catAndClose( stream );

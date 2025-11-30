@@ -611,6 +611,9 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
     case COMMS_CONN_BT:
         sendMsgsViaBT( dutil, xwe, packets, addr, gameID );
         break;
+    case COMMS_CONN_RELAY:
+        XP_LOGFF( "What's relay doing here?" );
+        break;
     default:
         XP_LOGFF( "don't handle %s", ConnType2Str( typ ) );
         XP_ASSERT(0);           /* fired */

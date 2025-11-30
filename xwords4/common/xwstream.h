@@ -22,6 +22,7 @@
 #define _XWSTREAM_H_
 
 #include "comtypes.h"
+#include "utilsp.h"
 
 #define START_OF_STREAM 0
 #define END_OF_STREAM -1

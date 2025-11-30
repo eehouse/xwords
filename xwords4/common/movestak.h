@@ -90,7 +90,7 @@ XP_U16 stack_getVersion( const StackCtxt* stack );
 XP_U32 stack_getHash( const StackCtxt* stack );
 void stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile );
 
-void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );
+XP_Bool stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );
 void stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream );
 StackCtxt* stack_copy( const StackCtxt* stack );
 

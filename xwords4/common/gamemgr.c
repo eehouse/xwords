@@ -33,6 +33,7 @@
 #define KEY_STATE "state"
 #define KEY_GAMES "games"
 #define KEY_DATA "data"
+#define KEY_CONVERT "conv"
 #define KEY_LOADING "pending"
 #define KEY_GRP "grp"
 #define KEY_GROUPS "groups"
@@ -725,7 +726,7 @@ gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
     XP_LOGFF( "(" GR_FMT ")", gr );
     // First, create the keys since that requires live gr
     const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP,
-                              KEY_SUM, KEY_LOADING, };
+                              KEY_SUM, KEY_LOADING, KEY_CONVERT, };
     KeyStore ks[VSIZE(midKeys)];
     for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
         mkKeys( gr, &ks[ii], midKeys[ii] );
@@ -820,6 +821,29 @@ gmgr_loadComms( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
     mkKeys( gr, &ks, KEY_COMMS );
     XWStreamCtxt* stream = dvc_loadStream( duc, xwe, ks.keys );
     return stream;
+}
+
+XWStreamCtxt*
+gmgr_loadConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_CONVERT );
+    XWStreamCtxt* stream = dvc_loadStream( duc, xwe, ks.keys );
+    XP_U8 version;
+    if ( !!stream && strm_gotU8( stream, &version ) ) {
+        strm_setVersion( stream, version );
+    } else {
+        strm_destroyp( &stream );
+    }
+    return stream;
+}
+
+void
+gmgr_rmConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr )
+{
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_CONVERT );
+    dvc_removeStored( duc, xwe, ks.keys );
 }
 
 XWStreamCtxt*
@@ -918,6 +942,20 @@ gmgr_saveStreams( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
     strm_destroyp( dataStream );
 
     gr_saveSucceeded( duc, gr, xwe, saveToken );
+}
+
+void
+gmgr_saveConvert( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
+                  XWStreamCtxt* stream )
+{
+    XWStreamCtxt* toSave = dvc_makeStream( duc );
+    strm_putU8( toSave, strm_getVersion(stream) );
+    strm_getFromStream( toSave, stream, strm_getSize(stream) );
+
+    KeyStore ks;
+    mkKeys( gr, &ks, KEY_CONVERT );
+    dvc_storeStream( duc, xwe, ks.keys, toSave );
+    strm_destroy( toSave );
 }
 
 void

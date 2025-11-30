@@ -787,11 +787,14 @@ ctrl_reset( CtrlrCtxt* ctrlr, XWEnv xwe, CommsCtxt* comms )
 } /* ctrl_reset */
 
 void
-ctrl_destroy( CtrlrCtxt* ctrlr )
+ctrl_destroyp( CtrlrCtxt** ctrlrp )
 {
-    cleanupCtrlr( ctrlr );
+    if ( !!*ctrlrp ) {
+        CtrlrCtxt* ctrlr = *ctrlrp;
+        cleanupCtrlr( ctrlr );
 
-    XP_FREE( ctrlr->mpool, ctrlr );
+        XP_FREEP( ctrlr->mpool, ctrlrp );
+    }
 } /* ctrl_destroy */
 
 #ifdef XWFEATURE_SLOW_ROBOT

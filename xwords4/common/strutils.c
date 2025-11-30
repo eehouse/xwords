@@ -834,7 +834,7 @@ formatGR( XP_U32 gameID, DeviceRole role )
     GameRef gr = role;
     gr <<= 32;
     gr |= gameID;
-    XP_LOGFF( "(gameID: %X; role: %d) => " GR_FMT, gameID, role, gr );
+    // XP_LOGFF( "(gameID: %X; role: %d) => " GR_FMT, gameID, role, gr );
     return gr;
 }
 

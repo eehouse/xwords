@@ -207,13 +207,16 @@ board_make( XWEnv XP_UNUSED_DBG(xwe), ModelCtxt* model, CtrlrCtxt* ctrlr,
 } /* board_make */
 
 void
-board_destroy( BoardCtxt* board, XWEnv xwe, XP_Bool ownsUtil )
+board_destroyp( BoardCtxt** boardp, XWEnv xwe, XP_Bool ownsUtil )
 {
-    if ( ownsUtil ) {
-        util_clearTimer( *board->utilp, xwe, TIMER_TIMERTICK );
+    if ( !!*boardp ) {
+        BoardCtxt* board = *boardp;
+        if ( ownsUtil ) {
+            util_clearTimer( *board->utilp, xwe, TIMER_TIMERTICK );
+        }
+        draw_unref( board->draw, xwe );
+        XP_FREEP( board->mpool, boardp );
     }
-    draw_unref( board->draw, xwe );
-    XP_FREE( board->mpool, board );
 } /* board_destroy */
 
 BoardCtxt* 
@@ -433,7 +436,7 @@ board_drawThumb( const BoardCtxt* curBoard, XWEnv xwe, DrawCtx* dctx )
     newBoard->showGrid = curBoard->showGrid;
 
     board_draw( newBoard, xwe );
-    board_destroy( newBoard, xwe, XP_FALSE );
+    board_destroyp( &newBoard, xwe, XP_FALSE );
 }
 
 # if 0
