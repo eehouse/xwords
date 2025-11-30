@@ -124,7 +124,7 @@ stack_make( MPFORMAL XP_U16 nPlayers, XP_Bool inDuplicateMode )
 void
 stack_destroy( StackCtxt* stack )
 {
-    destroyStreamIf( &stack->data );
+    strm_destroyp( &stack->data );
     /* Ok to close with a dirty stack, e.g. if not saving a deleted game */
     // ASSERT_NOT_DIRTY( stack );
     XP_FREE( stack->mpool, stack );

@@ -139,8 +139,6 @@ XP_U32 finishHash( XP_U32 hash );
 
 XP_U16 tilesNBits( const XWStreamCtxt* stream );
 
-void destroyStreamIf( XWStreamCtxt** stream );
-
 const XP_UCHAR* lcToLocale( XP_LangCode lc );
 XP_Bool haveLocaleToLc( const XP_UCHAR* isoCode, XP_LangCode* lc );
 

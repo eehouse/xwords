@@ -910,14 +910,12 @@ gmgr_saveStreams( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
     if ( !!*commsStream ) {
         mkKeys( gr, &ks, KEY_COMMS );
         dvc_storeStream( duc, xwe, ks.keys, *commsStream );
-        strm_destroy( *commsStream );
-        *commsStream = NULL;
+        strm_destroyp( commsStream );
     }
 
     mkKeys( gr, &ks, KEY_DATA );
     dvc_storeStream( duc, xwe, ks.keys, *dataStream );
-    strm_destroy( *dataStream );
-    *dataStream = NULL;
+    strm_destroyp( dataStream );
 
     gr_saveSucceeded( duc, gr, xwe, saveToken );
 }

@@ -725,15 +725,6 @@ tilesNBits( const XWStreamCtxt* stream )
     return result;
 }
 
-void
-destroyStreamIf( XWStreamCtxt** stream )
-{
-    if ( !!*stream ) {
-        strm_destroy( *stream );
-        *stream = NULL;
-    }
-}
-
 /* sMap: Exists as a backup until everybody's running code that knows isoCode
    is in wordlists. */
 static struct {

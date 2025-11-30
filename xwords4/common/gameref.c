@@ -445,7 +445,7 @@ destroyData( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv xwe,
 {
     if ( !!gd ) {
         unloadData( gd, xwe );
-        destroyStreamIf( &gd->thumbData );
+        strm_destroyp(  &gd->thumbData );
 
         unloadComms( gd, xwe );
 
@@ -636,8 +636,7 @@ loadData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, XWStreamCtxt** streamp )
     }
 
  exit:
-    strm_destroy( *streamp );
-    *streamp = NULL;
+    strm_destroyp( streamp );
     return;
 } /* loadData */
 
@@ -1246,8 +1245,7 @@ loadThumbData( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         draw_getThumbData( thumbDraw, xwe, gd->thumbData );
         if ( 0 == strm_getSize(gd->thumbData) ) {
             XP_LOGFF( "got nothing from draw_getThumbData" );
-            strm_destroy( gd->thumbData );
-            gd->thumbData = NULL;
+            strm_destroyp( &gd->thumbData );
         }
         draw_unref( thumbDraw, xwe );
     }
@@ -2726,7 +2724,7 @@ postGameChangeEvents( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd,
 static void
 thumbChanged( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
-    destroyStreamIf( &gd->thumbData );
+    strm_destroyp( &gd->thumbData );
     postGameChangeEvents( duc, xwe, gd, GCE_BOARD_CHANGED );
 }
 
@@ -2734,7 +2732,7 @@ thumbChanged( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 void
 gr_clearThumb( GameData* gd )
 {
-    destroyStreamIf( &gd->thumbData );
+    strm_destroyp( &gd->thumbData );
 }
 
 GroupRef

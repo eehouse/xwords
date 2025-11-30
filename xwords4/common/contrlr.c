@@ -763,8 +763,8 @@ cleanupCtrlr( CtrlrCtxt* ctrlr )
         ctrlr->pool = (PoolContext*)NULL;
     }
 
-    destroyStreamIf( &ctrlr->nv.prevMoveStream );
-    destroyStreamIf( &ctrlr->nv.prevWordsStream );
+    strm_destroyp( &ctrlr->nv.prevMoveStream );
+    strm_destroyp( &ctrlr->nv.prevWordsStream );
 
     XP_FREEP( ctrlr->mpool, &ctrlr->nv.rematch.addrs );
     XP_FREEP( ctrlr->mpool, &ctrlr->nv.rematch.order );
@@ -1928,7 +1928,7 @@ showPrevScore( CtrlrCtxt* ctrlr, XWEnv xwe, XP_S16 prevTurn )
                       ctrlr->nv.prevWordsStream );
     strm_destroy( stream );
 
-    destroyStreamIf( &ctrlr->nv.prevWordsStream );
+    strm_destroyp( &ctrlr->nv.prevWordsStream );
 } /* showPrevScore */
 
 void

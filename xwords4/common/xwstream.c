@@ -396,7 +396,11 @@ void
 strm_getFromStream( XWStreamCtxt* stream, XWStreamCtxt* src,
                     XP_U16 nBytes )
 {
-    (void)strm_gotFromStream( stream, src, nBytes );
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        strm_gotFromStream( stream, src, nBytes );
+    XP_ASSERT(success);
 } /* strm_getFromStream */
 
 XP_Bool
@@ -543,6 +547,15 @@ strm_destroy( XWStreamCtxt* stream )
         XP_FREE( stream->mpool, stream );
     }
 } /* strm_destroy */
+
+void
+strm_destroyp( XWStreamCtxt** streamp )
+{
+    if ( !!*streamp ) {
+        strm_destroy( *streamp );
+        *streamp = NULL;
+    }
+}
 
 XP_Bool
 strm_gotU8( XWStreamCtxt* stream, XP_U8* ptr )

@@ -1197,7 +1197,7 @@ board_commitTurn( BoardCtxt* board, XWEnv xwe,
                 }
             }
 
-            destroyStreamIf( &stream );
+            strm_destroyp( &stream );
 
             if ( result ) {
                 setArrowVisibleFor( board, selPlayer, XP_FALSE );

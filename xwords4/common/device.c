@@ -163,8 +163,7 @@ dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
     XWStreamCtxt* stream = dvc_makeStream( dutil );
     dutil_loadStream( dutil, xwe, key, stream );
     if ( 0 == strm_getSize(stream) ) { /* data found */
-        strm_destroy( stream );
-        stream = NULL;
+        strm_destroyp( &stream );
     }
     return stream;
 }

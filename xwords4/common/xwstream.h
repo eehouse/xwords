@@ -34,6 +34,7 @@ typedef XP_U8 PosWhich;
 XWStreamCtxt* strm_ref( XWStreamCtxt* dctx );
 #endif
 void strm_destroy( XWStreamCtxt* dctx );
+void strm_destroyp( XWStreamCtxt** dctxp );
 
 XP_U8 strm_getU8( XWStreamCtxt* dctx );
 void strm_getBytes( XWStreamCtxt* dctx, void* where, XP_U16 count );
