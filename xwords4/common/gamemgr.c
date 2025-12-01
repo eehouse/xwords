@@ -408,6 +408,8 @@ void
 gmgr_setGroupCollapsed( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                         XP_Bool collapsed )
 {
+    checkDefault( duc, &grp );
+    checkMakeArchive( duc, xwe, &grp );
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
     if ( grps->collapsed != collapsed ) {
         onCollapsedChange( duc, xwe, grps, collapsed );

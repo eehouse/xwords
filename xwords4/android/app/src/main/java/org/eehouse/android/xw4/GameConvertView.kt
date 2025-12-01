@@ -82,7 +82,8 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             mmap[groupName]?.let { groupGames ->
                 // First create the group if necessary
                 val grp =
-                    if (groupGames.groupID == DBUtils.getArchiveGroup(context)) {
+                    if (groupGames.groupID == DBUtils
+                            .getArchiveGroup(context)) {
                         GroupRef.GROUP_ARCHIVE
                     } else {
                         GameMgr.getGroup(groupName)
@@ -90,6 +91,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                     }
 
                 // Now add games
+                grp.setGroupCollapsed(true)
                 for (rowid in groupGames.games) {
                     val newGr = DBUtils.loadGame(context, rowid)?.let {
                         GameMgr.convertGame(it.name, grp, it.bytes)
