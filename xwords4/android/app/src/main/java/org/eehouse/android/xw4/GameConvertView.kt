@@ -24,6 +24,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -48,6 +49,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     private var mGroup: RadioGroup? = null
     private var mGroupName: String? = null
     private var mGroupIndex: Int = -1
+    private var mGroupCount: Int = 0
     private var mAllText: String? = LocUtils.getString(mContext, R.string.loc_filters_all)
 
     override fun onAttachedToWindow() {
@@ -70,12 +72,20 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
     }
 
-    private suspend fun convert(doAll: Boolean, groupName: String? = null) {
+    private suspend fun convert(doAll: Boolean, groupName: String? = null,
+                                pbar: ProgressBar? = null ) {
         Log.d(TAG, "convert($groupName)")
+        val pbar =
+            if (null == pbar) {
+                findViewById<ProgressBar>(R.id.progress).also {
+                    it.setMax(mGroupCount)
+                }
+            } else pbar
+
         val mmap = mMap!!
         if (null == groupName || groupName.equals(mAllText) ) {
             for (key in mmap.keys) {
-                convert(doAll, key)
+                convert(doAll, key, pbar)
                 if (!doAll) break
             }
         } else {
@@ -91,8 +101,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                     }
 
                 // Now add games
+                var nTried = 0
                 grp.setGroupCollapsed(true)
                 for (rowid in groupGames.games) {
+                    pbar.setProgress(++nTried)
                     val newGr = DBUtils.loadGame(context, rowid)?.let {
                         GameMgr.convertGame(it.name, grp, it.bytes)
                     }
@@ -111,9 +123,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
     }
     
-    private fun setClicked(name: String, indx: Int) {
+    private fun setClicked(name: String, indx: Int, count: Int) {
         mGroupName = name
         mGroupIndex = indx
+        mGroupCount = count
         // Log.d(TAG, "radio $indx called (name = $name)")
         updateButtons()
     }
@@ -127,7 +140,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 it.setText(txt)
                 group.addView(it)
                 it.setOnClickListener { view ->
-                    setClicked(groupName, curIndex)
+                    setClicked(groupName, curIndex, count)
                 }
                 if (curIndex == mGroupIndex) {
                     it.performClick()
