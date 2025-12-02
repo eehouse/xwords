@@ -59,6 +59,7 @@ class CurGameInfo(): Serializable {
     @JvmField
     var gameID: Int = 0
     var gameSeconds: Int = 0
+    var created: Int = 0
     @JvmField
     var nPlayers: Int = 0
     var boardSize: Int = 0
@@ -163,6 +164,7 @@ class CurGameInfo(): Serializable {
         allowPickTiles = src.allowPickTiles
         allowHintRect = src.allowHintRect
         forceChannel = src.forceChannel
+        created = src.created
         for ( ii  in 0 until MAX_NUM_PLAYERS ) {
             players[ii] = LocalPlayer(src.players[ii])
         }
@@ -361,6 +363,7 @@ class CurGameInfo(): Serializable {
                         && traySize == other.traySize
                         && bingoMin == other.bingoMin
                         && forceChannel == other.forceChannel
+                        && created == other.created
                         && hintsNotAllowed == other.hintsNotAllowed
                         && inDuplicateMode == other.inDuplicateMode
                         && tradeSub7 == other.tradeSub7

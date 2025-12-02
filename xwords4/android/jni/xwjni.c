@@ -403,6 +403,7 @@ Java_org_eehouse_android_xw4_jni_Device_cleanupJNIState
 static const SetInfo gi_ints[] = {
     ARR_MEMBER( CurGameInfo, nPlayers )
     ,ARR_MEMBER( CurGameInfo, gameSeconds )
+    ,ARR_MEMBER( CurGameInfo, created )
     ,ARR_MEMBER( CurGameInfo, boardSize )
     ,ARR_MEMBER( CurGameInfo, traySize )
     ,ARR_MEMBER( CurGameInfo, bingoMin )
