@@ -2788,7 +2788,7 @@ GroupRef
 gr_getGroup( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe )
 {
     GameData* gd = gmgr_getForRef(duc, xwe, gr, NULL);
-    return gd->grp;
+    return !!gd ? gd->grp : 0;
 }
 
 void

@@ -298,13 +298,17 @@ void
 gmgr_rmFromGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, GroupRef grp )
 {
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
-    if ( !grps->collapsed ) {
-        arr_map( grps->u.games, xwe, removeGR, (void*)gr );
+    if ( !!grps ) {
+        if ( !grps->collapsed ) {
+            arr_map( grps->u.games, xwe, removeGR, (void*)gr );
+        } else {
+            --grps->u.nGames;
+        }
+        postOnGroupChanged( duc, xwe, grp, GRCE_GAME_REMOVED );
+        storeGroup( duc, xwe, grps );
     } else {
-        --grps->u.nGames;
+        XP_LOGFF( "group %d not found", grp );
     }
-    postOnGroupChanged( duc, xwe, grp, GRCE_GAME_REMOVED );
-    storeGroup( duc, xwe, grps );
 }
 
 void
@@ -375,7 +379,8 @@ gmgr_getGroupName( XW_DUtilCtxt* duc, XWEnv xwe,
                    GroupRef grp, XP_UCHAR buf[], XP_U16 bufLen )
 {
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
-    XP_SNPRINTF( buf, bufLen, "%s", grps->name );
+    const XP_UCHAR* name = !!grps ? grps->name : "";
+    XP_SNPRINTF( buf, bufLen, "%s", name );
 }
 
 void
@@ -475,7 +480,7 @@ XP_U32
 gmgr_getGroupGamesCount( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
 {
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
-    XP_U32 result = numGames(grps);
+    XP_U32 result = !!grps ? numGames(grps) : 0;
     return result;
 }
 
@@ -503,15 +508,21 @@ findByGRP( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 static GroupState*
 findGroupByRef( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, XP_U32* indxp )
 {
-    XP_ASSERT( 0 < grp );
-    GameMgrState* gs = duc->gameMgrState;
-    FindGrpState fgs = { .grp = grp, };
-    arr_map( gs->groups, xwe, findByGRP, &fgs );
-    if ( !!indxp ) {
-        *indxp = fgs.indx;
+    GroupState* result = NULL;
+    if ( 0 < grp ) {
+        GameMgrState* gs = duc->gameMgrState;
+        FindGrpState fgs = { .grp = grp, };
+        arr_map( gs->groups, xwe, findByGRP, &fgs );
+        if ( !!indxp ) {
+            *indxp = fgs.indx;
+        }
+        if ( !fgs.result ) {
+            XP_LOGFF( "nothing for group %d", grp );
+        }
+        // XP_ASSERT( !!fgs.result );
+        result = fgs.result;
     }
-    // XP_ASSERT( !!fgs.result );
-    return fgs.result;
+    return result;
 }
 
 /* static GroupState* */
@@ -726,30 +737,33 @@ void
 gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, const GameRef gr )
 {
     XP_LOGFF( "(" GR_FMT ")", gr );
-    // First, create the keys since that requires live gr
-    const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP,
-                              KEY_SUM, KEY_LOADING, KEY_CONVERT, };
-    KeyStore ks[VSIZE(midKeys)];
-    for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
-        mkKeys( gr, &ks[ii], midKeys[ii] );
-    }
-
-    GameRef grp = gr_getGroup( duc, gr, xwe );
-    gmgr_rmFromGroup( duc, xwe, gr, grp );
-
     GameEntry* ge = findFor( duc, xwe, gr, XP_FALSE, NULL );
-    XP_ASSERT( !!ge );
+    if ( !!ge ) {
+        // First, create the keys since that requires live gr
+        const char* midKeys[] = { KEY_COMMS, KEY_DATA, KEY_GI, KEY_GRP,
+                                  KEY_SUM, KEY_LOADING, KEY_CONVERT, };
+        KeyStore ks[VSIZE(midKeys)];
+        for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
+            mkKeys( gr, &ks[ii], midKeys[ii] );
+        }
 
-    GameMgrState* gs = duc->gameMgrState;
-    arr_remove( gs->list, xwe, ge );
-    arr_insert( gs->deletedList, xwe, ge );
+        GameRef grp = gr_getGroup( duc, gr, xwe );
+        gmgr_rmFromGroup( duc, xwe, gr, grp );
 
-    // Finally clear the data
-    for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
-        dvc_removeStored( duc, xwe, ks[ii].keys );
+        GameEntry* ge = findFor( duc, xwe, gr, XP_FALSE, NULL );
+
+        XP_ASSERT( !!ge );          /* here */
+
+        GameMgrState* gs = duc->gameMgrState;
+        arr_remove( gs->list, xwe, ge );
+        arr_insert( gs->deletedList, xwe, ge );
+
+        // Finally clear the data
+        for ( int ii = 0; ii < VSIZE(midKeys); ++ii ) {
+            dvc_removeStored( duc, xwe, ks[ii].keys );
+        }
+        postOnGroupChanged( duc, xwe, grp, GRCE_GAME_REMOVED );
     }
-
-    postOnGroupChanged( duc, xwe, grp, GRCE_GAME_REMOVED );
     XP_LOGFF( "(" GR_FMT ") DONE", gr );
 }
 
@@ -1756,6 +1770,7 @@ scheduleSaveState( XW_DUtilCtxt* duc, XWEnv xwe )
 static XP_U32
 numGames( const GroupState* grps )
 {
+    XP_ASSERT( grps );
     XP_U32 result = grps->collapsed ? grps->u.nGames : arr_length(grps->u.games);
     return result;
 }
