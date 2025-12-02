@@ -32,7 +32,7 @@
 
   <string name="games_menu_fromclip">games_menu_fromclip</string>
   <string name="no_clipboard">no_clipboard</string>
-  <string name="summary_no_dicts">summary_no_dicts</string>
+  <string name="summary_no_dicts">Wordlist missing</string>
 
   <string name="button_copyAddr">Copy address</string>
 
