@@ -7,6 +7,12 @@
     <item android:id="@+id/games_group_movedown"
           android:title="@string/list_group_movedown"
           />
+    <item android:id="@+id/games_group_selall"
+          android:title="@string/list_group_selall"
+          />
+    <item android:id="@+id/games_group_unselall"
+          android:title="@string/list_group_unselall"
+          />
     <item android:id="@+id/games_group_default"
           android:title="@string/list_group_default"
           />

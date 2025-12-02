@@ -51,4 +51,7 @@
 
   <string name="convert_button_fmt">%1$s (%2$d games)</string>
 
+  <string name="list_group_selall">Select all</string>
+  <string name="list_group_unselall">De-select all</string>
+
 </resources>

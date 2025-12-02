@@ -2155,6 +2155,8 @@ class GamesListDelegate(delegator: Delegator) :
                 }
                 R.id.games_group_moveup -> GameMgr.raiseGroup(groupID)
                 R.id.games_group_movedown -> GameMgr.lowerGroup(groupID)
+                R.id.games_group_selall, R.id.games_group_unselall ->
+                    Utils.notImpl(mActivity)
                 else -> handled = false
             }
         }
