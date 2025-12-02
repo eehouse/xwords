@@ -946,6 +946,11 @@ class GamesListDelegate(delegator: Delegator) :
         }
 
         updateGamesView()
+        launch {
+            if (GameConvertView.haveToConvert(mActivity)) {
+                showDialogFragment(DlgID.CONVERT_GAMES)
+            }
+        }
     } // init
 
     private fun updateGamesView() {
@@ -1578,6 +1583,14 @@ class GamesListDelegate(delegator: Delegator) :
 
                 var enable = showDbg && nothingSelected
                 Utils.setItemVisible(menu, R.id.games_menu_checkupdates, enable)
+
+                launch {
+                    val enable =
+                        0 == nGamesSelected
+                        && 0 == nGroupsSelected
+                        && GameConvertView.haveToConvert(mActivity)
+                    Utils.setItemVisible(menu, R.id.games_menu_convert, enable)
+                }
 
                 // FIX ME. Every time the os thinks about putting up a menu
                 // four or more strings get loaded from resources, just so we

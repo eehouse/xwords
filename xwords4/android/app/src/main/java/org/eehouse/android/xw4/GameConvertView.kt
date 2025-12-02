@@ -42,22 +42,24 @@ private val TAG: String = GameConvertView::class.java.simpleName
 
 class GameConvertView(val mContext: Context, attrs: AttributeSet)
     : LinearLayout( mContext, attrs ), View.OnClickListener,
-    RadioGroup.OnCheckedChangeListener
+      RadioGroup.OnCheckedChangeListener
 {
-    private data class GroupGames(val groupID: Long, val games: ArrayList<Long>)
-    private var mMap: Map<String, GroupGames>? = null
+    private data class GroupGames(val groupID: Long, val games: ArrayList<Long>):
+        Serializable
     private var mGroup: RadioGroup? = null
     private var mGroupName: String? = null
     private var mGroupIndex: Int = -1
     private var mGroupCount: Int = 0
     private var mAllText: String? = LocUtils.getString(mContext, R.string.loc_filters_all)
+    private var mDialog: Dialog? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         findViewById<Button>(R.id.convert_one).setOnClickListener(this)
         findViewById<Button>(R.id.convert_all).setOnClickListener(this)
-        mGroup = findViewById<RadioGroup>(R.id.groups_group)
-        mGroup!!.setOnCheckedChangeListener(this@GameConvertView)
+        mGroup = findViewById<RadioGroup>(R.id.groups_group).also {
+            it.setOnCheckedChangeListener(this@GameConvertView)
+        }
         updateExpl()
     }
 
@@ -65,12 +67,16 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         view?.let { view ->
             launch {
                 when (view.id) {
-                    R.id.convert_all -> convert(true, mGroupName)
-                    R.id.convert_one -> convert(false, mGroupName)
+                    R.id.convert_all, R.id.convert_one -> {
+                        convert(R.id.convert_all == view.id, mGroupName)
+                        invalData()
+                    }
                 }
             }
         }
     }
+
+    private fun setDialog(dialog: Dialog) { mDialog = dialog }
 
     private suspend fun convert(doAll: Boolean, groupName: String? = null,
                                 pbar: ProgressBar? = null ) {
@@ -82,7 +88,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 }
             } else pbar
 
-        val mmap = mMap!!
+        val mmap = loadState(context)
         if (null == groupName || groupName.equals(mAllText) ) {
             for (key in mmap.keys) {
                 convert(doAll, key, pbar)
@@ -101,7 +107,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                     }
 
                 // Now add games
-                var nTried = 0
+                var nTried = pbar.getProgress()
                 grp.setGroupCollapsed(true)
                 for (rowid in groupGames.games) {
                     pbar.setProgress(++nTried)
@@ -152,16 +158,19 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     private fun updateExpl() {
         mGroup?.let { group ->
             launch {
-                mMap = updateState()
-                val mmap = mMap!!
+                val mmap = loadState(mContext)
                 val numGames = mmap.values.sumOf{it.games.size}
-                val txt = LocUtils.getString(context, R.string.game_convert_expl, numGames )
-                findViewById<TextView>(R.id.convert_expl).text = txt
+                if ( 0 == numGames ) {
+                    mDialog?.dismiss()
+                } else {
+                    findViewById<TextView>(R.id.convert_expl).text =
+                        LocUtils.getString(context, R.string.game_convert_expl, numGames)
 
-                group.removeAllViews()
-                addButton(mAllText!!, numGames)
-                mmap.map { (name, groupGames) ->
-                    addButton(name, groupGames.games.size)
+                    group.removeAllViews()
+                    addButton(mAllText!!, numGames)
+                    mmap.map { (name, groupGames) ->
+                        addButton(name, groupGames.games.size)
+                    }
                 }
             }
         }
@@ -170,41 +179,63 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     // PENDING: should cache this state and modify the map as the conversion
     // progresses. We'll see if my 500-game archive requires something more
     // effecient.
-    private suspend fun updateState(): Map<String, GroupGames> {
-        val result = HashMap<String, GroupGames>()
-        DBUtils.getGroups(context).map { (groupID, info) ->
-            info?.let { info ->
-                val groupName = info.m_name
-                val needsConvert = ArrayList<Long>()
-                DBUtils.getGroupGames(context, groupID).map { rowid ->
-                    DBUtils.loadGame(context, rowid)?.let { gv ->
-                        val gr = GameMgr.figureGR(gv.bytes)
-                        val exists = GameMgr.gameExists(gr)
-                        if (!exists) {
-                            needsConvert.add(rowid)
-                        }
-                    }
-                }
-                if ( 0 < needsConvert.size ) {
-                    result[groupName] = GroupGames(groupID, needsConvert)
-                    Log.d(TAG, "added ${needsConvert.size} games for group $groupName")
-                }
-            }
-        }
-        return result
-    }
-
     override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
         Log.d(TAG, "onCheckedChanged()")
     }
 
     companion object {
+        private val DATA_KEY = TAG + "_DATA"
+        suspend fun haveToConvert(context: Context): Boolean {
+            val state = loadState(context)
+            val numGames = state.values.sumOf{it.games.size}
+            return 0 < numGames
+        }
+
         fun makeDialog(context: Context): Dialog? {
             val view = LocUtils.inflate(context, R.layout.game_convert_view)
-            return LocUtils.makeAlertBuilder(context)
+                as GameConvertView
+            val dialog = LocUtils.makeAlertBuilder(context)
                 .setView(view)
                 .setPositiveButton(R.string.button_done, null)
                 .create()
+            view.setDialog(dialog)
+            return dialog
         }
+
+        private var sData: HashMap<String, GroupGames>? = null
+        private suspend fun loadState(context: Context): HashMap<String, GroupGames> {
+            if (null == sData) {
+                sData =
+                    DBUtils.getSerializableFor(context, DATA_KEY)?.let {
+                        it as HashMap<String, GroupGames>
+                    } ?: run {
+                        val result = HashMap<String, GroupGames>()
+                        DBUtils.getGroups(context).map { (groupID, info) ->
+                            info?.let { info ->
+                                val groupName = info.m_name
+                                val needsConvert = ArrayList<Long>()
+                                DBUtils.getGroupGames(context, groupID).map { rowid ->
+                                    DBUtils.loadGame(context, rowid)?.let { gv ->
+                                        val gr = GameMgr.figureGR(gv.bytes)
+                                        val exists = GameMgr.gameExists(gr)
+                                        if (!exists) {
+                                            needsConvert.add(rowid)
+                                        }
+                                    }
+                                }
+                                if ( 0 < needsConvert.size ) {
+                                    result[groupName] = GroupGames(groupID, needsConvert)
+                                    Log.d(TAG, "added ${needsConvert.size} games for group " +
+                                                   "$groupName")
+                                }
+                            }
+                        }
+                        result
+                    }
+            }
+            return sData!!
+        }
+
+        private fun invalData() { sData = null }
     }
 }
