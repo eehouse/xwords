@@ -85,6 +85,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             if (null == pbar) {
                 findViewById<ProgressBar>(R.id.progress).also {
                     it.setMax(mGroupCount)
+                    it.setProgress(0)
                 }
             } else pbar
 
