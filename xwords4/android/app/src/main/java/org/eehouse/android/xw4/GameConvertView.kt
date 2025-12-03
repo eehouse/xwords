@@ -138,7 +138,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         updateButtons()
     }
 
-    private fun addButton(groupName: String, count: Int) {
+    private fun addButton(groupName: String, count: Int, click: Boolean = false) {
         mGroup!!.let { group ->
             val radio = RadioButton(context).also {
                 val curIndex = group.childCount
@@ -149,7 +149,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 it.setOnClickListener { view ->
                     setClicked(groupName, curIndex, count)
                 }
-                if (curIndex == mGroupIndex) {
+                if (click || curIndex == mGroupIndex) {
                     it.performClick()
                 }
             }
@@ -168,7 +168,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                         LocUtils.getString(context, R.string.game_convert_expl, numGames)
 
                     group.removeAllViews()
-                    addButton(mAllText!!, numGames)
+                    addButton(mAllText!!, numGames, true)
                     mmap.map { (name, groupGames) ->
                         addButton(name, groupGames.games.size)
                     }
