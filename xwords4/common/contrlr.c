@@ -2252,9 +2252,8 @@ sortTilesIf( CtrlrCtxt* ctrlr, XP_S16 turn )
     }
 }
 
-/* Called in response to message from ctrlr listing all the names of
- * players in the game (in ctrlr-assigned order) and their initial
- * tray contents.
+/* Called in response to message from ctrlr. Lists all the names of players in
+ * the game (in ctrlr-assigned order) and their initial tray contents.
  */
 static XP_Bool
 client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
@@ -2266,9 +2265,10 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
     /* We should never get this message a second time, but very rarely we do.
        Drop it in that case. */
     if ( accepted ) {
-        ModelCtxt* model = ctrlr->vol.model;
-        CommsCtxt* comms = ctrlr->vol.comms;
-        const CurGameInfo* gi = ctrlr->vol.gi;
+        CtrlrVolatiles* vol = &ctrlr->vol;
+        ModelCtxt* model = vol->model;
+        CommsCtxt* comms = vol->comms;
+        const CurGameInfo* gi = vol->gi;
         PoolContext* pool;
 #ifdef STREAM_VERS_BIGBOARD
         XP_UCHAR rmtDictName[128];
@@ -2280,13 +2280,17 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
         SRVR_LOGFF( "set streamVersion to 0x%X", streamVersion );
         strm_setVersion( stream, streamVersion );
         if ( STREAM_VERS_NINETILES > streamVersion ) {
-            model_forceStack7Tiles( ctrlr->vol.model );
+            model_forceStack7Tiles( vol->model );
         }
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         XP_U32 gameID = streamVersion < STREAM_VERS_REMATCHORDER
             ? strm_getU32( stream ) : 0;
         CurGameInfo myNewGI = gi_readFromStream2( stream );
+        if ( STREAM_VERS_BIGGERGI > streamVersion ) {
+            gi_augmentGI( &myNewGI, gr_getGI( vol->dutil, vol->gr, xwe ),
+                          streamVersion );
+        }
         XP_ASSERT( gameID == 0 || gameID == myNewGI.gameID );
         gameID = myNewGI.gameID;
         myNewGI.deviceRole = ROLE_ISGUEST;
@@ -2304,7 +2308,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 
         if ( streamVersion < STREAM_VERS_NOEMPTYDICT ) {
             SRVR_LOGFF( "loading and dropping empty dict" );
-            DictionaryCtxt* empty = dutil_makeEmptyDict( ctrlr->vol.dutil, xwe );
+            DictionaryCtxt* empty = dutil_makeEmptyDict( vol->dutil, xwe );
             dict_loadFromStream( empty, xwe, stream );
             dict_unref( empty, xwe );
         }
@@ -2339,7 +2343,7 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 #ifdef STREAM_VERS_BIGBOARD
             if ( '\0' != rmtDictName[0] ) {
                 const XP_UCHAR* ourName = dict_getShortName( curDict );
-                util_informNetDict( *ctrlr->vol.utilp, xwe,
+                util_informNetDict( *vol->utilp, xwe,
                                     dict_getISOCode( curDict ),
                                     ourName, rmtDictName,
                                     rmtDictSum, myNewGI.phoniesAction );

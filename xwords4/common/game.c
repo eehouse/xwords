@@ -1087,6 +1087,22 @@ gi_isValid(const CurGameInfo* gi)
     return result;
 }
 
+void
+gi_augmentGI( CurGameInfo* newGI, const CurGameInfo* curGI,
+              XP_U8 strVersion ) /* the version that produced newGI */
+{
+    XP_LOGFF( "look here (streamVersion=0x%x", strVersion );
+    /* LOG_GI( newGI, "new" ); */
+    /* LOG_GI( curGI, "cur" ); */
+    XP_ASSERT( newGI->nPlayers == curGI->nPlayers );
+    if ( strVersion < STREAM_VERS_BIGGERGI ) {
+        XP_ASSERT( !newGI->conTypes );
+        newGI->conTypes = curGI->conTypes;
+        XP_ASSERT( !newGI->created );
+        newGI->created = curGI->created;
+    }
+}
+
 #ifdef DEBUG
 void
 game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
