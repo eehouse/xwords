@@ -84,6 +84,12 @@ gidFromObject( const cJSON* obj )
     return castGid( tmp );
 }
 
+static XP_Bool
+convertFromArgs( CmdWrapper* wr, cJSON* XP_UNUSED(args) )
+{
+    /* Should be pulling boolean out of args.... */
+    return (*wr->procs.convert)( wr->closure, XP_TRUE );
+}
 
 /* Invite can be via a known player or via */
 static XP_Bool
@@ -502,6 +508,8 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
                 if ( success ) {
                     addGIDToObject( &response, newGameID, "newGid" );
                 }
+            } else if ( 0 == strcmp( cmdStr, "convert" ) ) {
+                success = convertFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "invite" ) ) {
                 success = inviteFromArgs( wr, args );
             } else if ( 0 == strcmp( cmdStr, "inviteRcvd" ) ) {

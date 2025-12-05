@@ -244,6 +244,7 @@ class Device():
         self.args = args
         self.app = None
         self.endTime = None
+        self.needsConvert = False
         self.mqttDevID = None
         self.smsNumber = args.WITH_SMS and '{}_phone'.format(hostName) or None
         self.hostName = hostName
@@ -272,7 +273,7 @@ class Device():
             if pct < self.args.UPGRADE_PCT:
                 self._log('upgrading app')
                 self.app = self.args.APP_NEW
-
+                self.needsConvert = True
         return self.app
 
     def stats(self): return self._stats
@@ -451,6 +452,8 @@ class Device():
                 self.launchIfNot()
             elif datetime.datetime.now() > self.endTime:
                 self.rematchOrQuit()
+            elif self.needsConvert and self.sendConvert():
+                pass
             elif self.sendChat():
                 pass
             elif self.postUndo():
@@ -661,6 +664,12 @@ class Device():
                 self.watcher.join()
                 self.watcher = None
                 assert not self.endTime
+
+    def sendConvert(self):
+        response = self._sendWaitReply('convert', all=True)
+        success = response.get('success')
+        if success: self.needsConvert = False
+        return success
 
     def quit(self):
         if self.endTime:
@@ -949,7 +958,7 @@ def mkParser():
                         help = 'the app we\'ll upgrade from')
     parser.add_argument('--old-start-pct', dest = 'OLD_START_PCT', default = 90, type = int,
                         help = 'odds of starting with the old app, 0 <= n < 100')
-    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 0, type = int,
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 5, type = int,
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--solo-pct', dest = 'SOLO_PCT', default = 20, type = int,

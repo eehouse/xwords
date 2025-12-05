@@ -190,6 +190,58 @@ getAndClear( GameChangeEvent evt, GameChangeEvents* gces )
     return isSet;
 }
 
+static GroupRef
+groupForRole(XW_DUtilCtxt* dutil, DeviceRole role)
+{
+    const char* name;
+    switch ( role ) {
+    case ROLE_STANDALONE:
+        name = "Solo";
+        break;
+    case ROLE_ISHOST:
+        name = "Host";
+        break;
+    case ROLE_ISGUEST:
+        name = "Guest";
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+    GroupRef grp = gmgr_getGroup( dutil, NULL_XWE, name );
+    if ( !grp ) {
+        grp = gmgr_addGroup( dutil, NULL_XWE, name );
+    }
+    return grp;
+}
+
+void
+checkConvertGames( LaunchParams* params, XP_Bool doAll )
+{
+    XW_DUtilCtxt* dutil = params->dutil;
+
+    bool done = false;
+    GSList* games = gdb_listGames( params->pDb );
+    for ( GSList* iter = games; !!iter && !done; iter = iter->next ) {
+        sqlite3_int64 rowid = *(sqlite3_int64*)iter->data;
+
+        XWStreamCtxt* stream = dvc_makeStream( params->dutil );
+        DeviceRole role;
+        GameRef gr = 0;
+        if ( gdb_loadGame( stream, params->pDb, &role, rowid ) ) {
+            GroupRef grp = groupForRole(dutil, role);
+            XP_UCHAR* name = g_strdup_printf("Game %lld", rowid );
+
+            gr = gmgr_convertGame( dutil, NULL_XWE, grp, name, stream );
+        }
+        strm_destroy( stream );
+        /* exit after first success */
+        if ( !doAll && !!gr ) {
+            break;
+        }
+    }
+    gdb_freeGamesList( games );
+}
+
 CommonGlobals*
 globalsForUtil( const XW_UtilCtxt* uc, XP_Bool allocMissing )
 {

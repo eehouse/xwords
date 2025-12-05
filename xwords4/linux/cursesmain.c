@@ -1619,6 +1619,15 @@ resignWrapper( void* closure, XP_U32 gameID )
     return cb_resign( aGlobals->cbState, gameID );
 }
 
+static XP_Bool
+convertWrapper( void* closure, XP_Bool doAll )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    LaunchParams* params = aGlobals->cag.params;
+    checkConvertGames( params, doAll );
+    return XP_TRUE;
+}
+
 static cJSON*
 getKPsWrapper( void* closure )
 {
@@ -1690,6 +1699,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
             .sendChat = sendChatWrapper,
             .undoMove = undoMoveWrapper,
             .resign = resignWrapper,
+            .convert = convertWrapper,
             .getKPs = getKPsWrapper,
         },
     };

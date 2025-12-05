@@ -123,4 +123,5 @@ void assertMainThread(const CommonGlobals* cGlobals );
 
 XP_Bool getAndClear( GameChangeEvent evt, GameChangeEvents* gces );
 
+void checkConvertGames( LaunchParams* params, XP_Bool doAll );
 #endif

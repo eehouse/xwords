@@ -587,8 +587,10 @@ cb_addInvites( CursesBoardState* cbState, XP_U32 gameID, XP_U16 nRemotes,
                const CommsAddrRec destAddrs[] )
 {
     CursesBoardGlobals* bGlobals = findOrOpenForGameID( cbState, gameID );
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    linux_addInvites( cGlobals, nRemotes, destAddrs );
+    if ( !!bGlobals ) {
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        linux_addInvites( cGlobals, nRemotes, destAddrs );
+    }
 }
 
 XP_Bool
