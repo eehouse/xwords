@@ -604,7 +604,6 @@ typedef enum {
     ,CMD_SKIP_GAMEOVER
     ,CMD_NO_SHOW_OTHERSCORES
     ,CMD_SKIP_MQTT
-    ,CMD_SKIP_BT
     ,CMD_HOSTIP
     ,CMD_HOSTPORT
     ,CMD_MYPORT
@@ -719,6 +718,7 @@ typedef enum {
     ,CMD_PHONIES
     ,CMD_BONUSFILE
 #ifdef XWFEATURE_BLUETOOTH
+    ,CMD_SKIP_BT
     ,CMD_BTADDR
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
@@ -760,7 +760,6 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_NO_SHOW_OTHERSCORES, false, "no-show-other", "Don't show robot/remote scores" }
     ,{ CMD_SKIP_MQTT, false, "skip-mqtt-add", "Do not add MQTT to games as they connect" }
-    ,{ CMD_SKIP_BT, false, "disable-bt", "Don't support or offer bluetooth" }
     ,{ CMD_HOSTIP, true, "host-ip", "remote host ip address (for direct connect)" }
     ,{ CMD_HOSTPORT, true, "host-port", "remote host ip address (for direct connect)" }
     ,{ CMD_MYPORT, true, "my-port", "remote host ip address (for direct connect)" }
@@ -887,7 +886,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_BONUSFILE, true, "bonus-file",
        "provides bonus info: . + * ^ and ! are legal" }
 #ifdef XWFEATURE_BLUETOOTH
-    ,{ CMD_BTADDR, true, "btaddr", "bluetooth address of host" }
+    ,{ CMD_SKIP_BT, false, "disable-bt", "Don't support or offer bluetooth" }
+    ,{ CMD_BTADDR, true, "host-bt-addr", "Mac addr to use for host" }
 #endif
 #ifdef XWFEATURE_SLOW_ROBOT
     ,{ CMD_SLOWROBOT, true, "slow-robot", "make robot slower to test network" }
@@ -2711,9 +2711,6 @@ main( int argc, char** argv )
         case CMD_NO_SHOW_OTHERSCORES:
             mainParams.showRobotScores = XP_FALSE;
             break;
-        case CMD_SKIP_BT:
-            mainParams.disableBT = XP_TRUE;
-            break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:
             mainParams.connInfo.relay.invite = optarg;
@@ -3035,6 +3032,9 @@ main( int argc, char** argv )
             mainParams.pgi.inDuplicateMode = XP_TRUE;
             break;
 #ifdef XWFEATURE_BLUETOOTH
+        case CMD_SKIP_BT:
+            mainParams.disableBT = XP_TRUE;
+            break;
         case CMD_BTADDR:
             types_addType( &mainParams.conTypes, COMMS_CONN_BT );
             mainParams.connInfo.bt.btaddr = optarg;

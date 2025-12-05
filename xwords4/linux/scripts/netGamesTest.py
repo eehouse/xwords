@@ -728,6 +728,8 @@ class Device():
 
         if self.args.WITH_SMS:
             scriptArgs += [ '--sms-number', self.smsNumber ]
+        if not self.args.WITH_BT:
+            scriptArgs += [ '--disable-bt' ]
 
         scriptArgs += ['--board-size', '15', '--sort-tiles']
 
@@ -1040,6 +1042,8 @@ def mkParser():
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default=False, action='store_false')
     # parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
+    parser.add_argument('--with-bt', dest = 'WITH_BT', default = True, action = 'store_true')
+    parser.add_argument('--without-bt', dest = 'WITH_BT', action = 'store_false')
     parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', default = True, action = 'store_true')
     parser.add_argument('--without-mqtt', dest = 'WITH_MQTT', action = 'store_false')
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
