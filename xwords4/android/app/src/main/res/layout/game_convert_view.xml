@@ -43,6 +43,11 @@
             /-->
   </LinearLayout>
 
+  <CheckBox android:id="@+id/menuonly_check"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/convert_menuonly_expl"
+            />
 
 </org.eehouse.android.xw4.GameConvertView>
 

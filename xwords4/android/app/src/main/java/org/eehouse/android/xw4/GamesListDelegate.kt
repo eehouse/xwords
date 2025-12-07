@@ -947,7 +947,7 @@ class GamesListDelegate(delegator: Delegator) :
 
         updateGamesView()
         launch {
-            if (GameConvertView.haveToConvert(mActivity)) {
+            if (GameConvertView.haveToConvert(mActivity, true)) {
                 showDialogFragment(DlgID.CONVERT_GAMES)
             }
         }

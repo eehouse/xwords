@@ -23,6 +23,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RadioButton
@@ -42,7 +44,7 @@ private val TAG: String = GameConvertView::class.java.simpleName
 
 class GameConvertView(val mContext: Context, attrs: AttributeSet)
     : LinearLayout( mContext, attrs ), View.OnClickListener,
-      RadioGroup.OnCheckedChangeListener
+      RadioGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener
 {
     private data class GroupGames(val groupID: Long, val games: ArrayList<Long>):
         Serializable
@@ -60,9 +62,14 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         mGroup = findViewById<RadioGroup>(R.id.groups_group).also {
             it.setOnCheckedChangeListener(this@GameConvertView)
         }
+        findViewById<CheckBox>(R.id.menuonly_check).also {
+            it.setChecked(skipSet(context))
+            it.setOnCheckedChangeListener(this@GameConvertView)
+        }
         updateExpl()
     }
 
+    // RadioGroup.OnCheckedChangeListener
     override fun onClick(view: View?) {
         view?.let { view ->
             launch {
@@ -74,6 +81,12 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 }
             }
         }
+    }
+
+    // CompoundButton.OnCheckedChangeListener
+    override fun onCheckedChanged(view: CompoundButton, isChecked: Boolean) {
+        Assert.assertTrue(view.id == R.id.menuonly_check)
+        DBUtils.setBoolFor(context, SKIP_ON_LAUNCH, isChecked)
     }
 
     private fun setDialog(dialog: Dialog) { mDialog = dialog }
@@ -193,10 +206,20 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     companion object {
         private val DATA_KEY = TAG + "_DATA"
-        suspend fun haveToConvert(context: Context): Boolean {
-            val state = loadState(context)
-            val numGames = state.values.sumOf{it.games.size}
-            return 0 < numGames
+        private val SKIP_ON_LAUNCH = TAG + "_SKIP"
+        suspend fun haveToConvert(context: Context, isLaunch: Boolean = false): Boolean {
+            val result =
+                if (isLaunch && skipSet(context)) false
+                else {
+                    val state = loadState(context)
+                    val numGames = state.values.sumOf{it.games.size}
+                    0 < numGames
+                }
+            return result
+        }
+
+        private fun skipSet(context: Context): Boolean {
+            return DBUtils.getBoolFor(context, SKIP_ON_LAUNCH, false)
         }
 
         fun makeDialog(context: Context): Dialog? {

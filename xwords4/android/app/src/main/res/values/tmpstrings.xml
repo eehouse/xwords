@@ -54,4 +54,6 @@
   <string name="list_group_selall">Select all</string>
   <string name="list_group_unselall">De-select all</string>
 
+  <string name="convert_menuonly_expl">Skip showing on startup</string>
+
 </resources>
