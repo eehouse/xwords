@@ -885,19 +885,18 @@ object DBUtils {
         updateRow(context, TABLE_NAMES.SUM, rowid, values)
     }
 
-    private fun convertChatString(
-        context: Context, rowid: Long,
-        playersLocal: BooleanArray
-    ): java.util.ArrayList<HistoryPair> {
-        var result = ArrayList<HistoryPair>()
-        val oldHistory = getChatHistoryStr(context, rowid)
-        if (null != oldHistory) {
+    private fun convertChatString(context: Context, rowid: Long,
+                                  playersLocal: BooleanArray):
+        java.util.ArrayList<HistoryPair>
+    {
+        val result = ArrayList<HistoryPair>()
+        getChatHistoryStr(context, rowid)?.let { oldHistory ->
             Log.d(TAG, "convertChatString(): got string: %s", oldHistory)
-            val valuess = ArrayList<ContentValues>()
-            //val pairs = ArrayList<HistoryPair?>()
+            // val valuess = ArrayList<ContentValues>()
             val localPrefix = LocUtils.getString(context, R.string.chat_local_id)
             val rmtPrefix = LocUtils.getString(context, R.string.chat_other_id)
-            Log.d(TAG, "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix)
+            Log.d(TAG, "convertChatString(): prefixes: \"%s\" and \"%s\"",
+                  localPrefix, rmtPrefix)
             val msgs = oldHistory.split("\n".toRegex()).dropLastWhile { it.isEmpty() }
                 .toTypedArray()
             Log.d(TAG, "convertChatString(): split into %d", msgs.size)
@@ -929,14 +928,10 @@ object DBUtils {
                     Log.d(TAG, "convertChatString(): removing substring %s; was: %s", prefix, msg)
                     val msg2 = msg.substring(prefix!!.length, msg.length)
                     Log.d(TAG, "convertChatString(): removED substring; now %s", msg2)
-                    valuess.add(cvForChat(rowid, msg2, indx, 0))
-                    val pair = HistoryPair(msg2, indx, 0)
+                    val pair = HistoryPair(msg2, indx)
                     result.add(pair)
                 }
             }
-            // result = pairs.toTypedArray<HistoryPair?>()
-            appendChatHistory(context, valuess)
-            // clearChatHistoryString( context, rowid );
         }
         return result
     }
@@ -945,7 +940,7 @@ object DBUtils {
         context: Context, rowid: Long,
         playersLocal: BooleanArray
     ): ArrayList<HistoryPair> {
-        var result = java.util.ArrayList<HistoryPair>()
+        val pairs = java.util.ArrayList<HistoryPair>()
         val columns = arrayOf(DBHelper.SENDER, DBHelper.MESSAGE, DBHelper.CHATTIME)
         val selection = String.format("%s=%d", DBHelper.ROW, rowid)
         initDB(context)
@@ -960,14 +955,14 @@ object DBUtils {
                     val plyr = cursor.getInt(plyrIndex)
                     val ts = cursor.getInt(tsIndex)
                     val pair = HistoryPair(msg, plyr, ts)
-                    result.add(pair)
+                    pairs.add(pair)
                 }
             }
             cursor.close()
         }
-        if (result.isEmpty()) {
-            result = convertChatString(context, rowid, playersLocal)
-        }
+        val result =
+            if (pairs.isEmpty()) convertChatString(context, rowid, playersLocal!!)
+            else pairs
         return result
     }
 
@@ -1457,43 +1452,6 @@ object DBUtils {
         }
         return result
     }
-
-    private fun appendChatHistory(
-        context: Context,
-        valuess: ArrayList<ContentValues>
-    ) {
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            for (values in valuess) {
-                insert(TABLE_NAMES.CHAT, values)
-            }
-        }
-    }
-
-    private fun cvForChat(rowid: Long, msg: String, plyr: Int, tsSeconds: Long): ContentValues {
-        val values = ContentValues()
-			.putAnd(DBHelper.ROW, rowid)
-			.putAnd(DBHelper.MESSAGE, msg)
-			.putAnd(DBHelper.SENDER, plyr)
-			.putAnd(DBHelper.CHATTIME, tsSeconds)
-        return values
-    }
-
-    fun appendChatHistory(
-        context: Context, rowid: Long,
-        msg: String, fromPlayer: Int,
-        tsSeconds: Long
-    ) {
-        Assert.assertNotNull(msg)
-        Assert.assertFalse(-1 == fromPlayer)
-        val valuess = ArrayList<ContentValues>()
-        valuess.add(cvForChat(rowid, msg, fromPlayer, tsSeconds))
-        appendChatHistory(context, valuess)
-        Log.i(
-            TAG, "appendChatHistory: inserted \"%s\" from player %d",
-            msg, fromPlayer
-        )
-    } // appendChatHistory
 
     fun clearChatHistory(context: Context, rowid: Long) {
         val selection = String.format("%s = %d", DBHelper.ROW, rowid)
@@ -2316,7 +2274,7 @@ object DBUtils {
         fun onWordAdded(word: String, isoCode: ISOCode)
     }
 
-    class HistoryPair(var msg: String, var playerIndx: Int, var ts: Int)
+    data class HistoryPair(var msg: String, var playerIndx: Int, var ts: Int = 0)
     class SentInvite(var mMeans: InviteMeans, var mTarget: String?, var mTimestamp: Date) :
         Serializable {
         override fun equals(otherObj: Any?): Boolean {

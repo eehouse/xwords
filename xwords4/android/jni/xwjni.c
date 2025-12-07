@@ -1895,6 +1895,21 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1deleteChats
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_GameRef_gr_1addConvertChat
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr, jstring jmsg,
+  jint indx, jint ts)
+{
+#ifdef XWFEATURE_GAMEREF_CONVERT
+    DVC_HEADER(jniGlobalPtr);
+    const char* msg = (*env)->GetStringUTFChars( env, jmsg, NULL );
+    XP_LOGFF( "got msg: %s", msg );
+    gr_addConvertChat( DUTIL_GR_ENV, msg, indx, ts );
+    (*env)->ReleaseStringUTFChars( env, jmsg, msg );
+    DVC_HEADER_END();
+#endif
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_GameRef_gr_1setBlankValue
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr,
   jint player, jint col, jint row, jint tile )

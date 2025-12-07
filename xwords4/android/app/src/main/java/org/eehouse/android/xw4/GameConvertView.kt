@@ -112,8 +112,15 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 grp.setGroupCollapsed(true)
                 for (rowid in groupGames.games) {
                     pbar.setProgress(++nTried)
-                    val newGr = DBUtils.loadGame(context, rowid)?.let {
-                        GameMgr.convertGame(it.name, grp, it.bytes)
+                    val newGr = DBUtils.loadGame(context, rowid)?.also {
+                        GameMgr.convertGame(it.name, grp, it.bytes)?.let { gr ->
+                            gr.getGI()?.let { gi ->
+                                val locs = gi.playersLocal()
+                                DBUtils.getChatHistory(context, rowid, locs).map { item ->
+                                    gr.addConvertChat(item)
+                                }
+                            }
+                        }
                     }
                     if (!doAll && null != newGr) break
                     Log.d(TAG, "convert(): continuing")

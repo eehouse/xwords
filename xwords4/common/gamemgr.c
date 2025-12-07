@@ -329,7 +329,8 @@ gmgr_deleteGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
         /* Uncollapse so we have the list to iterate over */
         onCollapsedChange( duc, xwe, grps, XP_FALSE );
 
-        while ( 0 < arr_length(grps->u.games) ) {
+        XP_U32 len = arr_length( grps->u.games );
+        for ( int ii = 0; ii < len; ++ii ) {
             GameRef gr = (GameRef)arr_getNth( grps->u.games, 0 );
             gmgr_deleteGame( duc, xwe, gr );
         }

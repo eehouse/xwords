@@ -25,6 +25,7 @@ import android.os.Parcelable
 import java.io.Serializable
 
 import org.eehouse.android.xw4.Assert
+import org.eehouse.android.xw4.DBUtils.HistoryPair
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
 import org.eehouse.android.xw4.NetUtils
@@ -379,6 +380,12 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         }
     }
 
+    fun addConvertChat( item: HistoryPair ) {
+        Device.post {
+            gr_addConvertChat(jniState, gr, item.msg, item.playerIndx, item.ts)
+        }
+    }
+
     suspend fun countPendingPackets(): Int {
         return Device.await {
             gr_countPendingPackets(jniState, gr)
@@ -656,6 +663,9 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         private external fun gr_sendChat(jniState: Long, gr: Long, msg: String)
         @JvmStatic
         private external fun gr_deleteChats(jniState: Long, gr: Long)
+        @JvmStatic
+        private external fun gr_addConvertChat(jniState: Long, gr: Long, msg: String,
+                                               playerIndx: Int, ts: Int)
         @JvmStatic
         private external fun gr_countPendingPackets(jniState: Long, gr: Long): Int
         @JvmStatic

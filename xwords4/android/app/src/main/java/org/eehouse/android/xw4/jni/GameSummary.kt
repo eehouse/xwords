@@ -268,7 +268,7 @@ class GameSummary : Serializable {
 
             // Otherwise, use BT or SMS
             if (null == result) {
-                gr.getGI()!!.conTypes?.let { conTypes ->
+                gr.getGI()?.conTypes?.let { conTypes ->
                     if (conTypes.contains(CommsConnType.COMMS_CONN_BT)
                             || conTypes.contains(CommsConnType.COMMS_CONN_SMS)
                             || conTypes.contains(CommsConnType.COMMS_CONN_MQTT)
@@ -435,7 +435,6 @@ class GameSummary : Serializable {
     fun nextTurnIsLocal(): Boolean {
         var result = false
         if (!gameOver && 0 <= turn) {
-            Assert.assertTrue(null != m_gi || null != giflags())
             result = localTurnNextImpl(giflags(), turn)
         }
         return result

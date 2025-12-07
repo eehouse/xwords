@@ -72,6 +72,10 @@ void gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn, XP_UCHAR* buf, XP_U16* bufLen,
                     XP_S16* from, XP_U32* timestamp,
                     XP_Bool markShown );
 void gr_deleteChats( DUTIL_GR_XWE );
+#ifdef XWFEATURE_GAMEREF_CONVERT
+void gr_addConvertChat( DUTIL_GR_XWE, const XP_UCHAR* msg, XP_U16 player,
+                        XP_U32 timestamp );
+#endif
 
 void gr_getPlayerName( DUTIL_GR_XWE, XP_U16 nn,
                        XP_UCHAR* buf, XP_U16* bufLen );

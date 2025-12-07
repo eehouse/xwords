@@ -1772,10 +1772,22 @@ gr_getNthChat( DUTIL_GR_XWE, XP_U16 nn,
 void
 gr_deleteChats( DUTIL_GR_XWE )
 {
-    GR_HEADER();
+    GR_HEADER_WITH(MODEL);
     model_deleteChats( gd->model );
     GR_HEADER_END_SAVE();
 }
+
+#ifdef XWFEATURE_GAMEREF_CONVERT
+void
+gr_addConvertChat( DUTIL_GR_XWE, const XP_UCHAR* msg, XP_U16 from,
+                   XP_U32 timestamp )
+{
+    GR_HEADER_WITH(MODEL);
+    XP_ASSERT( !!gd->model );
+    model_addChat( gd->model, xwe, msg, from, timestamp );
+    GR_HEADER_END_SAVE();
+}
+#endif
 
 void
 gr_getPlayerName( DUTIL_GR_XWE, XP_U16 nn,

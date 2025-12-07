@@ -1070,6 +1070,7 @@ player_passwordMatches( const LocalPlayer* player, const XP_UCHAR* buf )
 GameRef
 gi_formatGR( const CurGameInfo* gi )
 {
+    XP_ASSERT( !!gi );
     GameRef gr = formatGR( gi->gameID, gi->deviceRole );
     return gr;
 }

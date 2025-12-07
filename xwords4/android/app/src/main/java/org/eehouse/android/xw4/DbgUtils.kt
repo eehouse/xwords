@@ -59,12 +59,10 @@ object DbgUtils {
         Log.w(tag, GameLock.getHolderDump(rowid))
     }
 
-    @JvmOverloads
     fun assertOnUIThread(isOnThread: Boolean = true) {
         Assert.assertTrue(isOnThread == Utils.isOnUIThread())
     }
 
-    @JvmOverloads
     fun printStack(
         tag: String,
         trace: Array<StackTraceElement>? = Thread.currentThread().getStackTrace()
