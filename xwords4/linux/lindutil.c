@@ -139,10 +139,18 @@ linux_dutil_informMove( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
 {
 
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
         informMoveCurses( params, expl );
+#endif
+#ifdef PLATFORM_GTK
     } else {
         informMoveGTK( params, gr, expl, words );
+#else
+        XP_USE(gr);
+        XP_USE(words);
+#endif
     }
 }
 
@@ -151,10 +159,15 @@ linux_dutil_notifyGameOver( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                             GameRef gr, XP_S16 quitter )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
         informGameOverCurses( params, gr, quitter );
+#endif
+#ifdef PLATFORM_GTK
     } else {
         informGameOverGTK( params, gr, quitter );
+#endif
     }
 }
 
@@ -196,12 +209,19 @@ linux_dutil_onGroupChanged( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                             GroupChangeEvents gces )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
         XP_UCHAR buf[64];
         gmgr_getGroupName( duc, xwe, grp, buf, VSIZE(buf) );
         XP_LOGFF( "grp=%d, name=%s", grp, buf );
+#endif
+#ifdef PLATFORM_GTK
     } else {
         onGroupChangedGTK( params, grp, gces );
+#else
+        XP_USE(gces);
+#endif
     }
 }
 
@@ -358,9 +378,14 @@ linux_dutil_missingDictAdded( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef g
 {
     XP_LOGFF( "(gr=" GR_FMT ", name=%s)", gr, dictName );
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
+#endif
+#ifdef PLATFORM_GTK
     } else {
         onGTKMissingDictAdded( params, gr, dictName );
+#endif
     }
     XP_USE( params );
 }
@@ -371,9 +396,14 @@ linux_dutil_dictGone( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
 {
     XP_LOGFF( "(gr=" GR_FMT ", name=%s)", gr, dictName );
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
+#endif
+#ifdef PLATFORM_GTK
     } else {
         onGTKDictGone( params, gr, dictName );
+#endif
     }
     XP_USE( params );
 }
@@ -465,10 +495,15 @@ linux_dutil_onGameChanged( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GameRef gr,
 {
     XP_LOGFF( "(gces=0X%X)", gces );
     LaunchParams* params = (LaunchParams*)duc->closure;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
         onGameChangedCurses( params->cag, gr, gces );
+#endif
+#ifdef PLATFORM_GTK
     } else {
         onGameChangedGTK( params, gr, gces );
+#endif
     }
 }
 
@@ -654,11 +689,16 @@ linux_dutil_getThumbDraw( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     DrawCtx* dctx = NULL;
-    if ( params->useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
+#endif
+#ifdef PLATFORM_GTK
     } else {
         dctx = gtkDrawCtxtMake( NULL, NULL, DT_THUMB );
         XP_LOGFF( "allocated thumb: %p", dctx );
         addSurface( dctx, THUMB_WIDTH, THUMB_HEIGHT );
+#endif
     }
     return dctx;
 }

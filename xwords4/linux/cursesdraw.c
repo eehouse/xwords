@@ -593,6 +593,7 @@ curses_draw_drawTileBack( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
     return XP_TRUE;
 } /* curses_draw_drawTileBack */
 
+#ifdef POINTER_SUPPORT
 static XP_Bool
 curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
                              const XP_Rect* XP_UNUSED(rect),
@@ -604,6 +605,7 @@ curses_draw_drawTileMidDrag( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
     XP_ASSERT( 0 );
     return XP_TRUE;
 }
+#endif
 
 static void
 curses_draw_drawTrayDivider( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
@@ -772,7 +774,9 @@ cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
 
     SET_VTABLE_ENTRY( super->vtable, draw_drawTile, curses );
     SET_VTABLE_ENTRY( super->vtable, draw_drawTileBack, curses );
+#ifdef POINTER_SUPPORT
     SET_VTABLE_ENTRY( super->vtable, draw_drawTileMidDrag, curses );
+#endif
     SET_VTABLE_ENTRY( super->vtable, draw_drawTrayDivider, curses );
     
     SET_VTABLE_ENTRY( super->vtable, draw_clearRect, curses );

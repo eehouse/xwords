@@ -735,6 +735,8 @@ board_prefsChanged( BoardCtxt* board, XWEnv xwe, const CommonPrefs* cp )
 
         clearCurHintRect( board );
     }
+#else
+    XP_USE(xwe);
 #endif
 
     return showArrowChanged || hideValChanged || showColorsChanged;

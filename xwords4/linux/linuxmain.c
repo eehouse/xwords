@@ -274,9 +274,19 @@ globalsForGameRef( CommonAppGlobals* cag, GameRef gr, XP_Bool allocMissing )
 
     if ( !found && allocMissing ) {
         LaunchParams* params = cag->params;
-        CommonGlobals* cGlobals = params->useCurses
-            ? allocCursesBoardGlobals()
-            : allocGTKBoardGlobals();
+        CommonGlobals* cGlobals;
+        if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+        } else if ( params->useCurses ) {
+            cGlobals = allocCursesBoardGlobals();
+#endif
+#ifdef PLATFORM_GTK
+        } else {
+            cGlobals = allocGTKBoardGlobals();
+#endif
+        }
+        XP_ASSERT( !!cGlobals );
+
         cGlobals->params = params;
         cGlobals->gr = gr;
         XP_ASSERT( cag == params->cag );
@@ -739,8 +749,8 @@ typedef enum {
 #if defined PLATFORM_GTK
     ,CMD_ASKNEWGAME
     ,CMD_NHIDDENROWS
-#endif
     ,CMD_ASKTIME
+#endif
     ,CMD_SMSTEST
     ,CMD_REMATCH_ON_OVER
     ,CMD_STATUS_SOCKET_NAME
@@ -2022,10 +2032,15 @@ setupLinuxUtilCallbacks( XW_UtilCtxt* util, XP_Bool useCurses )
 #define SET_PROC(NAM) util->vtable->m_util_##NAM = linux_util_##NAM
     SET_PROC(formatPauseHistory);
 #undef SET_PROC
-    if ( useCurses ) {
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( useCurses ) {
         cb_setupUtilCallbacks( util );
+#endif
+#ifdef PLATFORM_GTK
     } else {
         setupGtkUtilCallbacks( util );
+#endif
     }
 }
 

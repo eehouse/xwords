@@ -267,11 +267,13 @@ ifdef BLUETOOTH
 LIBS += -lbluetooth
 endif
 
+LIBS += `pkg-config --libs gio-2.0`
+LIBS += -lqrencode
+
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-3.0`
 	CFLAGS += `pkg-config --cflags gtk+-3.0`
 	CFLAGS += -DGDK_DISABLE_DEPRECATED
-	LIBS += -lqrencode
 	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
 

@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef PLATFORM_GTK
+
 #ifndef _GTKMAIN_H_
 #define _GTKMAIN_H_
 
@@ -44,4 +46,5 @@ void informMoveGTK( LaunchParams* params, GameRef gr, XWStreamCtxt* expl,
                     XWStreamCtxt* words );
 void informGameOverGTK( LaunchParams* params, GameRef gr, XP_S16 quitter );
 
+#endif
 #endif

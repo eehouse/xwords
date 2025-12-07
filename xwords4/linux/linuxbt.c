@@ -26,6 +26,8 @@
 */
 
 #include <stdio.h>
+#include <gio/gio.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -50,18 +52,10 @@
 #include "gameref.h"
 #include "device.h"
 
-/* /\* begin new *\/ */
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-
-/* #include <gio/gio.h> */
-
 
 #define MAX_CLIENTS 1
 #define CHANNEL 1
