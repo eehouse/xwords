@@ -2219,10 +2219,12 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     private fun findHolderFor(gr: GameRef): GameViewHolder? {
+        DbgUtils.assertOnUIThread()
         return mAdapter?.findHolderFor(gr)
     }
 
     private fun findViewFor(gr: GameRef): GameListItem? {
+        DbgUtils.assertOnUIThread()
         return mAdapter?.findHolderFor(gr)?.mGameListElem?.getGLI()
     }
 
@@ -2235,20 +2237,22 @@ class GamesListDelegate(delegator: Delegator) :
 
         BoardDelegate.getIfOpen(gr)?.onGameChanged(flags)
 
-        findViewFor(gr)?.let { view ->
-            var reloadNeeded = false
-            for (flag in flags) {
-                when (flag) {
-                    GameChangeEvent.GCE_CHAT_ARRIVED -> launch {
-                        view.showHaveChat()
+        runOnUiThread {
+            findViewFor(gr)?.let { view ->
+                var reloadNeeded = false
+                for (flag in flags) {
+                    when (flag) {
+                        GameChangeEvent.GCE_CHAT_ARRIVED -> launch {
+                            view.showHaveChat()
+                        }
+                        else -> {
+                            Log.d(TAG, "not handling $flag")
+                            reloadNeeded = true
+                        }
                     }
-                    else -> {
-                        Log.d(TAG, "not handling $flag")
-                        reloadNeeded = true
+                    if ( reloadNeeded ) {
+                        view.forceReload()
                     }
-                }
-                if ( reloadNeeded ) {
-                    view.forceReload()
                 }
             }
         }
@@ -3272,22 +3276,24 @@ class GamesListDelegate(delegator: Delegator) :
                            flags: GroupChangeEvents) {
             // Log.d(TAG, "onGroupChanged(grp=$grp, flags=$flags)")
             s_self?.get()?.let { self ->
-                         var doReload = false
-                         var doUpdate = false
-                         for (flag in flags) {
-                             when (flag) {
-                                 GroupChangeEvent.GRCE_RENAMED -> doReload = true
-                                 GroupChangeEvent.GRCE_COLLAPSED,
-                                 GroupChangeEvent.GRCE_EXPANDED -> {
-                                     doReload = true
-                                     doUpdate = true
-                                 }
-                                 else -> doUpdate = true
-                             }
-                         }
-                         if (doReload) self.findViewFor(grp)?.reload()
-                         if (doUpdate) self.updateGamesView()
-                     }
+                        self.runOnUiThread {
+                            var doReload = false
+                            var doUpdate = false
+                            for (flag in flags) {
+                                when (flag) {
+                                    GroupChangeEvent.GRCE_RENAMED -> doReload = true
+                                    GroupChangeEvent.GRCE_COLLAPSED,
+                                    GroupChangeEvent.GRCE_EXPANDED -> {
+                                        doReload = true
+                                        doUpdate = true
+                                    }
+                                    else -> doUpdate = true
+                                }
+                            }
+                            if (doReload) self.findViewFor(grp)?.reload()
+                            if (doUpdate) self.updateGamesView()
+                        }
+                    }
         }
 
         fun clearThumbnails() {
