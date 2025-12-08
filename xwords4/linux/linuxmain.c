@@ -712,6 +712,7 @@ typedef enum {
     ,CMD_SMSNUMBER		/* SMS phone number */
     ,CMD_INVITEE_SMSNUMBER
     ,CMD_SMSPORT
+    ,CMD_SMSDATADIR
 #endif
     ,CMD_WITHOUT_MQTT
     ,CMD_MQTTHOST
@@ -877,6 +878,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
     ,{ CMD_INVITEE_SMSNUMBER, true, "invitee-sms-number", "number to send any invitation to" }
     ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
+    ,{ CMD_SMSDATADIR, true, "sms-datadir", "where fake sms messages are stored (defaults to /tmp)" }
 #endif
     ,{ CMD_WITHOUT_MQTT, false, "without-mqtt", "disable connecting via mqtt (which is on by default)" }
     ,{ CMD_MQTTHOST, true, "mqtt-host", "server mosquitto is running on" }
@@ -1129,8 +1131,12 @@ cpFromLP( CommonPrefs* cp, const LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
 XP_Bool
-parseSMSParams( LaunchParams* params, gchar** myPhone, XP_U16* myPort )
+parseSMSParams( LaunchParams* params, gchar** dataDirP,
+                gchar** myPhone, XP_U16* myPort )
 {
+    const gchar* dataDir = params->connInfo.sms.dataDir;
+    *dataDirP = g_strdup( dataDir );
+
     gchar buf[32];
     const XP_UCHAR* phone = params->connInfo.sms.myPhone;
     if ( !!phone ) {
@@ -2656,6 +2662,7 @@ main( int argc, char** argv )
     mainParams.connInfo.mqtt.port = 1883;
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
+    mainParams.connInfo.sms.dataDir = "/tmp";
 #endif
     mainParams.pgi.boardSize = 15;
     mainParams.pgi.traySize = 7;
@@ -2899,6 +2906,10 @@ main( int argc, char** argv )
         case CMD_SMSPORT:
             mainParams.connInfo.sms.port = atoi(optarg);
             types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
+            break;
+
+        case CMD_SMSDATADIR:
+            mainParams.connInfo.sms.dataDir = optarg;
             break;
 #endif
         case CMD_WITHOUT_MQTT:

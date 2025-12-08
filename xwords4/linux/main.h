@@ -205,6 +205,7 @@ typedef struct _LaunchParams {
 #endif
 #ifdef XWFEATURE_SMS
         struct {
+            const char* dataDir;
             const char* myPhone;
             GSList* inviteePhones;
             int port;

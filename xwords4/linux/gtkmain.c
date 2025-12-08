@@ -1866,9 +1866,12 @@ gtkmain( LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
         gchar* myPhone;
+        gchar* dataDir;
         XP_U16 myPort;
-        if ( parseSMSParams( params, &myPhone, &myPort ) ) {
-            linux_sms_init( params, myPhone, myPort );
+        if ( parseSMSParams( params, &dataDir, &myPhone, &myPort ) ) {
+            linux_sms_init( params, dataDir, myPhone, myPort );
+            g_free( dataDir );
+            g_free( myPhone );
         } else {
             XP_LOGF( "not activating SMS: I don't have a phone" );
         }

@@ -728,6 +728,7 @@ class Device():
 
         if self.args.WITH_SMS:
             scriptArgs += [ '--sms-number', self.smsNumber ]
+            scriptArgs += [ '--sms-datadir', self.args.SMS_DATADIR ]
         if not self.args.WITH_BT:
             scriptArgs += [ '--disable-bt' ]
 
@@ -1040,6 +1041,7 @@ def mkParser():
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true', default=False)
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default=False, action='store_false')
+    parser.add_argument('--sms-datadir', dest = 'SMS_DATADIR', default = '/tmp' )
     # parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
     parser.add_argument('--with-bt', dest = 'WITH_BT', default = True, action = 'store_true')

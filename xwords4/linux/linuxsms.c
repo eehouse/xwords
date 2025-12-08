@@ -32,7 +32,7 @@
 #include "device.h"
 #include "linuxmain.h"
 
-#define SMS_DIR "/tmp/xw_sms"
+#define SMS_DIR "xw_sms"
 #define LOCK_FILE ".lock"
 
 /* The idea here is to mimic an SMS-based transport using files.  We'll use a
@@ -60,6 +60,7 @@ struct LinSMSData {
     XP_UCHAR myQueue[256];
     XP_U16 myPort;
     FILE* lock;
+    gchar* dataDir;   /* where fake messages are stored (defaults to /tmp) */
 
     const gchar* myPhone;
 };
@@ -68,11 +69,11 @@ static gint check_for_files( gpointer data );
 static gint check_for_files_once( gpointer data );
 
 static void
-formatQueuePath( const XP_UCHAR* phone, XP_U16 port, XP_UCHAR* path,
-                 XP_U16 pathlen )
+formatQueuePath( const XP_UCHAR* phone, gchar* dir, XP_U16 port,
+                 XP_UCHAR* path, XP_U16 pathlen )
 {
     XP_ASSERT( 0 != port );
-    snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
+    snprintf( path, pathlen, "%s/%s/%s_%d", dir, SMS_DIR, phone, port );
 }
 
 static void
@@ -117,7 +118,7 @@ write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
 #endif
 
             char path[256];
-            formatQueuePath( phone, port, path, sizeof(path) );
+            formatQueuePath( phone, storage->dataDir, port, path, sizeof(path) );
 
             /* Random-number-based name is fine, as we pick based on age. */
             g_mkdir_with_parents( path, 0777 ); /* just in case */
@@ -218,17 +219,20 @@ decodeAndDelete( const gchar* path, XP_U8* buf, XP_U16 buflen,
 } /* decodeAndDelete */
 
 void
-linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort )
+linux_sms_init( LaunchParams* params, const gchar* dataDir,
+                const gchar* myPhone, XP_U16 myPort )
 {
-    LOG_FUNC();
+    // XP_LOGFF( "(dataDir: %s; myPhone: %s)", dataDir, myPhone );
     XP_ASSERT( !!myPhone );
     XP_ASSERT( !params->smsStorage );
     LinSMSData* storage = XP_CALLOC( params->mpool, sizeof(*params->smsStorage) ); 
     params->smsStorage = storage;
-    storage->myPhone = myPhone;
+    storage->myPhone = g_strdup(myPhone);
     storage->myPort = myPort;
+    storage->dataDir = g_strdup( dataDir );
 
-    formatQueuePath( myPhone, myPort, storage->myQueue, sizeof(storage->myQueue) );
+    formatQueuePath( myPhone, storage->dataDir, myPort,
+                     storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGFF( "my queue: %s", storage->myQueue );
     storage->myPort = params->connInfo.sms.port;
 

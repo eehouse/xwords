@@ -24,7 +24,8 @@
 #include "main.h"
 #include "nli.h"
 
-void linux_sms_init( LaunchParams* params, const gchar* phone, XP_U16 port );
+void linux_sms_init( LaunchParams* params, const gchar* dataDir,
+                     const gchar* phone, XP_U16 port );
 void linux_sms_enqueue( LaunchParams* params, const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* phone, XP_U16 port );
 void linux_sms_cleanup( LaunchParams* params );

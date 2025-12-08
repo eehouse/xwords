@@ -1743,9 +1743,12 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
     gchar* myPhone = NULL;
+    gchar* myDir = NULL;
     XP_U16 myPort = 0;
-    if ( parseSMSParams( params, &myPhone, &myPort ) ) {
-        linux_sms_init( params, myPhone, myPort );
+    if ( parseSMSParams( params, &myDir, &myPhone, &myPort ) ) {
+        linux_sms_init( params, myDir, myPhone, myPort );
+        g_free( myDir );
+        g_free( myPhone );
     }
 #endif
 
