@@ -23,6 +23,8 @@
 
 #include "dutil.h"
 
+#ifdef XWFEATURE_BLUETOOTH
+
 void parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len,
                     const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );
 
@@ -33,4 +35,7 @@ void sendMsgsViaBT( XW_DUtilCtxt* dutil, XWEnv xwe, const SendMsgsPacket* const 
 void onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
                          const XP_UCHAR* phone, XP_U16 mtu );
 void cleanupBT( XW_DUtilCtxt* dutil );
+#else
+# define cleanupBT( dutil )
+#endif
 #endif

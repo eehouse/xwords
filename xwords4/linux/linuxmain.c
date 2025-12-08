@@ -2196,12 +2196,14 @@ makeSelfAddress( CommsAddrRec* selfAddr, LaunchParams* params )
             selfAddr->u.sms.port = params->connInfo.sms.port;
             break;
 #endif
+#ifdef XWFEATURE_BLUETOOTH
         case COMMS_CONN_BT: {
             BTHostPair hp;
             lbt_setToSelf( params, &hp );
             addr_addBT( selfAddr, hp.hostName, hp.btAddr.chars );
         }
             break;
+#endif
         default:
             XP_ASSERT(0);
         }

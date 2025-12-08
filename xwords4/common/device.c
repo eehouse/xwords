@@ -528,10 +528,12 @@ dvc_sendInvite( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
                           addr->u.sms.port );
         break;
 #endif
+#ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
         sendInviteViaBT( dutil, xwe, nli, addr->u.bt.hostName,
                          &addr->u.bt.btAddr );
         break;
+#endif
     case COMMS_CONN_NFC:
         break;
     default:
@@ -608,9 +610,11 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
     case COMMS_CONN_NFC:
         sendMsgsViaNFC( dutil, xwe, packets, gameID );
         break;
+#ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
         sendMsgsViaBT( dutil, xwe, packets, addr, gameID );
         break;
+#endif
     case COMMS_CONN_RELAY:
         XP_LOGFF( "What's relay doing here?" );
         break;
@@ -1192,6 +1196,7 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 } /* dvc_parseSMSPacket */
 #endif
 
+#ifdef XWFEATURE_BLUETOOTH
 void
 dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                    const XP_U8* buf, XP_U16 len,
@@ -1199,6 +1204,7 @@ dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
 {
     parseBTPacket( dutil, xwe, buf, len, fromName, fromAddr );
 }
+#endif
 
 XP_Bool
 dvc_parseUrl( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* buf, XP_U16 len,
@@ -1266,12 +1272,14 @@ dvc_parsePacketFor( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
     }
 }
 
+#ifdef XWFEATURE_BLUETOOTH
 void
 dvc_onBLEMtuChangedFor( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const XP_UCHAR* phone, XP_U16 mtu )
 {
     onBLEMtuChangedFor( dutil, xwe, phone, mtu );
 }
+#endif
 
 typedef struct _GetByKeyData {
     XP_U32 resultKey;

@@ -150,10 +150,12 @@ typedef struct _DUtilVtable {
                                   const XP_U8* buf, XP_U16 len,
                                   const XP_UCHAR* phone, XP_U16 port );
 #endif
+#ifdef XWFEATURE_BLUETOOTH
     XP_S16 (*m_dutil_sendViaBT)( XW_DUtilCtxt* duc, XWEnv xwe,
                                  const XP_U8* buf, XP_U16 len,
                                  const XP_UCHAR* hostName,
                                  const XP_BtAddrStr* btAddr );
+#endif
     XP_S16 (*m_dutil_sendViaNFC)( XW_DUtilCtxt* duc, XWEnv xwe,
                                   const XP_U8* buf, XP_U16 len,
                                   XP_U32 gameID );
@@ -265,8 +267,10 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
 # define dutil_sendViaNBS(duc, ...)                          \
     (duc)->vtable.m_dutil_sendViaNBS((duc), __VA_ARGS__)
 #endif
-#define dutil_sendViaBT(duc, ...)                       \
+#ifdef XWFEATURE_BLUETOOTH
+# define dutil_sendViaBT(duc, ...)                       \
     (duc)->vtable.m_dutil_sendViaBT((duc), __VA_ARGS__)
+#endif
 #define dutil_sendViaNFC(duc, ...)                          \
     (duc)->vtable.m_dutil_sendViaNFC((duc), __VA_ARGS__)
 #define dutil_onKnownPlayersChange(duc, ...)                        \

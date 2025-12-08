@@ -113,11 +113,13 @@ linux_dutil_getSelfAddr( XW_DUtilCtxt* duc, XWEnv xwe, CommsAddrRec* addr )
     }
 #endif
     /* Some test for this? */
+#ifdef XWFEATURE_BLUETOOTH
     if ( !params->disableBT ) {
         BTHostPair hp;
         lbt_setToSelf( params, &hp );
         addr_addBT( addr, hp.hostName, hp.btAddr.chars );
     }
+#endif
 }
 
 static void
@@ -445,6 +447,7 @@ linux_dutil_sendViaMQTT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     return -1;
 }
 
+#ifdef XWFEATURE_BLUETOOTH
 static XP_S16
 linux_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
                        const XP_U8* buf, XP_U16 len,
@@ -455,6 +458,7 @@ linux_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
     LaunchParams* params = (LaunchParams*)duc->closure;
     return lbt_send( params, buf, len, hostName, btAddr );
 }
+#endif
 
 static XP_S16
 linux_dutil_sendViaNFC( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -651,7 +655,9 @@ linux_dutils_init( MPFORMAL void* closure )
     SET_PROC(dictGone);
     SET_PROC(startMQTTListener);
     SET_PROC(sendViaMQTT);
+#ifdef XWFEATURE_BLUETOOTH
     SET_PROC(sendViaBT);
+#endif
     SET_PROC(sendViaNFC);
 #ifdef XWFEATURE_SMS
     SET_PROC(sendViaNBS);

@@ -23,6 +23,8 @@
 
 #define BT_DFLT_MAX_LEN 20
 
+#ifdef XWFEATURE_BLUETOOTH
+
 static MsgChunker*
 initBTChunkerOnce( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
@@ -152,3 +154,5 @@ cleanupBT( XW_DUtilCtxt* dutil )
         dutil->btChunkerState = NULL;
     }
 }
+
+#endif
