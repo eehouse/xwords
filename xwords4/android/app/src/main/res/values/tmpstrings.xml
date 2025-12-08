@@ -56,4 +56,10 @@
 
   <string name="convert_menuonly_expl">Skip showing on startup</string>
 
+  <string name="convert_report_success_fmt">Successfully converted %1$d
+  games.</string>
+  <string name="convert_report_fail_fmt">%1$d games could not be
+  converted. Usually this happens when they were damaged previously or
+  are extrememly old.</string>
+
 </resources>

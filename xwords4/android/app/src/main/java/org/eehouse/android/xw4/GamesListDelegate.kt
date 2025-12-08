@@ -782,7 +782,7 @@ class GamesListDelegate(delegator: Delegator) :
                 }
 
                 DlgID.CONVERT_GAMES -> {
-                    GameConvertView.makeDialog(mActivity)
+                    GameConvertView.makeDialog(mActivity, this)
                 }
 
                 else -> super.makeDialog(alert, *params)

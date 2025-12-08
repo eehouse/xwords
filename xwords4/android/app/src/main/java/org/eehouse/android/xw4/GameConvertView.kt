@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 
 import java.io.Serializable
 
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.jni.GameRef
@@ -54,6 +55,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     private var mGroupCount: Int = 0
     private var mAllText: String? = LocUtils.getString(mContext, R.string.loc_filters_all)
     private var mDialog: Dialog? = null
+    private var mDlgDlgt: HasDlgDelegate? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -89,23 +91,49 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         DBUtils.setBoolFor(context, SKIP_ON_LAUNCH, isChecked)
     }
 
-    private fun setDialog(dialog: Dialog) { mDialog = dialog }
+    private fun setDialog(dialog: Dialog, dlgDlgt: HasDlgDelegate) {
+        mDialog = dialog
+        mDlgDlgt = dlgDlgt
+    }
+
+    private inner class ConvertState() {
+        val pbar = findViewById<ProgressBar>(R.id.progress).also {
+            it.visibility = VISIBLE
+            it.setMax(mGroupCount)
+            it.setProgress(0)
+        }
+        var nSuccesses = 0
+        var nFailures = 0
+
+        fun report() {
+            pbar.visibility = INVISIBLE
+            mDlgDlgt?.let { dlgt ->
+                var msg =
+                    LocUtils.getString(context, R.string.convert_report_success_fmt,
+                                       nSuccesses)
+                if (0 < nFailures) {
+                    msg += "\n\n" +
+                        LocUtils.getString(context, R.string.convert_report_fail_fmt,
+                                           nFailures)
+                }
+                dlgt.makeOkOnlyBuilder(msg).show()
+            }
+        }
+    }
 
     private suspend fun convert(doAll: Boolean, groupName: String? = null,
-                                pbar: ProgressBar? = null ) {
+                                state: ConvertState? = null ) {
         Log.d(TAG, "convert($groupName)")
-        val pbar =
-            if (null == pbar) {
-                findViewById<ProgressBar>(R.id.progress).also {
-                    it.setMax(mGroupCount)
-                    it.setProgress(0)
-                }
-            } else pbar
+        val atTop = null == state
+        val state =
+            if (null == state) {
+                ConvertState()
+            } else state!!
 
         val mmap = loadState(context)
         if (null == groupName || groupName.equals(mAllText) ) {
             for (key in mmap.keys) {
-                convert(doAll, key, pbar)
+                convert(doAll, key, state)
                 if (!doAll) break
             }
         } else {
@@ -121,10 +149,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                     }
 
                 // Now add games
-                var nTried = pbar.getProgress()
+                var nTried = state.pbar.getProgress()
                 grp.setGroupCollapsed(true)
                 for (rowid in groupGames.games) {
-                    pbar.setProgress(++nTried)
+                    state.pbar.setProgress(++nTried)
                     val newGr = DBUtils.loadGame(context, rowid)?.also {
                         GameMgr.convertGame(it.name, grp, it.bytes)?.let { gr ->
                             gr.getGI()?.let { gi ->
@@ -133,14 +161,18 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                                     gr.addConvertChat(item)
                                 }
                             }
-                        }
+                            ++state.nSuccesses
+                        } ?: ++state.nFailures
                     }
                     if (!doAll && null != newGr) break
                     Log.d(TAG, "convert(): continuing")
                 }
             }
         }
-        updateExpl()
+        if (atTop) {
+            updateExpl()
+            state.report()
+        }
     }
 
     private fun updateButtons() {
@@ -222,14 +254,14 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             return DBUtils.getBoolFor(context, SKIP_ON_LAUNCH, false)
         }
 
-        fun makeDialog(context: Context): Dialog? {
+        fun makeDialog(context: Context, dlgDlgt: HasDlgDelegate): Dialog? {
             val view = LocUtils.inflate(context, R.layout.game_convert_view)
                 as GameConvertView
             val dialog = LocUtils.makeAlertBuilder(context)
                 .setView(view)
                 .setPositiveButton(R.string.button_done, null)
                 .create()
-            view.setDialog(dialog)
+            view.setDialog(dialog, dlgDlgt)
             return dialog
         }
 
