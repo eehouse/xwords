@@ -792,8 +792,8 @@ restorePartials( MsgChunker* state, XWEnv xwe )
 }
 
 static ChunkMsgArray*
-completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr, const XP_UCHAR* fromPhone,
-              XP_U16 wantPort, int msgID )
+completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr,
+              const XP_UCHAR* fromPhone, XP_U16 wantPort, int msgID )
 {
     int fromPhoneIndex, msgIDIndex;
     MsgIDRec* rec = getMsgIDRec( state, xwe, fromPhone, msgID, XP_FALSE,
@@ -803,15 +803,12 @@ completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr, const XP_UCHAR* 
         XP_ASSERT( 0 );
     }
 
-    int len = 0;
     XP_Bool haveAll = XP_TRUE;
     XP_ASSERT( 0 < rec->count );
     for ( int ii = 0; ii < rec->count; ++ii ) {
         if ( rec->parts[ii].len == 0 ) {
             haveAll = XP_FALSE;
             break;
-        } else {
-            len += rec->parts[ii].len;
         }
     }
 

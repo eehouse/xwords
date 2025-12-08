@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>              /* BAD: use glib to support utf8 */
-#ifdef DEBUG
+#if defined DEBUG && defined LINUX_BACKTRACE
 # include <execinfo.h>          /* for backtrace */
 #endif
 
@@ -95,6 +95,7 @@ linux_debugff( const char* func, const char* file, int line,
 void
 linux_backtrace( void )
 {
+#if defined DEBUG && defined LINUX_BACKTRACE
     void* buffer[128];
     int nFound = backtrace( buffer, VSIZE(buffer) );
     XP_ASSERT( nFound < VSIZE(buffer) );
@@ -105,6 +106,7 @@ linux_backtrace( void )
         XP_LOGF( "trace[%.2d]: %s", ii, traces[ii] );
     }
     free( traces );
+#endif
 }
 #endif
 

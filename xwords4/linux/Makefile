@@ -27,7 +27,7 @@ CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 DEFINES += -DDEBUG_HASHING
 # DEFINES += -DSEQUENTIAL_GIDS
 CFLAGS += -DDEBUG_TS
-CFLAGS += -rdynamic
+# CFLAGS += -rdynamic <- clang on termux/android doesn't like this
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =

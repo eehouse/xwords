@@ -274,7 +274,7 @@ globalsForGameRef( CommonAppGlobals* cag, GameRef gr, XP_Bool allocMissing )
 
     if ( !found && allocMissing ) {
         LaunchParams* params = cag->params;
-        CommonGlobals* cGlobals;
+        CommonGlobals* cGlobals = NULL;
         if ( 0 ) {
 #ifdef PLATFORM_NCURSES
         } else if ( params->useCurses ) {
@@ -2213,7 +2213,8 @@ makeSelfAddress( CommsAddrRec* selfAddr, LaunchParams* params )
 RematchOrder
 roFromStr(const char* rematchOrder )
 {
-    RematchOrder result;
+    RematchOrder result = RO_NONE;
+
     struct {
         char* str;
         RematchOrder ro;

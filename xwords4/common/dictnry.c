@@ -338,11 +338,6 @@ parseCommon( DictionaryCtxt* dctx, XWEnv xwe, const XP_U8** ptrp, const XP_U8* e
         XP_U8* counts15 = XP_MALLOC( dctx->mpool, numFaces);
         dctx->counts[15>>1] = counts15;
 
-        XP_U16 facesSize = numFaceBytes;
-        if ( !isUTF8 ) {
-            facesSize /= 2;
-        }
-
         XP_U8 tmp[numFaceBytes];
         XP_MEMCPY( tmp, ptr, numFaceBytes );
         ptr += numFaceBytes;

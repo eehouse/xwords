@@ -78,7 +78,7 @@ nextEvent(struct inotify_event* event, ssize_t* bytesLeft )
     if ( sizeof(*event) <= *bytesLeft ) {
         unsigned char* ptr = (unsigned char*)event;
         ptr += sizeof(*event) + event->len;
-        result = (struct inotify_event*)ptr;
+        result = (struct inotify_event*)(void*)ptr;
     }
     // LOG_RETURNF( "%p", result );
     return result;
@@ -96,7 +96,7 @@ handle_inotify( GIOChannel* source, GIOCondition condition, gpointer data )
     // LOG_HEX( buf, nRead, __func__ );
 
     struct inotify_event* event;
-    for ( event = (struct inotify_event*)buf; !!event;
+    for ( event = (struct inotify_event*)(void*)buf; !!event;
           event = nextEvent(event, &nRead) ) {
         int wd = event->wd;
         // XP_LOGFF( "wd: %d; len: %d", wd, event->len );

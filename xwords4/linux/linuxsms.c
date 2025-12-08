@@ -99,7 +99,7 @@ static XP_S16
 write_fake_sms( LaunchParams* params, const void* buf, XP_U16 buflen,
                 const XP_UCHAR* phone, XP_U16 port )
 {
-    XP_S16 nSent;
+    XP_S16 nSent = -1;
     XP_U16 pct = XP_RANDOM() % 100;
     XP_Bool skipWrite = pct < params->smsSendFailPct;
 

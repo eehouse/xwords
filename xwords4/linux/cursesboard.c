@@ -39,11 +39,11 @@
 #include "curseschat.h"
 #include "device.h"
 
-typedef struct CursesBoardState {
+struct CursesBoardState {
     LaunchParams* params;
     CursesMenuState* menuState;
     OnGameSaved onGameSaved;
-} CursesBoardState;
+};
 
 struct CursesBoardGlobals {
     CommonGlobals cGlobals;

@@ -52,6 +52,7 @@ printElapsedFor( struct timespec* first, struct timespec* second,
         ++secs;
         nsecs += 1000000000;
     }
+    XP_USE(secs);
     
     /* float firstSecs = (float)first->tv_sec + (((float)first->tv_nsec)/1000000000.0f); */
     /* float secondSecs = (float)second->tv_sec + (((float)second->tv_nsec)/1000000000.0f); */
