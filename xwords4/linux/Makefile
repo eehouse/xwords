@@ -26,7 +26,8 @@ DEFINES += -DDI_DEBUG
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 DEFINES += -DDEBUG_HASHING
 # DEFINES += -DSEQUENTIAL_GIDS
-CFLAGS += -DDEBUG_TS -rdynamic
+CFLAGS += -DDEBUG_TS
+CFLAGS += -rdynamic
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =

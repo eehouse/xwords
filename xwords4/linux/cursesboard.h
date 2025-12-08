@@ -23,8 +23,6 @@
 #include "cursesmain.h"
 #include "nli.h"
 
-typedef struct CursesAppGlobals CursesAppGlobals;
-typedef struct CursesBoardState CursesBoardState;
 
 typedef void (*OnGameSaved)( CursesAppGlobals* aGlobals, sqlite3_int64 rowid, bool isNew );
 

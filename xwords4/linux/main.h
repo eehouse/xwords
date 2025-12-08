@@ -51,6 +51,9 @@ typedef void (*NewSocketProc)( void* closure, int newSock, int oldSock,
                                SockReceiver proc, void* procClosure );
 
 typedef struct CommonAppGlobals CommonAppGlobals;
+typedef struct CursesAppGlobals CursesAppGlobals;
+typedef struct CursesBoardState CursesBoardState;
+typedef struct CursesBoardGlobals CursesBoardGlobals;
 typedef struct MQTTConStorage MQTTConStorage;
 typedef struct LinuxBTState LinuxBTState;
 

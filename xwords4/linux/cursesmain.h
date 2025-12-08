@@ -42,8 +42,6 @@
 #include "cursesboard.h"
 /* #include "compipe.h" */
 
-typedef struct CursesAppGlobals CursesAppGlobals;
-typedef struct CursesBoardGlobals CursesBoardGlobals;
 
 typedef XP_Bool (*EventFunc)(CursesAppGlobals* globals, int ch);
 void onCursesBoardClosing( CursesAppGlobals* aGlobals, CursesBoardGlobals* bGlobals );
