@@ -21,8 +21,8 @@
 import java.io.ByteArrayOutputStream
 
 // These two change with every release.
-val VERSION_CODE_BASE = 201
-val VERSION_NAME = "4.4.205"
+val VERSION_CODE_BASE = 202
+val VERSION_NAME = "4.4.206"
 
 val INITIAL_CLIENT_VERS = 10
 val BUILD_INFO_NAME = "build-info.txt"
@@ -39,18 +39,17 @@ val NFC_AID_XW4 = "FC8FF510B360"
 val NFC_AID_XW4d = "FDDA0A3EB5E5"
 
 fun String.runString(): String {
-	var bytesOut = ByteArrayOutputStream()
+	val bytesOut = ByteArrayOutputStream()
 	val errCode = project.exec {
 		commandLine = this@runString.split(" ")
 		// println("commandLine: " + commandLine)
 		standardOutput = bytesOut
 		isIgnoreExitValue = true
 	}
-	var result: String = ""
-	if ( errCode.exitValue == 0 ) {
-		result = String(bytesOut.toByteArray()).trim()
-	}
-	return result;
+	val result =
+	    if ( errCode.exitValue == 0 ) String(bytesOut.toByteArray()).trim()
+        else ""
+	return result
 }
 
 // Get the git revision we're using. Since fdroid modifies files as
@@ -61,7 +60,7 @@ if (! project.hasProperty("GITREV")) {
         set("GITREV", "git describe --tags --dirty".runString())
 	}
 }
-var GITREV = extra["GITREV"]
+val GITREV = extra["GITREV"]
 
 val GITREV_SHORT = "git rev-parse --short HEAD".runString()
 
@@ -116,7 +115,7 @@ android {
         this.buildConfigField( "String", "GIT_REV", "\"${extra["GITREV"]}\"")
         this.buildConfigField( "String", "GITREV_SHORT", "\"${GITREV_SHORT}\"")
 
-        val stamp = System.currentTimeMillis() / 1000;
+        val stamp = System.currentTimeMillis() / 1000
         this.buildConfigField( "long", "BUILD_STAMP", "${stamp}" )
     }
 
@@ -387,7 +386,7 @@ android {
 
 	this.buildOutputs.all {
         val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-        var variantName: String = variantOutputImpl.outputFileName
+        val variantName: String = variantOutputImpl.outputFileName
 			.replace(".apk", "-${GITREV}.apk")
 			.replace("app-", "")
         variantOutputImpl.outputFileName = variantName
