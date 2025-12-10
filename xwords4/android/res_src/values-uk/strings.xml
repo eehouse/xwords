@@ -1141,4 +1141,12 @@
     <string name="show_kaservicedied_body">Опублікуйте сповіщення, коли засіб перевірки ходу зупинено (зазвичай через те, що минуло занадто багато часу з моменту відправлення або отримання ходу)</string>
     <string name="pref_item_allowMulti_title">Дозволити дублікати ідентифікаторів ігор</string>
     <string name="pref_item_allowMulti_summary">Зазвичай це означає прийняття запрошень з того самого пристрою</string>
+    <string name="warn_mqtt_gone">Можливість надсилання переміщень через Інтернет через MQTT більше не підтримується у вашій версії Android.</string>
+    <string name="warn_mqtt_gone_email_fmt">Будь ласка, повідомте мені, що ви бачили це попередження (натиснувши кнопку «%1$s» нижче). Дуже мало людей досі користуються цією версією Android, і я сподівався, що ніхто з них не використовує CrossWords для мережевої гри. Я можу спробувати вирішити цю проблему, як тільки дізнаюся, що вона дійсно когось торкнеться.</string>
+    <string name="have_mtqq_games_fmt">У мене є %1$d ігор, які використовують mqtt.</string>
+    <string name="qos_prefs_default_expl_fmt">Використовуйте те, що рекомендує брокер MQTT (наразі %1$s)</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">Пінг</string>
+    <string name="ping_result_fmt">Пінг через %1$s зайняв %2$d мс.</string>
+    <string name="games_menu_mqttStats">Статистика підключення</string>
 </resources>
