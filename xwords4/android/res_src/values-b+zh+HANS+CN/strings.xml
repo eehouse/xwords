@@ -1141,4 +1141,12 @@
     <string name="ka_menuwhen_running">运行时</string>
     <string name="pref_item_allowMulti_title">允许重复游戏ID</string>
     <string name="pref_item_allowMulti_summary">通常这意味着接受来自同一设备的邀请</string>
+    <string name="warn_mqtt_gone">您的安卓版本不再支持借助 MQTT 通过互联网发送移动的能力。</string>
+    <string name="warn_mqtt_gone_email_fmt">请通过下方“%1$s”按钮，告知我您已看到此警告。目前使用此版本安卓系统的用户已非常少，我希望其中没有人使用 CrossWords 进行联网游戏。一旦我知晓这个问题确实影响到某些用户，我可以尝试解决它。</string>
+    <string name="have_mtqq_games_fmt">我有 %1$d 个使用 mqtt 的游戏。</string>
+    <string name="qos_prefs_default_expl_fmt">使用 MQTT 代理的建议（当前为 %1$s）</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">Ping</string>
+    <string name="ping_result_fmt">通过 %1$s Ping 花了 %2$d 毫秒。</string>
+    <string name="games_menu_mqttStats">连接统计数</string>
 </resources>
