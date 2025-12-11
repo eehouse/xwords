@@ -75,7 +75,7 @@ object DBUtils {
     private var s_db: SQLiteDatabase? = null
     fun getSummary(
         context: Context,
-        lock: GameLock
+        rowid: Long
     ): GameSummary? {
         val startMS = System.currentTimeMillis()
         initDB(context)
@@ -96,7 +96,7 @@ object DBUtils {
             DBHelper.EXTRAS, DBHelper.NEXTDUPTIMER,
             DBHelper.CREATE_TIME, DBHelper.CAN_REMATCH
         )
-        val selection = String.format(ROW_ID_FMT, lock.rowid)
+        val selection = String.format(ROW_ID_FMT, rowid)
         synchronized(s_dbHelper!!) {
             val cursor = query(TABLE_NAMES.SUM, columns, selection)
             if (1 == cursor.count && cursor.moveToFirst()) {
@@ -199,9 +199,9 @@ object DBUtils {
             }
             cursor.close()
         }
-        if (null == summary && lock.canWrite()) {
-            summary = GameUtils.summarize(context, lock)
-        }
+        // if (null == summary && lock.canWrite()) {
+        //     summary = GameUtils.summarize(context, lock)
+        // }
         val endMS = System.currentTimeMillis()
 
         // Might want to be cacheing this...
@@ -209,7 +209,7 @@ object DBUtils {
         if (elapsed > 10) {
             Log.d(
                 TAG, "getSummary(rowid=%d) => %s (took>10: %dms)",
-                lock.rowid, summary, elapsed
+                rowid, summary, elapsed
             )
         }
         return summary

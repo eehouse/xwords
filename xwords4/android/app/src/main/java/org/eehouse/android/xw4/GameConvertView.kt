@@ -20,6 +20,7 @@ package org.eehouse.android.xw4
 
 import android.app.Dialog
 import android.content.Context
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
 import android.widget.Button
@@ -34,6 +35,7 @@ import android.widget.TextView
 import kotlinx.coroutines.Dispatchers
 
 import java.io.Serializable
+import java.util.HashSet
 
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.jni.GameMgr
@@ -102,8 +104,14 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
             it.setMax(mGroupCount)
             it.setProgress(0)
         }
-        var nSuccesses = 0
-        var nFailures = 0
+        private var nSuccesses = 0
+        private val failures: HashSet<Long> = HashSet<Long>()
+
+        fun addSuccess() { ++nSuccesses }
+
+        fun addFailure(rowid: Long) {
+            failures.add(rowid)
+        }
 
         fun report() {
             pbar.visibility = INVISIBLE
@@ -111,10 +119,20 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                 var msg =
                     LocUtils.getString(context, R.string.convert_report_success_fmt,
                                        nSuccesses)
+                val nFailures = failures.size
                 if (0 < nFailures) {
                     msg += "\n\n" +
                         LocUtils.getString(context, R.string.convert_report_fail_fmt,
                                            nFailures)
+                    if (BuildConfig.DEBUG) {
+                        msg += "\n\n" + "Unconvertible games: "
+
+                        failures.map{ rowid ->
+                            DBUtils.getSummary(context, rowid)?.let {
+                                msg += "\n\n$rowid: ${it}"
+                            }
+                        }
+                    }
                 }
                 dlgt.makeOkOnlyBuilder(msg).show()
             }
@@ -161,8 +179,8 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                                     gr.addConvertChat(item)
                                 }
                             }
-                            ++state.nSuccesses
-                        } ?: ++state.nFailures
+                            state.addSuccess()
+                        } ?: state.addFailure(rowid)
                     }
                     if (!doAll && null != newGr) break
                     Log.d(TAG, "convert(): continuing")

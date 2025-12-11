@@ -24,6 +24,8 @@ import android.text.TextUtils
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.Serializable
+import java.text.DateFormat
+import java.util.Date
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
@@ -203,31 +205,31 @@ class GameSummary : Serializable {
     }
 
     fun readPlayers(context: Context, playersStr: String?) {
-        Assert.fail();
-        // if (null != playersStr) {
-        //     m_players = arrayOfNulls(nPlayers)
-        //     val sep = if (playersStr.contains("\n")) {
-        //         "\n"
-        //     } else {
-        //         LocUtils.getString(context, R.string.vs_join)
-        //     }
-        //     var nxt: Int
-        //     var ii = 0
-        //     nxt = 0
-        //     while (true) {
-        //         val prev = nxt
-        //         nxt = playersStr.indexOf(sep, nxt)
-        //         val name =
-        //             if (-1 == nxt) playersStr.substring(prev)
-        //             else playersStr.substring(prev, nxt)
-        //         m_players!![ii] = name
-        //         if (-1 == nxt) {
-        //             break
-        //         }
-        //         nxt += sep.length
-        //         ++ii
-        //     }
-        // }
+        // Assert.fail();
+        if (null != playersStr) {
+            m_players = arrayOfNulls(nPlayers)
+            val sep = if (playersStr.contains("\n")) {
+                "\n"
+            } else {
+                LocUtils.getString(context, R.string.vs_join)
+            }
+            var nxt: Int
+            var ii = 0
+            nxt = 0
+            while (true) {
+                val prev = nxt
+                nxt = playersStr.indexOf(sep, nxt)
+                val name =
+                    if (-1 == nxt) playersStr.substring(prev)
+                    else playersStr.substring(prev, nxt)
+                m_players!![ii] = name
+                if (-1 == nxt) {
+                    break
+                }
+                nxt += sep.length
+                ++ii
+            }
+        }
     }
 
     fun setPlayerSummary(summary: String?) {
@@ -372,8 +374,8 @@ class GameSummary : Serializable {
     }
 
     fun setGiFlags(flags: Int) {
-        Assert.failDbg()
-        // m_giFlags = flags
+        // Assert.failDbg()
+        m_giFlags = flags
     }
 
     val channel: Int
@@ -487,11 +489,11 @@ class GameSummary : Serializable {
         val result =
             if (BuildConfig.NON_RELEASE) {
                 StringBuffer("{")
-                    .append("nPlayers: ").append(nPlayers).append(',')
-                    .append("collapsed: ").append(collapsed).append(',')
-                    .append("},")
+                    .append("{nPlayers: ").append(nPlayers).append("},")
                     .append("{role: ").append(deviceRole!!).append("},")
                     .append("{nMissing: ").append(nMissing).append("},")
+                    .append("{Last move: ").append(sDF.format(Date(lastMoveTime.toLong() * 1000))).append("}")
+                    .append("}")
                     .toString()
             } else {
                 super.toString()
@@ -510,6 +512,9 @@ class GameSummary : Serializable {
         const val DUP_MODE_MASK: Int = 1 shl (CurGameInfo.MAX_NUM_PLAYERS * 2)
         const val FORCE_CHANNEL_OFFSET: Int = (CurGameInfo.MAX_NUM_PLAYERS * 2) + 1
         const val FORCE_CHANNEL_MASK: Int = 0x03
+
+        private val sDF: DateFormat = DateFormat
+            .getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
 
         private fun localTurnNextImpl(flags: Int, turn: Int): Boolean {
             val flag = 2 shl (turn * 2)

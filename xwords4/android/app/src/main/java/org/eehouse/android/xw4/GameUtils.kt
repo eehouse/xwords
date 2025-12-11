@@ -210,12 +210,14 @@ object GameUtils {
         var result: GameSummary? = null
         JNIThread.getRetained(rowid).use { thread ->
             if (null != thread) {
-                result = DBUtils.getSummary(context, thread.getLock())
+                Assert.failDbg();
+                // result = DBUtils.getSummary(context, thread.getLock())
             } else {
                 try {
                     GameLock.lockRO(rowid, maxMillis).use { lock ->
                         if (null != lock) {
-                            result = DBUtils.getSummary(context, lock)
+                            Assert.failDbg()
+                            // result = DBUtils.getSummary(context, lock)
                         }
                     }
                 } catch (gle: GameLockedException) {

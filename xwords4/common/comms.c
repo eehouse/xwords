@@ -1019,9 +1019,7 @@ comms_makeFromStream( XWEnv xwe, XWStreamCtxt* stream,
     COMMS_LOGFF( "=>%p", comms );
     goto done;
  fail:
-    XP_LOGFF( "calling comms_destroy" );
     comms_destroyp( &comms, xwe );
-    XP_LOGFF( "back from comms_destroy" );
  done:
     LOG_RETURNF( "%p", comms );
     return comms;
