@@ -419,7 +419,7 @@ gmgr_setGroupCollapsed( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
     if ( grps->collapsed != collapsed ) {
         onCollapsedChange( duc, xwe, grps, collapsed );
-        XP_LOGFF( "(collapsed: %s)", boolToStr(collapsed) );
+        scheduleSaveState( duc, xwe );
     }
 }
 
