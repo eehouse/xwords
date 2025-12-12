@@ -2,17 +2,13 @@
 <!-- top-level layout is hozontal, with an image and another layout -->
 <org.eehouse.android.xw4.GameListElem
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     >
   <include android:id="@+id/group"
-           android:layout_width="match_parent"
-           android:layout_height="match_parent"
            layout="@layout/game_list_group"
            />
   <include android:id="@+id/game"
-           android:layout_width="match_parent"
-           android:layout_height="match_parent"
            layout="@layout/game_list_item"
            />
 </org.eehouse.android.xw4.GameListElem>

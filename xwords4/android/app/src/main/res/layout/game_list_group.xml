@@ -3,11 +3,11 @@
 <org.eehouse.android.xw4.GameListGroup
      xmlns:android="http://schemas.android.com/apk/res/android"
      android:layout_width="fill_parent"
-     android:layout_height="fill_parent"
+     android:layout_height="wrap_content"
      android:orientation="horizontal"
-     style="@style/group_items"
+     android:background="#FF7F7F7F"
+     android:layout_marginBottom="1dp"
      >
-
 
   <!-- 42dp: same as game_view_container in game_list_item.xml -->
   <ImageView android:id="@+id/group_check"
