@@ -2927,17 +2927,15 @@ class GamesListDelegate(delegator: Delegator) :
 
     // Returns true if user has what looks like a default name and has not
     // said he wants us to stop bugging him about it.
-    private fun askingChangeName(name: String?, doConfigure: Boolean): Boolean {
+    private fun askingChangeName(gameName: String?, doConfigure: Boolean): Boolean {
         var asking = false
         val skipAsk = XWPrefs.getPrefsBoolean(
             mActivity, R.string.key_notagain_dfltname, false
         )
         if (!skipAsk) {
-            val name1 = CommonPrefs.getDefaultPlayerName(
-                mActivity, 0, false
-            )
+            val name1 = CommonPrefs.getDefaultPlayerName(mActivity, 0, true)
             val name2 = CommonPrefs.getDefaultOriginalPlayerName(mActivity, 0)
-            if (name1 == name2) {
+            if (name1.equals(name2)) {
                 asking = true
                 makeConfirmThenBuilder(
                     Action.NEW_GAME_DFLT_NAME,
@@ -2945,7 +2943,7 @@ class GamesListDelegate(delegator: Delegator) :
                 )
                     .setNAKey(R.string.key_notagain_dfltname)
                     .setNegButton(R.string.button_later)
-                    .setParams(name, doConfigure)
+                    .setParams(gameName, doConfigure)
                     .show()
             }
         }
