@@ -1258,4 +1258,5 @@
     <string name="show_kaservicedied_body">Postar uma notificação quando o Verificador de Jogadas parar (geralmente porque faz muito tempo desde que uma jogada foi feita ou recebida.)</string>
     <string name="pref_item_allowMulti_title">Permitir gameIDs duplicados</string>
     <string name="pref_item_allowMulti_summary">Geralmente isto significa aceitar convites do mesmo dispositivo</string>
+    <string name="games_menu_mqttStats">Estatísticas de conexão</string>
 </resources>

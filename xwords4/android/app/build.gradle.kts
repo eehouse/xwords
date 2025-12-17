@@ -21,8 +21,8 @@
 import java.io.ByteArrayOutputStream
 
 // These two change with every release.
-val VERSION_CODE_BASE = 201
-val VERSION_NAME = "4.4.205"
+val VERSION_CODE_BASE = 202
+val VERSION_NAME = "4.4.206"
 
 val INITIAL_CLIENT_VERS = 10
 val BUILD_INFO_NAME = "build-info.txt"
@@ -73,7 +73,7 @@ if (! project.hasProperty("GITREV")) {
         set("GITREV", "git describe --tags --dirty".runString())
 	}
 }
-var GITREV = extra["GITREV"]
+val GITREV = extra["GITREV"]
 
 val GITREV_SHORT = "git rev-parse --short HEAD".runString()
 
@@ -129,7 +129,7 @@ android {
         this.buildConfigField( "String", "GIT_REV", "\"${extra["GITREV"]}\"")
         this.buildConfigField( "String", "GITREV_SHORT", "\"${GITREV_SHORT}\"")
 
-        val stamp = System.currentTimeMillis() / 1000;
+        val stamp = System.currentTimeMillis() / 1000
         this.buildConfigField( "long", "BUILD_STAMP", "${stamp}" )
     }
 
@@ -400,7 +400,7 @@ android {
 
 	this.buildOutputs.all {
         val variantOutputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-        var variantName: String = variantOutputImpl.outputFileName
+        val variantName: String = variantOutputImpl.outputFileName
 			.replace(".apk", "-${GITREV}.apk")
 			.replace("app-", "")
         variantOutputImpl.outputFileName = variantName
