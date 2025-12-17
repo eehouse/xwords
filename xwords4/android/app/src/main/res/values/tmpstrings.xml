@@ -9,27 +9,6 @@
        the quashing was accidental) -->
   <string name="menu_unquash">Unquash</string>
 
-  <string name="gamel_menu_mqtt">MQTT</string>
-  <string name="games_menu_pingMqtt">Ping</string>
-  <string name="ping_result_fmt">Ping via %1$s took %2$d ms.</string>
-  <string name="games_menu_mqttStats">Connection stats</string>
-
-  <string name="warn_mqtt_gone">The ability to send moves over the
-  internet via MQTT is no longer supported on your version of
-  Android.</string>
-
-  <string name="warn_mqtt_gone_email_fmt">Please let me know that
-  you’ve seen this warning (via the “%1$s” button below). Very few
-  people are still using this version of Android, and I hoped none of
-  them was using CrossWords for networked play. I can try to work
-  around this problem once I know it actually impacts
-  someone. </string>
-
-  <string name="have_mtqq_games_fmt">I have %1$d games using mqtt.</string>
-
-  <string name="qos_prefs_default_expl_fmt">Use what MQTT broker
-  recommends (currently %1$s)</string>
-
   <string name="games_menu_fromclip">games_menu_fromclip</string>
   <string name="no_clipboard">no_clipboard</string>
   <string name="summary_no_dicts">Wordlist missing</string>
