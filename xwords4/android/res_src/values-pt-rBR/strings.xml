@@ -1259,4 +1259,11 @@
     <string name="pref_item_allowMulti_title">Permitir gameIDs duplicados</string>
     <string name="pref_item_allowMulti_summary">Geralmente isto significa aceitar convites do mesmo dispositivo</string>
     <string name="games_menu_mqttStats">Estatísticas de conexão</string>
+    <string name="warn_mqtt_gone">A habilidade de enviar jogadas pela internet via MQTT não é mais suportada em sua versão do Android.</string>
+    <string name="warn_mqtt_gone_email_fmt">Por favor, me avise se vir este aviso (pelo botão “%1$s” embaixo). Pouquíssimas pessoas ainda usam esta versão do Android, e espero que nenhuma delas estava usando o CrossWords para jogos em rede. Posso tentar contornar este problema assim que souber que de fato impacta alguém.</string>
+    <string name="have_mtqq_games_fmt">Eu tenho %1$d jogos usando MQTT.</string>
+    <string name="qos_prefs_default_expl_fmt">Usar o que o broker MQTT recomenda (atualmente %1$s)</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">Ping</string>
+    <string name="ping_result_fmt">Ping via %1$s levou %2$d ms.</string>
 </resources>
