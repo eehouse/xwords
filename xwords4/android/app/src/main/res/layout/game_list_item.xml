@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- top-level layout is hozontal, with an image and another layout -->
 <org.eehouse.android.xw4.GameListItem
-     xmlns:android="http://schemas.android.com/apk/res/android"
-     android:orientation="vertical"
-     android:layout_width="fill_parent"
-     android:layout_height="wrap_content"
-     android:longClickable="true"
-     android:focusable="true"
-     android:clickable="true"
-     android:background="@android:drawable/list_selector_background"
-     >
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:longClickable="true"
+    android:focusable="true"
+    android:clickable="true"
+    >
 
   <FrameLayout android:layout_width="fill_parent"
                android:layout_height="wrap_content"
@@ -161,4 +160,10 @@
         </LinearLayout>
       </LinearLayout>
     </FrameLayout>
+
+    <!-- Spacing. I can't make this work with layout_marginBottom -->
+    <View android:layout_width="fill_parent"
+	      android:layout_height="1dp"
+          android:background="#FF7F7F7F"
+          />
 </org.eehouse.android.xw4.GameListItem>
