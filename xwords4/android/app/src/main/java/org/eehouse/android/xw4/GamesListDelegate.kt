@@ -669,7 +669,7 @@ class GamesListDelegate(delegator: Delegator) :
                 DlgID.CHANGE_GROUP -> {
                     val games = params[0] as Array<GameRef>
                     val namesMap = params[1] as GameMgr.GroupsNames
-                    var indx = 0
+                    var indx = -1
                     for ( ii in 0..< namesMap.names.size) {
                         val one = namesMap.refs[ii]
                         if (one == m_mySIS!!.groupSelItem) {
@@ -699,7 +699,7 @@ class GamesListDelegate(delegator: Delegator) :
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .create()
-                    dialog.setOnShowListener(OnShowListener { dlg -> enableMoveGroupButton(dlg) })
+                    dialog.setOnShowListener(OnShowListener { enableMoveGroupButton(it) })
                     dialog
                 }
 
