@@ -6,9 +6,6 @@
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
   <!-- GooglePlay version no longer allowed to have these (after 9 March 2019) -->
-  <uses-permission android:name="android.permission.RECEIVE_SMS" />
-  <uses-permission android:name="android.permission.SEND_SMS" />
-  <uses-permission android:name="android.permission.READ_SMS" />
   <uses-permission android:name="android.Manifest.permission.READ_PHONE_STATE" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
   <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />

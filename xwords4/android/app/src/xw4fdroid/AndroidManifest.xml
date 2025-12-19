@@ -3,8 +3,6 @@
 
   <!-- GooglePlay version no longer allowed to have these, so they
        must be added per-variant !-->
-  <uses-permission android:name="android.permission.RECEIVE_SMS" />
-  <uses-permission android:name="android.permission.SEND_SMS" />
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
   <application>
