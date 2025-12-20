@@ -664,7 +664,7 @@ object BTUtils {
 
         @Volatile
         private var mExitWhenEmpty = false
-        private val mAdapter: BluetoothAdapter
+        private val mAdapter: BluetoothAdapter?
         private val mHelper: BTHelper
         private val mPostOnResponse: Boolean
 
@@ -680,7 +680,7 @@ object BTUtils {
             if (null == adapter) {
                 Log.d(TAG, "adapter null; is BT on?")
             }
-            mAdapter = adapter!!
+            mAdapter = adapter
             mHelper = BTHelper(mName, mAddr)
             mPostOnResponse = true
 
@@ -909,17 +909,19 @@ object BTUtils {
 
         private fun getRemoteDevice(btName: String?, btAddr: String?): BluetoothDevice? {
             var result: BluetoothDevice? = null
-            if (!TextUtils.isEmpty(btAddr)) {
-                result = mAdapter!!.getRemoteDevice(btAddr)
-            }
-            if (null == result || TextUtils.isEmpty(result.name)) {
-                result = null
-                Log.d(TAG, "getRemoteDevice(%s); no name; trying again", btAddr)
-                Assert.assertTrueNR(!TextUtils.isEmpty(btName))
-                for (dev in mAdapter!!.bondedDevices) {
-                    if (dev.name == btName) {
-                        result = dev
-                        break
+            mAdapter?.let { adapter ->
+                if (!TextUtils.isEmpty(btAddr)) {
+                    result = adapter.getRemoteDevice(btAddr)
+                }
+                if (null == result || TextUtils.isEmpty(result.name)) {
+                    result = null
+                    Log.d(TAG, "getRemoteDevice(%s); no name; trying again", btAddr)
+                    Assert.assertTrueNR(!TextUtils.isEmpty(btName))
+                    for (dev in adapter.bondedDevices) {
+                        if (dev.name == btName) {
+                            result = dev
+                            break
+                        }
                     }
                 }
             }
@@ -1121,7 +1123,7 @@ object BTUtils {
             Log.w(TAG, "connect(%s/%s, timeout=%d) starting", name, addr, timeout)
             // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
             // Docs say always call cancelDiscovery before trying to connect
-            mAdapter!!.cancelDiscovery()
+            mAdapter?.cancelDiscovery()
 
             // Retry for some time. Some devices take a long time to generate and
             // broadcast ACL conn ACTION
@@ -1333,8 +1335,7 @@ object BTUtils {
 
             internal fun getOrStart(): Unit
             {
-                val adapter = getAdapterIf()
-                if (null != adapter) {
+                getAdapterIf()?.let { adapter ->
                     synchronized(sInstance) {
                         var thread = sInstance.get() as InsecureListenThread?
                         if (null == thread) {
