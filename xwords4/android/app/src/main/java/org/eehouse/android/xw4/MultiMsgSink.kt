@@ -26,13 +26,12 @@ import org.eehouse.android.xw4.NFCUtils.addMsgFor
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.Device
-import org.eehouse.android.xw4.jni.TransportProcs
 
 open class MultiMsgSink @JvmOverloads constructor(
     private val m_context: Context, // rowID is used as token to identify game on relay.  Anything that
     // uniquely identifies a game on a device would work
     var rowID: Long = 0
-) : TransportProcs {
+) {
     // Use set to count so message sent over both BT and Relay is counted only
     // once.
     private val m_sentSet: MutableSet<String?> = HashSet()
@@ -65,59 +64,6 @@ open class MultiMsgSink @JvmOverloads constructor(
 
     fun numSent(): Int {
         return m_sentSet.size
-    }
-
-    override val flags: Int
-        /***** TransportProcs interface  */
-        get() = TransportProcs.COMMS_XPORT_FLAGS_HASNOCONN
-
-    override fun transportSendInvt(
-        addr: CommsAddrRec, conType: CommsConnType,
-        nli: NetLaunchInfo, timestamp: Int
-    ): Boolean {
-        return sendInvite(m_context, rowID, addr, conType, nli, timestamp)
-    }
-
-    override fun transportSendMsg(
-        buf: ByteArray, streamVers: Int, msgID: String?,
-        addr: CommsAddrRec, typ: CommsConnType,
-        gameID: Int, timestamp: Int
-    ): Int {
-        Assert.failDbg()
-        var nSent = -1
-        when (typ) {
-            CommsConnType.COMMS_CONN_RELAY -> nSent = sendViaRelay(buf, msgID, gameID)
-            CommsConnType.COMMS_CONN_BT -> nSent = sendViaBluetooth(buf, msgID, gameID, addr)
-            CommsConnType.COMMS_CONN_SMS -> nSent = sendViaSMS(buf, msgID, gameID, addr)
-            CommsConnType.COMMS_CONN_P2P -> nSent = sendViaP2P(buf, gameID, addr)
-            CommsConnType.COMMS_CONN_NFC -> nSent = sendViaNFC(buf, gameID)
-            CommsConnType.COMMS_CONN_MQTT -> Assert.failDbg() // shouldn't come this way
-            else -> Assert.failDbg()
-        }
-        Log.i(
-            TAG, "transportSendMsg(): sent %d bytes for game %d/%x via %s",
-            nSent, gameID, gameID, typ.toString()
-        )
-        if (0 < nSent) {
-            Log.d(TAG, "transportSendMsg: adding %s", msgID)
-            m_sentSet.add(msgID)
-        }
-
-        Log.d(
-            TAG, "transportSendMsg(len=%d, typ=%s) => %d", buf!!.size,
-            typ, nSent
-        )
-        return nSent
-    }
-
-    override fun transportSendMQTT(tap: Device.TopicsAndPackets): Int {
-        // return MQTTUtils.send(m_context, tap)
-        Assert.failDbg()
-        return -1
-    }
-
-    override fun countChanged(newCount: Int, quashed: Boolean) {
-        // Log.d( TAG, "countChanged(new=%d); dropping", newCount );
     }
 
     companion object {

@@ -188,28 +188,6 @@ object MQTTUtils {
         getConn(context)
     }
 
-    private class MQTTServiceHelper(val mContext: Context) : XWServiceHelper(mContext) {
-        private var mReturnAddr: CommsAddrRec? = null
-
-        constructor(context: Context, from: CommsAddrRec?) : this(context) {
-            mReturnAddr = from
-        }
-
-        fun handleInvitation(nli: NetLaunchInfo) {
-            Assert.failDbg()
-            // handleInvitation(nli, null, MultiService.DictFetchOwner.OWNER_MQTT)
-            // Now nuke the invitation so we don't keep getting it, e.g. if
-            // the sender deletes the game
-            // val tap = Device.makeMQTTNukeInvite(nli)
-            // send(mContext, tap)
-        }
-
-        fun receiveMessage(rowid: Long, sink: MultiMsgSink, msg: ByteArray) {
-            // Log.d( TAG, "receiveMessage(rowid=%d, len=%d)", rowid, msg.length )
-            receiveMessage(rowid, sink, msg, mReturnAddr!!)
-        }
-    }
-
     private val TAG = MQTTUtils::class.java.simpleName
 
     private fun notifyNotHere(context: Context, addressee: String, gameID: Int)

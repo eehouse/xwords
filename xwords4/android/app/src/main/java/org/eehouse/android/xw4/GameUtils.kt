@@ -52,7 +52,6 @@ import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameSummary
 import org.eehouse.android.xw4.jni.LastMoveInfo
-import org.eehouse.android.xw4.jni.TransportProcs
 import org.eehouse.android.xw4.jni.UtilCtxt
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -215,28 +214,6 @@ object GameUtils {
             }
         }
         return found
-    }
-
-    fun handleInvitation(
-        context: Context, nli: NetLaunchInfo,
-        procs: TransportProcs?
-    ) {
-        Log.d(TAG, "handleInvitation(%s)", nli)
-        Assert.failDbg()
-        // if (DBUtils.ROWID_NOTFOUND != getGameWithChannel(context, nli)) {
-        //     Log.d(TAG, "dropping duplicate invite for gameID %X",
-        //           nli.gameID())
-        // } else {
-        //     val util: UtilCtxt = UtilCtxt(GameRef(0))
-        //     val cp = CommonPrefs.get(context)
-        //     val selfAddr = CommsAddrRec.getSelfAddr(context, nli.types)
-        //     XwJNI.game_makeFromInvite(nli, util, selfAddr, cp, procs!!).use {
-        //         gamePtr ->
-        //         gamePtr?.let {
-        //             saveNewGame1(context, it, -1, nli.gameName)
-        //         }
-        //     }
-        // }
     }
 
     fun saveGame(

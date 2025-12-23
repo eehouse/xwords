@@ -86,17 +86,12 @@ import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.jni.GameRef.GameStateInfo
 import org.eehouse.android.xw4.jni.GameSummary
-import org.eehouse.android.xw4.jni.TransportProcs.TPMsgHandler
 import org.eehouse.android.xw4.jni.UtilCtxt
 import org.eehouse.android.xw4.loc.LocUtils
 
 class BoardDelegate(delegator: Delegator) :
     DelegateBase(delegator, R.layout.board, R.menu.board_menu),
-    ConnStatusCBacks, Procs,
-// ,
-    // TPMsgHandler,
-    // View.OnClickListener, DownloadFinishedListener, 
-     InvitesNeededAlert.Callbacks
+    ConnStatusCBacks, Procs, InvitesNeededAlert.Callbacks
 {
     private val mActivity: Activity
     private var mView: BoardView? = null
