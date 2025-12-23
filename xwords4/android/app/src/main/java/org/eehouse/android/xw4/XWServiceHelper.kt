@@ -23,7 +23,6 @@ import android.content.Context
 import org.eehouse.android.xw4.DBUtils.getRowIDsFor
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.GameRef
-import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.UtilCtxt
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -74,32 +73,8 @@ internal abstract class XWServiceHelper(private val mContext: Context) {
         val isLocalP = BooleanArray(1)
         var consumed = false
 
-        JNIThread.getRetained(rowid).use { jniThread ->
-            if (null != jniThread) {
-                jniThread.receive(msg, addr)
-                consumed = true
-            } else {
-                if (null == sink) {
-                    sink = getSink(rowid)
-                }
-                val bmr = GameUtils.BackMoveResult()
-                if (GameUtils.feedMessage(
-                        mContext, rowid, msg, addr,
-                        sink, bmr, isLocalP
-                    )
-                ) {/*
-                    GameUtils.postMoveNotification(
-                        mContext, rowid, bmr,
-                        isLocalP[0]
-                    )*/
-                    consumed = true
-                }
-            }
-        }
-        if (allConsumed && !consumed) {
-            allConsumed = false
-        }
-        return allConsumed
+        Assert.failDbg()
+        return false
     }
 
     fun postEvent(event: MultiService.MultiEvent, vararg args: Any?) {

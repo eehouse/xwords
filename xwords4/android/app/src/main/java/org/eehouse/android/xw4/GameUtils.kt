@@ -51,7 +51,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameSummary
-import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.LastMoveInfo
 import org.eehouse.android.xw4.jni.TransportProcs
 import org.eehouse.android.xw4.jni.UtilCtxt
