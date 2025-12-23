@@ -1620,11 +1620,11 @@ resignWrapper( void* closure, XP_U32 gameID )
 }
 
 static XP_Bool
-convertWrapper( void* closure, XP_Bool doAll )
+convertWrapper( void* closure, XP_Bool doAll, XP_Bool delAfter )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     LaunchParams* params = aGlobals->cag.params;
-    checkConvertGames( params, doAll );
+    checkConvertGames( params, doAll, delAfter );
     return XP_TRUE;
 }
 

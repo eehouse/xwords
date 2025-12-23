@@ -521,7 +521,9 @@ checkConvertOne( void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     CommonAppGlobals* cag = &apg->cag;
-    checkConvertGames( cag->params, XP_FALSE );
+    gboolean delAfter =
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(apg->deleteAfterCheck));
+    checkConvertGames( cag->params, XP_FALSE, delAfter );
     updateForConvert( apg );
     return 0;                   /* don't run again */
 }
@@ -531,7 +533,9 @@ checkConvertAll( void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     CommonAppGlobals* cag = &apg->cag;
-    checkConvertGames( cag->params, XP_TRUE );
+    gboolean delAfter =
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(apg->deleteAfterCheck));
+    checkConvertGames( cag->params, XP_TRUE, delAfter );
     updateForConvert( apg );
     return 0;                   /* don't run again */
 }
@@ -546,14 +550,6 @@ static void
 handle_convertAll_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     (void)g_idle_add( checkConvertAll, closure );
-}
-
-static void
-handle_deleteOld_button( GtkWidget* XP_UNUSED(widget), void* closure )
-{
-    LOG_FUNC();
-    XP_USE(closure);
-    updateForConvert( (GtkAppGlobals*)closure );
 }
 #endif
 
@@ -898,6 +894,8 @@ updateForConvert( GtkAppGlobals* apg )
 
             (void)addButton( "Convert one", hbox, G_CALLBACK(handle_convert_button), apg );
             (void)addButton( "Convert all", hbox, G_CALLBACK(handle_convertAll_button), apg );
+            apg->deleteAfterCheck = gtk_check_button_new_with_label( "Delete after" );
+            gtk_container_add( GTK_CONTAINER(hbox), apg->deleteAfterCheck );
         }
         if ( needsDelete ) {
             gchar msg[128];
@@ -906,7 +904,6 @@ updateForConvert( GtkAppGlobals* apg )
             GtkWidget* label = gtk_label_new( msg );
             gtk_container_add( GTK_CONTAINER(hbox), label );
 
-            (void)addButton( "Delete old", hbox, G_CALLBACK(handle_deleteOld_button), apg );
         }
     }
     gtk_widget_show_all( hbox );

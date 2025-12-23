@@ -215,7 +215,7 @@ groupForRole(XW_DUtilCtxt* dutil, DeviceRole role)
 }
 
 void
-checkConvertGames( LaunchParams* params, XP_Bool doAll )
+checkConvertGames( LaunchParams* params, XP_Bool doAll, gboolean delAfter )
 {
     XW_DUtilCtxt* dutil = params->dutil;
 
@@ -235,8 +235,13 @@ checkConvertGames( LaunchParams* params, XP_Bool doAll )
         }
         strm_destroy( stream );
         /* exit after first success */
-        if ( !doAll && !!gr ) {
-            break;
+        if ( !!gr ) {
+            if ( delAfter ) {
+                gdb_deleteGame( params->pDb, rowid );
+            }
+            if ( !doAll ) {
+                break;
+            }
         }
     }
     gdb_freeGamesList( games );

@@ -88,7 +88,7 @@ static XP_Bool
 convertFromArgs( CmdWrapper* wr, cJSON* XP_UNUSED(args) )
 {
     /* Should be pulling boolean out of args.... */
-    return (*wr->procs.convert)( wr->closure, XP_TRUE );
+    return (*wr->procs.convert)( wr->closure, XP_TRUE, XP_TRUE );
 }
 
 /* Invite can be via a known player or via */
