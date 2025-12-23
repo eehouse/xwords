@@ -26,10 +26,10 @@ import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.CompoundButton
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.ScrollView
 import android.widget.TextView
 
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +46,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 private val TAG: String = GameConvertView::class.java.simpleName
 
 class GameConvertView(val mContext: Context, attrs: AttributeSet)
-    : LinearLayout( mContext, attrs ), View.OnClickListener,
+    : ScrollView( mContext, attrs ), View.OnClickListener,
       RadioGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener
 {
     private data class GroupGames(val groupID: Long, val games: ArrayList<Long>):
@@ -58,9 +58,11 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     private var mAllText: String? = LocUtils.getString(mContext, R.string.loc_filters_all)
     private var mDialog: Dialog? = null
     private var mDlgDlgt: HasDlgDelegate? = null
+    private var mDelAfter: Boolean = false
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        mDelAfter = DBUtils.getBoolFor(context, DEL_AFTER, false)
         findViewById<Button>(R.id.convert_one).setOnClickListener(this)
         findViewById<Button>(R.id.convert_all).setOnClickListener(this)
         mGroup = findViewById<RadioGroup>(R.id.groups_group).also {
@@ -68,6 +70,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
         findViewById<CheckBox>(R.id.menuonly_check).also {
             it.setChecked(skipSet(context))
+            it.setOnCheckedChangeListener(this@GameConvertView)
+        }
+        findViewById<CheckBox>(R.id.deleteafter_check).also {
+            it.setChecked(mDelAfter)
             it.setOnCheckedChangeListener(this@GameConvertView)
         }
         updateExpl()
@@ -89,8 +95,14 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
 
     // CompoundButton.OnCheckedChangeListener
     override fun onCheckedChanged(view: CompoundButton, isChecked: Boolean) {
-        Assert.assertTrue(view.id == R.id.menuonly_check)
-        DBUtils.setBoolFor(context, SKIP_ON_LAUNCH, isChecked)
+        when (view.id) {
+            R.id.menuonly_check -> DBUtils.setBoolFor(context, SKIP_ON_LAUNCH, isChecked)
+            R.id.deleteafter_check -> {
+                mDelAfter = isChecked
+                DBUtils.setBoolFor(context, DEL_AFTER, isChecked)
+            }
+            else -> Assert.failDbg()
+        }
     }
 
     private fun setDialog(dialog: Dialog, dlgDlgt: HasDlgDelegate) {
@@ -114,7 +126,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
         }
 
         fun report() {
-            pbar.visibility = INVISIBLE
+            pbar.visibility = GONE
             mDlgDlgt?.let { dlgt ->
                 var msg =
                     LocUtils.getString(context, R.string.convert_report_success_fmt,
@@ -182,7 +194,10 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
                             state.addSuccess()
                         } ?: state.addFailure(rowid)
                     }
-                    if (!doAll && null != newGr) break
+                    if (null != newGr) {
+                        if (mDelAfter) DBUtils.deleteGame(context, rowid)
+                        if (!doAll) break
+                    }
                     Log.d(TAG, "convert(): continuing")
                 }
             }
@@ -257,6 +272,7 @@ class GameConvertView(val mContext: Context, attrs: AttributeSet)
     companion object {
         private val DATA_KEY = TAG + "_DATA"
         private val SKIP_ON_LAUNCH = TAG + "_SKIP"
+        private val DEL_AFTER = TAG + "_DA"
         suspend fun haveToConvert(context: Context, isLaunch: Boolean = false): Boolean {
             val result =
                 if (isLaunch && skipSet(context)) false

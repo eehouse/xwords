@@ -812,19 +812,6 @@ object DBUtils {
     }
 
     fun deleteGame(context: Context, rowid: Long) {
-        GameLock.lock(rowid, 300).use { lock ->
-            if (null != lock) {
-                deleteGame(context, lock)
-            } else {
-                Log.e(TAG, "deleteGame: unable to lock rowid %d", rowid)
-                Assert.failDbg()
-            }
-        }
-    }
-
-    fun deleteGame(context: Context, lock: GameLock) {
-        Assert.assertTrue(lock.canWrite())
-        val rowid = lock.rowid
         val selSummaries = String.format(ROW_ID_FMT, rowid)
         val selInvites = String.format("%s=%d", DBHelper.ROW, rowid)
         initDB(context)
@@ -838,8 +825,6 @@ object DBUtils {
             delete(TABLE_NAMES.CHAT, selInvites)
             deleteCurChatsSync(s_db, rowid)
         }
-        notifyListeners(context, rowid, GameChangeType.GAME_DELETED)
-        invalGroupsCache()
     }
 
     fun getVisID(context: Context, rowid: Long): Int {

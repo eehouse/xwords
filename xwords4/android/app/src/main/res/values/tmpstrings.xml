@@ -17,7 +17,12 @@
 
   <string name="game_convert_expl">This version of CrossWords uses a
   new format for storing games. You have %1$d games that need to be
-  converted from the old format before they can be displayed.</string>
+  converted from the old format before they can be displayed.
+
+  \n\nYou can covert them all at once, or one group at a time. And if
+  you don\'t want to convert any now, you can create new games in the
+  usual way.
+  </string>
   <string name="button_convertOne">Convert one</string>
   <string name="button_convertAll">Convert all</string>
   <string name="button_deleteOld">Delete old</string>
@@ -40,5 +45,6 @@
   <string name="convert_report_fail_fmt">%1$d games could not be
   converted. Usually this happens when they were damaged previously or
   are extrememly old.</string>
+  <string name="convert_deleteafter_expl">Delete old format after conversion</string>
 
 </resources>
