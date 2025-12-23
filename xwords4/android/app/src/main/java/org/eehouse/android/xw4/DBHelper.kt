@@ -28,7 +28,6 @@ import android.text.TextUtils
 import org.eehouse.android.xw4.BuildConfig.DB_NAME
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.Device
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 import java.util.Arrays
 

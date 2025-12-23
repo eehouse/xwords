@@ -1407,6 +1407,15 @@ gmgr_newFor( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const CurGameInfo* gip,
     return gr;
 }
 
+void
+gmgr_resendAll( XW_DUtilCtxt* duc, XWEnv xwe, CommsConnType filter )
+{
+    XP_USE( duc );
+    XP_USE( xwe );
+    XP_USE( filter );
+    XP_LOGFF( "(filter=%s) doing nothing", ConnType2Str(filter) );
+}
+
 GameRef
 gmgr_addForInvite( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                    const NetLaunchInfo* nli )

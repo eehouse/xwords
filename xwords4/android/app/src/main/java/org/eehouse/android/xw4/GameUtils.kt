@@ -55,8 +55,6 @@ import org.eehouse.android.xw4.jni.JNIThread
 import org.eehouse.android.xw4.jni.LastMoveInfo
 import org.eehouse.android.xw4.jni.TransportProcs
 import org.eehouse.android.xw4.jni.UtilCtxt
-import org.eehouse.android.xw4.jni.XwJNI
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 import org.eehouse.android.xw4.loc.LocUtils
 
 object GameUtils {
@@ -101,146 +99,6 @@ object GameUtils {
         return null // DBUtils.loadGame(context, lock)
     } // savedGame
 
-    /**
-     * Open an existing game, and use its gi and comms addr as the
-     * basis for a new one.
-     */
-    // fun resetGame(
-    //     context: Context, lockSrc: GameLock,
-    //     lockDest: GameLock?, groupID: Long,
-    //     juggle: Boolean
-    // ): GameLock? {
-    //     var lockDest = lockDest
-    //     var groupID = groupID
-    //     val gi = CurGameInfo(context)
-    //     var selfAddr: CommsAddrRec? = null
-    //     var hostAddr: CommsAddrRec? = null
-
-    //     loadMakeGame(context, gi, lockSrc).use { gamePtr ->
-    //         if (XwJNI.game_hasComms(gamePtr)) {
-    //             selfAddr = XwJNI.comms_getSelfAddr(gamePtr)
-    //             hostAddr = XwJNI.comms_getHostAddr(gamePtr)
-    //         }
-    //     }
-    //     gi.gameID = 0           // force generate new one
-    //     XwJNI.initNew(
-    //         gi, selfAddr, hostAddr, null as UtilCtxt?, null as DrawCtx?,
-    //         CommonPrefs.get(context), null as TransportProcs?
-    //     ).use { gamePtr ->
-    //         if (juggle) {
-    //             gi.juggle()
-    //         }
-    //         if (null == lockDest) {
-    //             if (DBUtils.GROUPID_UNSPEC == groupID) {
-    //                 groupID = DBUtils.getGroupForGame(context, lockSrc.rowid)
-    //             }
-    //             val rowid = saveNewGame(context, gamePtr, gi, groupID)
-    //             lockDest = GameLock.tryLock(rowid)
-    //         } else {
-    //             saveGame(context, gamePtr, gi, lockDest, true)
-    //         }
-    //         summarize(context, lockDest, gamePtr!!, gi)
-    //         DBUtils.saveThumbnail(context, lockDest!!, null)
-    //     }
-    //     return lockDest
-    // } // resetGame
-
-    // fun resetGame(context: Context, rowidIn: Long): Boolean {
-    //     Assert.failDbg()
-    //     var success = false
-    //     GameLock.lock(rowidIn, 500).use { lock ->
-    //         if (null != lock) {
-    //             // tellDied(context, lock, true)
-    //             resetGame(context, lock, lock, DBUtils.GROUPID_UNSPEC, false)
-
-    //             Utils.cancelNotification(context, rowidIn)
-    //             success = true
-    //         } else {
-    //             DbgUtils.toastNoLock(
-    //                 TAG, context, rowidIn,
-    //                 "resetGame(): rowid %d", rowidIn
-    //             )
-    //         }
-    //     }
-    //     return success
-    // }
-
-    private fun setFromFeedImpl(feedImpl: FeedUtilsImpl): Int {
-        var result = GameSummary.MSG_FLAGS_NONE
-        if (feedImpl.m_gotChat) {
-            result = result or GameSummary.MSG_FLAGS_CHAT
-        }
-        if (feedImpl.m_gotMsg) {
-            result = result or GameSummary.MSG_FLAGS_TURN
-        }
-        if (feedImpl.m_gameOver) {
-            result = result or GameSummary.MSG_FLAGS_GAMEOVER
-        }
-        return result
-    }
-
-    private fun summarize( context: Context, lock: GameLock?,
-                           gamePtr: GamePtr, gi: CurGameInfo): GameSummary
-    {
-        Assert.failDbg()
-        // val summary = GameSummary(gi)
-        // XwJNI.game_summarize(gamePtr, summary)
-
-        // DBUtils.saveSummary(context, lock!!, summary)
-        return null as GameSummary
-    }
-
-    fun summarize(context: Context, lock: GameLock): GameSummary? {
-        var result: GameSummary? = null
-        val gi = CurGameInfo(context)
-        Assert.failDbg()
-        // loadMakeGame(context, gi, lock).use { gamePtr ->
-        // if (null != gamePtr) {
-        // result = summarize(context, lock, gamePtr, gi)
-        // }
-        // }
-        return result
-    }
-
-    fun getSummary(
-        context: Context, rowid: Long,
-        maxMillis: Long
-    ): GameSummary? {
-        Assert.failDbg()
-        var result: GameSummary? = null
-        JNIThread.getRetained(rowid).use { thread ->
-            if (null != thread) {
-                Assert.failDbg();
-                // result = DBUtils.getSummary(context, thread.getLock())
-            } else {
-                try {
-                    GameLock.lockRO(rowid, maxMillis).use { lock ->
-                        if (null != lock) {
-                            Assert.failDbg()
-                            // result = DBUtils.getSummary(context, lock)
-                        }
-                    }
-                } catch (gle: GameLockedException) {
-                    if (false && BuildConfig.DEBUG) {
-                        val dump = GameLock.getHolderDump(rowid)
-                        Log.d(
-                            TAG, "getSummary() got gle: %s; cur owner: %s",
-                            gle, dump
-                        )
-
-                        val msg = "getSummary() unable to lock; owner: $dump"
-                        Log.e(TAG, msg)
-                    }
-                }
-            }
-        }
-        return result
-    }
-
-    fun getSummary(context: Context, rowid: Long): GameSummary? {
-        return getSummary(context, rowid, 0L)
-    }
-
     fun haveWithGameID(context: Context, gameID: Int): Boolean {
         return haveWithGameID(context, gameID, -1)
     }
@@ -260,59 +118,6 @@ object GameUtils {
         return found
     }
 
-    // @JvmOverloads
-    // fun dupeGame(context: Context, rowidIn: Long, groupID: Long = DBUtils.GROUPID_UNSPEC): Long {
-    //     var result = DBUtils.ROWID_NOTFOUND
-
-    //     JNIThread.getRetained(rowidIn).use { thread ->
-    //         if (null != thread) {
-    //             result = dupeGame(context, thread.getLock(), groupID)
-    //         } else {
-    //             try {
-    //                 GameLock.lockRO(rowidIn, 300).use { lockSrc ->
-    //                     if (null != lockSrc) {
-    //                         result = dupeGame(context, lockSrc, groupID)
-    //                     }
-    //                 }
-    //             } catch (gle: GameLockedException) {
-    //             }
-    //         }
-    //     }
-    //     if (DBUtils.ROWID_NOTFOUND == result) {
-    //         Log.d(TAG, "dupeGame: unable to open rowid %d", rowidIn)
-    //     }
-    //     return result
-    // }
-
-    // private fun dupeGame(context: Context, lock: GameLock, groupID: Long): Long {
-    //     var result: Long
-    //     val juggle = CommonPrefs.getAutoJuggle(context)
-    //     resetGame(
-    //         context, lock,
-    //         null, groupID,
-    //         juggle
-    //     ).use { lockDest ->
-    //         result = lockDest!!.rowid
-    //     }
-    //     return result
-    // }
-
-    // fun deleteGame(
-    //     context: Context, lock: GameLock?,
-    //     informNow: Boolean, skipTell: Boolean
-    // ) {
-    //     Assert.failDbg()
-    //     if (null != lock) {
-    //         if (!skipTell) {
-    //             // tellDied(context, lock, informNow)
-    //         }
-    //         Utils.cancelNotification(context, lock.rowid)
-    //         DBUtils.deleteGame(context, lock)
-    //     } else {
-    //         Log.e(TAG, "deleteGame(): null lock; doing nothing")
-    //     }
-    // }
-
     fun deleteGame(
         context: Context, gr: GameRef,
         informNow: Boolean, skipTell: Boolean
@@ -323,40 +128,6 @@ object GameUtils {
         Utils.cancelNotification(context, gr)
         GameMgr.deleteGame(gr)
     }
-
-    // fun deleteGame(
-    //     context: Context, rowid: Long,
-    //     informNow: Boolean, skipTell: Boolean
-    // ): Boolean {
-    //     var success: Boolean
-    //     GameLock.tryLock(rowid).use { lock ->
-    //         if (null != lock) {
-    //             deleteGame(context, lock, informNow, skipTell)
-    //             success = true
-    //         } else {
-    //             DbgUtils.toastNoLock(
-    //                 TAG, context, rowid,
-    //                 "deleteGame(): rowid %d",
-    //                 rowid
-    //             )
-    //             success = false
-    //         }
-    //     }
-    //     return success
-    // }
-
-    // fun deleteGroup(context: Context, groupid: Long) {
-    //     var nSuccesses = 0
-    //     val rowids = DBUtils.getGroupGames(context, groupid)
-    //     for (ii in rowids.indices.reversed()) {
-    //         if (deleteGame(context, rowids[ii], ii == 0, false)) {
-    //             ++nSuccesses
-    //         }
-    //     }
-    //     if (rowids.size == nSuccesses) {
-    //         DBUtils.deleteGroup(context, groupid)
-    //     }
-    // }
 
     fun getName(context: Context, rowid: Long): String? {
         var result = DBUtils.getName(context, rowid)
@@ -373,33 +144,6 @@ object GameUtils {
         return LocUtils.getString(context, R.string.game_fmt, count)
     }
 
-    fun loadMakeGame(context: Context, lock: GameLock): GamePtr? {
-        return loadMakeGame(context, CurGameInfo(context), lock)
-    }
-
-    fun loadMakeGame(
-        context: Context, gi: CurGameInfo,
-        tp: TransportProcs?, lock: GameLock
-    ): GamePtr? {
-        return loadMakeGame(context, gi, null, tp, lock)
-    }
-
-    fun loadMakeGame(
-        context: Context, gi: CurGameInfo,
-        lock: GameLock
-    ): GamePtr? {
-        return loadMakeGame(context, gi, null, null, lock)
-    }
-
-    fun loadMakeGame(
-        context: Context, gi: CurGameInfo,
-        util: UtilCtxt?, tp: TransportProcs?,
-        lock: GameLock
-    ): GamePtr? {
-        val stream = savedGame(context, lock)
-        return loadMakeGame(context, gi, util, tp, stream, lock.rowid)
-    }
-
     private fun giFromStream(context: Context, stream: ByteArray?): CurGameInfo? {
         var gi: CurGameInfo? = null
         Assert.failDbg()
@@ -409,66 +153,6 @@ object GameUtils {
         // }
         return gi
     }
-
-    private fun loadMakeGame(
-        context: Context, gi: CurGameInfo,
-        util: UtilCtxt?, tp: TransportProcs?,
-        stream: ByteArray?, rowid: Long
-    ): GamePtr? {
-        var gamePtr: GamePtr? = null
-        Assert.failDbg()
-
-        // stream?.let {
-        //     XwJNI.giFromStream(gi, stream)
-        //     val dictNames = gi.dictNames()
-        //     val pairs = DictUtils.openDicts(context, dictNames)
-        //     if (pairs.anyMissing(dictNames)) {
-        //         postMoveDroppedForDictNotification(
-        //             context, rowid, gi.gameID,
-        //             gi.isoCode()!!
-        //         )
-        //     } else {
-        //         gamePtr = XwJNI.initFromStream(
-        //             rowid, stream, gi, util, null,
-        //             CommonPrefs.get(context), tp
-        //         )
-        //         if (null == gamePtr) {
-        //             // Assert.assertTrueNR( gi.deviceRole != DeviceRole.ROLE_ISGUEST ); // firing
-        //             if (DeviceRole.ROLE_ISGUEST == gi.deviceRole) {
-        //                 Log.e(
-        //                     TAG, "bad game? ISCLIENT, but has no host address"
-        //                             + " and won't open"
-        //                 )
-        //             } else {
-        //                 val selfAddr = CommsAddrRec.getSelfAddr(context, gi)
-        //                 gamePtr = XwJNI.initNew(
-        //                     gi, selfAddr, null as CommsAddrRec?,
-        //                     null as UtilCtxt?, null as DrawCtx?,
-        //                     CommonPrefs.get(context),
-        //                     null as TransportProcs?
-        //                 )
-        //             }
-        //         }
-        //     }
-        // } ?: run {
-        //     Log.w(TAG, "loadMakeGame(): no saved game!")
-        // }
-        return gamePtr
-    }
-
-    // fun loadMakeBitmap(context: Context, rowid: Long): Bitmap? {
-    //     var thumb: Bitmap? = null
-    //     GameWrapper.make(context, rowid).use { gw ->
-    //         gw?.lock?.let {
-    //             val gamePtr = gw.gamePtr()
-    //             if ( null != gamePtr ) {
-    //                 thumb = takeSnapshot(context, gamePtr, gw.gi())
-    //                 DBUtils.saveThumbnail(context, it, thumb)
-    //             }
-    //         }
-    //     }
-    //     return thumb
-    // }
 
     fun getThumbSize(context: Context, nCols: Int): Int {
         Log.d(TAG, "getThumbSize(nCols=$nCols)")
@@ -492,125 +176,6 @@ object GameUtils {
             } ?: 0
         Log.d(TAG, "getThumbSize() => $result")
         return result
-    }
-
-    // fun takeSnapshot(
-    //     context: Context, gamePtr: GamePtr,
-    //     gi: CurGameInfo?
-    // ): Bitmap? {
-    //     var thumb: Bitmap? = null
-    //     if (XWPrefs.getThumbEnabled(context)) {
-    //         val nCols = gi!!.boardSize
-    //         val pct = XWPrefs.getThumbPct(context)
-    //         Assert.assertTrue(0 < pct)
-
-    //         if (null == s_minScreen) {
-    //             if (context is Activity) {
-    //                 val display =
-    //                     context.windowManager.defaultDisplay
-    //                 val width = display.width
-    //                 val height = display.height
-    //                 s_minScreen = min(width, height)
-    //             }
-    //         }
-    //         if (null != s_minScreen) {
-    //             val dim = s_minScreen!! * pct / 100
-    //             val size = dim - (dim % nCols)
-
-    //             thumb = Bitmap.createBitmap(
-    //                 size, size,
-    //                 Bitmap.Config.ARGB_8888
-    //             )
-    //             val canvas = null; // ThumbCanvas(context, thumb)
-    //             XwJNI.board_drawSnapshot(gamePtr, canvas, size, size)
-    //         }
-    //     }
-    //     return thumb
-    // }
-
-    // force applies only to relay
-    @JvmOverloads
-    fun resendAllIf(
-        context: Context, filter: CommsConnType?,
-        force: Boolean = false, showUI: Boolean = false
-    ) {
-        val proc =
-            if (showUI) {
-                object : ResendDoneProc {
-                    override fun onResendDone(context: Context, nSent: Int) {
-                        val msg = LocUtils
-                            .getQuantityString(
-                                context,
-                                R.plurals.resent_msgs_fmt,
-                                nSent, nSent
-                            )
-                        DbgUtils.showf(context, msg)
-                    }
-                }
-            } else null
-        resendAllIf(context, filter, force, proc)
-    }
-
-    fun resendAllIf(
-        context: Context, filter: CommsConnType?,
-        force: Boolean, proc: ResendDoneProc?
-    ) {
-        var force = force
-        val now = Utils.getCurSeconds()
-
-        // Note: HashMap permits null keys! So no need to test for null. BTW,
-        // here null filter means "all".
-        var sendTimes = s_sendTimes[filter]
-        if (null == sendTimes) {
-            sendTimes = longArrayOf(0, 0, 0, 0)
-            s_sendTimes[filter] = sendTimes
-        }
-
-        if (!force) {
-            val oldest = sendTimes[sendTimes.size - 1]
-            val age = now - oldest
-            force = RESEND_INTERVAL_SECS < age
-            Log.d(
-                TAG, "resendAllIf(): based on last send age of %d sec, doit = %b",
-                age, force
-            )
-        }
-
-        if (force) {
-            System.arraycopy(
-                sendTimes, 0,  /* src */
-                sendTimes, 1,  /* dest */
-                sendTimes.size - 1
-            )
-            sendTimes[0] = now
-
-            GlobalScope.launch(Dispatchers.IO) {
-                resendImpl(context, filter, proc)
-            }
-        }
-    }
-
-    private fun saveNewGame1(
-        context: Context, gamePtr: GamePtr,
-        groupID: Long, gameName: String?
-    ): Long {
-        Assert.failDbg()
-        var rowid = DBUtils.ROWID_NOTFOUND
-        // var groupID = groupID
-        // if (DBUtils.GROUPID_UNSPEC == groupID) {
-        //     groupID = 0 // XWPrefs.getDefaultNewGameGroup(context)
-        //     Assert.failDbg()
-        // }
-        // val gi = CurGameInfo(context)
-        // XwJNI.game_getGi(gamePtr, gi)
-        // Log.d(TAG, "saveNewGame1() (post-rematch): gi: %s", gi)
-        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
-
-        // DBUtils.saveNewGame(context, stream, groupID, gameName).use { lock ->
-        //     summarize(context, lock, gamePtr, gi)
-        //     rowid = lock.rowid
-        // }
-        return rowid
     }
 
     fun makeRematch(
@@ -639,19 +204,6 @@ object GameUtils {
         // Log.d(TAG, "makeRematch() => %d", rowid)
         return rowid
     }
-
-    // fun inviteeName(context: Context, rowid: Long, playerPosn: Int): String?
-    // {
-    //     var result =
-    //         GameWrapper.make(context, rowid).use { gw ->
-    //             gw?.let {
-    //                 val name = XwJNI.server_inviteeName(it.gamePtr(),
-    //                                                     playerPosn)
-    //                 name
-    //             }
-    //     }
-    //     return result
-    // }
 
     fun getGameWithChannel(context: Context, nli: NetLaunchInfo): Long
     {
@@ -686,33 +238,6 @@ object GameUtils {
         //         }
         //     }
         // }
-    }
-
-    fun saveGame(
-        context: Context, gamePtr: GamePtr?,
-        gi: CurGameInfo?, lock: GameLock?,
-        setCreate: Boolean
-    ): Long {
-        Assert.failDbg()
-        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
-        // val rowid = saveGame(context, stream, lock, setCreate)
-        // if (DBUtils.ROWID_NOTFOUND != rowid) {
-        //     XwJNI.game_saveSucceeded(gamePtr)
-        // }
-        return 0L
-    }
-
-    fun saveNewGame(
-        context: Context, gamePtr: GamePtr?,
-        gi: CurGameInfo?, groupID: Long
-    ): Long {
-        Assert.failDbg()
-        // val stream = XwJNI.game_saveToStream(gamePtr, gi)
-        // var rowid: Long
-        // DBUtils.saveNewGame(context, stream, groupID, null).use { lock ->
-        //     rowid = lock.rowid
-        // }
-        return 0
     }
 
     fun saveGame(
@@ -1393,32 +918,6 @@ object GameUtils {
         // }
     }
 
-    private fun applyChangesImpl(
-        context: Context, sink: MultiMsgSink?,
-        gi: CurGameInfo,
-        disab: Map<CommsConnType, BooleanArray>?,
-        lock: GameLock, gamePtr: GamePtr
-    ) {
-        Assert.failDbg()
-        // if (BuildConfig.DEBUG && null != disab) {
-        //     for (typ in disab.keys) {
-        //         val bools = disab[typ]
-        //         // XwJNI.comms_setAddrDisabled(gamePtr, typ, false, bools!![0])
-        //         // XwJNI.comms_setAddrDisabled(gamePtr, typ, true, bools[1])
-        //     }
-        // }
-
-        // if (null != sink) {
-        //     JNIThread.tryConnect(gamePtr, gi)
-        // }
-
-        // saveGame(context, gamePtr, gi, lock, false)
-
-        // val summary = GameSummary(gi)
-        // XwJNI.game_summarize(gamePtr, summary)
-        // DBUtils.saveSummary(context, lock, summary)
-    } // applyChanges
-
     fun formatGameID(gameID: Int): String {
         Assert.assertTrue(0 != gameID)
         // I used to truncate this for smaller SMS messages, but gameID has
@@ -1513,37 +1012,6 @@ object GameUtils {
         )*/
     }
 
-    // PENDING This -- finding or opening game, doing something, then saving
-    // and closing if it was opened -- gets done a lot. Try refactoring.
-    fun onGameGone(context: Context, gameID: Int) {
-        val rowids = DBUtils.getRowIDsFor(context, gameID)
-        if (0 == rowids.size) {
-            Log.d(TAG, "onGameGone(): no rows for game %X", gameID)
-        } else {
-            for (rowid in rowids) {
-                JNIThread.getRetained(rowid).use { thread ->
-                    if (null != thread) {
-                        // XwJNI.comms_setQuashed(thread.getGamePtr(), true)
-                        // JNIThread saves automatically on release
-                    } else {
-                        GameLock.lock(rowid, 300).use { lock ->
-                            if (null != lock) {
-                                val gi = CurGameInfo(context)
-                                loadMakeGame(context, gi, lock).use { gamePtr ->
-                                    if (null != gamePtr) {
-                                        if (false) { // XwJNI.comms_setQuashed(gamePtr, true)) {
-                                            saveGame(context, gamePtr, gi, lock, false)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     // I think this goes away, with the work being done in common code
     private fun tellDied( context: Context, gr: GameRef, informNow: Boolean )
     {
@@ -1622,150 +1090,5 @@ object GameUtils {
         var m_chat: String? = null
         var m_chatFrom: String? = null
         var m_chatTs: Long = 0
-    }
-
-    class GameWrapper private constructor
-        (private val mContext: Context,
-         private val mRowid: Long
-        ) : AutoCloseable
-    {
-        var lock: GameLock? = null
-            private set
-        private var mGamePtr: GamePtr? = null
-        private var mGi: CurGameInfo? = null
-        private var jthread: JNIThread? = null
-
-        init {
-            Assert.failDbg()
-            // There's a race condition here!!!!
-            if (JNIThread.gameIsOpen(mRowid)) {
-                jthread = JNIThread.getRetained(mRowid)
-                mGi = jthread?.getGI()
-            } else {
-                lock = GameLock.tryLockRO(mRowid)
-                if (null != lock) {
-                    mGi = CurGameInfo(mContext)
-                    mGamePtr = loadMakeGame(mContext, mGi!!, lock!!)
-                }
-            }
-        }
-
-        fun gamePtr(): GamePtr? {
-            return jthread?.getGamePtr() ?: mGamePtr
-        }
-
-        fun gi(): CurGameInfo? {
-            return mGi
-        }
-
-        fun hasGame(): Boolean {
-            return null != jthread || null != mGamePtr
-        }
-
-        override fun close() {
-            jthread?.release()
-            jthread = null
-
-            mGamePtr?.close()
-            mGamePtr = null
-
-            lock?.close()
-            lock = null
-        }
-
-        @Throws(Throwable::class)
-        fun finalize() {
-            close()
-        }
-
-        companion object {
-            fun make(context: Context, rowid: Long): GameWrapper? {
-                val wrapper = GameWrapper(context, rowid)
-                val result =
-                    if (wrapper.hasGame()) {
-                        wrapper
-                    } else {
-                        wrapper.close()
-                        null
-                    }
-                return result
-            }
-        }
-    }
-
-    private class FeedUtilsImpl(
-        private val m_context: Context,
-        private val m_rowid: Long,
-        private val m_gi: CurGameInfo
-    ) : UtilCtxt(GameRef(0)) {
-        var m_chat: String? = null
-        var m_ts: Long = 0
-        var m_gotMsg: Boolean = false
-        var m_gotChat: Boolean = false
-        var m_chatFrom: String? = null
-        var m_gameOver: Boolean = false
-
-        init { Assert.failDbg() }
-
-        override fun turnChanged(newTurn: Int) {
-            m_gotMsg = true
-        }
-    }
-
-    private fun resendImpl(context: Context,
-                           filter: CommsConnType?,
-                           doneProc: ResendDoneProc?)
-    {
-        var sentTotal = 0
-        val games = DBUtils.getGamesWithSendsPending(context)
-
-        for ( rowid in games.keys ) {
-
-            // If we're looking for a specific type, check
-            if (filter != null) { // don't use let if we're breaking/continuing
-                val gameSet = games[rowid]
-                if (gameSet != null && !gameSet.contains(filter)) {
-                    continue
-                }
-            }
-
-            GameLock.tryLockRO(rowid).use { lock ->
-                if (null != lock) {
-                    val gi = CurGameInfo(context)
-                    val sink = MultiMsgSink(context, rowid)
-                    loadMakeGame(context, gi, sink, lock).use { gamePtr ->
-                        if (null != gamePtr) {
-                            // val nSent = XwJNI.comms_resendAll(
-                            // gamePtr, true,
-                            // filter, false
-                            // )
-                            sentTotal += sink.numSent()
-                            // Log.d( TAG, "Resender.doInBackground(): sent $nSent "
-                            //        + "messages for $rowid (total now $sentTotal)")
-                        } else {
-                            Log.d(TAG, "resendImpl(): loadMakeGame()"
-                                + " failed for rowid $rowid")
-                        }
-                    }
-                } else {
-                    JNIThread.getRetained(rowid).use { thread ->
-                        if (null != thread) {
-                            thread.handle(
-                                JNIThread.JNICmd.CMD_RESEND, false,
-                                false, false
-                            )
-                        } else {
-                            Log.w(TAG, "resendImpl(): unable to unlock $rowid")
-                        }
-                    }
-                }
-            }
-        }
-
-        doneProc?.let {
-            (context as Activity)
-                .runOnUiThread{it.onResendDone(context, sentTotal) }
-        }
-        Log.d(TAG, "resendImpl() sent to ${games.size} devices")
     }
 }

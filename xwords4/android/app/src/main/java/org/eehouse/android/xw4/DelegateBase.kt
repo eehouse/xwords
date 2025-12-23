@@ -46,7 +46,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
-import org.eehouse.android.xw4.GameUtils.GameWrapper
 import org.eehouse.android.xw4.MultiService.MultiEvent
 import org.eehouse.android.xw4.MultiService.MultiEventListener
 import org.eehouse.android.xw4.Perms23.Perm

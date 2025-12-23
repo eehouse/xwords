@@ -25,6 +25,7 @@ import org.eehouse.android.xw4.GameUtils.ResendDoneProc
 import org.eehouse.android.xw4.TimerReceiver.TimerCallback
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.GameMgr
 
 /*
  * SMS messages get dropped. We resend pending relay messages when we gain
@@ -41,28 +42,27 @@ object SMSResendReceiver {
     private val sTimerCallbacks
             : TimerCallback = object : TimerCallback {
         override fun timerFired(context: Context) {
-            GameUtils.resendAllIf(context,
-                                  CommsConnType.COMMS_CONN_SMS,
-                                  true,
-                object : GameUtils.ResendDoneProc {
-                    override fun onResendDone(
-                        context: Context,
-                        nSent: Int
-                    ) {
-                        var backoff = -1
-                        if (0 < nSent) {
-                            backoff = setTimer(context, true)
-                        }
-                        if (BuildConfig.NON_RELEASE) {
-                            DbgUtils.showf(
-                                context,
-                                "%d SMS msgs resent;"
-                                        + " backoff: %d",
-                                nSent, backoff
-                            )
-                        }
-                    }
-                })
+            GameMgr.resendAll(CommsConnType.COMMS_CONN_SMS)
+            Assert.failDbg()
+                // object : GameUtils.ResendDoneProc {
+                //     override fun onResendDone(
+                //         context: Context,
+                //         nSent: Int
+                //     ) {
+                //         var backoff = -1
+                //         if (0 < nSent) {
+                //             backoff = setTimer(context, true)
+                //         }
+                //         if (BuildConfig.NON_RELEASE) {
+                //             DbgUtils.showf(
+                //                 context,
+                //                 "%d SMS msgs resent;"
+                //                         + " backoff: %d",
+                //                 nSent, backoff
+                //             )
+                //         }
+                //     }
+                // })
         }
 
         override fun incrementBackoff(prevBackoff: Long): Long {

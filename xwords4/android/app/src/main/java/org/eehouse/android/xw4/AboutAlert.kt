@@ -28,7 +28,6 @@ import org.eehouse.android.xw4.jni.Device
 import java.text.DateFormat
 import java.util.Date
 
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 public class AboutAlert : XWDialogFragment() {

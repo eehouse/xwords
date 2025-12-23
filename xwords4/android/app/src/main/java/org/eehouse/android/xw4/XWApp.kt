@@ -26,7 +26,9 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
+
 import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.GameMgr
 
 import java.util.UUID
 
@@ -68,7 +70,7 @@ class XWApp : Application(), LifecycleObserver {
             Lifecycle.Event.ON_RESUME -> {
                 MQTTUtils.onResume(this)
                 BTUtils.onResume(this)
-                GameUtils.resendAllIf(this, null)
+                GameMgr.resendAll()
             }
 
             Lifecycle.Event.ON_STOP -> BTUtils.onStop(this)

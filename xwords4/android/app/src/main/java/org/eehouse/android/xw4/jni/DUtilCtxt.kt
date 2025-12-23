@@ -378,7 +378,6 @@ class DUtilCtxt() {
     }
 
     fun onGameGoneReceived(gameID: Int, from: CommsAddrRec) {
-        GameUtils.onGameGone(mContext, gameID)
         Assert.assertTrueNR(from.contains(CommsAddrRec.CommsConnType.COMMS_CONN_MQTT))
         MQTTUtils.handleGameGone(mContext, from, gameID)
     }

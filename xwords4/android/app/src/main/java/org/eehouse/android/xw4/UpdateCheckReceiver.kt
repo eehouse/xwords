@@ -40,7 +40,6 @@ import org.eehouse.android.xw4.DictUtils.DictLoc
 import org.eehouse.android.xw4.DictUtils.ON_SERVER
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.jni.Device
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 class UpdateCheckReceiver : BroadcastReceiver() {

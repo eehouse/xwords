@@ -47,6 +47,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.ConnExpl
 import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.Stats
 import org.eehouse.android.xw4.jni.Stats.STAT
 import org.eehouse.android.xw4.jni.Device.TopicsAndPackets
@@ -69,7 +70,7 @@ object MQTTUtils {
             Log.d(TAG, "onNetAvail(avail=$nowAvailable)")
             DbgUtils.assertOnUIThread()
             if (nowAvailable) {
-                GameUtils.resendAllIf(context, CommsConnType.COMMS_CONN_MQTT)
+                GameMgr.resendAll(CommsConnType.COMMS_CONN_MQTT)
                 getConn(context)?.reconnect()
             }
         }

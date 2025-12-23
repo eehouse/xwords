@@ -32,6 +32,7 @@ import android.os.Parcelable
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.GameMgr
 
 object NetStateCache {
     private val TAG: String = NetStateCache::class.java.simpleName
@@ -239,7 +240,7 @@ object NetStateCache {
 
                             if (s_netAvail) {
                                 val typ = CommsConnType.COMMS_CONN_RELAY
-                                GameUtils.resendAllIf(context, typ)
+                                GameMgr.resendAll(typ)
                             }
                         }
                     }

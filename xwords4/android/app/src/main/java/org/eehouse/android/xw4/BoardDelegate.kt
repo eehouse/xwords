@@ -1453,7 +1453,16 @@ class BoardDelegate(delegator: Delegator) :
          } else if (isVisible) {
              Utils.playNotificationSound(mActivity)
          } else {
-             Assert.failDbg()
+             launch {
+                 mGR!!.let { gr ->
+                     BackMoveResult().also { bmr ->
+                         bmr.m_lmi = gr.getPlayersLastScore(turn)
+                         val locals = mGi!!.playersLocal()
+                         GameUtils.postMoveNotification(mActivity, gr,
+                                                        bmr, locals[turn])
+                     }
+                 }
+             }
          }
      }
 

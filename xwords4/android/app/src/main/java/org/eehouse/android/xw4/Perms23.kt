@@ -32,6 +32,7 @@ import java.util.Arrays
 
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.loc.LocUtils
 
 object Perms23 {
@@ -235,10 +236,7 @@ object Perms23 {
         }
 
         if (shouldResend) {
-            GameUtils.resendAllIf(
-                context, CommsConnType.COMMS_CONN_SMS,
-                true, true
-            )
+            GameMgr.resendAll(CommsConnType.COMMS_CONN_SMS)
         }
 
         val cbck = s_map.remove(code)

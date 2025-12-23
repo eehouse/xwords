@@ -41,7 +41,6 @@ import org.eehouse.android.xw4.XWPrefs
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole
 import org.eehouse.android.xw4.jni.TransportProcs.TPMsgHandler
-import org.eehouse.android.xw4.jni.XwJNI.GamePtr
 
 class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable {
     private var m_lock: GameLock? = lockIn.retain()
@@ -107,7 +106,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
 
     private var mStopped = false
     private var mSaveOnStop = false
-    private var mJNIGamePtr: GamePtr? = null
+    // private var mJNIGamePtr: GamePtr? = null
     // You aren't meant to call wait() or notify() on Threads. So I'm creating
     // an object solely to be used for synchronization
     private var mSyncObj = Object()
@@ -206,7 +205,7 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
     //     return success
     // } // configure()
 
-    fun getGamePtr() : GamePtr? { return mJNIGamePtr }
+    // fun getGamePtr() : GamePtr? { return mJNIGamePtr }
     fun getGI(): CurGameInfo { return mGi!! }
     fun getSummary(): GameSummary { return mSummary!! }
     fun getLock(): GameLock { return m_lock!! }
@@ -791,15 +790,6 @@ class JNIThread private constructor(lockIn: GameLock) : Thread(), AutoCloseable 
         const val MSGS_SENT: Int = 7
         const val DO_DRAW: Int = 8
         const val DIMMS_CHANGED: Int = 9
-
-        fun tryConnect(gamePtr: GamePtr, gi: CurGameInfo): Boolean {
-            Log.d(TAG, "tryConnect(rowid=%d)", gamePtr.rowid)
-            // XwJNI.comms_start(gamePtr)
-            if (gi.deviceRole == DeviceRole.ROLE_ISGUEST) {
-                // XwJNI.server_initClientConnection(gamePtr)
-            }
-            return false // XwJNI.server_do(gamePtr)
-        }
 
         private val s_instances: MutableMap<Long, JNIThread> = HashMap()
         fun getRetained(rowid: Long): JNIThread? {

@@ -23,6 +23,7 @@ import java.io.Serializable
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 
 object GameMgr {
     private val TAG: String = GameMgr::class.java.simpleName
@@ -132,6 +133,13 @@ object GameMgr {
             gmgr_getFor(jniState, gameID)
         } as Long
         return if (gr == 0L) null else GameRef(gr)
+    }
+
+    fun resendAll(filter: CommsConnType? = null) {
+        Device.post {
+            val jniState = Device.ptrGlobals()
+            gmgr_resendAll(jniState, filter)
+        }
     }
 
     suspend fun figureGR(bytes: ByteArray): GameRef {
@@ -281,6 +289,8 @@ object GameMgr {
                                      invitee: CommsAddrRec?): Long
     @JvmStatic
     private external fun gmgr_getFor(jniState: Long, gameID: Int): Long
+    @JvmStatic
+    private external fun gmgr_resendAll(jniState: Long, filter: CommsConnType?)
     @JvmStatic
     private external fun gmgr_figureGR(jniState: Long, bytes: ByteArray): Long
     @JvmStatic

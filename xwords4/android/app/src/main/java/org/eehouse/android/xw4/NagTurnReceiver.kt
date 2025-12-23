@@ -60,59 +60,59 @@ object NagTurnReceiver {
     private fun timerFired(context: Context) {
         // loop through all games testing who's been sitting on a turn
         if (!getNagsDisabled(context)) {
-            val needNagging = DBUtils.getNeedNagging(context)
-            if (null != needNagging) {
-                val now = System.currentTimeMillis()
-                for (info in needNagging) {
-                    Assert.assertTrueNR(info!!.m_nextNag < now)
+            DBUtils.getNeedNagging(context)?.let { needNagging ->
+                Assert.failDbg()
+                // val now = System.currentTimeMillis()
+                // for (info in needNagging) {
+                //     Assert.assertTrueNR(info!!.m_nextNag < now)
 
-                    info.m_nextNag = figureNextNag(
-                        context,
-                        info.m_lastMoveMillis
-                    )
+                //     info.m_nextNag = figureNextNag(
+                //         context,
+                //         info.m_lastMoveMillis
+                //     )
 
-                    // Skip display of notifications disabled for this type
-                    // of game
-                    if (s_nagsDisabledSolo!! && info.isSolo) {
-                        // do nothing
-                    } else if (s_nagsDisabledNet!! && !info.isSolo) {
-                        // do nothing
-                    } else {
-                        val lastWarning = 0L == info.m_nextNag
-                        val rowid = info.m_rowid
-                        val summary = GameUtils.getSummary(
-                            context, rowid,
-                            10
-                        )
-                        val prevPlayer =
-                            if (null == summary) {
-                                LocUtils.getString(context, R.string.prev_player)
-                            } else summary.prevPlayer!!
+                //     // Skip display of notifications disabled for this type
+                //     // of game
+                //     if (s_nagsDisabledSolo!! && info.isSolo) {
+                //         // do nothing
+                //     } else if (s_nagsDisabledNet!! && !info.isSolo) {
+                //         // do nothing
+                //     } else {
+                //         val lastWarning = 0L == info.m_nextNag
+                //         val rowid = info.m_rowid
+                //         val summary = GameUtils.getSummary(
+                //             context, rowid,
+                //             10
+                //         )
+                //         val prevPlayer =
+                //             if (null == summary) {
+                //                 LocUtils.getString(context, R.string.prev_player)
+                //             } else summary.prevPlayer!!
 
-                        Log.d(TAG, "not making intent...")
-                        // val msgIntent =
-                        //     GamesListDelegate.makeRowidIntent(context, rowid)
-                        // val millis = formatMillis(
-                        //     context,
-                        //     now - info.m_lastMoveMillis
-                        // )
-                        // var body = String.format(
-                        //     LocUtils.getString(context,R.string.nag_body_fmt),
-                        //     prevPlayer, millis
-                        // )
-                        // if (lastWarning) {
-                        //     body = LocUtils.getString(context, R.string.nag_warn_last_fmt, body)
-                        // }
-                        // Utils.postNotification(
-                        //     context, msgIntent,
-                        //     R.string.nag_title, body,
-                        //     rowid
-                        // )
-                    }
-                }
-                DBUtils.updateNeedNagging(context, needNagging!!)
+                //         Log.d(TAG, "not making intent...")
+                //         // val msgIntent =
+                //         //     GamesListDelegate.makeRowidIntent(context, rowid)
+                //         // val millis = formatMillis(
+                //         //     context,
+                //         //     now - info.m_lastMoveMillis
+                //         // )
+                //         // var body = String.format(
+                //         //     LocUtils.getString(context,R.string.nag_body_fmt),
+                //         //     prevPlayer, millis
+                //         // )
+                //         // if (lastWarning) {
+                //         //     body = LocUtils.getString(context, R.string.nag_warn_last_fmt, body)
+                //         // }
+                //         // Utils.postNotification(
+                //         //     context, msgIntent,
+                //         //     R.string.nag_title, body,
+                //         //     rowid
+                //         // )
+                //     }
+                // }
+                // DBUtils.updateNeedNagging(context, needNagging!!)
 
-                setNagTimer(context)
+                // setNagTimer(context)
             }
         }
     }

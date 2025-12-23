@@ -48,7 +48,6 @@ import java.net.UnknownHostException
 import javax.net.SocketFactory
 import kotlin.concurrent.thread
 
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 object NetUtils {

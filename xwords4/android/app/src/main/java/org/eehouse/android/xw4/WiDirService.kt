@@ -57,6 +57,7 @@ import org.eehouse.android.xw4.XWPacket.CMD
 import org.eehouse.android.xw4.XWServiceHelper.ReceiveResult
 import org.eehouse.android.xw4.jni.CommsAddrRec
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.loc.LocUtils
 
 class WiDirService : XWService() {
@@ -894,10 +895,7 @@ class WiDirService : XWService() {
                 macAddress
             )
 
-            GameUtils.resendAllIf(
-                XWApp.getContext(),
-                CommsConnType.COMMS_CONN_P2P
-            )
+            GameMgr.resendAll(CommsConnType.COMMS_CONN_P2P)
         }
 
         private fun processPacket(wrap: BiDiSockWrap, bytes: ByteArray) {

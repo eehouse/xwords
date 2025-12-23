@@ -88,7 +88,6 @@ import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameRef
-import org.eehouse.android.xw4.jni.XwJNI
 import org.eehouse.android.xw4.loc.LocUtils
 
 object Utils {

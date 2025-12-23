@@ -1151,6 +1151,17 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1newFor
     return result;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1resendAll
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jConnTyp )
+{
+    DVC_HEADER(jniGlobalPtr);
+    CommsConnType connType = !!jConnTyp
+        ? jEnumToInt(env, jConnTyp) : COMMS_CONN_NONE;
+    gmgr_resendAll( globalState->dutil, env, connType );
+    DVC_HEADER_END();
+}
+
 JNIEXPORT jlong JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1addForInvite
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jobject jnli )
