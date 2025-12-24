@@ -49,6 +49,8 @@ public class AboutAlert : XWDialogFragment() {
                 dateString
             )
         )
+        sb.append("\n\t")
+            .append(getString(R.string.about_branch_fmt, BuildConfig.GITBRANCH))
         if (BuildConfig.NON_RELEASE) {
             sb.append("\n\t").append(BuildConfig.GIT_REV)
         }

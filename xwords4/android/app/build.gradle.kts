@@ -75,6 +75,13 @@ if (! project.hasProperty("GITREV")) {
 }
 val GITREV = extra["GITREV"]
 
+if (! project.hasProperty("GITBRANCH")) {
+	extra.apply{
+        set("GITBRANCH", "git branch --show-current".runString())
+	}
+}
+val GITBRANCH = extra["GITBRANCH"]
+
 val GITREV_SHORT = "git rev-parse --short HEAD".runString()
 
 // Make CURTAG non-empty IFF we're at a tag (release build)
@@ -128,6 +135,7 @@ android {
         // the BuildConfig constant
         this.buildConfigField( "String", "GIT_REV", "\"${extra["GITREV"]}\"")
         this.buildConfigField( "String", "GITREV_SHORT", "\"${GITREV_SHORT}\"")
+        this.buildConfigField( "String", "GITBRANCH", "\"${GITBRANCH}\"")
 
         val stamp = System.currentTimeMillis() / 1000
         this.buildConfigField( "long", "BUILD_STAMP", "${stamp}" )

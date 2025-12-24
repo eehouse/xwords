@@ -1421,6 +1421,7 @@
 \n\tVersion code: %3$d
 \n\tSource (Git) rev: %4$s
 \n\tBuilt: %5$s</string>
+    <string name="about_branch_fmt">Branch: %1$s"</string>
     <string name="about_devid_fmt">Device ID: %1$s</string>
     <!-- string to display device's bluetooth Mac address, if
          known. Shown only on debug builds -->
