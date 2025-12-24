@@ -1584,7 +1584,7 @@ class GamesListDelegate(delegator: Delegator) :
                 var enable = showDbg && nothingSelected
                 Utils.setItemVisible(menu, R.id.games_menu_checkupdates, enable)
 
-                launch {
+                launch {        // TODO: don't launch inside onPrepareOptionsMenu()
                     val enable =
                         0 == nGamesSelected
                         && 0 == nGroupsSelected
@@ -1633,7 +1633,7 @@ class GamesListDelegate(delegator: Delegator) :
                     menu, R.id.games_group_delete,
                     1 <= nGroupsSelected
                 )
-                launch {
+                launch {        // TODO: don't launch inside onPrepareOptionsMenu()
                     val dflt = GameMgr.getDefaultGroup().grp
                     var enable = (1 == nGroupsSelected) && !m_mySIS!!.selGroupIDs
                         .contains(dflt)

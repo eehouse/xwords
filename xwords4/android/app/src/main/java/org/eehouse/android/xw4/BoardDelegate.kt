@@ -654,106 +654,106 @@ class BoardDelegate(delegator: Delegator) :
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val gr = mGR!!
         mGsi?.let { gsi ->
-            launch {
-                val inTrade = gsi.inTrade
-                Log.d(TAG, "onPrepareOptionsMenu(): inTrade: $inTrade")
-                menu.setGroupVisible(R.id.group_done, !inTrade)
-                menu.setGroupVisible(R.id.group_exchange, inTrade)
-                val strId =
-                    if (UtilCtxt.TRAY_REVEALED == gsi.trayVisState) {
-                        R.string.board_menu_tray_hide
-                    } else {
-                        R.string.board_menu_tray_show
-                    }
-                val item = menu.findItem(R.id.board_menu_tray)
-                item.setTitle(getString(strId))
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_flip,
-                    gsi.visTileCount >= 1
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_juggle,
-                    gsi.canShuffle
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_undo_current,
-                    gsi.canRedo
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_hint_prev,
-                    gsi.canHint
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_hint_next,
-                    gsi.canHint
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_chat,
-                    gsi.canChat
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_tray,
-                    !inTrade && gsi.canHideRack
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_trade,
-                    gsi.canTrade
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_undo_last,
-                    gsi.canUndo
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_game_pause,
-                    gsi.canPause
-                )
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_game_unpause,
-                    gsi.canUnpause
-                )
+            val inTrade = gsi.inTrade
+            Log.d(TAG, "onPrepareOptionsMenu(): inTrade: $inTrade")
+            menu.setGroupVisible(R.id.group_done, !inTrade)
+            menu.setGroupVisible(R.id.group_exchange, inTrade)
+            val strId =
+                if (UtilCtxt.TRAY_REVEALED == gsi.trayVisState) {
+                    R.string.board_menu_tray_hide
+                } else {
+                    R.string.board_menu_tray_show
+                }
+            val item = menu.findItem(R.id.board_menu_tray)
+            item.setTitle(getString(strId))
+            Utils.setItemVisible(
+                menu, R.id.board_menu_flip,
+                gsi.visTileCount >= 1
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_juggle,
+                gsi.canShuffle
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_undo_current,
+                gsi.canRedo
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_hint_prev,
+                gsi.canHint
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_hint_next,
+                gsi.canHint
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_chat,
+                gsi.canChat
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_tray,
+                !inTrade && gsi.canHideRack
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_trade,
+                gsi.canTrade
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_undo_last,
+                gsi.canUndo
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_game_pause,
+                gsi.canPause
+            )
+            Utils.setItemVisible(
+                menu, R.id.board_menu_game_unpause,
+                gsi.canUnpause
+            )
 
-                Utils.setItemVisible(menu, R.id.board_menu_trade_cancel, inTrade)
-                Utils.setItemVisible(
-                    menu, R.id.board_menu_trade_commit,
-                    inTrade && gsi.tradeTilesSelected
-                )
-                Utils.setItemVisible(menu, R.id.board_menu_game_resign, !inTrade)
-                var enable: Boolean
-                val summary = mGR!!.getSummary()!!
-                if (!inTrade) {
-                    enable = gsi.curTurnSelected
-                    menu.findItem(R.id.board_menu_done)?.let { item ->
-                        item.setVisible(enable)
-                        if (enable) {
-                            val strId =
-                                if (0 >= mView!!.curPending()) {
-                                    R.string.board_menu_pass
-                                } else {
-                                    R.string.board_menu_done
-                                }
-                            item.setTitle(getString(strId))
-                        }
-                    }
-                    if (mGameOver || summary.gameOver) {
-                        mGameOver = true
-                        menu.findItem(R.id.board_menu_game_resign)
-                            .setTitle(getString(R.string.board_menu_game_final))
+            Utils.setItemVisible(menu, R.id.board_menu_trade_cancel, inTrade)
+            Utils.setItemVisible(
+                menu, R.id.board_menu_trade_commit,
+                inTrade && gsi.tradeTilesSelected
+            )
+            Utils.setItemVisible(menu, R.id.board_menu_game_resign, !inTrade)
+            var enable: Boolean
+            if (!inTrade) {
+                enable = gsi.curTurnSelected
+                menu.findItem(R.id.board_menu_done)?.let { item ->
+                    item.setVisible(enable)
+                    if (enable) {
+                        val strId =
+                            if (0 >= mView!!.curPending()) {
+                                R.string.board_menu_pass
+                            } else {
+                                R.string.board_menu_done
+                            }
+                        item.setTitle(getString(strId))
                     }
                 }
-                enable = summary.canRematch ?: false
-                Utils.setItemVisible(menu, R.id.board_menu_rematch, enable)
-                enable = mGameOver && !mGR!!.isArchived()
-                Utils.setItemVisible(menu, R.id.board_menu_archive, enable)
-                val netGame = (null != mGi
-                                   && DeviceRole.ROLE_STANDALONE != mGi!!.deviceRole)
-                enable = netGame && (BuildConfig.DEBUG
-                                         || XWPrefs.getDebugEnabled(mActivity))
-                Utils.setItemVisible(menu, R.id.board_menu_game_netstats, enable)
-                enable = XWPrefs.getStudyEnabled(mActivity) && null != mGi
-                    && !DBUtils.studyListWords(mActivity, mGi!!.isoCode()!!).isEmpty()
-                Utils.setItemVisible(menu, R.id.board_menu_study, enable)
-            }   // launch
+                if (mGameOver || mSummary?.gameOver ?: false) {
+                    mGameOver = true
+                    menu.findItem(R.id.board_menu_game_resign)
+                        .setTitle(getString(R.string.board_menu_game_final))
+                }
+            }
+            enable = mSummary?.canRematch ?: false
+            Utils.setItemVisible(menu, R.id.board_menu_rematch, enable)
+            enable = mGameOver && !gr.isArchived()
+            // This one appears when drag happening
+            enable = false
+            Utils.setItemVisible(menu, R.id.board_menu_archive, enable)
+            val netGame = (null != mGi
+                               && DeviceRole.ROLE_STANDALONE != mGi!!.deviceRole)
+            enable = netGame && (BuildConfig.DEBUG
+                                     || XWPrefs.getDebugEnabled(mActivity))
+            Utils.setItemVisible(menu, R.id.board_menu_game_netstats, enable)
+            enable = XWPrefs.getStudyEnabled(mActivity) && null != mGi
+                && !DBUtils.studyListWords(mActivity, mGi!!.isoCode()!!).isEmpty()
+            Utils.setItemVisible(menu, R.id.board_menu_study, enable)
         }
         return true
     } // onPrepareOptionsMenu

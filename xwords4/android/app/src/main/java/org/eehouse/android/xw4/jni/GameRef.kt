@@ -467,8 +467,11 @@ class GameRef(val gr: Long): Parcelable, Serializable {
         }
     }
 
-    suspend fun isArchived(): Boolean {
-        return Device.await {
+    // This is needed inside onPrepareOptionsMenu, which cannot use launch
+    // because it must return synchronously. If this winds up a problem,
+    // remove the archive menuitem for a simple fix.
+    fun isArchived(): Boolean {
+        return Device.blockFor {
             gr_isArchived(jniState, gr)
         } as Boolean
     }
