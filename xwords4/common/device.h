@@ -101,6 +101,8 @@ GameRef dvc_makeFromStream( XW_DUtilCtxt* dutil, XWEnv xwe,
 XWStreamCtxt* dvc_loadStream( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[]);
 void dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe,
                       const XP_UCHAR* keys[], XWStreamCtxt* stream );
+void dvc_storeStreamP( XW_DUtilCtxt* dutil, XWEnv xwe,
+                      const XP_UCHAR* keys[], XWStreamCtxt** streamp );
 void dvc_loadPtr( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* keys[],
                   void* data, XP_U32* lenp );
 void dvc_storePtr( XW_DUtilCtxt* dutil, XWEnv xwe,

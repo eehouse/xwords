@@ -153,6 +153,16 @@ dvc_storeStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
     dutil_storeStream( dutil, xwe, key, stream );
 }
 
+void
+dvc_storeStreamP( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
+                  XWStreamCtxt** streamp )
+{
+    if ( !!*streamp ) {
+        dvc_storeStream( dutil, xwe, keys, *streamp );
+        strm_destroyp( streamp );
+    }
+}
+
 XWStreamCtxt*
 dvc_loadStream( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[] )
 {
