@@ -64,7 +64,7 @@ typedef struct _GroupState {
     } u;
     GroupRef grp;
     XP_UCHAR name[MAX_GROUP_NAME+1];
-    SORT_ORDER sos[SO_NSOS];
+    SortOrderElem soes[SO_NSOS];
     XP_UCHAR nSOs;
     XP_Bool collapsed;
     XP_U16 index;
@@ -729,6 +729,66 @@ gmgr_getPositions( XW_DUtilCtxt* duc, XWEnv xwe )
     return positions;
 }
 
+#ifdef DEBUG
+static void
+assertNoDupes( SortOrderElem soes[], int nElems )
+{
+    XP_U32 seen = 0;
+    for ( int ii = 0; ii < nElems; ++ii ) {
+        int mask = (1 << soes[ii].so);
+        XP_ASSERT( 0 == (seen & mask) );
+        seen |= mask;
+    }
+}
+#else
+# define assertNoDupes(aa, bb)
+#endif
+
+void
+gmgr_getSortOrder( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                   XP_U16* nActiveP, XP_U16* nTotalP, SortOrderElem soes[] )
+{
+    GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
+
+    /* First write the elems in active use, marking them for later */
+    XP_U32 seen = 0;
+    for ( int ii = 0; ii < grps->nSOs; ++ii ) {
+        soes[ii] = grps->soes[ii];
+        seen |= 1 << soes[ii].so;
+    }
+    *nActiveP = grps->nSOs;
+
+    /* Now write the elems *not* in active use, i.e. not already written */
+    const XP_U16 nTotal = *nTotalP;
+    *nTotalP = *nActiveP;
+    for ( int ii = 0; ii < SO_NSOS && *nTotalP < nTotal; ++ii ) {
+        if ( 0 == (seen & 1<<ii) ) {
+            SortOrderElem soe = { .so = (SORT_ORDER)ii, };
+            soes[(*nTotalP)++] = soe;
+        }
+    }
+    assertNoDupes( soes, *nTotalP );
+}
+
+void
+gmgr_setSortOrder( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+                   XP_U16 nElems, SortOrderElem soes[] )
+{
+    XP_LOGFF( "(nElems=%d)", nElems );
+    assertNoDupes( soes, nElems );
+    GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
+    XP_ASSERT( nElems < VSIZE(grps->soes) );
+    XP_MEMMOVE( grps->soes, soes, nElems * sizeof(soes[0]) );
+    grps->nSOs = nElems;
+
+    /* Force a re-sort if the thing is open */
+    if ( !grps->collapsed ) {
+        gmgr_setGroupCollapsed( duc, xwe, grp, XP_TRUE );
+        gmgr_setGroupCollapsed( duc, xwe, grp, XP_FALSE );
+    }
+    scheduleSaveState( duc, xwe );
+}
+
 /* Don't actually delete the game: it's not easy to guarantee no code still
    has a GameRef it might want to use. So "mark" as deleted, allowing gr_
    calls to safely fail.
@@ -827,7 +887,7 @@ gmgr_storeSum( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr, XWStreamCtxt* stream )
 {
     KeyStore ks;
     mkKeys( gr, &ks, KEY_SUM );
-    dvc_storeStream( duc, xwe, ks.keys, stream );
+    dvc_storeStreamP( duc, xwe, ks.keys, &stream );
 }
 
 XWStreamCtxt*
@@ -1071,7 +1131,7 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
 {
     GroupState* grps = (GroupState*)closure;
     XW_DUtilCtxt* duc = grps->duc;
-    SORT_ORDER* sos = grps->sos;
+    SortOrderElem* soes = grps->soes;
     int result = 0;
     if ( dl1 != dl2 ) {         /* identity? short-circuit */
         const CurGameInfo* gi1 = gr_getGI( duc, (GameRef)dl1, xwe );
@@ -1079,7 +1139,7 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
         const GameSummary* gs1 = gr_getSummary( duc, (GameRef)dl1, xwe );
         const GameSummary* gs2 = gr_getSummary( duc, (GameRef)dl2, xwe );
         for ( int ii = 0; result == 0 && ii < grps->nSOs; ++ii ) {
-            switch ( sos[ii] ) {
+            switch ( soes[ii].so ) {
             case SO_HASCHAT:
                 result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
                 break;
@@ -1115,9 +1175,13 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
                 result = cmpU32( gs1->lastMoveTime, gs2->lastMoveTime );
                 break;
 
+            case SO_LANGUAGE:
+                result = XP_STRCMP( gi1->isoCodeStr, gi2->isoCodeStr );
+                break;
+
             default:
-                XP_LOGFF( "so %d not handled", sos[ii] );
-                XP_ASSERT(0);
+                XP_LOGFF( "******** so %d not handled ********", soes[ii].so );
+                // XP_ASSERT(0);
             }
         }
 
@@ -1138,15 +1202,16 @@ addGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const XP_UCHAR* name )
     grps->duc = duc;
     grps->index = -1;
     grps->collapsed = XP_TRUE;
-    SORT_ORDER sos[] = {
-        SO_HASCHAT,
-        SO_GAMESTATE,
-        SO_TURNLOCAL,
-        SO_LASTMOVE_TS,
+    SortOrderElem soes[] = {
+        { SO_LANGUAGE, XP_FALSE },
+        { SO_HASCHAT, XP_FALSE },
+        { SO_GAMESTATE, XP_FALSE },
+        { SO_TURNLOCAL, XP_FALSE },
+        { SO_LASTMOVE_TS, XP_FALSE },
     };
-    grps->nSOs = VSIZE(sos);
-    for ( int ii = 0; ii < VSIZE(sos); ++ii ) {
-        grps->sos[ii] = sos[ii];
+    grps->nSOs = VSIZE(soes);
+    for ( int ii = 0; ii < VSIZE(soes); ++ii ) {
+        grps->soes[ii] = soes[ii];
     }
 
     if ( !!name ) {
@@ -1240,6 +1305,28 @@ loadGroupData( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
         grps = addGroup( duc, xwe, grp, name );
 
         collapsed = strm_getU8( stream );
+        XP_U32 numGames;
+        if ( strm_gotU32VL( stream, &numGames ) ) {
+            XP_LOGFF( "dropping numGames: %d", numGames );
+
+            XP_U8 nSOs;
+            if ( strm_gotU8( stream, &nSOs ) ) {
+                grps->nSOs = 0;
+                for ( int ii = 0; ii < nSOs; ++ii ) {
+                    XP_U8 val;
+                    if ( strm_gotU8( stream, &val ) ) {
+                        SortOrderElem* soe = &grps->soes[(int)grps->nSOs++];
+                        soe->so = val & 0x7F;
+                        soe->inverted = 0 != (val & 0x80);
+                    } else {
+                        XP_LOGFF( "missing data at %d (of %d)", ii, nSOs );
+                        XP_ASSERT(0);
+                        break;
+                    }
+                }
+            }
+        }
+
         strm_destroy( stream );
 
         grps->collapsed = !collapsed; /* so will trigger load of nGames */
@@ -1294,7 +1381,17 @@ storeGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupState* grps )
         stringToStream( stream, grps->name );
         strm_putU8( stream, grps->collapsed );
         XP_U32 nGames = numGames( grps );
-        strm_putU32VL( stream, nGames );
+        strm_putU32VL( stream, nGames ); /* unused; remove?? */
+
+        strm_putU8( stream, grps->nSOs );
+        for ( int ii = 0; ii < grps->nSOs; ++ii ) {
+            SortOrderElem soe = grps->soes[ii];
+            XP_U8 val = soe.so;
+            if ( soe.inverted ) {
+                val |= 0x80;
+            }
+            strm_putU8( stream, val );
+        }
 
         XP_UCHAR buf[8];
         XP_SNPRINTF( buf, VSIZE(buf), "%d", grps->grp );

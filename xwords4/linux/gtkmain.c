@@ -38,6 +38,7 @@
 #include "gamemgr.h"
 #include "gtkedalr.h"
 #include "gtkaskgrp.h"
+#include "gtksort.h"
 #include "dbgutil.h"
 
 static void onNewData( GtkAppGlobals* apg, GameRef gr );
@@ -835,7 +836,7 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
     return button;
 }
 
-static void
+void
 removeAllFrom( GtkWidget* container )
 {
     GList* children = gtk_container_get_children(GTK_CONTAINER(container));
@@ -843,6 +844,33 @@ removeAllFrom( GtkWidget* container )
         gtk_container_remove( GTK_CONTAINER(container), GTK_WIDGET(iter->data) );
     }
     g_list_free(children);
+}
+
+typedef struct _FindChildState {
+    const GtkWidget* sought;
+    bool found;
+} FindChildState;
+
+static void
+checkForChild( GtkWidget* widget, gpointer data )
+{
+    FindChildState* fcs = (FindChildState*)data;
+    if ( fcs->found ) {
+        /* we're done */
+    } else if ( widget == fcs->sought ) {
+        fcs->found = true;
+    } else if ( GTK_IS_CONTAINER(widget) ) {
+        gtk_container_foreach( GTK_CONTAINER(widget), checkForChild, fcs );
+    }
+}
+
+bool
+hasAsChild( const GtkContainer* container, const GtkWidget* child )
+{
+    FindChildState fcs = { .sought = child, };
+    gtk_container_foreach( GTK_CONTAINER(container), checkForChild, &fcs );
+    XP_LOGFF( "() => %s", boolToStr(fcs.found) );
+    return fcs.found;
 }
 
 #ifdef XWFEATURE_GAMEREF_CONVERT
@@ -1218,9 +1246,10 @@ downGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 static void
-sortGroupProc( GtkWidget* XP_UNUSED(widget), void* XP_UNUSED(closure) )
+sortGroupProc( GtkWidget* XP_UNUSED(widget), void* closure )
 {
-    LOG_FUNC();
+    GroupState* gs = (GroupState*)closure;
+    gtkSortDialog( gs->apg, gs->params, gs->grp );
 }
 
 static void

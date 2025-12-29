@@ -46,5 +46,10 @@ void informMoveGTK( LaunchParams* params, GameRef gr, XWStreamCtxt* expl,
                     XWStreamCtxt* words );
 void informGameOverGTK( LaunchParams* params, GameRef gr, XP_S16 quitter );
 
+
+/* Utility functions */
+void removeAllFrom( GtkWidget* container );
+bool hasAsChild( const GtkContainer* container, const GtkWidget* child );
+
 #endif
 #endif

@@ -2315,7 +2315,6 @@ saveSummary( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
     XWStreamCtxt* stream = dvc_makeStream( duc );
     sumToStream( stream, &gd->sum, gd->gi.nPlayers );
     gmgr_storeSum( duc, xwe, gd->gr, stream );
-    strm_destroy( stream );
 }
 
 static void

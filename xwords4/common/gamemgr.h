@@ -57,6 +57,7 @@ typedef enum {
     SO_CREATED_TS,
     SO_GAMESTATE,               /* Game created, in-play, or over */
     SO_HASCHAT,                 /* There's an unread chat available */
+    SO_LANGUAGE,
 
     SO_NSOS,
 } SORT_ORDER;
@@ -72,8 +73,16 @@ GameRef gmgr_addForInvite( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
                            const NetLaunchInfo* nli );
 void gmgr_getForGID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
                      GameRef refs[], XP_U16* nRefs );
-void gmgr_setSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, SORT_ORDER* sos );
 
+typedef struct _SortOrderElem {
+    SORT_ORDER so;
+    XP_Bool inverted;
+} SortOrderElem;
+
+void gmgr_getSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
+                        XP_U16* nActive, XP_U16* nTotal, SortOrderElem sos[] );
+void gmgr_setSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
+                        XP_U16 nElems, SortOrderElem sos[] );
 void gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );
 
 XP_U16 gmgr_countGroups(XW_DUtilCtxt* duc, XWEnv xwe);

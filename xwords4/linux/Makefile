@@ -217,6 +217,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkaskgrp.o \
 	$(BUILD_PLAT_DIR)/gtknetst.o \
 	$(BUILD_PLAT_DIR)/gtkqrwrp.o \
+	$(BUILD_PLAT_DIR)/gtksort.o \
 
 endif
 ifdef DO_CURSES
