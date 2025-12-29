@@ -984,7 +984,7 @@ Java_org_eehouse_android_xw4_jni_TmpDict_di_1getMinMax
     XP_U16 vals[2];
     di_getMinMax( data->iter, &vals[0], &vals[1] );
 
-    result = makeIntArray( env, VSIZE(vals), vals, sizeof(vals[0]) );
+    result = makeIntArray( env, VSIZE(vals), vals, sizeof(vals[0]), XP_FALSE );
 
     DI_HEADER_END();
     return result;
@@ -1025,7 +1025,8 @@ Java_org_eehouse_android_xw4_jni_TmpDict_di_1getIndices
             XP_ASSERT( sizeof(jint) == sizeof(data->idata.indices[0]) );
             jindices = makeIntArray( env, data->idata.count,
                                      (jint*)data->idata.indices,
-                                     sizeof(data->idata.indices[0]) );
+                                     sizeof(data->idata.indices[0]),
+                                     XP_FALSE );
         }
     }
     DI_HEADER_END();
@@ -1213,7 +1214,8 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroupsMap
         refs[ii] = grp;
     }
 
-    jobjectArray jRefs = makeIntArray( env, nGroups, refs, sizeof(refs[0]) );
+    jobjectArray jRefs = makeIntArray( env, nGroups, refs,
+                                       sizeof(refs[0]), XP_FALSE );
     (*env)->SetObjectArrayElement( env, outRefs, 0, jRefs );
     jobjectArray jNames = makeStringArray( env, nGroups, ptrs );
     (*env)->SetObjectArrayElement( env, outNames, 0, jNames );
@@ -2074,7 +2076,7 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1figureOrder
 
     const CurGameInfo* gi = gr_getGI(DUTIL_GR_ENV);
     result = makeIntArray( env, gi->nPlayers, no.order,
-                           sizeof(no.order[0]) );
+                           sizeof(no.order[0]), XP_FALSE );
 
     DVC_HEADER_END();
     return result;

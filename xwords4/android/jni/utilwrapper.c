@@ -166,8 +166,8 @@ and_util_informNeedPickTiles( XW_UtilCtxt* uc, XWEnv xwe, XP_Bool isInitial,
     UTIL_CBK_HEADER("informNeedPickTiles",
                     "(ZII[Ljava/lang/String;[I)V" );
     jobject jtexts = makeStringArray( env, nFaces, faces );
-    jobject jcounts = makeIntArray( env, nFaces, counts, sizeof(counts[0]) );
-
+    jobject jcounts = makeIntArray( env, nFaces, counts, sizeof(counts[0]),
+                                    XP_FALSE );
     (*env)->CallVoidMethod( env, util->jutil, mid, isInitial, player,
                             nToPick, jtexts, jcounts );
 

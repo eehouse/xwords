@@ -332,7 +332,8 @@ makeLongArray( JNIEnv* env, int count, const jlong* vals )
 }
 
 jintArray
-makeIntArray( JNIEnv* env, int count, const void* vals, size_t elemSize )
+makeIntArray( JNIEnv* env, int count, const void* vals,
+              size_t elemSize, XP_Bool isSigned )
 {
     jintArray array = (*env)->NewIntArray( env, count );
     XP_ASSERT( !!array );
@@ -342,13 +343,25 @@ makeIntArray( JNIEnv* env, int count, const void* vals, size_t elemSize )
     for ( int ii = 0; ii < count; ++ii ) {
         switch( elemSize ) {
         case sizeof(XP_U32):
-            elem = *(XP_U32*)vals;
+            if ( isSigned ) {
+                elem = *(XP_S32*)vals;
+            } else {
+                elem = *(XP_U32*)vals;
+            }
             break;
         case sizeof(XP_U16):
-            elem = *(XP_U16*)vals;
+            if ( isSigned ) {
+                elem = *(XP_S16*)vals;
+            } else {
+                elem = *(XP_U16*)vals;
+            }
             break;
         case sizeof(XP_U8):
-            elem = *(XP_U8*)vals;
+            if ( isSigned ) {
+                elem = *(XP_S8*)vals;
+            } else {
+                elem = *(XP_U8*)vals;
+            }
             break;
         default:
             XP_ASSERT(0);
@@ -359,14 +372,6 @@ makeIntArray( JNIEnv* env, int count, const void* vals, size_t elemSize )
     }
     (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
     return array;
-}
-
-void
-setIntArray( JNIEnv* env, jobject jowner, const char* fieldName,
-             int count, const void* vals, size_t elemSize )
-{
-    jintArray jarr = makeIntArray( env, count, vals, elemSize );
-    setObjectField( env, jowner, fieldName, "[I", jarr );
 }
 
 jbyteArray
@@ -565,7 +570,7 @@ makeObjectEmptyConstr( JNIEnv* env, const char* className )
     return makeObject( env, className, "()V" );
 }
 
-jobject
+static jobject
 makeJSummaryRec( JNIEnv* env, jobject jsummary, const GameSummary* gs,
                  const CurGameInfo* gi )
 {
@@ -591,7 +596,7 @@ makeJSummaryRec( JNIEnv* env, jobject jsummary, const GameSummary* gs,
                      PKG_PATH("jni/CurGameInfo$DeviceRole") );
 
     jintArray jscores = makeIntArray( env, gi->nPlayers, gs->scores.arr,
-                                      sizeof(gs->scores.arr[0]) );
+                                      sizeof(gs->scores.arr[0]), XP_TRUE );
     setObjectField( env, jsummary, "scores", "[I", jscores );
 
     setInt( env, jsummary, "gameID", gi->gameID );

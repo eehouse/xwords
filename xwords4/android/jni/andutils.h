@@ -67,9 +67,8 @@ void setObjectField( JNIEnv* env, jobject container, const char* fieldName,
 jobject getObjectField( JNIEnv* env, jobject obj, const char* fieldName,
                         const char* fieldClassSig );
 jlongArray makeLongArray( JNIEnv* env, int size, const jlong* vals );
-jintArray makeIntArray( JNIEnv* env, int size, const void* vals, size_t elemSize );
-void setIntArray( JNIEnv* env, jobject jowner, const char* ownerField,
-                  int count, const void* vals, size_t elemSize );
+jintArray makeIntArray( JNIEnv* env, int size, const void* vals,
+                        size_t elemSize, XP_Bool isSigned );
 /* returns number of items copied, i.e. min of count and len(array) */
 int getIntsFromArray( JNIEnv* env, int dest[], jintArray arr, int count, bool del );
 void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
@@ -98,8 +97,6 @@ jobject makeObject( JNIEnv* env, const char* className, const char* initSig, ...
 jobject makeObjectEmptyConstr( JNIEnv* env, const char* className );
 
 jobject makeJSummary( JNIEnv* env, const GameSummary* gs, const CurGameInfo* gi );
-jobject makeJSummaryRec( JNIEnv* env, jobject jsum, const GameSummary* gs,
-                         const CurGameInfo* gi );
 
 jobject makeJAddr( JNIEnv* env, const CommsAddrRec* addr );
 jobject setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );

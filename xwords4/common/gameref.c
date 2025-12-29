@@ -2348,7 +2348,7 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
         sum.collapsed = gd->sum.collapsed;
         sum.hasChat = gd->sum.hasChat;
 
-        model_getCurScores( gd->model, &sum.scores, XP_TRUE );
+        model_getCurScores( gd->model, &sum.scores, sum.gameOver );
 
         for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp  = &gi->players[ii];

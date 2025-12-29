@@ -306,18 +306,20 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
 
     private suspend fun setData(summary: GameSummary) {
         val state = setName()
-
-        m_list!!.removeAllViews()
+        val list = m_list!!
+        list.removeAllViews()
         var haveATurn = false
         var haveALocalTurn = false
         val isLocal = BooleanArray(1)
         for (ii in 0 until summary.nPlayers) {
             val tmp = LocUtils.inflate(mContext, R.layout.player_list_elem)
                 as ExpiringLinearLayout
-            var tview = tmp.findViewById<TextView>(R.id.item_name)
-            tview.text = summary.summarizePlayer(mContext, ii)
-            tview = tmp.findViewById<TextView>(R.id.item_score)
-            tview.text = String.format("%d", summary.scores!![ii])
+            tmp.findViewById<TextView>(R.id.item_name).also {
+                it.text = summary.summarizePlayer(mContext, ii)
+            }
+            tmp.findViewById<TextView>(R.id.item_score).also {
+                it.text = String.format("%d", summary.scores!![ii])
+            }
             val thisHasTurn = summary.isNextToPlay(ii, isLocal)
             if (thisHasTurn) {
                 haveATurn = true
@@ -327,7 +329,7 @@ class GameListItem(private val mContext: Context, aset: AttributeSet?) :
             }
             tmp.setPct(mHandler!!, thisHasTurn, isLocal[0],
                        summary.lastMoveTime.toLong())
-            m_list!!.addView(tmp, ii)
+            list.addView(tmp, ii)
         }
 
         m_state!!.text = state

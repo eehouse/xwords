@@ -134,7 +134,8 @@ and_draw_scoreBegin( DrawCtx* dctx, XWEnv xwe, const XP_Rect* rect,
         for ( int ii = 0; ii < numPlayers; ++ii ) {
             jarr[ii] = scores[ii];
         }
-        jintArray jscores = makeIntArray( env, numPlayers, jarr, sizeof(jarr[0]) );
+        jintArray jscores = makeIntArray( env, numPlayers, jarr,
+                                          sizeof(jarr[0]), XP_TRUE );
         jobject jrect = makeJRect( env, rect );
 
         result = (*env)->CallBooleanMethod( env, adraw->jdraw, mid,
