@@ -1255,6 +1255,7 @@ onGotGroupKey( const XP_UCHAR* key, void* closure, XWEnv xwe )
             XP_LOGFF( "added " GR_FMT " to games array for group %d", gr, grp );
         }
     }
+    LOG_RETURN_VOID();
 }
 
 static XP_U32
@@ -1300,39 +1301,43 @@ loadGroupData( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
         XP_SNPRINTF( buf, VSIZE(buf), "%d", grp );
         const XP_UCHAR* keys[] = { KEY_GROUPS, buf, KEY_SUM, NULL };
         XWStreamCtxt* stream = dvc_loadStream( duc, xwe, keys );
-        XP_UCHAR name[MAX_GROUP_NAME+1];
-        stringFromStreamHere( stream, name, VSIZE(name) );
-        grps = addGroup( duc, xwe, grp, name );
+        XP_ASSERT( !!stream );          /* firing on opening Frank's DB */
+        if ( !!stream ) {
+            XP_UCHAR name[MAX_GROUP_NAME+1];
+            stringFromStreamHere( stream, name, VSIZE(name) );
+            grps = addGroup( duc, xwe, grp, name );
 
-        collapsed = strm_getU8( stream );
-        XP_U32 numGames;
-        if ( strm_gotU32VL( stream, &numGames ) ) {
-            XP_LOGFF( "dropping numGames: %d", numGames );
+            collapsed = strm_getU8( stream );
+            XP_U32 numGames;
+            if ( strm_gotU32VL( stream, &numGames ) ) {
+                XP_LOGFF( "dropping numGames: %d", numGames );
 
-            XP_U8 nSOs;
-            if ( strm_gotU8( stream, &nSOs ) ) {
-                grps->nSOs = 0;
-                for ( int ii = 0; ii < nSOs; ++ii ) {
-                    XP_U8 val;
-                    if ( strm_gotU8( stream, &val ) ) {
-                        SortOrderElem* soe = &grps->soes[(int)grps->nSOs++];
-                        soe->so = val & 0x7F;
-                        soe->inverted = 0 != (val & 0x80);
-                    } else {
-                        XP_LOGFF( "missing data at %d (of %d)", ii, nSOs );
-                        XP_ASSERT(0);
-                        break;
+                XP_U8 nSOs;
+                if ( strm_gotU8( stream, &nSOs ) ) {
+                    grps->nSOs = 0;
+                    for ( int ii = 0; ii < nSOs; ++ii ) {
+                        XP_U8 val;
+                        if ( strm_gotU8( stream, &val ) ) {
+                            SortOrderElem* soe = &grps->soes[(int)grps->nSOs++];
+                            soe->so = val & 0x7F;
+                            soe->inverted = 0 != (val & 0x80);
+                        } else {
+                            XP_LOGFF( "missing data at %d (of %d)", ii, nSOs );
+                            XP_ASSERT(0);
+                            break;
+                        }
                     }
                 }
             }
+
+            strm_destroy( stream );
+
+            grps->collapsed = !collapsed; /* so will trigger load of nGames */
+
+            onCollapsedChange( duc, xwe, grps, collapsed );
         }
-
-        strm_destroy( stream );
-
-        grps->collapsed = !collapsed; /* so will trigger load of nGames */
     }
-
-    onCollapsedChange( duc, xwe, grps, collapsed );
+    LOG_RETURN_VOID();
 }
 
 static ForEachAct
@@ -1432,18 +1437,19 @@ storeGroupID( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 static void
 storeGroups( XW_DUtilCtxt* duc, XWEnv xwe, XP_Bool deleteAfter )
 {
-    /* First, the array of group IDs */
-    XWStreamCtxt* stream = dvc_makeStream( duc );
     GameMgrState* gs = duc->gameMgrState;
+
+    /* First, let each write its summary data */
+    SumStoreState sss = { .duc = duc, .deleteAfter = deleteAfter };
+    arr_map( gs->groups, xwe, storeGroupProc, &sss );
+
+    /* Then the array of group IDs */
+    XWStreamCtxt* stream = dvc_makeStream( duc );
     strm_putU32VL( stream, arr_length(gs->groups) );
     XP_LOGFF( "storing %d groups", arr_length(gs->groups) );
     arr_map( gs->groups, xwe, storeGroupID, stream );
     const XP_UCHAR* keys[] = { KEY_GROUPS, KEY_IDS, NULL };
     dvc_storeStreamP( duc, xwe, keys, &stream );
-
-    /* now let each write its summary data */
-    SumStoreState sss = { .duc = duc, .deleteAfter = deleteAfter};
-    arr_map( gs->groups, xwe, storeGroupProc, &sss );
 }
 
 static void
