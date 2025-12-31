@@ -22,14 +22,14 @@
               style="@style/tiles_table_row"
               />
   </TableRow>
-  <ScrollView android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
+  <ScrollView android:layout_width="match_parent"
+              android:layout_height="match_parent"
               android:orientation="vertical"
               >
     <LinearLayout android:id="@+id/table"
                   android:orientation="vertical"
-                  android:layout_width="fill_parent"
-                  android:layout_height="fill_parent"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
                   />
   </ScrollView>
 </TableLayout>

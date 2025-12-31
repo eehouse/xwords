@@ -2,14 +2,14 @@
 <org.eehouse.android.xw4.NotAgainView
     xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
+              android:layout_width="match_parent" 
+              android:layout_height="match_parent"
               >
 
   <!-- Container derives from ScrollView, so this LinearLayout must be
        the only child. -->
   <LinearLayout android:orientation="vertical"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 >

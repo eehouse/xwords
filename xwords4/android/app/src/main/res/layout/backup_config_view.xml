@@ -17,7 +17,7 @@
   <!-- backup_config_item instances get added here -->
   <LinearLayout android:id="@+id/whats_list"
                 android:orientation="vertical"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 />

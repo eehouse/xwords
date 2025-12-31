@@ -15,13 +15,13 @@
   -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 >
 
   <CheckBox android:id="@+id/game_locked_check"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/game_locked"
             android:checked="true"
@@ -30,14 +30,14 @@
             />
   <!-- This  guy's at the bottom of the screen! -->
   <Button android:id="@+id/play_button"
-          android:layout_width="fill_parent" 
+          android:layout_width="match_parent" 
           android:layout_height="wrap_content"
           android:text="@string/play" 
           android:layout_alignParentBottom="true"
           />
 
   <ScrollView android:id="@+id/screen"
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical"
               android:layout_below="@id/game_locked_check"
@@ -46,15 +46,15 @@
               >
 
     <!-- only one direct child possible -->
-    <LinearLayout android:layout_width="fill_parent"
-                  android:layout_height="fill_parent"
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="match_parent"
                   android:orientation="vertical"
                   android:layout_margin="4dp"
                   >
 
       <LinearLayout android:id="@+id/game_name_edit_row"
                     android:orientation="horizontal"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     >
         <TextView android:layout_width="wrap_content"
@@ -72,7 +72,7 @@
                 />
 
       <Spinner android:id="@+id/lang_spinner"
-               android:layout_width="fill_parent"
+               android:layout_width="match_parent"
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
                android:prompt="@string/title_langs_list"
@@ -80,7 +80,7 @@
                android:layout_marginBottom="5dp"
                />
       <Spinner android:id="@+id/dict_spinner"
-               android:layout_width="fill_parent"
+               android:layout_width="match_parent"
                android:layout_height="wrap_content"
                android:drawSelectorOnTop="true"
                android:layout_marginLeft="20dp"
@@ -92,7 +92,7 @@
                 android:layout_marginTop="15dp"
                 />
       <LinearLayout android:id="@+id/player_list"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_marginTop="5sp"
@@ -100,7 +100,7 @@
                     android:layout_marginLeft="6dp"
                     />
 
-      <LinearLayout android:layout_width="fill_parent"
+      <LinearLayout android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     >
@@ -133,21 +133,21 @@
                 />
 
       <CheckBox android:id="@+id/duplicate_check"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/duplicate_check"
                 android:visibility="gone"
                 />
 
       <CheckBox android:id="@+id/use_timer"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 />
 
       <LinearLayout android:id="@+id/timer_set"
                     android:visibility="gone"
                     android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:orientation="horizontal"
                     >
 
@@ -172,7 +172,7 @@
       </LinearLayout>
 
       <CheckBox android:id="@+id/hints_allowed"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/hints_allowed"
                 />
@@ -230,19 +230,19 @@
       </org.eehouse.android.xw4.LabeledSpinner>
 
       <CheckBox android:id="@+id/trade_sub_seven"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/sub_seven_allowed"
                 />
 
       <CheckBox android:id="@+id/pick_faceup"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/pick_faceup"
                 />
 
-      <LinearLayout android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+      <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:id="@+id/disableds"
                     android:visibility="gone"

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
+              android:layout_width="match_parent" 
+              android:layout_height="match_parent"
               android:orientation="vertical"
               android:paddingLeft="8dp"
               android:paddingRight="8dp"
@@ -12,12 +12,12 @@
 
   <!-- A summary followed by a hideable filter-config section -->
   <LinearLayout android:orientation="vertical"
-                android:layout_width="fill_parent" 
+                android:layout_width="match_parent" 
                 android:layout_height="wrap_content"
                 >
     <!-- Here's the summary -->
     <LinearLayout android:orientation="horizontal"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   >
       <TextView android:id="@+id/filter_summary"
@@ -52,7 +52,7 @@
                      android:layout_height="wrap_content"
                      >
           <TableRow
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               >
             <TextView style="@style/pat_table_label"
@@ -67,7 +67,7 @@
                       />
           </TableRow>
           <org.eehouse.android.xw4.PatTableRow
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               >
             <TextView style="@style/pat_table_label"
@@ -79,7 +79,7 @@
                       />
           </org.eehouse.android.xw4.PatTableRow>
           <org.eehouse.android.xw4.PatTableRow
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               >
             <TextView style="@style/pat_table_label"
@@ -91,7 +91,7 @@
                       />
           </org.eehouse.android.xw4.PatTableRow>
           <org.eehouse.android.xw4.PatTableRow
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               >
             <TextView style="@style/pat_table_label"

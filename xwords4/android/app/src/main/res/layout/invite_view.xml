@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     >
         <CheckBox android:id="@+id/check"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:text="@string/sort_by_date_label"
                   />

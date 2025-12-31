@@ -3,30 +3,30 @@
 <org.eehouse.android.xw4.LookupAlertView
      xmlns:android="http://schemas.android.com/apk/res/android"
      android:orientation="vertical"
-     android:layout_width="fill_parent" 
-     android:layout_height="fill_parent"
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"
      android:paddingTop="12dp"
      >
 
   <TextView android:id="@+id/summary"
             android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:paddingLeft="8dp"
             />
 
   <ListView android:id="@id/android:list"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:drawSelectorOnTop="false"
             android:layout_weight="1"
             />
 
   <Button android:id="@+id/button_study"
-          android:layout_width="fill_parent" 
+          android:layout_width="match_parent" 
           android:layout_height="wrap_content"
           />
   <Button android:id="@+id/button_done"
-          android:layout_width="fill_parent" 
+          android:layout_width="match_parent" 
           android:layout_height="wrap_content"
           />
 

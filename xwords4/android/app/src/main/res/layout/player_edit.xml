@@ -16,11 +16,11 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" 
             android:id="@+id/screen"
-            android:layout_width="fill_parent" 
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent" 
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
-  <LinearLayout android:layout_width="fill_parent"
+  <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="8dp"
@@ -37,7 +37,7 @@
     <!-- Use a layout to group elems we want to show/hide as a set -->
     <LinearLayout android:id="@+id/local_player_set"
                   android:layout_height="wrap_content"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:orientation="vertical"
                   >
 
@@ -50,7 +50,7 @@
 
       <LinearLayout android:id="@+id/password_set"
                     android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:orientation="horizontal"
                     android:paddingLeft="20dp"
                     android:layout_marginBottom="10dp"
@@ -65,7 +65,7 @@
 
         <EditText android:id="@+id/password_edit"
                   android:layout_height="wrap_content"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:scrollHorizontally="true"
                   android:gravity="fill_horizontal"
                   android:maxLines="1"
@@ -78,7 +78,7 @@
 
       <LinearLayout android:orientation="horizontal"
                     android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_marginLeft="16dp"
                     >
         <TextView android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
 
         <EditText android:id="@+id/player_name_edit"
                   android:layout_height="wrap_content"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:scrollHorizontally="true"
                   android:selectAllOnFocus="true"
                   android:gravity="fill_horizontal"
@@ -107,7 +107,7 @@
           android:id="@+id/player_dict_spinner"
           android:orientation="horizontal"
           android:layout_height="wrap_content"
-          android:layout_width="fill_parent"
+          android:layout_width="match_parent"
           >
         <TextView android:id="@+id/dict_label"
                   android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                   android:textAppearance="?android:attr/textAppearanceMedium"
                   />
         
-        <Spinner android:layout_width="fill_parent"
+        <Spinner android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                  android:drawSelectorOnTop="true"
                  />

@@ -3,14 +3,14 @@
 <org.eehouse.android.xw4.GameListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:longClickable="true"
     android:focusable="true"
     android:clickable="true"
     >
 
-  <FrameLayout android:layout_width="fill_parent"
+  <FrameLayout android:layout_width="match_parent"
                android:layout_height="wrap_content"
                >
     <TextView android:id="@+id/view_unloaded"
@@ -23,14 +23,14 @@
 
     <LinearLayout android:id="@+id/view_loaded"
                   android:orientation="horizontal"
-                  android:layout_width="fill_parent"
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:visibility="gone"
                   >
 
         <RelativeLayout android:id="@+id/game_view_container"
                         android:layout_width="42dp"
-	                    android:layout_height="fill_parent"
+	                    android:layout_height="match_parent"
                         android:layout_gravity="center_vertical|center_horizontal"
                         android:paddingLeft="8dip"
                         android:paddingRight="8dip"
@@ -86,7 +86,7 @@
              icon[s] (plural later) and thumbnail -->
         <LinearLayout android:id="@+id/right_side"
                       android:orientation="vertical"
-                      android:layout_width="fill_parent"
+                      android:layout_width="match_parent"
                       android:layout_height="match_parent"
                       android:clickable="true"
                       android:longClickable="true"
@@ -94,7 +94,7 @@
 
             <!-- This is the game name and expander -->
             <LinearLayout android:orientation="horizontal"
-                          android:layout_width="fill_parent"
+                          android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           >
 
@@ -118,7 +118,7 @@
             <!-- This is everything below the name (which can be hidden) -->
             <LinearLayout android:id="@+id/hideable"
                           android:orientation="horizontal"
-                          android:layout_width="fill_parent"
+                          android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:padding="4sp">
 
@@ -126,7 +126,7 @@
                 <LinearLayout android:id="@+id/player_list"
                               android:orientation="vertical"
                               android:layout_width="wrap_content"
-                              android:layout_height="fill_parent"
+                              android:layout_height="match_parent"
                               android:layout_weight="1"
                               android:layout_marginRight="4dip"
                               /> <!-- end players column -->
@@ -134,7 +134,7 @@
                 <!-- holds right column.  Could hold more... -->
                 <LinearLayout android:orientation="vertical"
                               android:layout_width="wrap_content"
-                              android:layout_height="fill_parent"
+                              android:layout_height="match_parent"
                               >
                     <TextView android:id="@+id/modtime"
 	                          android:layout_width="wrap_content" 
@@ -162,7 +162,7 @@
     </FrameLayout>
 
     <!-- Spacing. I can't make this work with layout_marginBottom -->
-    <View android:layout_width="fill_parent"
+    <View android:layout_width="match_parent"
 	      android:layout_height="1dp"
           android:background="#FF7F7F7F"
           />

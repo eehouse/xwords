@@ -15,13 +15,13 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
               android:orientation="vertical"
               >
 
   <TextView android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_marginLeft="4sp"
             android:layout_marginRight="4sp"
             android:text="@string/force_expl"
@@ -29,7 +29,7 @@
             />
 
   <ListView android:id="@+id/players"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawSelectorOnTop="false"
             />

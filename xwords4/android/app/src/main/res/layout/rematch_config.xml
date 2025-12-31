@@ -10,7 +10,7 @@
 
   <!-- copied from msg_label_and_edit -->
   <TextView android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="@string/game_name_label"
             />
@@ -18,7 +18,7 @@
   <org.eehouse.android.xw4.EditWClear android:id="@+id/name"
                                       style="@style/edit_w_clear"
                                       android:layout_height="wrap_content"
-                                      android:layout_width="fill_parent"
+                                      android:layout_width="match_parent"
                                       android:scrollHorizontally="true"
                                       android:maxLines="1"
                                       android:inputType="textCapWords"
@@ -29,7 +29,7 @@
                                       />
 
   <LinearLayout android:id="@+id/ro_stuff"
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 >

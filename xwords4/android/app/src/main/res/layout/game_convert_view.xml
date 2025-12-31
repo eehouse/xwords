@@ -34,12 +34,12 @@
                  />
 
     <CheckBox android:id="@+id/deleteafter_check"
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:text="@string/convert_deleteafter_expl"
               />
 
-    <LinearLayout android:layout_width="fill_parent"
+    <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal"
                   >
@@ -52,7 +52,7 @@
     </LinearLayout>
 
     <CheckBox android:id="@+id/menuonly_check"
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:text="@string/convert_menuonly_expl"
               />

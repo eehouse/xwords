@@ -9,7 +9,7 @@
 
     <!-- label -->
     <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:textAppearance="?android:attr/textAppearanceMedium"
               android:text="@string/game_name_label"
               />
@@ -18,7 +18,7 @@
         android:id="@+id/edit"
         style="@style/edit_w_clear"
         android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:scrollHorizontally="true"
         android:maxLines="1"
         android:inputType="textCapWords"
@@ -30,7 +30,7 @@
 
     <TextView android:id="@+id/msg"
               android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
+              android:layout_width="match_parent"
               android:paddingTop="20dp"
               android:textAppearance="?android:attr/textAppearanceMedium"
               />
