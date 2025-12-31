@@ -2079,16 +2079,16 @@ class GamesListDelegate(delegator: Delegator) :
     // }
 
     private fun handleToggleItem(itemID: Int, target: View): Boolean {
-        val handled: Boolean
-        when (itemID) {
-            R.id.games_game_select, R.id.games_game_deselect -> {
-                val toggled = target as LongClickHandler
-                toggled.longClicked()
-                handled = true
+        val handled =
+            when (itemID) {
+                R.id.games_game_select, R.id.games_game_deselect -> {
+                    if (target is LongClickHandler) {
+                        (target as LongClickHandler).longClicked()
+                        true
+                    } else false
+                }
+                else -> false
             }
-
-            else -> handled = false
-        }
         return handled
     }
 
