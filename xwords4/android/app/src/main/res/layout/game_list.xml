@@ -2,8 +2,8 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
               android:layout_weight="1"
               >
 
@@ -14,12 +14,30 @@
             android:drawSelectorOnTop="false"
             /-->
 
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/games"
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:background="#FF3F3F3F"
-      />
+  <RelativeLayout android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  >
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/games"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:background="#FF3F3F3F"
+        />
+
+    <!-- Custom fast scroll thumb -->
+    <org.eehouse.android.xw4.ScrollThumb
+        android:id="@+id/scroll_thumb"
+        android:layout_width="24dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:elevation="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        />
+  </RelativeLayout>
 
   <Button android:id="@+id/button_newgame_solo"
           android:text="@string/new_game"

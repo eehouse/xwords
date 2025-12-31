@@ -939,10 +939,31 @@ class GamesListDelegate(delegator: Delegator) :
             // deleteGames(asArray, true)
         }
 
-        (findViewById(R.id.games) as RecyclerView).let {
-            it.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
+        (findViewById(R.id.games) as RecyclerView).also { rView ->
+            rView.setLayoutManager(GridLayoutManager(mActivity, 1/*3*/))
             mAdapter = GamesViewAdapter()
-            it.setAdapter(mAdapter)
+            rView.setAdapter(mAdapter)
+
+            (findViewById(R.id.scroll_thumb) as ScrollThumb).also { sThumb ->
+                sThumb.setOnScrollListener(
+                    object : ScrollThumb.OnScrollListener {
+                        override fun onFastScroll(thumbPos: Float) {
+                            val itemCount = rView.adapter!!.itemCount
+                            Log.d(TAG, "onFastScroll($thumbPos); itemCount=$itemCount")
+                            val targetPosition = (thumbPos * itemCount).toInt()
+                            Log.d(TAG, "onFastScroll($thumbPos); itemCount=$itemCount; targetPosition=$targetPosition")
+                            if (false) rView.smoothScrollToPosition(targetPosition)
+                            else rView.scrollToPosition(targetPosition)
+                        }
+                    })
+
+                rView.addOnScrollListener(
+                    object : RecyclerView.OnScrollListener() {
+                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                            if (0 != dy) sThumb.updateThumb(rv)
+                        }
+                    })
+            }
         }
 
         updateGamesView()
