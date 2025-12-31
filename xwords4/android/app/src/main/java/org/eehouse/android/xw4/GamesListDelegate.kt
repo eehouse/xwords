@@ -3067,7 +3067,8 @@ class GamesListDelegate(delegator: Delegator) :
                 } else {
                     item.toGroup().let { grp ->
                         mGrp = grp
-                        mGameListElem.load(grp, this@GamesListDelegate, scope)
+                        mGameListElem.load(grp, this@GamesListDelegate,
+                                           this@GamesListDelegate, scope)
                     }
                 }
             }

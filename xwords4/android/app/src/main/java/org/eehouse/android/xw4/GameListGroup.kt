@@ -77,10 +77,11 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         }
     }
 
-    fun load(grp: GroupRef, gsl: GroupStateListener,
+    fun load(grp: GroupRef, gsl: GroupStateListener, cb: SelectableItem?,
              scope: LifecycleCoroutineScope) {
         mGrp = grp
         mGsl = gsl
+        m_cb = cb
         mScope = scope
         reload()
     }

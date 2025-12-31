@@ -62,7 +62,7 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
     }
 
     fun load(grp: GameMgr.GroupRef, gcb: GroupStateListener,
-             scope: LifecycleCoroutineScope) {
+             cb: SelectableItem?, scope: LifecycleCoroutineScope) {
         Log.d(TAG, "load($grp)")
         isGame = false
         mGLI = null
@@ -71,7 +71,7 @@ class GameListElem(mContext: Context, aset: AttributeSet?) :
         findViewById<GameListGroup>(R.id.group)!!.let {
             mGLG = it
             it.visibility = VISIBLE
-            it.load(grp, gcb, scope)
+            it.load(grp, gcb, cb, scope)
         }
     }
 }
