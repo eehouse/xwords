@@ -65,7 +65,7 @@ typedef struct _GroupState {
     GroupRef grp;
     XP_UCHAR name[MAX_GROUP_NAME+1];
     SortOrderElem soes[SO_NSOS];
-    XP_UCHAR nSOs;
+    XP_U16 nSOs;
     XP_Bool collapsed;
     XP_U16 index;
 } GroupState;
@@ -113,6 +113,7 @@ static GameEntry* findFor( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                            XP_Bool tryDeleted, XP_Bool* deletedP );
 static void addToGroup( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr,
                         GroupRef grp );
+static void getDefaultSOES( XP_U16* nSOES, SortOrderElem soes[] );
 
 struct GameMgrState {
     XWArray* list;
@@ -746,17 +747,25 @@ assertNoDupes( SortOrderElem soes[], int nElems )
 
 void
 gmgr_getSortOrder( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
-                   XP_U16* nActiveP, XP_U16* nTotalP, SortOrderElem soes[] )
+                   XP_Bool getDefaults, XP_U16* nActiveP, XP_U16* nTotalP,
+                   SortOrderElem soes[] )
 {
-    GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
+    /* First write the elems in active use (or the defaults) */
+    if ( getDefaults ) {
+        getDefaultSOES( nActiveP, soes );
+    } else {
+        GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
 
-    /* First write the elems in active use, marking them for later */
+        for ( int ii = 0; ii < grps->nSOs; ++ii ) {
+            soes[ii] = grps->soes[ii];
+        }
+        *nActiveP = grps->nSOs;
+    }
+
     XP_U32 seen = 0;
-    for ( int ii = 0; ii < grps->nSOs; ++ii ) {
-        soes[ii] = grps->soes[ii];
+    for ( int ii = 0; ii < *nActiveP; ++ii ) {
         seen |= 1 << soes[ii].so;
     }
-    *nActiveP = grps->nSOs;
 
     /* Now write the elems *not* in active use, i.e. not already written */
     const XP_U16 nTotal = *nTotalP;
@@ -1196,6 +1205,22 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
     return result;
 }
 
+static void
+getDefaultSOES( XP_U16* nSOES, SortOrderElem soes[] )
+{
+    SortOrderElem dflts[] = {
+        { SO_LANGUAGE, XP_FALSE },
+        { SO_HASCHAT, XP_FALSE },
+        { SO_GAMESTATE, XP_FALSE },
+        { SO_TURNLOCAL, XP_FALSE },
+        { SO_LASTMOVE_TS, XP_FALSE },
+    };
+    *nSOES = VSIZE(dflts);
+    for ( int ii = 0; ii < VSIZE(dflts); ++ii ) {
+        soes[ii] = dflts[ii];
+    }
+}
+
 static GroupState*
 addGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const XP_UCHAR* name )
 {
@@ -1206,18 +1231,7 @@ addGroup( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp, const XP_UCHAR* name )
     grps->duc = duc;
     grps->index = -1;
     grps->collapsed = XP_TRUE;
-    SortOrderElem soes[] = {
-        { SO_LANGUAGE, XP_FALSE },
-        { SO_HASCHAT, XP_FALSE },
-        { SO_GAMESTATE, XP_FALSE },
-        { SO_TURNLOCAL, XP_FALSE },
-        { SO_LASTMOVE_TS, XP_FALSE },
-    };
-    grps->nSOs = VSIZE(soes);
-    for ( int ii = 0; ii < VSIZE(soes); ++ii ) {
-        grps->soes[ii] = soes[ii];
-    }
-
+    getDefaultSOES( &grps->nSOs, grps->soes );
     if ( !!name ) {
         XP_SNPRINTF( grps->name, VSIZE(grps->name), "%s", name );
     }

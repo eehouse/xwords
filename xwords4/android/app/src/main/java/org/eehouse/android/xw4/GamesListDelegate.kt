@@ -640,14 +640,19 @@ class GamesListDelegate(delegator: Delegator) :
                 }
 
                 DlgID.GROUP_SORT_CONFIG -> {
-                    val view = inflate(R.layout.sortconfig_view) as SortConfigView
-                    view.configure(params[0] as GroupRef)
+                    val grp = params[0] as GroupRef
+                    val getDefaults = 1 < params.size && params[1] as Boolean
+                    val view = (inflate(R.layout.sortconfig_view) as SortConfigView)
+                        .configure(grp, getDefaults)
                     makeAlertBuilder()
                         .setView(view)
                         .setPositiveButton(R.string.button_save) { dlg, item ->
                             view.save()
                         }
                         .setNegativeButton(android.R.string.cancel, null)
+                        .setNeutralButton(R.string.so_get_defaults) { dlg, item ->
+                            showDialogFragment(DlgID.GROUP_SORT_CONFIG, grp, true)
+                        }
                         .create()
                 }
 

@@ -127,12 +127,12 @@ object GameMgr {
             val inUse: ArrayList<SortOrderElem>,
             val avail: ArrayList<SortOrderElem>)
 
-        suspend fun getSortOrder(): SortOrderState {
+        suspend fun getSortOrder(getDefaults: Boolean): SortOrderState {
             val inUse = ArrayList<SortOrderElem>()
             val avail = ArrayList<SortOrderElem>()
             Device.await {
                 val jniState = Device.ptrGlobals()
-                gmgr_getSortOrder(jniState, grp, inUse, avail)
+                gmgr_getSortOrder(jniState, grp, getDefaults, inUse, avail)
             }
             return SortOrderState(inUse, avail)
         }
@@ -327,7 +327,7 @@ object GameMgr {
     @JvmStatic
     private external fun gmgr_setGroupName(jniState: Long, grp: Int, name: String)
     @JvmStatic
-    private external fun gmgr_getSortOrder(jniState: Long, grp: Int,
+    private external fun gmgr_getSortOrder(jniState: Long, grp: Int, getDefaults: Boolean,
                                            inUse: ArrayList<GroupRef.SortOrderElem>,
                                            avail: ArrayList<GroupRef.SortOrderElem>)
     @JvmStatic

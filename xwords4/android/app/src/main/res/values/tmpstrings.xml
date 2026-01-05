@@ -48,6 +48,7 @@
   <string name="convert_deleteafter_expl">Delete old format after conversion</string>
 
   <string name="games_group_sortconfig">Sort order…</string>
+  <string name="so_get_defaults">Get defaults</string>
 
   <string name="so_turnlocal_name">Local player\'s turn</string>
   <string name="so_created_name">When Created</string>

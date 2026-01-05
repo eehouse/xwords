@@ -48,7 +48,7 @@ class SortConfigView(val mContext: Context, attrs: AttributeSet)
     // private var mSortOrderState: SortOrderState? = null
     private var mInUse: ArrayList<SortOrderElem>? = null
     private var mAvail: ArrayList<SortOrderElem>? = null
-
+    private var mGetDefaults: Boolean = false
     private var mShowAll: Boolean = false
     private var mTable: TableLayout? = null
 
@@ -75,10 +75,11 @@ class SortConfigView(val mContext: Context, attrs: AttributeSet)
         populateList()
     }
 
-	public fun configure(grp: GroupRef)
+	public fun configure(grp: GroupRef, getDefaults: Boolean): SortConfigView
     {
-        mGrp = grp!!
-        // trySetup()
+        mGrp = grp
+        mGetDefaults = getDefaults
+        return this
     }
 
     public fun save() {
@@ -89,14 +90,11 @@ class SortConfigView(val mContext: Context, attrs: AttributeSet)
     }
 
     private fun trySetup() {
-        Log.d(TAG, "trySetup() grp=$mGrp")
         mGrp!!.let { grp ->
             if (!mConfigured) {
                 mConfigured = true;
-                Log.d(TAG, "trySetup(): calling launch")
                 launch {
-                    Log.d(TAG, "trySetup(): IN launch")
-                    val sos = grp.getSortOrder()
+                    val sos = grp.getSortOrder(mGetDefaults)
                     mInUse = sos.inUse
                     mAvail = sos.avail
                     populateList()

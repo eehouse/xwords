@@ -1315,13 +1315,14 @@ getSOEFrom( JNIEnv* env, jobject jsoe, SortOrderElem* soe )
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getSortOrder
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint grp,
-  jobject jInUse, jobject jAvail )
+  jboolean getDefaults, jobject jInUse, jobject jAvail )
 {
     DVC_HEADER(jniGlobalPtr);
     SortOrderElem sos[SO_NSOS];
     XP_U16 nActive;
     XP_U16 nTotal = VSIZE(sos);
-    gmgr_getSortOrder( globalState->dutil, env, grp, &nActive, &nTotal, sos );
+    gmgr_getSortOrder( globalState->dutil, env, grp, getDefaults,
+                       &nActive, &nTotal, sos );
     for ( int ii = 0; ii < nTotal; ++ii ) {
         jobject dest = ii < nActive ? jInUse : jAvail;
         addSOETo( env, dest, &sos[ii] );

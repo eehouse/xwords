@@ -81,7 +81,8 @@ typedef struct _SortOrderElem {
 } SortOrderElem;
 
 void gmgr_getSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
-                        XP_U16* nActive, XP_U16* nTotal, SortOrderElem sos[] );
+                        XP_Bool getDefaults, XP_U16* nActive, XP_U16* nTotal,
+                        SortOrderElem sos[] );
 void gmgr_setSortOrder( XW_DUtilCtxt* dutil, XWEnv xwe, GroupRef grp,
                         XP_U16 nElems, SortOrderElem sos[] );
 void gmgr_deleteGame( XW_DUtilCtxt* duc, XWEnv xwe, GameRef gr );

@@ -217,7 +217,7 @@ gtkSortDialog( GtkAppGlobals* apg, LaunchParams* params, GroupRef grp )
     };
 
     ss.nTotal = VSIZE(ss.soes);
-    gmgr_getSortOrder( params->dutil, NULL_XWE, grp,
+    gmgr_getSortOrder( params->dutil, NULL_XWE, grp, XP_FALSE,
                        &ss.nActive, &ss.nTotal, ss.soes );
     
     XP_LOGFF( "nActive: %d; nTotal: %d", ss.nActive, ss.nTotal );
