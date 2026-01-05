@@ -114,6 +114,7 @@ class HostGameInfo(GameInfo):
         self.guestNames = guestNames
         self.needsInvite = kwargs.get('needsInvite', True)
         self.orderedPlayers = None
+        self.wordlist = None
         global gGamesMade
         gGamesMade += 1
 
@@ -420,6 +421,7 @@ class Device():
     def makeHostGames(self):
         args = self.args
         for game in self.hostedGames:
+            game.wordlist = random.choice(args.DICTS)
             isSolo = isinstance(game, SoloGameInfo)
             nPlayers = 1 + (isSolo and game.nRobots or len(game.guestNames))
             hostPosn = random.randint(0, nPlayers-1)
@@ -428,7 +430,7 @@ class Device():
             allowSub7 = random.randint(0, 99) < self.args.SUB7_TRADES_PCT
             timerSeconds = self.args.TIMER_SECS
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers,
-                                           hostPosn=hostPosn, dict=args.DICTS[0],
+                                           hostPosn=hostPosn, dict=game.wordlist,
                                            boardSize=boardSize, traySize=traySize,
                                            isSolo=isSolo, allowSub7=allowSub7,
                                            timerSeconds=timerSeconds)
@@ -521,7 +523,7 @@ class Device():
             invitee.launchIfNot()
             response = invitee._sendWaitReply('inviteRcvd', gid=game.gid,
                                               nPlayersT=nPlayersT,
-                                              dict = self.args.DICTS[0],
+                                              dict = game.wordlist,
                                               addr = self._mkAddr(self))
             if response['success']:
                 invitee.expectInvite(game.gid, game.rematchLevel)
