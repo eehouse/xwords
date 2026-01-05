@@ -516,14 +516,14 @@ class BoardDelegate(delegator: Delegator) :
         //         }
     }
 
-     override fun onPause() {
-         Wrapper.setResumed(mNFCWrapper, false)
-         closeIfFinishing(false)
-         mHandler = null
-         ConnStatusHandler.setHandler(null)
-         pauseGame()
-         super.onPause()
-     }
+    override fun onPause() {
+        Wrapper.setResumed(mNFCWrapper, false)
+        closeIfFinishing(false)
+        mHandler = null
+        ConnStatusHandler.setHandler(null)
+        pauseGame()
+        super.onPause()
+    }
 
     override fun onDestroy() {
         Log.d( TAG, "onDestroy()" )
@@ -543,10 +543,10 @@ class BoardDelegate(delegator: Delegator) :
 //         }
 //     }
 
-     override fun onSaveInstanceState(outState: Bundle) {
-         outState.putSerializable(SAVE_MYSIS, m_mySIS)
-         super.onSaveInstanceState(outState)
-     }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(SAVE_MYSIS, m_mySIS)
+        super.onSaveInstanceState(outState)
+    }
 
     private fun getBundledData(bundle: Bundle?) {
         m_mySIS = bundle?.getSerializableSafe<MySIS>(SAVE_MYSIS) ?: MySIS()
@@ -623,7 +623,9 @@ class BoardDelegate(delegator: Delegator) :
         if (ON_SERVER.NO != DictLangCache.getOnServer(mActivity, dictName)) {
             onPosButton(Action.CUSTOM_DICT_CONFIRMED, gr)
         } else {
-            val txt = LocUtils.getString(mActivity, R.string.invite_custom_warning_fmt, dictName)
+            val txt = LocUtils
+                .getString(mActivity, R.string.invite_custom_warning_fmt,
+                           dictName)
             makeConfirmThenBuilder(Action.CUSTOM_DICT_CONFIRMED, txt)
                 .setNegButton(R.string.list_item_config)
                 .setActionPair(
@@ -2172,7 +2174,11 @@ class BoardDelegate(delegator: Delegator) :
     private fun showInviteAlertIf() {
         Log.d(TAG, "showInviteAlertIf()")
         if (alertOrderAt(StartAlertOrder.INVITE) && !isFinishing()) {
-            showOrHide(iNAWrapper)
+            if (DeviceRole.ROLE_ISHOST == mGi!!.deviceRole) {
+                showOrHide(iNAWrapper)
+            } else {
+                alertOrderIncrIfAt(StartAlertOrder.INVITE)
+            }
         } else {
             Log.d(TAG, "showInviteAlertIf() doing nothing")
         }
@@ -2180,6 +2186,7 @@ class BoardDelegate(delegator: Delegator) :
 
     private fun showOrHide(wrapper: InvitesNeededAlert.Wrapper) {
         Log.d(TAG, "showOrHide()")
+        Assert.assertTrueNR(mGi!!.deviceRole == DeviceRole.ROLE_ISHOST)
         launch {
             mGR!!.getSummary()!!.let { summary ->
                 val hostAddr = null as CommsAddrRec? // null in host case

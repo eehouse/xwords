@@ -1516,6 +1516,7 @@ gr_inviteUrl( DUTIL_GR_XWE, const XP_UCHAR* host, const XP_UCHAR* prefix )
 {
     XWStreamCtxt* result = NULL;
     GR_HEADER_WITH(COMMS);
+    XP_ASSERT( gd->gi.deviceRole == ROLE_ISHOST );
 
     XP_U16 channel;
     if ( !!gd->comms && ctrl_getOpenChannel( gd->ctrlr, &channel )) {
