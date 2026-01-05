@@ -47,4 +47,20 @@
   are extrememly old.</string>
   <string name="convert_deleteafter_expl">Delete old format after conversion</string>
 
+  <string name="games_group_sortconfig">Sort order…</string>
+
+  <string name="so_turnlocal_name">Local player\'s turn</string>
+  <string name="so_created_name">When Created</string>
+  <string name="so_lastmove_name">Time of most recent move </string>
+  <string name="so_lastmove_ts_name">Most recent move</string>
+  <string name="so_others_names_name">Opponent names</string>
+  <string name="so_gamename_name">Game name</string>
+  <string name="so_created_ts_name">When Created (again?)</string>
+  <string name="so_gamestate_name">State game is in</string>
+  <string name="so_haschat_name">Has unread chat</string>
+  <string name="so_language_name">Language of play</string>
+
+  <string name="so_inverted">Inverted</string>
+  <string name="so_showAll">Show all</string>
+
 </resources>

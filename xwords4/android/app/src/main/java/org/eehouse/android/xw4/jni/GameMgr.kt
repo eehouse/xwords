@@ -23,6 +23,7 @@ import java.io.Serializable
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
+import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 
 object GameMgr {
@@ -44,6 +45,21 @@ object GameMgr {
                 else toGroup().toString()
             return result
         }
+    }
+
+    // Keep in sync with enum in gamemgr.h
+    enum class SORT_ORDER(val resID: Int) {
+        SO_TURNLOCAL(R.string.so_turnlocal_name),
+        SO_CREATED(R.string.so_created_name),
+        SO_LASTMOVE(R.string.so_lastmove_name),
+        SO_LASTMOVE_TS(R.string.so_lastmove_ts_name),
+        SO_OTHERS_NAMES(R.string.so_others_names_name),
+        SO_GAMENAME(R.string.so_gamename_name),
+        SO_CREATED_TS(R.string.so_created_ts_name),
+        SO_GAMESTATE(R.string.so_gamestate_name),
+        SO_HASCHAT(R.string.so_haschat_name),
+        SO_LANGUAGE(R.string.so_language_name),
+        ;
     }
 
     class GroupRef(val grp: Int): Serializable {
@@ -92,6 +108,40 @@ object GameMgr {
             Device.post {
                 val jniState = Device.ptrGlobals()
                 gmgr_setGroupName(jniState, grp, name)
+            }
+        }
+
+        public class SortOrderElem() {
+            // constructor called from jni world
+            constructor(soOrd: Int, inverted: Boolean) : this() {
+                this.so = SORT_ORDER.entries[soOrd]
+                this.inverted = inverted
+            }
+
+            // This will never be null, but how to indicate that in Kotlin?
+            var so: SORT_ORDER? = null
+            var inverted: Boolean = false
+        }
+
+        data class SortOrderState(
+            val inUse: ArrayList<SortOrderElem>,
+            val avail: ArrayList<SortOrderElem>)
+
+        suspend fun getSortOrder(): SortOrderState {
+            val inUse = ArrayList<SortOrderElem>()
+            val avail = ArrayList<SortOrderElem>()
+            Device.await {
+                val jniState = Device.ptrGlobals()
+                gmgr_getSortOrder(jniState, grp, inUse, avail)
+            }
+            return SortOrderState(inUse, avail)
+        }
+
+        fun setSortOrder(sos: ArrayList<SortOrderElem>) {
+            Device.post {
+                val jniState = Device.ptrGlobals()
+                gmgr_setSortOrder(jniState, grp,
+                                  sos.toTypedArray<SortOrderElem>())
             }
         }
 
@@ -276,6 +326,13 @@ object GameMgr {
     private external fun gmgr_getGroupName(jniState: Long, grp: Int): String
     @JvmStatic
     private external fun gmgr_setGroupName(jniState: Long, grp: Int, name: String)
+    @JvmStatic
+    private external fun gmgr_getSortOrder(jniState: Long, grp: Int,
+                                           inUse: ArrayList<GroupRef.SortOrderElem>,
+                                           avail: ArrayList<GroupRef.SortOrderElem>)
+    @JvmStatic
+    private external fun gmgr_setSortOrder(jniState: Long, grp: Int,
+                                           sos: Array<GroupRef.SortOrderElem>)
     @JvmStatic
     private external fun gmgr_getPositions(jniState: Long): LongArray
     @JvmStatic

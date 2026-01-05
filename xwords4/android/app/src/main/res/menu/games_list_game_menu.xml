@@ -28,17 +28,10 @@
     <item android:id="@+id/games_game_messages"
           android:title="@string/list_item_messages"
           />
-    <!-- Debug only -->
+    <!-- below here: Debug only -->
     <item android:id="@+id/games_game_relaypage"
           android:title="@string/list_item_relaypage"
           />
-    <item android:id="@+id/games_game_select"
-          android:title="@string/list_item_select"
-          />
-    <item android:id="@+id/games_game_deselect"
-          android:title="@string/list_item_deselect"
-          />
-    <!-- below here: Debug only -->
     <item android:id="@+id/games_game_markbad"
           android:title="@string/list_item_markbad"
           />

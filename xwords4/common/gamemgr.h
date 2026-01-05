@@ -47,6 +47,7 @@ void gmgr_getGroups( XW_DUtilCtxt* dutil, XWEnv xwe, XW_GroupID ids[],
 XP_U16 gmgr_countGames( XW_DUtilCtxt* dutil, XWEnv xwe, XW_GroupID group );
 #endif
 
+/* Keep in sync with enum in GameMgr.kt */
 typedef enum {
     SO_TURNLOCAL,               /* boolean: my turn? */
     SO_CREATED,

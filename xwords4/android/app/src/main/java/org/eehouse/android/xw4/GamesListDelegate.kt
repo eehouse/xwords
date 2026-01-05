@@ -639,6 +639,18 @@ class GamesListDelegate(delegator: Delegator) :
                     buildNamerDlg(namer, lstnr, null, DlgID.RENAME_GROUP)
                 }
 
+                DlgID.GROUP_SORT_CONFIG -> {
+                    val view = inflate(R.layout.sortconfig_view) as SortConfigView
+                    view.configure(params[0] as GroupRef)
+                    makeAlertBuilder()
+                        .setView(view)
+                        .setPositiveButton(R.string.button_save) { dlg, item ->
+                            view.save()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .create()
+                }
+
                 DlgID.BACKUP_LOADSTORE -> {
                     val uri = if (0 == params.size) null else Uri.parse(params[0] as String)
                     mkLoadStoreDlg(uri)
@@ -1934,11 +1946,6 @@ class GamesListDelegate(delegator: Delegator) :
 
         mActivity.menuInflater.inflate(id, menu)
 
-        val hideId =
-            if (selected) R.id.games_game_select
-            else R.id.games_game_deselect
-        Utils.setItemVisible(menu, hideId, false)
-
         gameItem?.let { gameItem ->
             val gr = gameItem.gr()
 
@@ -1980,22 +1987,18 @@ class GamesListDelegate(delegator: Delegator) :
         var handled = false
         mTargetView?.get()?.let { targetView ->
                          val itemID = item.itemId
-                         if (!handleToggleItem(itemID, targetView)) {
-                             // val selIds = LongArray(1)
-                             // val selIds = Array<GameRef>(1)
-                             val tv = targetView as GameListElem
-                             if ( tv.isGame ) {
-                                 tv.getGLI()!!.let {
-                                     val gr = it.gr()
-                                     val selIds = Array<GameRef>(1){gr}
-                                     handled = handleSelGamesItem(itemID, selIds)
-                                 }
-                             } else {
-                                 tv.getGLG()!!.let {
-                                     val grp = it.getGrp()!!.grp
-                                     val selIds = intArrayOf(grp)
-                                     handled = handleSelGroupsItem(itemID, selIds)
-                                 }
+                         val tv = targetView as GameListElem
+                         if ( tv.isGame ) {
+                             tv.getGLI()!!.let {
+                                 val gr = it.gr()
+                                 val selIds = Array<GameRef>(1){gr}
+                                 handled = handleSelGamesItem(itemID, selIds)
+                             }
+                         } else {
+                             tv.getGLG()!!.let {
+                                 val grp = it.getGrp()!!.grp
+                                 val selIds = intArrayOf(grp)
+                                 handled = handleSelGroupsItem(itemID, selIds)
                              }
                          }
                      }
@@ -2077,20 +2080,6 @@ class GamesListDelegate(delegator: Delegator) :
     //         m_adapter!!.reloadGame(rowID)
     //     }
     // }
-
-    private fun handleToggleItem(itemID: Int, target: View): Boolean {
-        val handled =
-            when (itemID) {
-                R.id.games_game_select, R.id.games_game_deselect -> {
-                    if (target is LongClickHandler) {
-                        (target as LongClickHandler).longClicked()
-                        true
-                    } else false
-                }
-                else -> false
-            }
-        return handled
-    }
 
     private fun handleSelGamesItem(itemID: Int, selRowIDs: Array<GameRef>): Boolean {
         var handled = true
@@ -2191,6 +2180,9 @@ class GamesListDelegate(delegator: Delegator) :
                 R.id.games_group_movedown -> GameMgr.lowerGroup(groupID)
                 R.id.games_group_selall, R.id.games_group_unselall ->
                     Utils.notImpl(mActivity)
+                R.id.games_group_sortconfig -> {
+                    showDialogFragment(DlgID.GROUP_SORT_CONFIG, groupID)
+                }
                 else -> handled = false
             }
         }

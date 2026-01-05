@@ -22,10 +22,7 @@
     <item android:id="@+id/games_group_delete"
           android:title="@string/list_group_delete"
           />
-    <item android:id="@+id/games_game_select"
-          android:title="@string/list_item_select"
-          />
-    <item android:id="@+id/games_game_deselect"
-          android:title="@string/list_item_deselect"
+    <item android:id="@+id/games_group_sortconfig"
+          android:title="@string/games_group_sortconfig"
           />
 </menu>

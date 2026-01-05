@@ -2305,8 +2305,6 @@
     <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-    <string name="list_item_select">Select</string>
-    <string name="list_item_deselect">De-select</string>
     <!-- Debug-only item for testing corrupt game warnings -->
     <string name="list_item_markbad">Mark corrupt</string>
     <string name="not_again_dfltname_fmt">You are using the default

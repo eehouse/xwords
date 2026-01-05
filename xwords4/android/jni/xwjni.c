@@ -1291,6 +1291,61 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1setGroupName
     DVC_HEADER_END();
 }
 
+static void
+addSOETo( JNIEnv* env, jobject list, const SortOrderElem* soe )
+{
+    jobject jsoe = makeObject(env, PKG_PATH("jni/GameMgr$GroupRef$SortOrderElem" ),
+                              "(IZ)V", soe->so, soe->inverted );
+
+    jmethodID mid = getMethodID( env, list, "add", "(Ljava/lang/Object;)Z" );
+    (*env)->CallBooleanMethod( env, list, mid, jsoe );
+    deleteLocalRef( env, jsoe );
+}
+
+static void
+getSOEFrom( JNIEnv* env, jobject jsoe, SortOrderElem* soe )
+{
+    soe->inverted = getBool( env, jsoe, "inverted" );
+    XP_LOGFF( "got inverted: %s", boolToStr(soe->inverted) );
+    soe->so = jenumFieldToInt( env, jsoe, "so",
+                               PKG_PATH("jni/GameMgr$SORT_ORDER") );
+    XP_LOGFF( "got so: %d", soe->so );
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getSortOrder
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint grp,
+  jobject jInUse, jobject jAvail )
+{
+    DVC_HEADER(jniGlobalPtr);
+    SortOrderElem sos[SO_NSOS];
+    XP_U16 nActive;
+    XP_U16 nTotal = VSIZE(sos);
+    gmgr_getSortOrder( globalState->dutil, env, grp, &nActive, &nTotal, sos );
+    for ( int ii = 0; ii < nTotal; ++ii ) {
+        jobject dest = ii < nActive ? jInUse : jAvail;
+        addSOETo( env, dest, &sos[ii] );
+    }
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1setSortOrder
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint grp, jobjectArray jInUse )
+{
+    DVC_HEADER(jniGlobalPtr);
+    XP_U16 nElems = (*env)->GetArrayLength( env, jInUse );
+    SortOrderElem soes[nElems];
+    for ( int ii = 0; ii < nElems ; ++ii ) {
+        jobject jsoe = (*env)->GetObjectArrayElement( env, jInUse, ii );
+        getSOEFrom( env, jsoe, &soes[ii] );
+        deleteLocalRef( env, jsoe );
+    }
+    gmgr_setSortOrder( globalState->dutil, env, grp, nElems, soes );
+
+    DVC_HEADER_END();
+}
+
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getGroupName
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint grp )
