@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024-2025 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2024-2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1176,6 +1176,9 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
                 int sc2 = stateCodeFor( gs2 );
                 result = sc1 - sc2;
             }
+                break;
+            case SO_OTHERS_NAMES:
+                result = XP_STRCMP( gs1->opponents, gs2->opponents );
                 break;
             case SO_TURNLOCAL:
                 /* reverse so local turns sort first  */

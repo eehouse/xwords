@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024-2025 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2024-2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -2331,6 +2331,45 @@ updateSummary( XW_DUtilCtxt* duc, XWEnv xwe,
 }
 
 static void
+mkOpponentsString( const CurGameInfo* gi, GameSummary* sum )
+{
+    /* Let's list them alphabetically so that any three-device game with "Tom"
+       and "Dick" will sort the same, regardless of which of them plays
+       first. */
+    int nRemotes = 0;
+    const XP_UCHAR* remotePlayers[MAX_NUM_PLAYERS];
+
+    /* First gather the remote players */
+    for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
+        const LocalPlayer* lp  = &gi->players[ii];
+        if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
+            const XP_UCHAR* name = lp->name;
+            if ( !!name[0] ) {
+                // Find the position where name should go, shifting up as
+                // needed
+                int pos = nRemotes - 1;
+                while ( pos >= 0 && 0 < strcmp(remotePlayers[pos], name) ) {
+                    remotePlayers[pos+1] = remotePlayers[pos]; // Shift up
+                    --pos;
+                }
+                remotePlayers[pos+1] = name;
+                ++nRemotes;
+            }
+        }
+    }
+
+    int pos = 0;
+    for ( int ii = 0; ii < nRemotes; ++ii ) {
+        if ( '\0' != sum->opponents[0] && pos+1 < VSIZE(sum->opponents)) {
+            sum->opponents[pos++] = '\n';
+        }
+        pos += XP_SNPRINTF( &sum->opponents[pos], VSIZE(sum->opponents)-pos,
+                            "%s", remotePlayers[ii] );
+    }
+    XP_LOGFF( "() => %s", sum->opponents );
+}
+
+static void
 summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 {
     CtrlrCtxt* ctrlr = gd->ctrlr;
@@ -2351,18 +2390,8 @@ summarize( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd )
 
         model_getCurScores( gd->model, &sum.scores, sum.gameOver );
 
-        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
-            const LocalPlayer* lp  = &gi->players[ii];
-            if ( LP_IS_ROBOT(lp) || !LP_IS_LOCAL(lp) ) {
-                if ( '\0' != sum.opponents[0] ) {
-                    XP_STRCAT( sum.opponents, ", " );
-                }
-                const XP_UCHAR* name = lp->name;
-                if ( !!name[0] ) {
-                    XP_STRCAT( sum.opponents, name );
-                }
-            }
-        }
+        mkOpponentsString( gi, &sum );
+
         if ( !!gd->comms ) {
             sum.missingPlayers = ctrl_getMissingPlayers( ctrlr );
             sum.nPacketsPending =
