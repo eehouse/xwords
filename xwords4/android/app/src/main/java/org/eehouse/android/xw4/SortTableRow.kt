@@ -20,12 +20,10 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.KeyEvent
-import android.view.MotionEvent
 import android.view.View
 import android.widget.CheckBox
 import android.widget.CompoundButton
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.TableRow
 import android.widget.TextView
 
@@ -63,9 +61,9 @@ class SortTableRow(context: Context, aset: AttributeSet?) :
                     it.setChecked(elem.inverted)
                     it.setOnCheckedChangeListener(this)
                 }
-                findViewById<View>(R.id.arrow_up)
+                findViewById<ImageButton>(R.id.arrow_up)
                     .setOnClickListener(this)
-                findViewById<View>(R.id.arrow_down)
+                findViewById<ImageButton>(R.id.arrow_down)
                     .setOnClickListener(this)
             }
         } ?: Log.d(TAG, "onAttachedToWindow(): mElem not set")
@@ -79,7 +77,8 @@ class SortTableRow(context: Context, aset: AttributeSet?) :
         }
     }
 
-    override fun onCheckedChanged(view: CompoundButton, isChecked: Boolean) {
+    override fun onCheckedChanged(view: CompoundButton,
+                                  isChecked: Boolean) {
         when (view.id) {
             R.id.so_selected -> mSelected = isChecked
             R.id.so_inverted -> mElem!!.inverted = isChecked
