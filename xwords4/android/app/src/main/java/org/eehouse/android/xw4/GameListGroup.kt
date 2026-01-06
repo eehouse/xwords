@@ -57,8 +57,11 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         super.onFinishInflate()
         m_etv = findViewById<TextView>(R.id.game_name)
         mExpandButton = findViewById<ImageButton>(R.id.expander)
-        m_check = findViewById<ImageView>(R.id.group_check)
-        m_check!!.setOnClickListener(this)
+        findViewById<ImageView>(R.id.group_check).also {
+            m_check = it
+            it.setOnClickListener(this)
+        }
+        setSelCheck()
 
         // click on me OR the button expands/contracts...
         setOnClickListener(this)
@@ -114,7 +117,12 @@ class GameListGroup(cx: Context, aset: AttributeSet?) :
         m_selected = !m_selected
         m_dsdel!!.showSelected(m_selected)
         m_cb!!.itemToggled(this, m_selected)
-        m_check!!.setImageResource(if (m_selected) R.drawable.ic_check_circle else 0)
+        setSelCheck()
+    }
+
+    private fun setSelCheck() {
+        m_check?.setImageResource(if (m_selected) R.drawable.ic_check_circle
+                                  else R.drawable.ic_nocheck_circle)
     }
 
     //////////////////////////////////////////////////
