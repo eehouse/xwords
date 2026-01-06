@@ -33,49 +33,6 @@
 extern "C" {
 #endif
 
-typedef struct _XWGame {
-    XW_UtilCtxt* util;
-    BoardCtxt* board;
-    ModelCtxt* model;
-    CtrlrCtxt* ctrlr;
-    CommsCtxt* comms;
-    XP_U32 created;     /* dutil_getCurSeconds() of creation */
-} XWGame;
-
-GameRef game_makeNewGame( XWEnv xwe, CurGameInfo* gi,
-                           const CommsAddrRec* hostAddr,
-                           XW_UtilCtxt* util, DrawCtx* draw,
-                           const CommonPrefs* cp );
-
-GameRef game_makeRematch( GameRef game, XWEnv xwe, XW_UtilCtxt* util,
-                           const CommonPrefs* cp,
-                           const XP_UCHAR* newName, NewOrder* no );
-
-void game_changeDict( MPFORMAL XWGame* game, XWEnv xwe, CurGameInfo* gi,
-                      DictionaryCtxt* dict );
-
-XP_Bool game_makeFromStream( MPFORMAL XWEnv xwe, XWStreamCtxt* stream,
-                             CurGameInfo* gi, GameRef* grOut,
-                             XW_UtilCtxt* util, DrawCtx* draw,
-                             CommonPrefs* cp );
-
-GameRef game_makeFromInvite( XWEnv xwe, const NetLaunchInfo* nli,
-                             const CommsAddrRec* selfAddr,
-                             XW_UtilCtxt* util, DrawCtx* draw,
-                             CommonPrefs* cp );
-
-void game_saveToStream( const GameRef gr, const CurGameInfo* gi,
-                        XWStreamCtxt* stream, XP_U16 saveToken );
-void game_saveSucceeded( const GameRef gr, XWEnv xwe, XP_U16 saveToken );
-
-XP_Bool game_receiveMessage( XW_DUtilCtxt* duc, GameRef gr, XWEnv xwe,
-                             XWStreamCtxt* stream, const CommsAddrRec* retAddr );
-
-void game_dispose( XWGame* game, XWEnv xwe );
-
-void game_summarize( const XWGame* game, const CurGameInfo* gi, GameSummary* summary );
-void game_getState( const XWGame* game, XWEnv xwe, GameStateInfo* gsi );
-XP_Bool game_getIsHost( const XWGame* game );
 void gi_setNPlayers( XW_DUtilCtxt* dutil, XWEnv xwe, CurGameInfo* gi,
                      XP_U16 nTotal, XP_U16 nHere );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );

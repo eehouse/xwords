@@ -78,11 +78,11 @@ void gi_augmentGI( CurGameInfo* gi, const CurGameInfo* curGI,
                    XP_U8 streamVersion );
 
 #ifdef DEBUG
-    void game_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
+    void gi_logGI( const CurGameInfo* gi, XP_UCHAR* buf, XP_U16 bufLen,
                      const char* func, int line );
 # define LOG_GI( GIP, MSG ) {                                           \
         XP_UCHAR buf[512*2];                                            \
-        game_logGI( (GIP), buf, VSIZE(buf), __func__, __LINE__ );       \
+        gi_logGI( (GIP), buf, VSIZE(buf), __func__, __LINE__ );         \
         XP_LOGFF( "msg: %s; gi(p=%p): {%s}", MSG, (GIP), buf );         \
     }
 #else

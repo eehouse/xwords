@@ -789,19 +789,6 @@ Java_org_eehouse_android_xw4_jni_TmpDict_dict_1getChars
     return result;
 }
 
-struct _JNIState {
-    XWGame game;
-    JNIGlobalState* globalJNI;
-    AndGameGlobals globals;
-    XP_U16 curSaveCount;
-    XP_U16 lastSavedSize;
-#ifdef DEBUG
-    const char* envSetterFunc;
-    XP_U32 guard;
-#endif
-    MPSLOT
-};
-
 #define GAME_GUARD 0x453627
 #if 1
 # define LOG_FUNC_IF() LOG_FUNC()
