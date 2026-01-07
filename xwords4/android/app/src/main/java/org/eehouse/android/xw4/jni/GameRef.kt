@@ -347,7 +347,7 @@ class GameRef(val gr: Long): Parcelable, Serializable {
 
     suspend fun dropHostAddr(typ: CommsAddrRec.CommsConnType) {
         Assert.failDbg()
-     }
+    }
 
     suspend fun getLikelyChatter(): Int {
         return Device.await {

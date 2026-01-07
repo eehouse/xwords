@@ -635,7 +635,7 @@ class BoardDelegate(delegator: Delegator) :
                 .setParams(gr)
                 .show()
         }
-     }
+    }
 
     private fun setTitle(gi: CurGameInfo) {
         var title = gi.gameName
@@ -871,13 +871,13 @@ class BoardDelegate(delegator: Delegator) :
 //     //////////////////////////////////////////////////
 //     // DlgDelegate.DlgClickNotify interface
 //     //////////////////////////////////////////////////
-     override fun onPosButton(action: Action, vararg params: Any?): Boolean {
-         Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.fmtAny(arrayOf(params)))
-         var handled = false
-//         var cmd: JNICmd? = null
-         val gi = mGi!!
-         when (action) {
-             Action.ENABLE_MQTT_DO_OR -> {
+    override fun onPosButton(action: Action, vararg params: Any?): Boolean {
+        Log.d(TAG, "onPosButton(%s, %s)", action, DbgUtils.fmtAny(arrayOf(params)))
+        var handled = false
+        //         var cmd: JNICmd? = null
+        val gi = mGi!!
+        when (action) {
+            Action.ENABLE_MQTT_DO_OR -> {
                 if ( MQTTUtils.MQTTSupported() ) {
                     XWPrefs.setMQTTEnabled(mActivity, true)
                     MQTTUtils.setEnabled(mActivity, true)
@@ -888,14 +888,14 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-//             Action.UNDO_LAST_ACTION -> cmd = JNICmd.CMD_UNDO_LAST
-//             Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
-             Action.COMMIT_ACTION -> mGR!!.commitTurn()
+            //             Action.UNDO_LAST_ACTION -> cmd = JNICmd.CMD_UNDO_LAST
+            //             Action.SMS_CONFIG_ACTION -> PrefsDelegate.launch(mActivity)
+            Action.COMMIT_ACTION -> mGR!!.commitTurn()
 
-//             Action.SHOW_EXPL_ACTION -> {
-//                 showToast(m_mySIS!!.toastStr!!)
-//                 m_mySIS!!.toastStr = null
-//             }
+            //             Action.SHOW_EXPL_ACTION -> {
+            //                 showToast(m_mySIS!!.toastStr!!)
+            //                 m_mySIS!!.toastStr = null
+            //             }
 
             Action.BUTTON_BROWSEALL_ACTION, Action.BUTTON_BROWSE_ACTION -> {
                 val curDict = gi.dictName(mView!!.curPlayer)
@@ -913,84 +913,84 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-             Action.PREV_HINT_ACTION, Action.NEXT_HINT_ACTION -> {
-                 launch {
-                     val workRemains = BooleanArray(1)
-                     while ( true ) {
-                         val found = mGR!!.requestHint(action == Action.NEXT_HINT_ACTION, workRemains)
-                         if ( !found || !workRemains[0] ) {
-                             break;
-                         }
-                     }
-                 }
+            Action.PREV_HINT_ACTION, Action.NEXT_HINT_ACTION -> {
+                launch {
+                    val workRemains = BooleanArray(1)
+                    while ( true ) {
+                        val found = mGR!!.requestHint(action == Action.NEXT_HINT_ACTION, workRemains)
+                        if ( !found || !workRemains[0] ) {
+                            break;
+                        }
+                    }
+                }
 
-             }
+            }
 
-             Action.UNDO_ACTION -> mGR!!.replaceTiles()
-             Action.JUGGLE_ACTION -> mGR!!.juggleTray()
-             Action.FLIP_ACTION -> mGR!!.flip()
+            Action.UNDO_ACTION -> mGR!!.replaceTiles()
+            Action.JUGGLE_ACTION -> mGR!!.juggleTray()
+            Action.FLIP_ACTION -> mGR!!.flip()
 
-             Action.VALUES_ACTION ->
-                 mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES)?.let{doValuesPopup(it)}
+            Action.VALUES_ACTION ->
+                mToolbar!!.getButtonFor(Buttons.BUTTON_VALUES)?.let{doValuesPopup(it)}
 
-             Action.CHAT_ACTION -> startChatActivity()
+            Action.CHAT_ACTION -> startChatActivity()
 
-             Action.START_TRADE_ACTION -> {
-                 showTradeToastOnce(true)
-                 mGR!!.beginTrade()
-             }
+            Action.START_TRADE_ACTION -> {
+                showTradeToastOnce(true)
+                mGR!!.beginTrade()
+            }
 
-//             Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words!!, gi.isoCode())
-//             Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
-             Action.DELETE_AND_EXIT -> deleteAndClose()
-             Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
-             Action.INVITE_SMS_DATA -> {
-                 val nMissing = params[0] as Int
-                 val info = params[1] as? SentInvitesInfo
-                 launchPhoneNumberInvite(
-                     nMissing, info,
-                     RequestCode.SMS_DATA_INVITE_RESULT
-                 )
-             }
+            //             Action.LOOKUP_ACTION -> launchLookup(m_mySIS!!.words!!, gi.isoCode())
+            //             Action.DROP_MQTT_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_MQTT)
+            Action.DELETE_AND_EXIT -> deleteAndClose()
+            Action.DROP_SMS_ACTION -> alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
+            Action.INVITE_SMS_DATA -> {
+                val nMissing = params[0] as Int
+                val info = params[1] as? SentInvitesInfo
+                launchPhoneNumberInvite(
+                    nMissing, info,
+                    RequestCode.SMS_DATA_INVITE_RESULT
+                )
+            }
 
-             Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
-             Action.BLANK_PICKED -> {
-                 val tps = params[0] as TilePickState
-                 val newTiles = params[1] as IntArray
-                 mGR!!.setBlankValue(tps.playerNum, tps.col, tps.row, newTiles[0])
-             }
+            Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
+            Action.BLANK_PICKED -> {
+                val tps = params[0] as TilePickState
+                val newTiles = params[1] as IntArray
+                mGR!!.setBlankValue(tps.playerNum, tps.col, tps.row, newTiles[0])
+            }
 
-             Action.TRAY_PICKED -> {
-                 val tps = params[0] as TilePickState
-                 val newTiles = params[1] as IntArray
-                 launch {
-                     if (tps.isInitial) {
-                         mGR!!.tilesPicked(tps.playerNum, newTiles)
-                         // handleViaThread(JNICmd.CMD_TILES_PICKED, tps.playerNum, newTiles)
-                     } else {
-                         // handleViaThread(JNICmd.CMD_COMMIT, true, true, newTiles)
-                         mGR!!.commitTurn(true, 0, true, newTiles)
-                     }
-                 }
-             }
+            Action.TRAY_PICKED -> {
+                val tps = params[0] as TilePickState
+                val newTiles = params[1] as IntArray
+                launch {
+                    if (tps.isInitial) {
+                        mGR!!.tilesPicked(tps.playerNum, newTiles)
+                        // handleViaThread(JNICmd.CMD_TILES_PICKED, tps.playerNum, newTiles)
+                    } else {
+                        // handleViaThread(JNICmd.CMD_COMMIT, true, true, newTiles)
+                        mGR!!.commitTurn(true, 0, true, newTiles)
+                    }
+                }
+            }
 
-//             Action.DISABLE_DUALPANE -> {
-//                 XWPrefs.setPrefsString(
-//                     mActivity, R.string.key_force_tablet,
-//                     getString(R.string.force_tablet_phone)
-//                 )
-//                 makeOkOnlyBuilder(R.string.after_restart).show()
-//             }
+            //             Action.DISABLE_DUALPANE -> {
+            //                 XWPrefs.setPrefsString(
+            //                     mActivity, R.string.key_force_tablet,
+            //                     getString(R.string.force_tablet_phone)
+            //                 )
+            //                 makeOkOnlyBuilder(R.string.after_restart).show()
+            //             }
 
-             Action.ARCHIVE_ACTION -> {
-                 Log.d(TAG, "got ARCHIVE_ACTION")
-                 val rematchAfter = params.size >= 1 && params[0] as Boolean
-                 if (rematchAfter) {
-                     doRematchIf(true, false) // closes game
-                 } else {
-                     archiveGame(true)
-                 }
-             }
+            Action.ARCHIVE_ACTION -> {
+                Log.d(TAG, "got ARCHIVE_ACTION")
+                val rematchAfter = params.size >= 1 && params[0] as Boolean
+                if (rematchAfter) {
+                    doRematchIf(true, false) // closes game
+                } else {
+                    archiveGame(true)
+                }
+            }
 
             Action.REMATCH_ACTION -> {
                 val archiveAfter = params.size >= 1 && params[0] as Boolean
@@ -1035,66 +1035,66 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-//             Action.LAUNCH_THEME_CONFIG -> PrefsDelegate.launch(
-//                 mActivity, PrefsWrappers.prefs_appear_themes::class.java
-//             )
+            //             Action.LAUNCH_THEME_CONFIG -> PrefsDelegate.launch(
+            //                 mActivity, PrefsWrappers.prefs_appear_themes::class.java
+            //             )
 
-//             Action.LAUNCH_THEME_COLOR_CONFIG -> {
-//                 val clazz: Class<*> =
-//                     if (CommonPrefs.darkThemeInUse(mActivity)) {
-//                         PrefsWrappers.prefs_appear_colors_dark::class.java
-//                     } else {
-//                         PrefsWrappers.prefs_appear_colors_light::class.java
-//                     }
-//                 PrefsDelegate.launch(mActivity, clazz)
-//             }
+            //             Action.LAUNCH_THEME_COLOR_CONFIG -> {
+            //                 val clazz: Class<*> =
+            //                     if (CommonPrefs.darkThemeInUse(mActivity)) {
+            //                         PrefsWrappers.prefs_appear_colors_dark::class.java
+            //                     } else {
+            //                         PrefsWrappers.prefs_appear_colors_light::class.java
+            //                     }
+            //                 PrefsDelegate.launch(mActivity, clazz)
+            //             }
 
-//             Action.ENABLE_NBS_DO -> {
-//                 post { retryNBSInvites(params) }
-//                 handled = super.onPosButton(action, *params)
-//             }
+            //             Action.ENABLE_NBS_DO -> {
+            //                 post { retryNBSInvites(params) }
+            //                 handled = super.onPosButton(action, *params)
+            //             }
 
-             else -> handled = super.onPosButton(action, *params)
-         }
-         //         cmd?.let { handleViaThread(it) }
+            else -> handled = super.onPosButton(action, *params)
+        }
+        //         cmd?.let { handleViaThread(it) }
 
-         return handled
-     }
+        return handled
+    }
 
-     override fun onNegButton(action: Action, vararg params: Any?): Boolean {
-         Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.fmtAny(params))
-         var handled = true
-         when (action) {
-//             Action.ENABLE_MQTT_DO_OR -> mDropMQTTOnDismiss = true
-             Action.DROP_SMS_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS)
-             Action.DELETE_AND_EXIT -> finish()
-             Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
-             Action.CUSTOM_DICT_CONFIRMED -> {
-                 Assert.failDbg()
-                 // GamesListDelegate.launchGameConfig(mActivity, mGR!!)
-                 finish()
-             }
-
-            Action.INVITE_SMS_DATA -> if (Perms23.haveNBSPerms(mActivity)) {
-                val nMissing = params[0] as Int
-                val info = params[1] as? SentInvitesInfo
-                launchPhoneNumberInvite(
-                    nMissing, info,
-                    RequestCode.SMS_DATA_INVITE_RESULT
-                )
+    override fun onNegButton(action: Action, vararg params: Any?): Boolean {
+        Log.d(TAG, "onNegButton(%s, %s)", action, DbgUtils.fmtAny(params))
+        var handled = true
+        when (action) {
+            //             Action.ENABLE_MQTT_DO_OR -> mDropMQTTOnDismiss = true
+            Action.DROP_SMS_ACTION -> dropConViaAndRestart(CommsConnType.COMMS_CONN_SMS)
+            Action.DELETE_AND_EXIT -> finish()
+            Action.ASKED_PHONE_STATE -> showInviteChoicesThen()
+            Action.CUSTOM_DICT_CONFIRMED -> {
+                Assert.failDbg()
+                // GamesListDelegate.launchGameConfig(mActivity, mGR!!)
+                finish()
             }
 
-            else -> handled = super.onNegButton(action, *params)
+            Action.INVITE_SMS_DATA -> if (Perms23.haveNBSPerms(mActivity)) {
+                                          val nMissing = params[0] as Int
+                                          val info = params[1] as? SentInvitesInfo
+                                          launchPhoneNumberInvite(
+                                              nMissing, info,
+                                              RequestCode.SMS_DATA_INVITE_RESULT
+                                          )
+                                      }
+
+                                      else -> handled = super.onNegButton(action, *params)
         }
         return handled
     }
 
-     override fun onDismissed(action: Action,
-                              vararg params: Any?): Boolean
-     {
-         Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.fmtAny(params))
-         var handled = true
-         when (action) {
+    override fun onDismissed(action: Action,
+                             vararg params: Any?): Boolean
+    {
+        Log.d(TAG, "onDismissed(%s, %s)", action, DbgUtils.fmtAny(params))
+        var handled = true
+        when (action) {
             Action.ENABLE_MQTT_DO_OR ->
                 if (mDropMQTTOnDismiss) {
                     postDelayed({ askDropMQTT() }, 10)
@@ -1113,8 +1113,8 @@ class BoardDelegate(delegator: Delegator) :
                 // the game.
                 finish()
 
-//             Action.DROP_SMS_ACTION ->
-//                 alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
+            //             Action.DROP_SMS_ACTION ->
+            //                 alertOrderIncrIfAt(StartAlertOrder.NBS_PERMS)
             Action.LAUNCH_INVITE_ACTION -> showInviteAlertIf()
             else -> handled = super.onDismissed(action, *params)
         }
@@ -1311,25 +1311,25 @@ class BoardDelegate(delegator: Delegator) :
 //     ////////////////////////////////////////////////////////////
 //     // NFCCardService.Wrapper.Procs
 //     ////////////////////////////////////////////////////////////
-     override fun onReadingChange(nowReading: Boolean) {
-         // Do we need this?
-     }
+    override fun onReadingChange(nowReading: Boolean) {
+        // Do we need this?
+    }
 
-     private fun updatePostDraw() {
-         launch {
-             mGsi = mGR!!.getState()
-             val gsi = mGsi!!
-             updateToolbar(gsi)
-             val inTrade = gsi.inTrade
-             if (m_mySIS!!.inTrade != inTrade) {
-                 m_mySIS!!.inTrade = inTrade
-             }
-             mView!!.setInTrade(inTrade)
-             showTradeToastOnce(inTrade)
-             adjustTradeVisibility()
-             invalidateOptionsMenuIf()
-         }
-     }
+    private fun updatePostDraw() {
+        launch {
+            mGsi = mGR!!.getState()
+            val gsi = mGsi!!
+            updateToolbar(gsi)
+            val inTrade = gsi.inTrade
+            if (m_mySIS!!.inTrade != inTrade) {
+                m_mySIS!!.inTrade = inTrade
+            }
+            mView!!.setInTrade(inTrade)
+            showTradeToastOnce(inTrade)
+            adjustTradeVisibility()
+            invalidateOptionsMenuIf()
+        }
+    }
 
     ////////////////////////////////////////////////////////////
     // InvitesNeededAlert.Callbacks
@@ -1389,34 +1389,34 @@ class BoardDelegate(delegator: Delegator) :
         SMSInviteDelegate.launchForResult(mActivity, nMissing, info, code)
     }
 
-     private fun deleteAndClose() {
-         GameMgr.deleteGame(mGR!!)
-         waitCloseGame(false)
-         finish()
-     }
+    private fun deleteAndClose() {
+        GameMgr.deleteGame(mGR!!)
+        waitCloseGame(false)
+        finish()
+    }
 
-     private fun askDropMQTT() {
-         mGi?.conTypes?.let { connTypes ->
-             var msg = getString(R.string.confirm_drop_mqtt)
-             if (connTypes.contains(CommsConnType.COMMS_CONN_BT)) {
-                 msg += " " + getString(R.string.confirm_drop_relay_bt)
-             }
-             if (connTypes.contains(CommsConnType.COMMS_CONN_SMS)) {
-                 msg += " " + getString(R.string.confirm_drop_relay_sms)
-             }
-             makeConfirmThenBuilder(Action.DROP_MQTT_ACTION, msg).show()
-         }
-     }
+    private fun askDropMQTT() {
+        mGi?.conTypes?.let { connTypes ->
+            var msg = getString(R.string.confirm_drop_mqtt)
+            if (connTypes.contains(CommsConnType.COMMS_CONN_BT)) {
+                msg += " " + getString(R.string.confirm_drop_relay_bt)
+            }
+            if (connTypes.contains(CommsConnType.COMMS_CONN_SMS)) {
+                msg += " " + getString(R.string.confirm_drop_relay_sms)
+            }
+            makeConfirmThenBuilder(Action.DROP_MQTT_ACTION, msg).show()
+        }
+    }
 
-     private fun dropConViaAndRestart(typ: CommsConnType) {
-         mGR?.let {
-             launch {
-                 it.dropHostAddr(typ)
-                 finish()
-                 GameUtils.launchGame(getDelegator(), it)
-             }
-         }
-     }
+    private fun dropConViaAndRestart(typ: CommsConnType) {
+        mGR?.let {
+            launch {
+                it.dropHostAddr(typ)
+                finish()
+                GameUtils.launchGame(getDelegator(), it)
+            }
+        }
+    }
 
 //     private fun setGotGameDict(getDict: String?) {
 //         mJniThread!!.setSaveDict(getDict)
@@ -1439,81 +1439,81 @@ class BoardDelegate(delegator: Delegator) :
 //         return xpKey
 //     }
 
-     fun informMove(turn: Int, expl: String, words: String?) {
-         m_mySIS!!.words = words?.let { wordsToArray(it) }
-         nonBlockingDialog(DlgID.DLG_SCORES, expl)
+    fun informMove(turn: Int, expl: String, words: String?) {
+        m_mySIS!!.words = words?.let { wordsToArray(it) }
+        nonBlockingDialog(DlgID.DLG_SCORES, expl)
 
-         // Post a notification if in background, or play sound if not. But
-         // do nothing for standalone case.
-         if (DeviceRole.ROLE_STANDALONE == mGi!!.deviceRole) {
-             // do nothing
-         } else if (isVisible) {
-             Utils.playNotificationSound(mActivity)
-         } else {
-             launch {
-                 mGR!!.let { gr ->
-                     BackMoveResult().also { bmr ->
-                         bmr.m_lmi = gr.getPlayersLastScore(turn)
-                         val locals = mGi!!.playersLocal()
-                         GameUtils.postMoveNotification(mActivity, gr,
-                                                        bmr, locals[turn])
-                     }
-                 }
-             }
-         }
-     }
+        // Post a notification if in background, or play sound if not. But
+        // do nothing for standalone case.
+        if (DeviceRole.ROLE_STANDALONE == mGi!!.deviceRole) {
+            // do nothing
+        } else if (isVisible) {
+            Utils.playNotificationSound(mActivity)
+        } else {
+            launch {
+                mGR!!.let { gr ->
+                    BackMoveResult().also { bmr ->
+                        bmr.m_lmi = gr.getPlayersLastScore(turn)
+                        val locals = mGi!!.playersLocal()
+                        GameUtils.postMoveNotification(mActivity, gr,
+                                                       bmr, locals[turn])
+                    }
+                }
+            }
+        }
+    }
 
-     fun notifyGameOver() {
-         mGameOver = true
-         launch {
-             val titleID = R.string.summary_gameover
-             val text = mGR!!.writeFinalScores()
-             handleGameOver(titleID, text)
-         }
-     }
+    fun notifyGameOver() {
+        mGameOver = true
+        launch {
+            val titleID = R.string.summary_gameover
+            val text = mGR!!.writeFinalScores()
+            handleGameOver(titleID, text)
+        }
+    }
 
-     fun onGameChanged(flags: GameChangeEvents) {
-         Log.d(TAG, "onGameChanged($flags)")
-         mGR?.let { gr ->
-             launch {
-                 gr.getSummary()?.let { summary ->
-                     mSummary = summary
-                     if (flags.contains(GameChangeEvent.GCE_MSGCOUNT_CHANGED)) {
-                         val count = summary.nPacketsPending
-                         ConnStatusHandler.updateMoveCount(mActivity, count)
-                         mGameOverAlert?.pendingCountChanged(count)
-                     }
+    fun onGameChanged(flags: GameChangeEvents) {
+        Log.d(TAG, "onGameChanged($flags)")
+        mGR?.let { gr ->
+            launch {
+                gr.getSummary()?.let { summary ->
+                    mSummary = summary
+                    if (flags.contains(GameChangeEvent.GCE_MSGCOUNT_CHANGED)) {
+                        val count = summary.nPacketsPending
+                        ConnStatusHandler.updateMoveCount(mActivity, count)
+                        mGameOverAlert?.pendingCountChanged(count)
+                    }
 
-                     if (flags.contains(GameChangeEvent.GCE_TURN_CHANGED)
-                             && 0 <= summary.turn ) {
-                         post {
-                             makeNotAgainBuilder(
-                                 R.string.key_notagain_turnchanged,
-                                 R.string.not_again_turnchanged
-                             )
-                                 .show()
-                         }
-                         showInviteAlertIf()
-                     }
-                 }
-             }
-         }
-     }
+                    if (flags.contains(GameChangeEvent.GCE_TURN_CHANGED)
+                            && 0 <= summary.turn ) {
+                        post {
+                            makeNotAgainBuilder(
+                                R.string.key_notagain_turnchanged,
+                                R.string.not_again_turnchanged
+                            )
+                                .show()
+                        }
+                        showInviteAlertIf()
+                    }
+                }
+            }
+        }
+    }
 
-     private inner class BoardUtilCtxt(gr: GameRef) : UtilCtxt(gr) {
+    private inner class BoardUtilCtxt(gr: GameRef) : UtilCtxt(gr) {
 
-         override fun remSelected() {
-             launch {
-                 val str = mGR!!.formatRemainingTiles()
-                 showDialogFragment(DlgID.DLG_OKONLY, R.string.tiles_left_title, str)
-             }
-         }
+        override fun remSelected() {
+            launch {
+                val str = mGR!!.formatRemainingTiles()
+                showDialogFragment(DlgID.DLG_OKONLY, R.string.tiles_left_title, str)
+            }
+        }
 
-//         override fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {
-//             if (inDuplicateMode) {
-//                 runOnUiThread { getConfirmPause(canPause) }
-//             }
-//         }
+        //         override fun timerSelected(inDuplicateMode: Boolean, canPause: Boolean) {
+        //             if (inDuplicateMode) {
+        //                 runOnUiThread { getConfirmPause(canPause) }
+        //             }
+        //         }
 
         override fun bonusSquareHeld(bonus: Int) {
             val id =
@@ -1579,24 +1579,24 @@ class BoardDelegate(delegator: Delegator) :
             startTP(Action.TRAY_PICKED, tps)
         }
 
-//         override fun informNeedPassword(player: Int, name: String?) {
-//             showDialogFragment(DlgID.ASK_PASSWORD, player, name)
-//         }
+        //         override fun informNeedPassword(player: Int, name: String?) {
+        //             showDialogFragment(DlgID.ASK_PASSWORD, player, name)
+        //         }
 
-//         override fun turnChanged(newTurn: Int) {
-//             if (0 <= newTurn) {
-//                 m_mySIS!!.nMissing = 0
-//                 post {
-//                     makeNotAgainBuilder(
-//                         R.string.key_notagain_turnchanged,
-//                         R.string.not_again_turnchanged
-//                     )
-//                         .show()
-//                 }
-//                 handleViaThread(JNICmd.CMD_ZOOM, -8)
-//                 handleViaThread(JNICmd.CMD_SAVE)
-//             }
-//         }
+        //         override fun turnChanged(newTurn: Int) {
+        //             if (0 <= newTurn) {
+        //                 m_mySIS!!.nMissing = 0
+        //                 post {
+        //                     makeNotAgainBuilder(
+        //                         R.string.key_notagain_turnchanged,
+        //                         R.string.not_again_turnchanged
+        //                     )
+        //                         .show()
+        //                 }
+        //                 handleViaThread(JNICmd.CMD_ZOOM, -8)
+        //                 handleViaThread(JNICmd.CMD_SAVE)
+        //             }
+        //         }
 
         override fun notifyMove(msg: String) {
             showDialogFragment(DlgID.QUERY_MOVE, msg)
@@ -1610,14 +1610,14 @@ class BoardDelegate(delegator: Delegator) :
             showDialogFragment(DlgID.QUERY_TRADE, dlgBytes)
         }
 
-//         override fun notifyDupStatus(amHost: Boolean, msg: String) {
-//             val key =
-//                 if (amHost) R.string.key_na_dupstatus_host else R.string.key_na_dupstatus_guest
-//             runOnUiThread {
-//                 makeNotAgainBuilder(key, msg)
-//                     .show()
-//             }
-//         }
+        //         override fun notifyDupStatus(amHost: Boolean, msg: String) {
+        //             val key =
+        //                 if (amHost) R.string.key_na_dupstatus_host else R.string.key_na_dupstatus_guest
+        //             runOnUiThread {
+        //                 makeNotAgainBuilder(key, msg)
+        //                     .show()
+        //             }
+        //         }
 
         private fun showUserError(msg: String?, asToast: Boolean = false) {
             msg?.let {
@@ -1683,56 +1683,56 @@ class BoardDelegate(delegator: Delegator) :
             }
         } // userError
 
-//         override fun informUndo() {
-//             nonBlockingDialog(
-//                 DlgID.DLG_OKONLY,
-//                 getString(R.string.remote_undone)
-//             )
-//         }
+        //         override fun informUndo() {
+        //             nonBlockingDialog(
+        //                 DlgID.DLG_OKONLY,
+        //                 getString(R.string.remote_undone)
+        //             )
+        //         }
 
-//         override fun informNetDict(
-//             isoCodeStr: String, oldName: String,
-//             newName: String, newSum: String,
-//             phonies: XWPhoniesChoice
-//         ) {
-//             // If it's same dict and same sum, we're good.  That
-//             // should be the normal case.  Otherwise: if same name but
-//             // different sum, notify and offer to upgrade.  If
-//             // different name, offer to install.
-//             var msg: String? = null
-//             if (oldName == newName) {
-//                 val oldSum = DictLangCache
-//                     .getDictMD5Sums(mActivity, oldName)[0]
-//                 if (oldSum != newSum) {
-//                     // Same dict, different versions
-//                     msg = getString(
-//                         R.string.inform_dict_diffversion_fmt,
-//                         oldName
-//                     )
-//                 }
-//             } else {
-//                 // Different dict!  If we have the other one, switch
-//                 // to it.  Otherwise offer to download
-//                 val dlgID: DlgID
-//                 msg = getString(
-//                     R.string.inform_dict_diffdict_fmt,
-//                     oldName, newName, newName
-//                 )
-//                 val isoCode = ISOCode.newIf(isoCodeStr)
-//                 if (DictLangCache.haveDict(
-//                         mActivity, isoCode,
-//                         newName!!
-//                     )
-//                 ) {
-//                     dlgID = DlgID.DLG_USEDICT
-//                 } else {
-//                     dlgID = DlgID.DLG_GETDICT
-//                     msg += getString(R.string.inform_dict_download)
-//                 }
-//                 m_mySIS!!.getDict = newName
-//                 nonBlockingDialog(dlgID, msg)
-//             }
-//         }
+        //         override fun informNetDict(
+        //             isoCodeStr: String, oldName: String,
+        //             newName: String, newSum: String,
+        //             phonies: XWPhoniesChoice
+        //         ) {
+        //             // If it's same dict and same sum, we're good.  That
+        //             // should be the normal case.  Otherwise: if same name but
+        //             // different sum, notify and offer to upgrade.  If
+        //             // different name, offer to install.
+        //             var msg: String? = null
+        //             if (oldName == newName) {
+        //                 val oldSum = DictLangCache
+        //                     .getDictMD5Sums(mActivity, oldName)[0]
+        //                 if (oldSum != newSum) {
+        //                     // Same dict, different versions
+        //                     msg = getString(
+        //                         R.string.inform_dict_diffversion_fmt,
+        //                         oldName
+        //                     )
+        //                 }
+        //             } else {
+        //                 // Different dict!  If we have the other one, switch
+        //                 // to it.  Otherwise offer to download
+        //                 val dlgID: DlgID
+        //                 msg = getString(
+        //                     R.string.inform_dict_diffdict_fmt,
+        //                     oldName, newName, newName
+        //                 )
+        //                 val isoCode = ISOCode.newIf(isoCodeStr)
+        //                 if (DictLangCache.haveDict(
+        //                         mActivity, isoCode,
+        //                         newName!!
+        //                     )
+        //                 ) {
+        //                     dlgID = DlgID.DLG_USEDICT
+        //                 } else {
+        //                     dlgID = DlgID.DLG_GETDICT
+        //                     msg += getString(R.string.inform_dict_download)
+        //                 }
+        //                 m_mySIS!!.getDict = newName
+        //                 nonBlockingDialog(dlgID, msg)
+        //             }
+        //         }
 
         override fun notifyIllegalWords(
             dict: String, words: Array<String>, turn: Int,
@@ -1754,10 +1754,10 @@ class BoardDelegate(delegator: Delegator) :
             }
         }
 
-//         // Let's have this block in case there are multiple messages.  If
-//         // we don't block the jni thread will continue processing messages
-//         // and may stack dialogs on top of this one.  Including later
-//         // chat-messages.
+        //         // Let's have this block in case there are multiple messages.  If
+        //         // we don't block the jni thread will continue processing messages
+        //         // and may stack dialogs on top of this one.  Including later
+        //         // chat-messages.
         override fun showChat(msg: String, fromIndx: Int,
                               tsSeconds: Int): Boolean {
             runOnUiThread {
@@ -1768,38 +1768,38 @@ class BoardDelegate(delegator: Delegator) :
             return true
         }
 
-//         override fun formatPauseHistory(
-//             pauseTyp: Int, player: Int,
-//             whenPrev: Int, whenCur: Int, msg: String?
-//         ): String? {
-//             Log.d(TAG, "formatPauseHistory(prev: %d, cur: %d)", whenPrev, whenCur)
-//             var result: String? = null
-//             val name = if (0 > player) null else mGi!!.players[player]!!.name
-//             when (pauseTyp) {
-//                 DUtilCtxt.UNPAUSED -> {
-//                     val interval = DateUtils
-//                         .formatElapsedTime((whenCur - whenPrev).toLong())
-//                         .toString()
-//                     result = LocUtils.getString(
-//                         mActivity, R.string.history_unpause_fmt,
-//                         name, interval
-//                     )
-//                 }
+        //         override fun formatPauseHistory(
+        //             pauseTyp: Int, player: Int,
+        //             whenPrev: Int, whenCur: Int, msg: String?
+        //         ): String? {
+        //             Log.d(TAG, "formatPauseHistory(prev: %d, cur: %d)", whenPrev, whenCur)
+        //             var result: String? = null
+        //             val name = if (0 > player) null else mGi!!.players[player]!!.name
+        //             when (pauseTyp) {
+        //                 DUtilCtxt.UNPAUSED -> {
+        //                     val interval = DateUtils
+        //                         .formatElapsedTime((whenCur - whenPrev).toLong())
+        //                         .toString()
+        //                     result = LocUtils.getString(
+        //                         mActivity, R.string.history_unpause_fmt,
+        //                         name, interval
+        //                     )
+        //                 }
 
-//                 DUtilCtxt.PAUSED -> result = LocUtils.getString(
-//                     mActivity, R.string.history_pause_fmt,
-//                     name
-//                 )
+        //                 DUtilCtxt.PAUSED -> result = LocUtils.getString(
+        //                     mActivity, R.string.history_pause_fmt,
+        //                     name
+        //                 )
 
-//                 DUtilCtxt.AUTOPAUSED -> result =
-//                     LocUtils.getString(mActivity, R.string.history_autopause)
-//             }
-//             msg?.let {
-//                 result += " " + LocUtils
-//                     .getString(mActivity, R.string.history_msg_fmt, it)
-//             }
-//             return result
-//         }
+        //                 DUtilCtxt.AUTOPAUSED -> result =
+        //                     LocUtils.getString(mActivity, R.string.history_autopause)
+        //             }
+        //             msg?.let {
+        //                 result += " " + LocUtils
+        //                     .getString(mActivity, R.string.history_msg_fmt, it)
+        //             }
+        //             return result
+        //         }
         override fun dictGone(dictName: String) {
             Log.d(TAG, "dictGone($dictName)")
             runOnUiThread {
@@ -1810,53 +1810,53 @@ class BoardDelegate(delegator: Delegator) :
         
     } // class BoardUtilCtxt
 
-     private fun doResume(isStart: Boolean) {
-         Log.d(TAG, "doResume($isStart) (mGR: $mGR)")
-         var success = null != mGR
-         val firstStart = null == mHandler
-         if (success && firstStart) {
-             mHandler = Handler(Looper.getMainLooper())
-             //             success = false
-             //             // success = mJniThreadRef!!.configure(
-             //             //     mActivity, mUtils, this,
-             //             //     makeJNIHandler()
-             //             // )
-             //             // if (success) {
-             //             //     mJniGamePtr = mJniThreadRef!!.getGamePtr()
-             //             //     Assert.assertNotNull(mJniGamePtr)
-             //             // }
-             //         }
-             try {
-                 resumeGame(isStart)
-                 if (!isStart) {
-                     setKeepScreenOn()
-                 }
-             } catch (ex: NoSuchGameException) {
-                 Log.ex(TAG, ex)
-                 success = false
-             } catch (ex: NullPointerException) {
-                 Log.ex(TAG, ex)
-                 success = false
-             }
-         }
-         if (success) {
-             ConnStatusHandler.setHandler(this)
-         } else {
-             finish()
-         }
-     }
+    private fun doResume(isStart: Boolean) {
+        Log.d(TAG, "doResume($isStart) (mGR: $mGR)")
+        var success = null != mGR
+        val firstStart = null == mHandler
+        if (success && firstStart) {
+            mHandler = Handler(Looper.getMainLooper())
+            //             success = false
+            //             // success = mJniThreadRef!!.configure(
+            //             //     mActivity, mUtils, this,
+            //             //     makeJNIHandler()
+            //             // )
+            //             // if (success) {
+            //             //     mJniGamePtr = mJniThreadRef!!.getGamePtr()
+            //             //     Assert.assertNotNull(mJniGamePtr)
+            //             // }
+            //         }
+            try {
+                resumeGame(isStart)
+                if (!isStart) {
+                    setKeepScreenOn()
+                }
+            } catch (ex: NoSuchGameException) {
+                Log.ex(TAG, ex)
+                success = false
+            } catch (ex: NullPointerException) {
+                Log.ex(TAG, ex)
+                success = false
+            }
+        }
+        if (success) {
+            ConnStatusHandler.setHandler(this)
+        } else {
+            finish()
+        }
+    }
 
-     private var mTradeToastShown = false
-     private fun showTradeToastOnce(inTrade: Boolean) {
-         if (inTrade) {
-             if (!mTradeToastShown) {
-                 mTradeToastShown = true
-                 Utils.showToast(mActivity, R.string.entering_trade)
-             }
-         } else {
-             mTradeToastShown = false
-         }
-     }
+    private var mTradeToastShown = false
+    private fun showTradeToastOnce(inTrade: Boolean) {
+        if (inTrade) {
+            if (!mTradeToastShown) {
+                mTradeToastShown = true
+                Utils.showToast(mActivity, R.string.entering_trade)
+            }
+        } else {
+            mTradeToastShown = false
+        }
+    }
 
 //     private fun makeJNIHandler(): Handler {
 //         return object : Handler(Looper.getMainLooper()) {
@@ -1913,38 +1913,38 @@ class BoardDelegate(delegator: Delegator) :
 //         }
 //     }
 
-     private fun handleGameOver(titleID: Int, msg: String, nPending: Int = 0) {
-         val onDone: OnDoneProc = object : OnDoneProc {
-             override fun onGameOverDone(
-                 rematch: Boolean,
-                 archiveAfter: Boolean,
-                 deleteAfter: Boolean
-             ) {
-                 var postAction: Action? = null
-                 val postArgs = ArrayList<Any>()
-                 if (rematch) {
-                     postAction = Action.REMATCH_ACTION
-                     postArgs.add(archiveAfter)
-                     postArgs.add(deleteAfter)
-                 } else if (archiveAfter) {
-                     showArchiveNA(false)
-                 } else if (deleteAfter) {
-                     postAction = Action.DELETE_ACTION
-                 }
-                 postAction?.let {
-                     post { onPosButton(it, *postArgs.toTypedArray()) }
-                 }
-             }
-         }
-         launch {
-             mGameOverAlert = GameOverAlert.newInstance(
-                 mSummary, titleID, msg,
-                 0 < nPending, mGR!!.isArchived()
-             )
-                 .configure(onDone, this@BoardDelegate)
-             show(mGameOverAlert)
-         }
-     }
+    private fun handleGameOver(titleID: Int, msg: String, nPending: Int = 0) {
+        val onDone: OnDoneProc = object : OnDoneProc {
+            override fun onGameOverDone(
+                rematch: Boolean,
+                archiveAfter: Boolean,
+                deleteAfter: Boolean
+            ) {
+                var postAction: Action? = null
+                val postArgs = ArrayList<Any>()
+                if (rematch) {
+                    postAction = Action.REMATCH_ACTION
+                    postArgs.add(archiveAfter)
+                    postArgs.add(deleteAfter)
+                } else if (archiveAfter) {
+                    showArchiveNA(false)
+                } else if (deleteAfter) {
+                    postAction = Action.DELETE_ACTION
+                }
+                postAction?.let {
+                    post { onPosButton(it, *postArgs.toTypedArray()) }
+                }
+            }
+        }
+        launch {
+            mGameOverAlert = GameOverAlert.newInstance(
+                mSummary, titleID, msg,
+                0 < nPending, mGR!!.isArchived()
+            )
+                .configure(onDone, this@BoardDelegate)
+            show(mGameOverAlert)
+        }
+    }
 
     private fun resumeGame(isStart: Boolean) {
         Log.d(TAG, "resumeGame($isStart)")
@@ -2225,7 +2225,7 @@ class BoardDelegate(delegator: Delegator) :
             val locs = mGi!!.playersLocal() // to convert old histories
             ChatDelegate.start( getDelegator(), mGR!!, curPlayer, names, locs )
         }
-     }
+    }
 
     private fun doValuesPopup(button: View) {
         val FAKE_GROUP = 100
@@ -2505,35 +2505,35 @@ class BoardDelegate(delegator: Delegator) :
         mActivity = delegator.getActivity()!!
     }
 
-     private fun nliForMe(): NetLaunchInfo {
-         val numHere = 1
+    private fun nliForMe(): NetLaunchInfo {
+        val numHere = 1
         // This is too simple. Need to know if it's a replacement
         // Log.d( TAG, "nliForMe() => %s", nli );
-         return NetLaunchInfo(
-             mActivity, mSummary!!, mGi!!, numHere
-         )
-     }
+        return NetLaunchInfo(
+            mActivity, mSummary!!, mGi!!, numHere
+        )
+    }
 
-     private fun tryOtherInvites(addr: CommsAddrRec): Boolean {
-         Log.d(TAG, "tryOtherInvites(%s)", addr)
-         mGR!!.invite(nliForMe(), addr, true)
+    private fun tryOtherInvites(addr: CommsAddrRec): Boolean {
+        Log.d(TAG, "tryOtherInvites(%s)", addr)
+        mGR!!.invite(nliForMe(), addr, true)
 
-         //         // Not sure what to do about this recordInviteSent stuff
-         //         val conTypes = addr.conTypes
-         //         for (typ in conTypes!!) {
-         //             when (typ) {
-         //                 CommsConnType.COMMS_CONN_MQTT -> {}
-         //                 CommsConnType.COMMS_CONN_BT -> {}
-         //                 CommsConnType.COMMS_CONN_SMS -> {}
-         //                 CommsConnType.COMMS_CONN_NFC -> {}
-         //                 else -> {
-         //                     Log.d(TAG, "not inviting using addr type %s", typ)
-         //                     Assert.failDbg()
-         //                 }
-         //             }
-         //         }
-         return true
-     }
+        //         // Not sure what to do about this recordInviteSent stuff
+        //         val conTypes = addr.conTypes
+        //         for (typ in conTypes!!) {
+        //             when (typ) {
+        //                 CommsConnType.COMMS_CONN_MQTT -> {}
+        //                 CommsConnType.COMMS_CONN_BT -> {}
+        //                 CommsConnType.COMMS_CONN_SMS -> {}
+        //                 CommsConnType.COMMS_CONN_NFC -> {}
+        //                 else -> {
+        //                     Log.d(TAG, "not inviting using addr type %s", typ)
+        //                     Assert.failDbg()
+        //                 }
+        //             }
+        //         }
+        return true
+    }
 
 //     private fun sendNBSInviteIf(phone: String, nli: NetLaunchInfo, askOk: Boolean) {
 //         if (XWPrefs.getNBSEnabled(mActivity)) {
