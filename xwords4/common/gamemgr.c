@@ -786,7 +786,7 @@ gmgr_setSortOrder( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
     XP_LOGFF( "(nElems=%d)", nElems );
     assertNoDupes( soes, nElems );
     GroupState* grps = findGroupByRef( duc, xwe, grp, NULL );
-    XP_ASSERT( nElems < VSIZE(grps->soes) );
+    XP_ASSERT( nElems <= VSIZE(grps->soes) );
     XP_MEMMOVE( grps->soes, soes, nElems * sizeof(soes[0]) );
     grps->nSOs = nElems;
 
