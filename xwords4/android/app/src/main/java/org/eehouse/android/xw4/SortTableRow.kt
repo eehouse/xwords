@@ -49,8 +49,6 @@ class SortTableRow(context: Context, aset: AttributeSet?) :
                 .setText(LocUtils.getString(context, elem.so!!.resID))
             if (mAllShown) {
                 findViewById<View>(R.id.so_inverted).visibility = GONE
-                findViewById<View>(R.id.arrow_up).visibility = GONE
-                findViewById<View>(R.id.arrow_down).visibility = GONE
                 findViewById<CheckBox>(R.id.so_selected).also {
                     it.setChecked(mSelected)
                     it.setOnCheckedChangeListener(this)
@@ -61,10 +59,6 @@ class SortTableRow(context: Context, aset: AttributeSet?) :
                     it.setChecked(elem.inverted)
                     it.setOnCheckedChangeListener(this)
                 }
-                findViewById<ImageButton>(R.id.arrow_up)
-                    .setOnClickListener(this)
-                findViewById<ImageButton>(R.id.arrow_down)
-                    .setOnClickListener(this)
             }
         } ?: Log.d(TAG, "onAttachedToWindow(): mElem not set")
     }
@@ -98,5 +92,26 @@ class SortTableRow(context: Context, aset: AttributeSet?) :
 
     fun enabled(): Boolean {
         return findViewById<CheckBox>(R.id.so_selected).isChecked()
+    }
+
+    private fun updateArrow(arrow: ImageButton, enable: Boolean ) {
+        if ( enable ) {
+            arrow.visibility = VISIBLE
+            arrow.setOnClickListener(this)
+        } else arrow.visibility = INVISIBLE
+    }
+
+    fun updateArrows(pos: Int, total: Int) {
+        if ( mAllShown ) {
+            findViewById<View>(R.id.arrow_up).visibility = GONE
+            findViewById<View>(R.id.arrow_down).visibility = GONE
+        } else {
+            findViewById<ImageButton>(R.id.arrow_up).also {
+                updateArrow(it, 0 < pos)
+            }
+            findViewById<ImageButton>(R.id.arrow_down).also {
+                updateArrow(it, pos < total - 1)
+            }
+        }
     }
 }

@@ -140,6 +140,7 @@ class SortConfigView(val mContext: Context, attrs: AttributeSet)
         if (mShowAll) {
             mAvail!!.map { addElem(it, false) }
         }
+        updatePositions()
     }
 
     private val mOnMovedBy = object: OnMovedBy {
@@ -157,6 +158,16 @@ class SortConfigView(val mContext: Context, attrs: AttributeSet)
                     }
                 }
             }
+            updatePositions()
+        }
+    }
+
+    private fun updatePositions() {
+        val table = mTable!!
+        val total = table.getChildCount()
+        for (ii in 0 ..< total) {
+            val elem = table.getChildAt(ii) as SortTableRow
+            elem.updateArrows(ii, total)
         }
     }
 

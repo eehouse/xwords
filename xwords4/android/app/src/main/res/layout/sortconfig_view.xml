@@ -17,12 +17,13 @@
 
   <ScrollView android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical">
-
-    <TableLayout android:orientation="vertical"
+              android:orientation="vertical"
+              >
+    <TableLayout android:id="@+id/so_list"
+                 android:orientation="vertical"
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"
-                 android:id="@+id/so_list"
+                 android:animateLayoutChanges="true"
                  />
   </ScrollView>
 </org.eehouse.android.xw4.SortConfigView>
