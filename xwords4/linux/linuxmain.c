@@ -2598,6 +2598,8 @@ main( int argc, char** argv )
 {
     XP_LOGFF( "%s starting; ptr size: %zu", argv[0], sizeof(argv) );
 
+    setlocale( LC_ALL, "" );
+
     testDLL();
     // mtx_crashToTest();
     // return 0;

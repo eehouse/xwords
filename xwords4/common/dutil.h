@@ -162,6 +162,8 @@ typedef struct _DUtilVtable {
 
     void (*m_dutil_onKnownPlayersChange)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_getCommonPrefs)( XW_DUtilCtxt* duc, XWEnv xwe, CommonPrefs* cp );
+    XP_S16 (*m_dutil_strcmp)( XW_DUtilCtxt* duc, XWEnv xwe,
+                              const XP_UCHAR* str1, const XP_UCHAR* str2 );
 } DUtilVtable;
 
 typedef struct GameMgrState GameMgrState;
@@ -277,7 +279,8 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_onKnownPlayersChange((duc), __VA_ARGS__)
 #define dutil_getCommonPrefs(duc, ...)          \
     (duc)->vtable.m_dutil_getCommonPrefs((duc), __VA_ARGS__)
-
+#define dutil_strcmp(duc, ...)          \
+    (duc)->vtable.m_dutil_strcmp((duc), __VA_ARGS__)
 #define dutil_getRegValues( duc, ... ) \
     (duc)->vtable.m_dutil_getRegValues( (duc), __VA_ARGS__)
 

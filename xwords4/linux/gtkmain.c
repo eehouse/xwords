@@ -95,6 +95,7 @@ enum {
 #ifdef XWFEATURE_DEVICE_STORES
     GAMENAME_ITEM,
     GAMEREF_ITEM,
+    OPPONENTS_ITEM,
     CREATED_ITEM,
     STATUS_ITEM,
     GROUPNAME_ITEM,
@@ -244,6 +245,7 @@ init_games_list( void* closure )
 #ifdef XWFEATURE_DEVICE_STORES
     addTextColumn( list, "Name", GAMENAME_ITEM );
     addTextColumn( list, "GameRef", GAMEREF_ITEM );
+    addTextColumn( list, "Opponents", OPPONENTS_ITEM );
     addTextColumn( list, "Status", STATUS_ITEM );
 #else
     addTextColumn( list, "Row", ROW_ITEM );
@@ -281,6 +283,7 @@ init_games_list( void* closure )
 #ifdef XWFEATURE_DEVICE_STORES
                                               G_TYPE_STRING,  /* GAMENAME_ITEM */
                                               G_TYPE_STRING,   /* GAMEREF_ITEM */
+                                              G_TYPE_STRING,   /* OPPONENTS_ITEM */
                                               G_TYPE_STRING,  /* CREATED_ITEM */
                                               G_TYPE_STRING,  /* STATUS_ITEM */
                                               G_TYPE_STRING,  /* GROUPNAME_ITEM */
@@ -392,6 +395,7 @@ updateRow( LaunchParams* params, GameRef gr,
                         ROW_THUMB, snap,
                         GAMENAME_ITEM, gi->gameName,
                         GAMEREF_ITEM, grStr,
+                        OPPONENTS_ITEM, sum->opponents,
                         CREATED_ITEM, createdStr,
                         STATUS_ITEM, state,
                         GROUPNAME_ITEM, groupName,

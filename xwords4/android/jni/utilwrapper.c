@@ -1133,6 +1133,20 @@ and_dutil_getCommonPrefs( XW_DUtilCtxt* duc, XWEnv xwe, CommonPrefs* cp )
     DUTIL_CBK_TAIL();
 }
 
+static XP_S16
+and_dutil_strcmp( XW_DUtilCtxt* duc, XWEnv xwe,
+                  const XP_UCHAR* str1, const XP_UCHAR* str2 )
+{
+    XP_S16 result;
+    DUTIL_CBK_HEADER( "strcmp", "(Ljava/lang/String;Ljava/lang/String;)I" );
+    jstring jstr1 = (*env)->NewStringUTF( env, str1 );
+    jstring jstr2 = (*env)->NewStringUTF( env, str2 );
+    result = (*env)->CallIntMethod( env, dutil->jdutil, mid, jstr1, jstr2 );
+    deleteLocalRefs( env, jstr1, jstr2, DELETE_NO_REF );
+    DUTIL_CBK_TAIL();
+    return result;
+}
+
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv* env, jobject jutil, const CurGameInfo* gi,
           XW_DUtilCtxt* dutil, GameRef gr )
@@ -1266,6 +1280,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(onKnownPlayersChange);
     SET_DPROC(onGameChanged);
     SET_DPROC(getCommonPrefs);
+    SET_DPROC(strcmp);
 
 #undef SET_DPROC
 

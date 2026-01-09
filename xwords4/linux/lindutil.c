@@ -17,6 +17,8 @@
  */
 
 #include <curl/curl.h>
+#include <wctype.h>
+#include <wchar.h>
 
 #include "dutil.h"
 #include "device.h"
@@ -518,6 +520,33 @@ linux_dutil_getCommonPrefs( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), CommonPrefs
     cpFromLP( cp, params );
 }
 
+static wchar_t*
+normalized( const XP_UCHAR* str )
+{
+    size_t len = mbstowcs(NULL, str, 0) + 1;
+    wchar_t* wstr = malloc(len * sizeof(wstr[0]));
+    mbstowcs( wstr, str, len );
+    for (int ii = 0; wstr[ii]; ii++) {
+        wstr[ii] = towlower(wstr[ii]);
+    }
+    return wstr;
+}
+
+static XP_S16
+linux_dutil_strcmp( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
+                    const XP_UCHAR* str1, const XP_UCHAR* str2 )
+{
+    /* Adapted from something gemini came up with */
+    wchar_t* wstr1 = normalized( str1 );
+    wchar_t* wstr2 = normalized( str2 );
+
+    int result = wcscoll( wstr1, wstr2 );
+
+    free( wstr1 );
+    free( wstr2 );
+    return result;
+}
+
 static cJSON*
 linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
 {
@@ -665,6 +694,7 @@ linux_dutils_init( MPFORMAL void* closure )
     SET_PROC(onKnownPlayersChange);
     SET_PROC(onGameChanged);
     SET_PROC(getCommonPrefs);
+    SET_PROC(strcmp);
 
     SET_PROC(getRegValues);
     SET_PROC(setTimer);

@@ -1868,3 +1868,21 @@ dvc_formatUrl( XP_UCHAR buf[], XP_U16 bufLen,
     XP_ASSERT( len < bufLen );
 }
 
+int
+dvc_strcmp( XW_DUtilCtxt* dutil, XWEnv xwe,
+            const XP_UCHAR* str1, const XP_UCHAR* str2 )
+{
+    if ( !str1 ) str1 = "";
+    if ( !str2 ) str2 = "";
+    int result;
+    if ( !str1[0] && !str2[0] ) {
+        result = 0;
+    } else if ( !str1[0] ) {
+        result = -1;
+    } else if ( !str2[0] ) {
+        result = 1;
+    } else {
+        result = dutil_strcmp( dutil, xwe, str1, str2 );
+    }
+    return result;
+}

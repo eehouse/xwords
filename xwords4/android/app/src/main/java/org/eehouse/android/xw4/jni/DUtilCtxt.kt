@@ -30,9 +30,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import java.lang.ref.WeakReference
+import java.text.Collator
+import java.util.Locale
+
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.ref.WeakReference
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BleNetwork
@@ -415,6 +418,15 @@ class DUtilCtxt() {
 
     fun getCommonPrefs(): CommonPrefs {
         return CommonPrefs.get(mContext)
+    }
+
+    // Gemini wrote me....
+    fun strcmp(str1: String, str2: String): Int {
+        val collator = Collator.getInstance(Locale.getDefault())
+        collator.strength = Collator.PRIMARY
+
+        val result = collator.compare(str1, str2)
+        return result
     }
 
     // must match enum GameChangeEvent in dutil.h

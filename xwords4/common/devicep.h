@@ -36,5 +36,8 @@ XWStreamCtxt* dvc_beginUrl( XW_DUtilCtxt* dutil, const XP_UCHAR* host,
                             const XP_UCHAR* prefix );
 void dvc_formatUrl( XP_UCHAR buf[], XP_U16 bufLen, const XP_UCHAR* host,
                     const XP_UCHAR* prefix );
-
+/* Calls through to platform for caseless or otherwise locale-appropriate
+   compare */
+int dvc_strcmp( XW_DUtilCtxt* dutil, XWEnv xwe,
+                const XP_UCHAR* str1, const XP_UCHAR* str2 );
 #endif

@@ -1154,15 +1154,7 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
                 result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
                 break;
             case SO_GAMENAME:
-                if ( !gi1->gameName[0] && !gi2->gameName[0] ) {
-                    /* they're equal */
-                } else if ( !gi1->gameName[0] ) {
-                    result = -1;
-                } else if ( !gi2->gameName[0] ) {
-                    result = 1;
-                } else {
-                    result = XP_STRCMP( gi1->gameName, gi2->gameName );
-                }
+                result = dvc_strcmp( duc, xwe, gi1->gameName, gi2->gameName );
                 break;
             case SO_CREATED:
                 if ( gi1->created < gi2->created ) {
@@ -1178,7 +1170,7 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
             }
                 break;
             case SO_OTHERS_NAMES:
-                result = XP_STRCMP( gs1->opponents, gs2->opponents );
+                result = dvc_strcmp( duc, xwe, gs1->opponents, gs2->opponents );
                 break;
             case SO_TURNLOCAL:
                 /* reverse so local turns sort first  */
