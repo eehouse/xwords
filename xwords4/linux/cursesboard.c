@@ -524,9 +524,8 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if( !!bGlobals->boardWin ) {
         cGlobals->draw =
-            cursesDrawCtxtMake( bGlobals->cGlobals.params,
-                                bGlobals->boardWin, cGlobals->gr,
-                                DT_SCREEN );
+            cursesDrawCtxtMake( cGlobals->params, cGlobals,
+                                bGlobals->boardWin, DT_SCREEN );
     }
 
     setupBoard( bGlobals );
@@ -1219,9 +1218,16 @@ handleFlip( void* closure, int XP_UNUSED(key) )
 } /* handleFlip */
 
 static bool
-handleToggleValues( void* XP_UNUSED(closure), int XP_UNUSED(key) )
+handleToggleValues( void* closure, int XP_UNUSED(key) )
 {
-    XP_ASSERT( 0 );
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    do {
+        cGlobals->cp.tvType = (cGlobals->cp.tvType + 1) % TVT_N_ENTRIES;
+    } while (TVT_BOTH == cGlobals->cp.tvType);
+    gr_prefsChanged( dutil, cGlobals->gr, NULL_XWE, &cGlobals->cp );
+    gr_draw( dutil, cGlobals->gr, NULL_XWE );
     return XP_TRUE;
 } /* handleToggleValues */
 

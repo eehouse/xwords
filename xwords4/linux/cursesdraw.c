@@ -40,6 +40,7 @@ typedef struct CursesDrawCtx {
 
     // DT_SCREEN only
     WINDOW* boardWin;
+    CommonGlobals* cGlobals;
 } CursesDrawCtx;
 
 static void curses_draw_clearRect( DrawCtx* p_dctx, XWEnv xwe, const XP_Rect* rectP );
@@ -442,7 +443,7 @@ static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect,
                       const XP_UCHAR* letter, 
                       const XP_Bitmaps* XP_UNUSED(bitmaps),
-                      Tile XP_UNUSED(tile), const XP_U16 XP_UNUSED(value),
+                      Tile XP_UNUSED(tile), const XP_U16 value,
                       XP_S16 XP_UNUSED(owner), XWBonusType bonus, 
                       HintAtts XP_UNUSED(hintAtts), CellFlags flags )
 {
@@ -469,6 +470,13 @@ curses_draw_drawCell( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rect
             char ch = getBonusChar(bonus);
             mvwaddch( dctx->boardWin, rect->top, rect->left, ch );
         } else {
+            XP_UCHAR valbuf[16];
+            TileValueType tvType = dctx->cGlobals->cp.tvType;
+            if ( TVT_VALUES == tvType ) {
+                letter = valbuf;
+                sprintf( valbuf, "%d", value );
+            }
+
             /* To deal with multibyte (basically just L·L at this point), draw one
                char at a time, wrapping to the next line if we need to. */
             mbstate_t ps = {};
@@ -736,10 +744,11 @@ curses_draw_frameTray( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), XP_Rect* rect )
 #endif
 
 DrawCtx* 
-cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
-                    GameRef gr, DrawTarget dt )
+cursesDrawCtxtMake( LaunchParams* params, CommonGlobals* cGlobals,
+                    WINDOW* boardWin, DrawTarget dt )
 {
     CursesDrawCtx* dctx = g_malloc0( sizeof(*dctx) );
+    dctx->cGlobals = cGlobals;
 
     DrawCtx* super = &dctx->super;
     draw_super_init( super, dt );
@@ -783,7 +792,7 @@ cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
     SET_VTABLE_ENTRY( super->vtable, draw_drawBoardArrow, curses );
 
     if ( DT_THUMB == dt ) {
-        const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
+        const CurGameInfo* gi = gr_getGI( params->dutil, cGlobals->gr, NULL_XWE );
         dctx->nCols = gi->boardSize;
         SET_VTABLE_ENTRY( super->vtable, draw_getThumbSize, curses_thumb );
         SET_VTABLE_ENTRY( super->vtable, draw_getThumbData, curses_thumb );

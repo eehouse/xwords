@@ -56,8 +56,9 @@ void onCursesGameSaved( CursesAppGlobals* aGlobals, sqlite3_int64 rowid );
 
 // typedef struct CursesBoardGlobals;
 
-DrawCtx* cursesDrawCtxtMake( LaunchParams* params, WINDOW* boardWin,
-                             GameRef gr, DrawTarget dt );
+DrawCtx* cursesDrawCtxtMake( LaunchParams* params,
+                             CommonGlobals* cGlobals,
+                             WINDOW* boardWin, DrawTarget dt );
 
 /* Ports: Client and server pick a port at startup on which they'll listen.
  * If both are to be on the same device using localhost as their ip address,
@@ -81,5 +82,4 @@ void onPositionsChangedCurses( CommonAppGlobals* cag, XWArray* positions );
 void informMoveCurses( LaunchParams* params, XWStreamCtxt* expl );
 void informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter );
 void cursesShowFinalScores( CursesBoardGlobals* bGlobals );
-
 #endif
