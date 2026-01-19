@@ -523,7 +523,7 @@
     <string name="newgroup_label">Nombre del nuevo grupo:</string>
     <string name="invite_dict_missing_body_fmt">%1$s te ha invitado a jugar CrossWords usando la lista de palabras %2$s (para jugar en %3$s), pero no está instalado. ¿Le gustaría descargar la lista de palabras o rechazar la invitación\?</string>
     <string name="invite_dict_missing_title">lista de palabras que faltan</string>
-    <string name="cannot_delete_default_group_fmt">El grupo de nuevas partidas, %1$s, no se puede eliminar.</string>
+    <string name="cannot_delete_default_group_fmt">El grupo \"%1$s\" no puede ser eliminado ahora porque es el grupo donde se ubican las nuevas partidas.</string>
     <string name="group_new_games">Nueva partida</string>
     <string name="rename_group_label">Cambiar el nombre de este grupo a:</string>
     <string name="not_again_deletecheck_fmt">Marca la casilla “%1$s” para eliminar esta partida.</string>
@@ -851,7 +851,7 @@
     <string name="lang_name_swedish">sueco</string>
     <string name="loc_filters_screen">Última pantalla</string>
     <string name="button_scan">Volver a escanear</string>
-    <string name="about_copyright">CrossWords para Android \nCopyright (C) 1998-2024 por Eric House. Este software libre/de código abierto está publicado bajo la Licencia Pública GNU.</string>
+    <string name="about_copyright">CrossWords para Android \nCopyright (C) 1998-2025 por Eric House. Este software gratuito/de código abierto está publicado bajo la Licencia Pública GNU.</string>
     <string name="word_to_clip_fmt">Copiado “%1$s”</string>
     <string name="str_resigned_fmt" formatted="false">[Renunció] %1$s: %2$d</string>
     <string name="button_enable_bt">Activar el bluetooth</string>
@@ -1179,4 +1179,8 @@
     <string name="url_scheme_http">Obligar http</string>
     <string name="url_scheme_https">Obligar https</string>
     <string name="lang_name_basque">Vasco</string>
+    <string name="gamel_menu_legalPhonies">Palabras falsas permitidas</string>
+    <string name="gamel_menu_clearLPs">Limpiar todo</string>
+    <string name="gamel_menu_listLPs">Mostrar todo</string>
+    <string name="confirm_clear_lps">¿Estás seguro de que quieres limpiar las “palabras falsas permitidas” guardadas?\n\nEsta acción no se puede deshacer.</string>
 </resources>
