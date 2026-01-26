@@ -1183,4 +1183,6 @@
     <string name="gamel_menu_clearLPs">Limpiar todo</string>
     <string name="gamel_menu_listLPs">Mostrar todo</string>
     <string name="confirm_clear_lps">¿Estás seguro de que quieres limpiar las “palabras falsas permitidas” guardadas?\n\nEsta acción no se puede deshacer.</string>
+    <string name="legalphonies_title_fmt">Palabras falsas permitidas para %1$s</string>
+    <string name="notify_perms_rationale">CrossWords necesita tu permiso para publicar notificaciones, por ejemplo diciéndote que un oponente ha movido o que una lista de palabras actualizada está disponible.</string>
 </resources>
