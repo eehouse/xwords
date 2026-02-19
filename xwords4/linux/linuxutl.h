@@ -59,4 +59,6 @@ void formatTimerText( gchar* buf, int bufLen, int secondsLeft );
 
 void formatSeconds( int unixSeconds, gchar* buf, int bufLen );
 
+const char* get_tmp_dir();
+
 #endif

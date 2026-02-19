@@ -30,7 +30,6 @@
 #include "dictiter.h"
 #include "game.h"
 #include "dbgutil.h"
-#include "xwmutex.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -52,13 +51,11 @@ p_dict_ref( const DictionaryCtxt* dict
 {
     if ( !!dict ) {
         DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
-        WITH_MUTEX( &_dict->mutex );
         ++_dict->refCount;
 #ifdef DEBUG_DICT_REF
         XP_LOGFF( "(dict=%p): refCount now %d (from line %d of %s() in %s)",
                  dict, dict->refCount, line, func, file );
 #endif
-        END_WITH_MUTEX();
     }
     return dict;
 }
@@ -72,7 +69,6 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
 {
     if ( !!dict ) {
         DictionaryCtxt* _dict = (DictionaryCtxt*)dict;
-        WITH_MUTEX( &_dict->mutex );
         XP_ASSERT( 0 != _dict->refCount );
         --_dict->refCount;
         XP_ASSERT( 0 <= _dict->refCount );
@@ -80,11 +76,9 @@ p_dict_unref( const DictionaryCtxt* dict, XWEnv xwe
         XP_LOGFF( "(dict=%p): refCount now %d  (from line %d of %s() in %s)",
                   dict, dict->refCount, line, func, file );
 #endif
-        END_WITH_MUTEX();
         if ( 0 == _dict->refCount ) {
             /* There's a race here. If another thread locks the mutex we'll
                still destroy the dict (and the locked mutex!!!) PENDING */
-            MUTEX_DESTROY( &_dict->mutex );
             (*dict->destructor)( _dict, xwe );
         }
     }
@@ -1206,8 +1200,6 @@ dict_super_init( MPFORMAL DictionaryCtxt* dict, DictDestructor destructor )
     dict->func_dict_follow = dict_super_follow;
     dict->func_dict_edge_with_tile = dict_super_edge_with_tile;
     dict->func_dict_getShortName = dict_getName;
-
-    MUTEX_INIT( &dict->mutex, XP_FALSE );
 } /* dict_super_init */
 
 void

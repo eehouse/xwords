@@ -33,6 +33,7 @@ typedef struct _AskPair {
 } AskPair;
 
 void gtktell( GtkWidget* parent, const gchar *message );
+void gtktellf( GtkWidget* parent, const gchar *fmt, ... );
 
 gint gtkask( GtkWidget* parent, const gchar *message, 
              GtkButtonsType buttons, const AskPair* buttxts );

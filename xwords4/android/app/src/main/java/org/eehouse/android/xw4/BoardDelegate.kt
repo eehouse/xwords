@@ -64,7 +64,6 @@ import org.eehouse.android.xw4.Perms23.PermCbck
 import org.eehouse.android.xw4.TilePickAlert.TilePickState
 import org.eehouse.android.xw4.Toolbar.Buttons
 import org.eehouse.android.xw4.Utils.ISOCode
-import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.DrawDoneProc
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -80,6 +79,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo.XWPhoniesChoice
 import org.eehouse.android.xw4.jni.DUtilCtxt
 import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvent
 import org.eehouse.android.xw4.jni.DUtilCtxt.GameChangeEvents
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.DrawCtx
 import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
@@ -836,6 +836,8 @@ class BoardDelegate(delegator: Delegator) :
             R.id.board_menu_game_netstats, R.id.board_menu_game_left,
             R.id.board_menu_game_history, R.id.board_menu_game_counts
                 -> doGRStringThing(item)
+
+            R.id.board_menu_game_ping -> Device.pingAll(mGR!!)
 
 //             R.id.board_menu_undo_current -> cmd = JNICmd.CMD_UNDO_CUR
 //             R.id.board_menu_undo_last -> makeConfirmThenBuilder(

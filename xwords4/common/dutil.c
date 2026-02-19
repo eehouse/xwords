@@ -27,7 +27,6 @@
 #include "device.h"
 #include "stats.h"
 #include "timersp.h"
-#include "xwmutex.h"
 #include "gamemgrp.h"
 #include "dictmgrp.h"
 
@@ -61,8 +60,6 @@ super_dutil_loadStream( XW_DUtilCtxt* duc, XWEnv xwe,
 void
 dutil_super_init( MPFORMAL XW_DUtilCtxt* dutil, XWEnv xwe )
 {
-    MUTEX_INIT( &dutil->kpMutex, XP_FALSE );
-
     MPASSIGN( dutil->mpool, mpool );
 
     XP_ASSERT( !dutil->vtable.m_dutil_loadStream );

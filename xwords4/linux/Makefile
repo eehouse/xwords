@@ -200,7 +200,6 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkboard.o \
 	$(BUILD_PLAT_DIR)/gtkdraw.o \
 	$(BUILD_PLAT_DIR)/gtkask.o \
-	$(BUILD_PLAT_DIR)/gtkletterask.o \
 	$(BUILD_PLAT_DIR)/gtkpasswdask.o \
 	$(BUILD_PLAT_DIR)/gtknewgame.o \
 	$(BUILD_PLAT_DIR)/gtkconnsdlg.o \
@@ -208,6 +207,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \
+	$(BUILD_PLAT_DIR)/gtkletterask.o \
 	$(BUILD_PLAT_DIR)/gtkaskbad.o \
 	$(BUILD_PLAT_DIR)/gtkaskgo.o \
 	$(BUILD_PLAT_DIR)/gtkchat.o \
@@ -227,10 +227,12 @@ CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/cursesmenu.o \
 	$(BUILD_PLAT_DIR)/curgamlistwin.o \
 	$(BUILD_PLAT_DIR)/cursesdraw.o \
+	$(BUILD_PLAT_DIR)/curplyr.o \
 	$(BUILD_PLAT_DIR)/cursesask.o \
+	$(BUILD_PLAT_DIR)/cursesedit.o \
 	$(BUILD_PLAT_DIR)/cursesdlgutil.o \
-	$(BUILD_PLAT_DIR)/cursesletterask.o \
 	$(BUILD_PLAT_DIR)/curseschat.o \
+	$(BUILD_PLAT_DIR)/curlistask.o \
 	$(BUILD_PLAT_DIR)/curnewgame.o \
 	$(BUILD_PLAT_DIR)/cursinvit.o \
 	$(BUILD_PLAT_DIR)/cursqr.o

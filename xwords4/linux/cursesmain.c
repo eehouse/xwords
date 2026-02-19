@@ -48,7 +48,6 @@
 #include "linuxdict.h"
 #include "cursesmain.h"
 #include "cursesask.h"
-#include "cursesletterask.h"
 #include "linuxbt.h"
 #include "model.h"
 #include "draw.h"
@@ -71,6 +70,7 @@
 #include "knownplyr.h"
 #include "gamemgr.h"
 #include "curnewgame.h"
+#include "cursesedit.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -99,6 +99,7 @@ struct CursesAppGlobals {
 #ifdef USE_GLIBLOOP
     GMainLoop* loop;
     GList* sources;
+    GSList* keyProcs;
     int quitpipe[2];
     int winchpipe[2];
 #else
@@ -116,6 +117,9 @@ static bool handleDeleteGame( void* closure, int key );
 static bool handleSel( void* closure, int key );
 static bool copyDevID( void* closure, int key );
 static bool showThumb( void* closure, int key );
+static bool toggleGroupExpanded( void* closure, int key );
+static bool renameGroup( void* closure, int key );
+static bool pingBroker( void* closure, int key );
 
 const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
@@ -127,6 +131,9 @@ const MenuList g_sharedMenuList[] = {
     { handleSel, "Select down", "K", 'K' },
     { copyDevID, "Copy devID", "C", 'C' },
     { showThumb, "Show Thumb", "T", 'T' },
+    { toggleGroupExpanded, "eXpand", "X", 'X' },
+    { renameGroup, "renaMe group", "M", 'M' },
+    { pingBroker, "Ping broker", "P", 'P' },
 /*     { handleResend, "Resend", "R", 'R' }, */
 /*     { handleSpace, "Raise focus", "<spc>", ' ' }, */
 /*     { handleRet, "Click/tap", "<ret>", '\r' }, */
@@ -224,15 +231,15 @@ showStatus( CursesAppGlobals* globals )
 
     switch ( globals->state ) {
     case XW_SERVER_WAITING_CLIENT_SIGNON:
-	str = "Waiting for client[s] to connnect";
-	break;
+        str = "Waiting for client[s] to connnect";
+        break;
     case XW_SERVER_READY_TO_PLAY:
-	str = "It's somebody's move";
-	break;
+        str = "It's somebody's move";
+        break;
     default:
-	str = "unknown state";
+        str = "unknown state";
+        break;
     }
-
     
     standout();
     mvaddstr( globals->statusLine, 0, str );
@@ -269,15 +276,31 @@ figureDims( CursesAppGlobals* aGlobals, cb_dims* dims )
 }
 
 static bool
+getSelOrWarn(CursesAppGlobals* aGlobals, GameRef* grp, const char* warning)
+{
+    GameRef agr;
+    GroupRef agrp;
+    cgl_getSel( aGlobals->gameList, &agr, &agrp );
+    bool success = !!agr;
+    if ( success ) {
+        *grp = agr;
+    } else {
+        ca_inform2( aGlobals, aGlobals->mainWin, warning );
+    }
+    return success;
+}
+
+static bool
 handleOpenGame( void* closure, int XP_UNUSED(key) )
 {
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    GameRef gr = cgl_getSel( aGlobals->gameList );
-    XP_ASSERT( !!gr );
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-    cb_open( aGlobals->cbState, gr, &dims );
+    GameRef gr;
+    if ( getSelOrWarn( aGlobals, &gr, "Only games can be opened." ) ) {
+        cb_dims dims;
+        figureDims( aGlobals, &dims );
+        cb_open( aGlobals->cbState, gr, &dims );
+    }
     return XP_TRUE;
 }
 
@@ -285,10 +308,12 @@ static bool
 handleRematchGame( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    GameRef gr = cgl_getSel( aGlobals->gameList );
-    (void)gr_makeRematch( aGlobals->cag.params->dutil, gr,
-                          NULL_XWE, "newName", RO_LOW_SCORE_FIRST,
-                          XP_TRUE, XP_FALSE );
+    GameRef gr;
+    if ( getSelOrWarn( aGlobals, &gr, "Only games can be rematched." ) ) {
+        (void)gr_makeRematch( aGlobals->cag.params->dutil, gr,
+                              NULL_XWE, "newName", RO_LOW_SCORE_FIRST,
+                              XP_TRUE, XP_FALSE );
+    }
     return true;
 }
 
@@ -327,7 +352,8 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     CurGameInfo gi = params->pgi;
     
     CommsAddrRec addr = {};
-    if ( curNewGameDialog( params, &gi, &addr, XP_TRUE, XP_FALSE ) ) {
+    if ( curNewGameDialog( aGlobals->mainWin, params, &gi, &addr,
+                           XP_TRUE, XP_FALSE ) ) {
         LOG_GI( &gi, __func__ );
         /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, &gi, NULL );
     }
@@ -351,17 +377,19 @@ static bool
 handleDeleteGame( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    const char* question = "Are you sure you want to delete the "
-        "selected game? This action cannot be undone";
-    const char* buttons[] = { "Cancel", "Ok", };
-    if ( 1 == cursesask( aGlobals->mainWin, VSIZE(buttons), buttons, question ) ) {
+    GameRef gr;
+    GroupRef grp;
+    cgl_getSel( aGlobals->gameList, &gr, &grp );
+    if ( !!gr ) {
+        const char* question = "Are you sure you want to delete the "
+            "selected game? This action cannot be undone";
+        const char* buttons[] = { "Cancel", "Ok", };
 
-        GameRef gr = cgl_getSel( aGlobals->gameList );
-        if ( !!gr ) {
+        if ( 1 == cursesask2( aGlobals, aGlobals->mainWin, VSIZE(buttons), buttons, question ) ) {
             gmgr_deleteGame( aGlobals->cag.params->dutil, NULL_XWE, gr );
-        } else {
-            XP_ASSERT(0);
         }
+    } else {
+        ca_inform2( aGlobals, aGlobals->mainWin, "Group deleting coming soon." );
     }
     return XP_TRUE;
 }
@@ -382,7 +410,7 @@ copyDevID( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     // CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const gchar* devIDStr = mqttc_getDevIDStr( aGlobals->cag.params );
-    ca_informf( aGlobals->mainWin, "Unable to copy \"%s\" yet...", devIDStr );
+    ca_informf2( aGlobals, aGlobals->mainWin, "Unable to copy \"%s\" yet...", devIDStr );
     return true;
 }
 
@@ -391,16 +419,97 @@ showThumb( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     LaunchParams* params = aGlobals->cag.params;
-    GameRef gr = cgl_getSel( aGlobals->gameList );
-    XWStreamCtxt* stream = gr_getThumbData( params->dutil, gr, NULL_XWE );
-    if ( !!stream ) {
-        XP_UCHAR* str = strFromStream( stream );
-        ca_informf( aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
-                    gr, str );
-        free( str );
-        strm_destroy( stream );
+    GameRef gr;
+    GroupRef grp;
+    cgl_getSel( aGlobals->gameList, &gr, &grp );
+    if ( !!gr ) {
+        XWStreamCtxt* stream = gr_getThumbData( params->dutil, gr, NULL_XWE );
+        if ( !!stream ) {
+            XP_UCHAR* str = strFromStream( stream );
+            ca_informf2( aGlobals, aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
+                         gr, str );
+            free( str );
+            strm_destroy( stream );
+        }
+    } else {
+        ca_inform2( aGlobals, aGlobals->mainWin, "No thumbnails for groups!" );
+    }
+    return true;
+}
+
+static gint
+refreshIdle( gpointer data )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
+    cgl_refresh( aGlobals->gameList );
+    return 0;
+}
+
+static void
+invalGameList( CursesAppGlobals* aGlobals )
+{
+    ADD_ONETIME_IDLE( refreshIdle, aGlobals );
+}
+
+static bool
+toggleGroupExpanded( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    GameRef gr;
+    GroupRef grp;
+    cgl_getSel( aGlobals->gameList, &gr, &grp );
+    if ( !!grp ) {
+        XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+        XP_Bool collapsed = gmgr_getGroupCollapsed( dutil, NULL_XWE, grp );
+        gmgr_setGroupCollapsed( dutil, NULL_XWE, grp, !collapsed );
+        // invalGameList( aGlobals );
+    } else {
+        ca_inform2( aGlobals, aGlobals->mainWin, "No expanding games!" );
+    }
+    return true;
+}
+
+static bool
+renameGroup( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    LaunchParams* params = aGlobals->cag.params;
+    XW_DUtilCtxt* dutil = params->dutil;
+    GameRef gr;
+    GroupRef grp;
+    XP_UCHAR name[64];
+    cgl_getSel( aGlobals->gameList, &gr, &grp );
+    const char* prompt;
+    bool isGame = !!gr;
+    if ( isGame ) {
+        const CurGameInfo* gi = gr_getGI( dutil, gr, NULL_XWE );
+        snprintf( name, VSIZE(name), "%s", gi->gameName );
+        prompt = "Edit game name";
+    } else {
+        gmgr_getGroupName( dutil, NULL_XWE, grp, name, VSIZE(name) );
+        prompt = "Edit group name";
     }
 
+    if ( ca_edit( params, aGlobals->mainWin, prompt, name, VSIZE(name) ) ) {
+        XP_LOGFF( "got back %s", name );
+        if ( isGame ) {
+            gr_setGameName( dutil, gr, NULL_XWE, name );
+        } else {
+            gmgr_setGroupName( dutil, NULL_XWE, grp, name );
+        }
+    }
+
+    XP_LOGFF( "ready to present name \"%s\" for editing", name );
+
+    return true;
+}
+
+static bool
+pingBroker( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+    dvc_pingMQTTBroker( dutil, NULL_XWE );
     return true;
 }
 
@@ -1265,7 +1374,7 @@ onGameChangedCurses( CommonAppGlobals* cag, GameRef XP_UNUSED(gr),
 {
     LOG_FUNC();
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
-    XP_Bool doRefresh = XP_FALSE;
+    XP_Bool doRefresh = XP_TRUE;
 
     /* if ( getAndClear( GCE_ADDED, &gces ) ) { */
     /*     if ( cag->params->showGames ) { */
@@ -1283,17 +1392,38 @@ onGameChangedCurses( CommonAppGlobals* cag, GameRef XP_UNUSED(gr),
     /*     doRefresh = XP_TRUE; */
     /* } */
     if ( doRefresh ) {
-        cgl_refresh( aGlobals->gameList );
+        invalGameList( aGlobals );
     }
+}
+
+void
+onGroupChangedCurses( LaunchParams* params, GroupRef XP_UNUSED(grp),
+                      GroupChangeEvents gces )
+{
+    XP_LOGFF( "(gces: 0X%x)", gces );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    invalGameList(aGlobals);
+}
+
+void
+onPingReceivedCurses( LaunchParams* params, XP_U32 tsStart,
+                      XP_U32 tsMid, XP_U32 now )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    gchar buf[256];
+    XP_ASSERT( !!tsMid );
+    snprintf( buf, VSIZE(buf), "Ping received: here->there: %ds; there -> here: %ds",
+              tsMid - tsStart, now - tsMid );
+    (void)ca_inform2( aGlobals, aGlobals->mainWin, buf );
 }
 
 void
 informMoveCurses( LaunchParams* params, XWStreamCtxt* expl )
 {
-    CursesAppGlobals* globals = (CursesAppGlobals*)params->cag;
-    WINDOW* parent = globals->mainWin;
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    WINDOW* parent = aGlobals->mainWin;
     char* question = strFromStream( expl );
-    (void)ca_inform( parent, question );
+    (void)ca_inform2( aGlobals, parent, question );
     free( question );
 }
 
@@ -1408,7 +1538,7 @@ cursesNoticeRcvd( void* closure )
 #ifdef DEBUG
     guint res =
 #endif
-        ADD_ONETIME_IDLE( curses_requestMsgs, globals );
+                ADD_ONETIME_IDLE( curses_requestMsgs, globals );
     XP_ASSERT( res > 0 );
 }
 
@@ -1664,6 +1794,75 @@ getKPsWrapper( void* closure )
     return result;
 }
 
+typedef struct _KeyData {
+    KeyProc proc;
+    void* closure;
+    char* file;
+    char* func;
+} KeyData;
+
+void
+_cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure,
+                       const char* file, const char* func )
+{
+    KeyData* datum = g_malloc0( sizeof(*datum) );
+    datum->proc = proc;
+    datum->closure = closure;
+    datum->file = g_strdup(file);
+    datum->func = g_strdup(func);
+    aGlobals->keyProcs = g_slist_append( aGlobals->keyProcs, datum );
+}
+
+typedef struct _KeyIdle {
+    int key;
+    CursesAppGlobals* aGlobals;
+} KeyIdle;
+
+static gint
+keyOnIdleProc( gpointer closure )
+{
+    KeyIdle* kis = (KeyIdle*)closure;
+    CursesAppGlobals* aGlobals = kis->aGlobals;
+    XP_LOGFF( "got ch: %d", kis->key );
+    int nProcs = g_slist_length( aGlobals->keyProcs );
+    if ( nProcs ) {
+        XP_LOGFF( "using %dth proc", nProcs-1 );
+        KeyData* datum = g_slist_nth_data( aGlobals->keyProcs, nProcs-1 );
+        XP_LOGFF( "calling from %s() in %s", datum->func, datum->file );
+        bool keep = (*datum->proc)( kis->key, datum->closure );
+        if ( !keep ) {
+            XP_LOGFF( "uninstalling from %s() in %s", datum->func, datum->file );
+            aGlobals->keyProcs = g_slist_remove( aGlobals->keyProcs, datum );
+            g_free( datum->file );
+            g_free( datum->func );
+            g_free( datum );
+        }
+    }
+    g_free( closure );
+    LOG_RETURN_VOID();
+    return 0;
+}
+
+void
+cursesPushKey( CursesAppGlobals* aGlobals, int key )
+{
+    KeyIdle* kis = g_malloc0( sizeof(*kis) );
+    kis->key = key;
+    XP_LOGFF( "got ch: %d", kis->key );
+    kis->aGlobals = aGlobals;
+    ADD_ONETIME_IDLE( keyOnIdleProc, kis );
+}
+
+static gboolean
+stdioWrapper( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition),
+              gpointer data )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
+    int key = getch();
+    cursesPushKey( aGlobals, key );
+    return TRUE;
+}
+
 void
 cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 {
@@ -1674,8 +1873,13 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     initCurses( &g_globals );
     if ( !params->closeStdin ) {
-        g_globals.menuState = cmenu_init( g_globals.mainWin );
+        g_globals.menuState = cmenu_init( &g_globals, g_globals.mainWin );
         cmenu_push( g_globals.menuState, &g_globals, g_sharedMenuList, NULL );
+
+        GIOChannel* channel = g_io_channel_unix_new( 0 ); /* stdin */
+        g_io_add_watch( channel, G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
+                        stdioWrapper, &g_globals );
+        g_io_channel_unref( channel ); /* only main loop holds it now */
     }
 
     g_globals.loop = g_main_loop_new( NULL, FALSE );
@@ -1765,7 +1969,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
     }
 
     g_main_loop_run( g_globals.loop );
-
+    g_main_loop_unref( g_globals.loop );
     g_object_unref( cmdService );
 
     cb_closeAll( g_globals.cbState );

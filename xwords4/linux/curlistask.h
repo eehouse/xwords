@@ -1,6 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
-/* 
- * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
+/* Copyright 2026 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,13 +15,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef _CURLISTASK_H_
+#define _CURLISTASK_H_
 
-#ifndef _CURSESCHAT_H_
-#define _CURSESCHAT_H_
-
-#include "linuxmain.h"
-#include "cursesmain.h"
-
-void curses_openChat( LaunchParams* params, WINDOW* window, GameRef gr );
+/* Returns false if cancelled, otherwise the index 0 <= i < count */
+bool curAskPickList( LaunchParams* params, WINDOW* parent, const char* expl,
+                     const char** choices, int count, int* chosen );
 
 #endif

@@ -32,7 +32,6 @@
 #include "LocalizedStrIncludes.h"
 #include "nli.h"
 #include "strutils.h"
-#include "xwmutex.h"
 #include "gamemgr.h"
 
 #include "linuxdict.h"
@@ -46,7 +45,6 @@
 
 typedef struct _LinDUtilCtxt {
     XW_DUtilCtxt super;
-    MutexState timersMutex;
     GSList* timers;
 } LinDUtilCtxt;
 
@@ -209,16 +207,14 @@ linux_dutil_onDupTimerChanged( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe
 }
 
 static void
-linux_dutil_onGroupChanged( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
+linux_dutil_onGroupChanged( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GroupRef grp,
                             GroupChangeEvents gces )
 {
     LaunchParams* params = (LaunchParams*)duc->closure;
     if ( 0 ) {
 #ifdef PLATFORM_NCURSES
     } else if ( params->useCurses ) {
-        XP_UCHAR buf[64];
-        gmgr_getGroupName( duc, xwe, grp, buf, VSIZE(buf) );
-        XP_LOGFF( "grp=%d, name=%s", grp, buf );
+        onGroupChangedCurses( params, grp, gces );
 #endif
 #ifdef PLATFORM_GTK
     } else {
@@ -238,6 +234,24 @@ linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe,
     XP_USE(buf);
     XP_USE(len);
     XP_LOGFF( "got msg len %d", len );
+}
+
+static void
+linux_dutil_onPingReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe),
+                            XP_U32 tsStart, XP_U32 tsMid,
+                            XP_U32 now )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
+        onPingReceivedCurses( params, tsStart, tsMid, now );
+#endif
+#ifdef PLATFORM_GTK
+    } else {
+        onPingReceivedGTK( params, tsStart, tsMid, now );
+#endif
+    }
 }
 
 typedef struct _FetchData {
@@ -583,7 +597,6 @@ static void
 linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), TimerKey key )
 {
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
-    WITH_MUTEX( &lduc->timersMutex );
     XP_ASSERT( !!lduc->timers ); /* should be at least one */
     if ( !!lduc->timers ) {
         GSList* elem = g_slist_find_custom( lduc->timers, &key, findByProc );
@@ -596,7 +609,6 @@ linux_dutil_clearTimer( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), TimerKey key )
         g_source_remove( tc->src );
         g_free( tc );
     }
-    END_WITH_MUTEX();
 }
 
 static gint
@@ -620,9 +632,7 @@ linux_dutil_setTimer( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 inWhenMS, TimerKey ke
     tc->key = key;
 
     LinDUtilCtxt* lduc = (LinDUtilCtxt*)duc;
-    WITH_MUTEX( &lduc->timersMutex );
     lduc->timers = g_slist_append( lduc->timers, tc );
-    END_WITH_MUTEX();
 
     /* XP_LOGFF( "key: %d, inWhenMS: %d", key, inWhenMS ); */
     tc->src = g_timeout_add( inWhenMS, timer_proc, tc );
@@ -635,8 +645,6 @@ linux_dutils_init( MPFORMAL void* closure )
     LinDUtilCtxt* lduc = XP_CALLOC( mpool, sizeof(*lduc) );
 
     XW_DUtilCtxt* super = &lduc->super;
-
-    MUTEX_INIT( &lduc->timersMutex, XP_TRUE );
 
     super->closure = closure;
 
@@ -677,6 +685,7 @@ linux_dutils_init( MPFORMAL void* closure )
     SET_PROC(onGameGoneReceived);
 #endif
     SET_PROC(onCtrlReceived);
+    SET_PROC(onPingReceived);
     SET_PROC(sendViaWeb);
     SET_PROC(makeEmptyDict);
     SET_PROC(makeDict);
@@ -713,7 +722,6 @@ void
 linux_dutils_free( XW_DUtilCtxt** dutil )
 {
     dutil_super_cleanup( *dutil, NULL_XWE );
-    MUTEX_DESTROY(&((LinDUtilCtxt*)*dutil)->timersMutex);
 # ifdef MEM_DEBUG
     XP_FREEP( (*dutil)->mpool, dutil );
 # endif

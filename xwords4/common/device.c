@@ -28,7 +28,6 @@
 #include "nli.h"
 #include "dbgutil.h"
 #include "timersp.h"
-#include "xwmutex.h"
 #include "gamemgrp.h"
 #include "stats.h"
 #include "dictmgrp.h"
@@ -68,7 +67,11 @@ static void makeMQTTInvites( XW_DUtilCtxt* dutil, XWEnv xwe,
                              MsgAndTopicProc proc, void* closure,
                              const MQTTDevID* addressee,
                              const NetLaunchInfo* nli );
-
+typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
+static void addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
+                                   XP_U32 gameID, XWStreamCtxt* stream );
+static void getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew,
+                          MQTTDevID* devID );
 
 XWStreamCtxt*
 dvc_makeStream( XW_DUtilCtxt* dutil )
@@ -305,16 +308,14 @@ typedef struct _DevCtxt {
     XP_U16 devCount;
     XP_U8 mqttQOS;
     XP_Bool dirty;
-    MutexState mutex;
+    XWArray* pingIDs;              /* only latest will be reported */
 
     struct {
         WSData* data;
         XP_U32 key;
-        MutexState mutex;
     } webSend;
 
     struct {
-        MutexState mutex;
         cJSON* msgs;             /* pending acks saved here */
         TimerKey key;
     } ackTimer;
@@ -341,6 +342,8 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
         XWStreamCtxt* stream = dvc_makeStream( dutil );
         dutil_loadStream( dutil, xwe, KEY_DEVSTATE, stream );
 
+        state->pingIDs = arr_make( dutil->mpool, NULL, NULL );
+
         if ( 0 < strm_getSize( stream ) ) {
             state->devCount = strm_getU16( stream );
             ++state->devCount;  /* for testing until something's there */
@@ -359,6 +362,15 @@ load( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     // LOG_RETURNF( "%p", state );
     return state;
+}
+
+static XP_U16
+makePingID( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    XP_U16 pingID = (XP_U16)XP_RANDOM();
+    DevCtxt* dc = load( dutil, xwe );
+    arr_insert( dc->pingIDs, xwe, (void*)(long)pingID );
+    return pingID;
 }
 
 XP_U8
@@ -384,9 +396,7 @@ dvc_store( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     ASSERT_MAGIC();
     DevCtxt* state = load( dutil, xwe );
-    WITH_MUTEX( &state->mutex );
     dvcStoreLocked( dutil, xwe, state );
-    END_WITH_MUTEX();
 }
 
 typedef struct _MsgTopicData {
@@ -502,6 +512,24 @@ sendInviteViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, const NetLaunchInfo* nli,
     sendOrRetry( dutil, xwe, arr, INVITE, waitSecs, phone, port,
                  nli->gameID, "invite" );
     strm_destroy( stream );
+}
+
+static void
+sendPingViaNBS( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt* ping,
+                const XP_UCHAR* phone, XP_U16 port )
+{
+    initSMSProtoOnce( dutil, xwe );
+    const XP_U8* ptr = strm_getPtr( ping );
+    XP_U16 len = strm_getSize( ping );
+
+    XP_U16 waitSecs;
+    const XP_Bool forceOld = XP_TRUE; /* Send NOW in case test app kills us */
+    ChunkMsgArray* arr
+        = cnk_prepOutbound( dutil->smsChunkerState, xwe, PING, 0,
+                            ptr, len, phone, port, forceOld, &waitSecs );
+    XP_ASSERT( !!arr || !forceOld );
+    sendOrRetry( dutil, xwe, arr, PING, waitSecs, phone, port,
+                 0, "ping" );
 }
 #endif
 
@@ -620,11 +648,11 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
     case COMMS_CONN_NFC:
         sendMsgsViaNFC( dutil, xwe, packets, gameID );
         break;
-#ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
+#ifdef XWFEATURE_BLUETOOTH
         sendMsgsViaBT( dutil, xwe, packets, addr, gameID );
-        break;
 #endif
+        break;
     case COMMS_CONN_RELAY:
         XP_LOGFF( "What's relay doing here?" );
         break;
@@ -633,6 +661,196 @@ dvc_sendMsgs( XW_DUtilCtxt* dutil, XWEnv xwe,
         XP_ASSERT(0);           /* fired */
     }
     return nSent;
+}
+
+static void
+sendPingViaMQTT( XW_DUtilCtxt* dutil, XWEnv xwe, XWStreamCtxt** pingP )
+{
+    XP_UCHAR topic[64];
+    formatBrokerPingTopic( topic, VSIZE(topic) );
+    XP_U8 qos = dvc_getQOS( dutil, xwe );
+    dutil_sendViaMQTT( dutil, xwe, topic, strm_getPtr(*pingP),
+                       strm_getSize(*pingP), qos );
+    strm_destroyp( pingP );
+}
+
+static XWStreamCtxt*
+jsonToStream( XW_DUtilCtxt* dutil, cJSON** jsonP )
+{
+    XWStreamCtxt* stream = dvc_makeStream( dutil );
+    char* pstr = cJSON_PrintUnformatted( *jsonP );
+    strm_catString( stream, pstr );
+    free( pstr );
+    cJSON_Delete( *jsonP );
+    *jsonP = NULL;
+    return stream;
+}
+
+static cJSON*
+makePing( XW_DUtilCtxt* XP_UNUSED(dutil), XWEnv XP_UNUSED(xwe),
+          XP_U16 pingID, XP_U32 timeStamp,
+          XP_U32 timeStamp2 )
+{
+    cJSON* params = cJSON_CreateObject();
+
+    cJSON_AddNumberToObject( params, "pingId", pingID );
+    cJSON_AddNumberToObject( params, "tsStart", timeStamp );
+    if ( timeStamp2 ) {
+        cJSON_AddNumberToObject( params, "tsMid", timeStamp2 );
+    }
+
+    return params; // jsonToStream( params );
+}
+
+static XWStreamCtxt*
+makeMQTTPing( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
+              XP_U16 pingID, XP_U32 timeStamp, XP_U32 timeStamp2 )
+{
+    cJSON* params = makePing( dutil, xwe, pingID, timeStamp, timeStamp2 );
+
+    XP_UCHAR devidStr[20];
+    if ( !!addr ) {
+        XP_SNPRINTF( devidStr, VSIZE(devidStr), MQTTDevID_FMT, addr->u.mqtt.devID );
+        cJSON_AddStringToObject( params, "dest", devidStr );
+    }
+
+    MQTTDevID devid;
+    getMQTTDevID( dutil, xwe, XP_FALSE, &devid );
+    XP_SNPRINTF( devidStr, VSIZE(devidStr), MQTTDevID_FMT, devid );
+    cJSON_AddStringToObject( params, "src", devidStr );
+
+    return jsonToStream( dutil, &params );
+}
+
+static XP_Bool
+parsePingData( XW_DUtilCtxt* XP_UNUSED(dutil), cJSON* pingData, XP_U16* pingID,
+               XP_U32* ts1, XP_U32* ts2, XP_Bool* isReply )
+{
+    cJSON* item = cJSON_GetObjectItem( pingData, "pingId" );
+    XP_Bool success = !!item;
+    if ( success ) {
+        *pingID = item->valueint;
+
+        item = cJSON_GetObjectItem( pingData, "tsStart" );
+        success = !!item;
+        if ( success ) {
+            *ts1 = item->valueint;
+
+            item = cJSON_GetObjectItem( pingData, "tsBroker2" );
+            *isReply = !!item;
+            if ( *isReply ) {
+                *ts2 = item->valueint;
+            } else {
+                item = cJSON_GetObjectItem( pingData, "tsMid" );
+                if ( !!item ) {
+                    *ts2 = item->valueint;
+                }
+            }
+        }
+    }
+    return success;
+}
+
+static XP_Bool
+parsePing( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, XP_U16* pingID,
+           XP_U32* ts1, XP_U32* ts2, XP_Bool* isReply )
+{
+    const XP_U16 len  = strm_getSize( stream );
+    XWStreamCtxt* ping = dvc_makeStream( dutil );
+    strm_getFromStream( ping, stream, len );
+    const XP_U8* ptr = strm_getPtr( ping );
+    cJSON* pingData = cJSON_ParseWithLength( (const char*)ptr, len );
+    XP_LOGFF( "got: %p", pingData );
+
+    XP_Bool success = parsePingData( dutil, pingData, pingID, ts1, ts2, isReply );
+
+    strm_destroy( ping );
+    cJSON_Delete( pingData );
+    return success;
+}
+
+static void
+postPingOnce( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U16 pingID, XP_U32 tsStart,
+              XP_U32 tsMid, XP_U32 now )
+{
+    DevCtxt* dc = load( dutil, xwe );
+    void* asNode = (void*)(long)pingID;
+    if ( arr_find( dc->pingIDs, xwe, asNode, NULL ) ) {
+        arr_remove( dc->pingIDs, xwe, asNode );
+        dutil_onPingReceived( dutil, xwe, tsStart, tsMid, now );
+    }
+}
+
+static void
+postPingJsonOnce( XW_DUtilCtxt* dutil, XWEnv xwe, cJSON** pingDataP )
+{
+    XP_U16 pingID;
+    XP_Bool isReply;
+    XP_U32 ts1, ts2;
+    if ( parsePingData( dutil, *pingDataP, &pingID, &ts1, &ts2, &isReply ) ) {
+        XP_ASSERT( isReply );
+        DevCtxt* dc = load( dutil, xwe );
+        void* asNode = (void*)(long)pingID;
+        if ( arr_find( dc->pingIDs, xwe, asNode, NULL ) ) {
+            arr_remove( dc->pingIDs, xwe, asNode );
+            XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+            dutil_onPingReceived( dutil, xwe, ts1, ts2, now );
+        }
+    }
+    cJSON_Delete( *pingDataP );
+    *pingDataP = NULL;
+}
+
+void
+dvc_pingMQTTBroker( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    XP_U16 pingID = makePingID( dutil, xwe );
+    XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+    XWStreamCtxt* ping = makeMQTTPing( dutil, xwe, NULL, pingID, now, 0 );
+    sendPingViaMQTT( dutil, xwe, &ping );
+}
+
+void
+dvc_pingAll( XW_DUtilCtxt* dutil, XWEnv xwe, GameRef gr )
+{
+    {
+        DevCtxt* dc = load( dutil, xwe );
+        arr_removeAll( dc->pingIDs, NULL, NULL );
+    }
+
+    XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+    const CurGameInfo* gi = gr_getGI( dutil, gr, xwe );
+    CommsAddrRec addrs[gi->nPlayers];
+    XP_U16 nRecs = VSIZE(addrs);
+    gr_getAddrs( dutil, gr, xwe, addrs, &nRecs );
+
+    for ( int ii = 0; ii < nRecs; ++ii ) {
+        XP_U16 pingID = makePingID( dutil, xwe );
+        CommsConnType typ;
+        for ( XP_U32 state = 0; addr_iter( &addrs[ii], &typ, &state ); ) {
+            const CommsAddrRec* addr = &addrs[ii];
+            switch ( typ ) {
+            case COMMS_CONN_SMS: {
+                cJSON* pingData = makePing( dutil, xwe, pingID, now, 0 );
+                XWStreamCtxt* ping = jsonToStream( dutil, &pingData );
+                sendPingViaNBS( dutil, xwe, ping, addr->u.sms.phone,
+                                addr->u.sms.port );
+                strm_destroy( ping );
+            }
+                break;
+            case COMMS_CONN_MQTT: {
+                XWStreamCtxt* ping = makeMQTTPing( dutil, xwe, addr, pingID, now, 0 );
+                sendPingViaMQTT( dutil, xwe, &ping );
+                break;
+            }
+            case COMMS_CONN_BT:
+                XP_LOGFF( "not doing bt" );
+                break;
+            default:
+                XP_ASSERT(0);
+            }
+        }
+    }
 }
 
 // #define BOGUS_ALL_SAME_DEVID
@@ -737,26 +955,33 @@ mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     MQTTDevID devid;
     getMQTTDevID( dutil, xwe, XP_FALSE, &devid );
-    XP_UCHAR buf0[64];
-    formatMQTTDevTopic( &devid, buf0, VSIZE(buf0) );
+    XP_UCHAR bufDevTopic[64];
+    formatMQTTDevTopic( &devid, bufDevTopic, VSIZE(bufDevTopic) );
 
     const XP_UCHAR* topics[4] = {};
 
     int count = 0;
     /* First, the main device topic */
-    topics[count++] = buf0;
+    topics[count++] = bufDevTopic;
 
     /* Then the pattern that includes gameIDs */
-    XP_UCHAR buf1[64];
-    size_t siz = XP_SNPRINTF( buf1, VSIZE(buf1), "%s/+", buf0 );
-    XP_ASSERT( siz < VSIZE(buf1) );
+    XP_UCHAR bufGameTopic[64];
+    size_t siz = XP_SNPRINTF( bufGameTopic, VSIZE(bufGameTopic), "%s/+", bufDevTopic );
+    XP_ASSERT( siz < VSIZE(bufGameTopic) );
     XP_USE(siz);
-    topics[count++] = buf1;
+    topics[count++] = bufGameTopic;
 
-    /* Finally, the control pattern */
-    XP_UCHAR buf2[64];
-    formatMQTTCtrlTopic( &devid, buf2, VSIZE(buf2) );
-    topics[count++] = buf2;
+    /* the control pattern */
+    XP_UCHAR bufCtrl[64];
+    formatMQTTCtrlTopic( &devid, bufCtrl, VSIZE(bufCtrl) );
+    topics[count++] = bufCtrl;
+
+    /* And the ping pattern */
+    XP_UCHAR bufPong[64];
+    formatMQTTPongTopic( &devid, bufPong, VSIZE(bufPong) );
+    topics[count++] = bufPong;
+
+    XP_ASSERT( count <= VSIZE(topics) );
 
     for ( int ii = 0; ii < count; ++ii ) {
         XP_LOGFFV( "AFTER: got %d: %s", ii, topics[ii] );
@@ -766,8 +991,6 @@ mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     dutil_startMQTTListener( dutil, xwe, &devid, count, topics, qos );
 }
-
-typedef enum { CMD_INVITE, CMD_MSG, CMD_DEVGONE, } MQTTCmd;
 
 // #define PROTO_0 0
 #define PROTO_1 1        /* moves gameID into "header" relay2 knows about */
@@ -990,6 +1213,15 @@ isCtrlMsg( const MQTTDevID* myID, const XP_UCHAR* topic )
     return success;
 }
 
+static XP_Bool
+isPongMsg( const MQTTDevID* myID, const XP_UCHAR* topic )
+{
+    XP_UCHAR bufPong[64];
+    formatMQTTPongTopic( myID, bufPong, VSIZE(bufPong) );
+    XP_Bool match = 0 == XP_STRCMP( bufPong, topic );
+    return match;
+}
+
 static void
 dispatchMsgs( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U8 proto,
               XWStreamCtxt* stream, XP_U32 gameID,
@@ -1027,11 +1259,9 @@ onAckSendTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
     XP_LOGFF( "(fired: %s)", boolToStr(fired) );
     DevCtxt* dc = load( dutil, xwe );
     cJSON* ackMsgs;
-    WITH_MUTEX( &dc->ackTimer.mutex );
     ackMsgs = dc->ackTimer.msgs;
     dc->ackTimer.msgs = NULL;
     dc->ackTimer.key = 0;
-    END_WITH_MUTEX();
 
     XP_ASSERT( 0 < cJSON_GetArraySize( ackMsgs ) );
 
@@ -1071,13 +1301,39 @@ ackMQTTMsg( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     cJSON_AddNumberToObject( msg, "gid", gameID );
 
     DevCtxt* dc = load( dutil, xwe );
-    WITH_MUTEX( &dc->ackTimer.mutex );
     if ( !dc->ackTimer.msgs ) {
         dc->ackTimer.msgs = cJSON_CreateArray();
     }
     cJSON_AddItemToArray( dc->ackTimer.msgs, msg );
     setAckSendTimerLocked( dutil, xwe, dc );
-    END_WITH_MUTEX();
+}
+
+static void
+onPongReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
+{
+    // ({"pingId":58394,"tsStart":1771448435,"src":"1F120CB6CEF3ACBF","tsBroker1":1771448435})
+
+    cJSON* pingData = cJSON_ParseWithLength( (const char*)buf, len );
+#ifdef DEBUG
+    char* pstr = cJSON_PrintUnformatted( pingData );
+    XP_LOGFF( "(%s)", pstr );
+    free(pstr);
+#endif
+
+    /* If it has a src, we're to send it back. If it doesn't, it's a reply to
+       something we sent and we should post results but send nothing. */
+    cJSON* tmp = cJSON_GetObjectItem( pingData, "src" );
+    if ( !!tmp ) {
+        XP_ASSERT( !cJSON_GetObjectItem( pingData, "tsMid" ) );
+        XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+        cJSON_AddNumberToObject( pingData, "tsMid", now );
+
+        XWStreamCtxt* stream = jsonToStream( dutil, &pingData );
+        sendPingViaMQTT( dutil, xwe, &stream );
+    } else {
+        postPingJsonOnce( dutil, xwe, &pingData );
+    }
+    XP_ASSERT( !pingData );
 }
 
 void
@@ -1154,6 +1410,8 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
         strm_destroy( stream );
     } else if ( isCtrlMsg( &myID, topic ) ) {
         dutil_onCtrlReceived( dutil, xwe, buf, len );
+    } else if ( isPongMsg( &myID, topic ) ) {
+        onPongReceived( dutil, xwe, buf, len );
     } else {
         XP_LOGFF( "OTHER" );
     }
@@ -1170,9 +1428,9 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
     XP_ASSERT( len <= SMS_MAX_SIZE );
     MsgChunker* state = initSMSProtoOnce( dutil, xwe );
     ChunkMsgArray* msgArr = cnk_prepInbound( state, xwe,
-                                                fromAddr->u.sms.phone,
-                                                fromAddr->u.sms.port,
-                                                buf, len );
+                                             fromAddr->u.sms.phone,
+                                             fromAddr->u.sms.port,
+                                             buf, len );
     sts_increment( dutil, xwe, STAT_NBS_RCVD );
     if ( NULL != msgArr ) {
         XP_ASSERT( msgArr->format == FORMAT_LOC );
@@ -1196,6 +1454,29 @@ dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                 strm_destroy( stream );
             }
                 break;
+            case PING: {
+                XWStreamCtxt* stream = dvc_makeStream( dutil );
+                strm_putBytes( stream, msg->data, msg->len );
+                XP_U32 tsStart, tsMid;
+                XP_U16 pingID;
+                XP_Bool isReply;
+                if ( parsePing( dutil, stream, &pingID, &tsStart, &tsMid, &isReply ) ) {
+                    XP_U32 now = dutil_getCurSeconds( dutil, xwe );
+                    if ( !isReply ) {
+                        /* send reply */
+                        cJSON* pingData = makePing( dutil, xwe, pingID, tsStart, now );
+                        XWStreamCtxt* ping = jsonToStream( dutil, &pingData );
+                        sendPingViaNBS( dutil, xwe, ping, fromAddr->u.sms.phone,
+                                        fromAddr->u.sms.port );
+                        strm_destroy( ping );
+                    }
+                    if ( isReply ) {
+                        postPingOnce( dutil, xwe, pingID, tsStart, tsMid, now );
+                    }
+                }
+                strm_destroy( stream );
+                break;
+            }
             default:
                 XP_ASSERT(0);   /* implement me!! */
                 break;
@@ -1315,14 +1596,11 @@ popForKey( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
     WSData* item = NULL;
     DevCtxt* dc = load( dutil, xwe );
 
-    WITH_MUTEX(&dc->webSend.mutex);
-
     GetByKeyData gbkd = { .resultKey = key, };
     dc->webSend.data = (WSData*)dll_map( &dc->webSend.data->links,
                                          getByKeyProc, NULL, &gbkd );
     item = gbkd.found;
 
-    END_WITH_MUTEX();
     XP_LOGFFV( "(key: %d) => %p", key, item );
     return item;
 }
@@ -1331,11 +1609,9 @@ static XP_U32
 addWithKey( XW_DUtilCtxt* dutil, XWEnv xwe, WSData* wsdp )
 {
     DevCtxt* dc = load( dutil, xwe );
-    WITH_MUTEX(&dc->webSend.mutex);
     wsdp->resultKey = ++dc->webSend.key;
     dc->webSend.data = (WSData*)
         dll_insert( &dc->webSend.data->links, &wsdp->links, NULL );
-    END_WITH_MUTEX();
     XP_LOGFFV( "(%p) => %d", wsdp, wsdp->resultKey );
     return wsdp->resultKey;
 }
@@ -1357,9 +1633,7 @@ setSaveDCTimerLocked( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 static void
 setSaveDCTimer( XW_DUtilCtxt* dutil, XWEnv xwe, DevCtxt* dc )
 {
-    WITH_MUTEX( &dc->mutex );
     setSaveDCTimerLocked( dutil, xwe, dc );
-    END_WITH_MUTEX();
 }
 
 void
@@ -1392,13 +1666,11 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
                             XP_ASSERT( 0 <= qos && qos <= 2 );
                             if ( 0 <= qos && qos <= 2 ) {
                                 DevCtxt* dc = load( dutil, xwe );
-                                WITH_MUTEX( &dc->mutex );
                                 if ( dc->mqttQOS != qos ) {
                                     dc->dirty = XP_TRUE;
                                     dc->mqttQOS = qos;
                                     setSaveDCTimerLocked( dutil, xwe, dc );
                                 }
-                                END_WITH_MUTEX();
                             }
                         }
                     }
@@ -1413,14 +1685,12 @@ dvc_onWebSendResult( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 resultKey,
             delWSDatum( &wsdp->links, dutil );
         }
     }
-}
+} /* dvc_onWebSendResult */
 
 static void
 freeWSState( XW_DUtilCtxt* dutil, DevCtxt* dc )
 {
-    WITH_MUTEX( &dc->webSend.mutex );
     dll_removeAll( &dc->webSend.data->links, delWSDatum, dutil );
-    END_WITH_MUTEX();
 }
 
 typedef struct _PhoniesMapState {
@@ -1798,10 +2068,6 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
     dc->webSend.data = NULL;
     dc->webSend.key = 0;
 
-    MUTEX_INIT( &dc->mutex, XP_FALSE );
-    MUTEX_INIT( &dc->webSend.mutex, XP_FALSE );
-    MUTEX_INIT( &dc->ackTimer.mutex, XP_FALSE );
-
     loadPhoniesData( dutil, xwe, dc );
 
     mqttInit( dutil, xwe );
@@ -1821,9 +2087,7 @@ dvc_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     cnk_free( dutil->smsChunkerState );
     cleanupBT( dutil );
 
-    MUTEX_DESTROY( &dc->webSend.mutex );
-    MUTEX_DESTROY( &dc->ackTimer.mutex );
-    MUTEX_DESTROY( &dc->mutex );
+    arr_destroy( dc->pingIDs );
 
     XP_FREEP( dutil->mpool, &dc );
 }

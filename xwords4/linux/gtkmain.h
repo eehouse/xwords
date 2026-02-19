@@ -39,6 +39,8 @@ void onGameChangedGTK( LaunchParams* params, GameRef gr, GameChangeEvents gces);
 void onPositionsChangedGTK( LaunchParams* params, XWArray* positions);
 void onGroupChangedGTK( LaunchParams* params, GroupRef grp,
                         GroupChangeEvents gces );
+void onPingReceivedGTK( LaunchParams* params, XP_U32 tsStart, XP_U32 tsMid,
+                        XP_U32 now );
 void onGTKMissingDictAdded( LaunchParams* params, GameRef gr,
                             const XP_UCHAR* dictName );
 void onGTKDictGone( LaunchParams* params, GameRef gr, const XP_UCHAR* dictName );

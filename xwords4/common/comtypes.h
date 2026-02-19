@@ -491,6 +491,7 @@ typedef uint64_t MQTTDevID;
 #endif
 # define MQTTTopic_FMT "xw4/device/" MQTTDevID_FMT
 # define MQTTCtrlTopic_FMT "xw4/msg/" MQTTDevID_FMT
+# define MQTTPongTopic_FMT "xw4/pong/" MQTTDevID_FMT
 
 /* Used by scoring code and engine as fast representation of moves. */
 typedef struct _MoveInfoTile {

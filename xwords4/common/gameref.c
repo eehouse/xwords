@@ -2204,8 +2204,7 @@ gr_ackAny( DUTIL_GR_XWE )
 }
 
 void
-gr_getAddrs( DUTIL_GR_XWE,
-             CommsAddrRec addr[], XP_U16* nRecs )
+gr_getAddrs( DUTIL_GR_XWE, CommsAddrRec addr[], XP_U16* nRecs )
 {
     GR_HEADER_WITH(COMMS);
     if ( !!gd->comms ) {

@@ -178,6 +178,9 @@ XP_UCHAR* formatMQTTDevTopic( const MQTTDevID* devid, XP_UCHAR* buf,
                               XP_U16 bufLen );
 XP_UCHAR* formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf,
                                XP_U16 bufLen );
+XP_UCHAR* formatMQTTPongTopic( const MQTTDevID* devid, XP_UCHAR* buf,
+                               XP_U16 bufLen );
+XP_UCHAR* formatBrokerPingTopic(XP_UCHAR* buf, XP_U16 bufLen );
 XP_UCHAR* formatMQTTDevID( const MQTTDevID* devid, XP_UCHAR* buf,
                            XP_U16 bufLen );
 XP_Bool strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result );

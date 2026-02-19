@@ -21,7 +21,7 @@
 #include "cursesboard.h"
 
 /* return true if not cancelled */
-XP_Bool cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addr,
-                         /*inout*/ gint* nPlayers );
+bool cursesInviteDlg( CommonGlobals* cGlobals, WINDOW* parent, CommsAddrRec* addr,
+                      /*inout*/ gint* nPlayers );
 
 #endif

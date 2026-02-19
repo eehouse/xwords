@@ -34,7 +34,6 @@
 #include "nli.h"
 #include "device.h"
 #include "knownplyr.h"
-#include "xwmutex.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -64,7 +63,6 @@ typedef struct _EnvThreadEntry {
 } EnvThreadEntry;
 
 struct _EnvThreadInfo {
-    MutexState mtxThreads;
     int nEntries;
     EnvThreadEntry* entries;
     MPSLOT
@@ -2285,6 +2283,15 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1setOpenCount
 {
     DVC_HEADER(jniGlobalPtr);
     XP_LOGFF( "not using value %d", newval);
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1pingAll
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_pingAll( globalState->dutil, env, (GameRef)jgr );
     DVC_HEADER_END();
 }
 

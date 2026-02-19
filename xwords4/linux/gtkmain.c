@@ -1049,6 +1049,16 @@ onGroupChangedGTK( LaunchParams* params, GroupRef XP_UNUSED_DBG(grp),
     buildGamesList( apg );
 }
 
+void
+onPingReceivedGTK( LaunchParams* params, XP_U32 tsStart, XP_U32 tsMid,
+                   XP_U32 now )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    GtkWidget* parent = apg->window;
+    (void)gtktellf( parent, "Here to remote: %ds; remote back: %ds",
+                     (tsMid-tsStart), (now-tsMid) );
+}
+
 static gint
 buildGamesListIdle( gpointer data )
 {
@@ -1174,6 +1184,13 @@ handle_getUrl( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
         dvc_parseUrl( params->dutil, NULL_XWE, txt, strlen(txt), NULL, NULL );
         g_free( txt );
     }
+}
+
+static void
+handle_ping( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* apg )
+{
+    LaunchParams* params = apg->cag.params;
+    dvc_pingMQTTBroker( params->dutil, NULL_XWE );
 }
 
 #ifdef XWFEATURE_DEVICE_STORES
@@ -1420,6 +1437,7 @@ makeGamesWindow( GtkAppGlobals* apg )
     (void)createAddItem( netMenu, "copy mqtt devid",
                          (GCallback)handle_mqttid_to_clip, apg );
     (void)createAddItem( netMenu, "Paste URL", (GCallback)handle_getUrl, apg );
+    (void)createAddItem( netMenu, "Ping MQTT broker", (GCallback)handle_ping, apg );
     gtk_widget_show( menubar );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0 );
 

@@ -71,13 +71,24 @@ DrawCtx* cursesDrawCtxtMake( LaunchParams* params,
  */
 
 void cursesmain( XP_Bool isServer, LaunchParams* params );
+typedef bool (*KeyProc)(int key, void* closure );
+void _cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure,
+                            const char* file, const char* func );
+#define cursesPushKeyHandler( aGlobals, proc, closure ) \
+    _cursesPushKeyHandler(aGlobals, proc, closure, __FILE__, __func__ )
+void cursesPushKey( CursesAppGlobals* aGlobals, int key );
 bool handleQuit( void* closure, int unused_key );
 void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite );
 void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
                             XP_U32 gameID, const XP_U8* buf, XP_U16 len );
 void gameGoneCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID );
 void onCursesGameOpened( CommonAppGlobals* cag, GameRef gr );
-void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr, GameChangeEvents gces );
+void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr,
+                          GameChangeEvents gces );
+void onGroupChangedCurses( LaunchParams* params, GroupRef grp,
+                           GroupChangeEvents XP_gces );
+void onPingReceivedCurses( LaunchParams* params, XP_U32 tsStart,
+                           XP_U32 tsMid, XP_U32 now );
 void onPositionsChangedCurses( CommonAppGlobals* cag, XWArray* positions );
 void informMoveCurses( LaunchParams* params, XWStreamCtxt* expl );
 void informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter );

@@ -34,7 +34,7 @@ struct CursGameList {
     int width, height;
     int curSel;
     int yOffset;
-    GSList* games;
+    GSList* positions;
     int pid;
 };
 
@@ -57,7 +57,7 @@ void
 cgl_destroy( CursGameList* cgl )
 {
     if ( !!cgl->window ) {
-        g_slist_free( cgl->games );
+        g_slist_free( cgl->positions );
         delwin( cgl->window );
     } else {
         XP_LOGFF( "no window??" );
@@ -75,14 +75,11 @@ cgl_resized( CursGameList* cgl, int width, int height )
 }
 
 static ForEachAct
-onGameProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
+onPosProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 {
+    CursGameList* cgl  = (CursGameList*)closure;
     GLItemRef ir = (GLItemRef)elem;
-    if ( gmgr_isGame(ir) ) {
-        CursGameList* cgl  = (CursGameList*)closure;
-        GameRef gr = gmgr_toGame(ir);
-        cgl->games = g_slist_append( cgl->games, (void*)gr );
-    }
+    cgl->positions = g_slist_append( cgl->positions, (void*)ir );
     return FEA_OK;
 }
 
@@ -90,11 +87,11 @@ onGameProc( void* elem, void* closure, XWEnv XP_UNUSED(xwe) )
 void
 cgl_refresh( CursGameList* cgl )
 {
-    g_slist_free( cgl->games );
-    cgl->games = NULL;
+    g_slist_free( cgl->positions );
+    cgl->positions = NULL;
 
     XWArray* positions = gmgr_getPositions(cgl->params->dutil, NULL_XWE );
-    arr_map( positions, NULL_XWE, onGameProc, cgl );
+    arr_map( positions, NULL_XWE, onPosProc, cgl );
     arr_destroy( positions );
     cgl_draw( cgl );
 }
@@ -103,10 +100,13 @@ static GSList*
 findFor( CursGameList* cgl, GameRef gr )
 {
     GSList* result = NULL;
-    for ( GSList* iter = cgl->games; !!iter && !result; iter = iter->next ) {
-        GameRef one = (GameRef)iter->data;
-        if ( one == gr ) {
-            result = iter;
+    for ( GSList* iter = cgl->positions; !!iter && !result; iter = iter->next ) {
+        GLItemRef ir = (GLItemRef)iter->data;
+        if ( gmgr_isGame( ir ) ) {
+            GameRef one = gmgr_toGame(ir);
+            if ( one == gr ) {
+                result = iter;
+            }
         }
     }
     return result;
@@ -127,20 +127,20 @@ cgl_refreshOne( CursGameList* cgl, GameRef XP_UNUSED_DBG(gr),
 void
 cgl_remove( CursGameList* cgl, GameRef gr )
 {
-    XP_LOGFF( "before: %d", g_slist_length( cgl->games ) );
+    XP_LOGFF( "before: %d", g_slist_length( cgl->positions ) );
     GSList* elem = findFor( cgl, gr );
     XP_ASSERT( !!elem );
     if ( !!elem ) {
-        cgl->games = g_slist_delete_link( cgl->games, elem );
+        cgl->positions = g_slist_delete_link( cgl->positions, elem );
     }
     adjustCurSel( cgl );
-    XP_LOGFF( "after: %d", g_slist_length( cgl->games ) );
+    XP_LOGFF( "after: %d", g_slist_length( cgl->positions ) );
 }
 
 void
 cgl_moveSel( CursGameList* cgl, bool down )
 {
-    int nGames = g_slist_length( cgl->games );
+    int nGames = g_slist_length( cgl->positions );
     cgl->curSel += nGames + (down ? 1 : -1);
     cgl->curSel %= nGames;
     adjustCurSel( cgl );
@@ -149,9 +149,9 @@ cgl_moveSel( CursGameList* cgl, bool down )
 static void
 adjustCurSel( CursGameList* cgl )
 {
-    int nGames = g_slist_length( cgl->games );
-    XP_LOGF( "%s() start: curSel: %d; yOffset: %d; nGames: %d", __func__,
-             cgl->curSel, cgl->yOffset, nGames );
+    int nGames = g_slist_length( cgl->positions );
+    XP_LOGFF( "start: curSel: %d; yOffset: %d; nGames: %d",
+              cgl->curSel, cgl->yOffset, nGames );
     if ( cgl->curSel >= nGames ) {
         cgl->curSel = nGames - 1;
     }
@@ -178,7 +178,7 @@ cgl_draw( CursGameList* cgl )
     WINDOW* win = cgl->window;
     werase( win );
 
-    const int nGames = g_slist_length( cgl->games );
+    const int nGames = g_slist_length( cgl->positions );
     XP_LOGFF( "nGames: %d", nGames );
 
     /* Draw '+' at far right if scrollable */
@@ -191,29 +191,51 @@ cgl_draw( CursGameList* cgl )
         mvwaddstr( win, 0, cgl->width-1, "+" );
     }
 
-    const char* cols[] = {"#", "Lang", "GameID", "Role", "nTot", "nMoves", "Chats", };
+    const char* cols[] = {"#", "Name", "Turn", "Lang", "GameID", "Opponents",
+                          "Role", "nTot", "nMoves", "Chats", };
 
     int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
+
+    /* Lay down the column heads (just one, for all games and groups, for
+       now) */
     for ( int ii = 0; ii < VSIZE(cols); ++ii ) {
         data[0][ii] = g_strdup(cols[ii]);
     }
-    int line = 1;
-    for ( int ii = 0; ii < nShown; ++ii ) {
-        GameRef gr = (GameRef)g_slist_nth_data( cgl->games, ii + cgl->yOffset );
-        XP_ASSERT( gr );
-        const CurGameInfo* gi = gr_getGI( cgl->params->dutil, gr, NULL_XWE );
-        const GameSummary* sum = gr_getSummary( cgl->params->dutil, gr, NULL_XWE );
 
+    int line = 1;
+    LaunchParams* params = cgl->params;
+    for ( int ii = 0; ii < nShown; ++ii ) {
+        GLItemRef ir = (GLItemRef)g_slist_nth_data( cgl->positions, ii + cgl->yOffset );
         int col = 0;
         data[line][col++] = g_strdup_printf( "%d", ii + cgl->yOffset + 1 ); /* 1-based */
-        data[line][col++] = g_strdup( gi->isoCodeStr );
-        data[line][col++] = g_strdup_printf( "%x", gi->gameID );
-        data[line][col++] = g_strdup_printf( "%d", gi->deviceRole );
-        data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
-        data[line][col++] = g_strdup_printf( "%d", sum->nMoves );
-        data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(cgl->params->dutil,
+        if ( gmgr_isGame( ir) ) {
+            GameRef gr = gmgr_toGame( ir );
+            XP_ASSERT( gr );
+            const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
+            const GameSummary* sum = gr_getSummary( params->dutil, gr, NULL_XWE );
+            data[line][col++] = g_strdup( gi->gameName );
+            data[line][col++] = g_strdup( sum->turnIsLocal ? "Local":"Remote" );
+            data[line][col++] = g_strdup( gi->isoCodeStr );
+            data[line][col++] = g_strdup_printf( "%x", gi->gameID );
+            data[line][col++] = g_strdup_printf( "%s", sum->opponents );
+            data[line][col++] = g_strdup_printf( "%d", gi->deviceRole );
+            data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
+            data[line][col++] = g_strdup_printf( "%d", sum->nMoves );
+            data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(params->dutil,
                                                                    gr, NULL_XWE ));
+        } else {
+            GroupRef grp = gmgr_toGroup( ir );
+            XP_UCHAR name[36];
+            XP_U16 bufLen = VSIZE(name);
+            gmgr_getGroupName( params->dutil, NULL_XWE, grp, name, bufLen );
+            data[line][col++] = g_strdup_printf( ">%s<", name );
+            XP_U32 count = gmgr_getGroupGamesCount(params->dutil, NULL_XWE, grp);
+            data[line][col++] = g_strdup_printf( ">%d<", count );
+        }
+        while ( col < VSIZE(data[line]) ) {
+            data[line][col++] = NULL;
+        }
         XP_ASSERT( col == VSIZE(data[line]) );
         ++line;
     }
@@ -223,51 +245,67 @@ cgl_draw( CursGameList* cgl )
     for ( int col = 0; col < VSIZE(data[0]); ++col ) {
         for ( int line = 0; line < VSIZE(data); ++line ) {
             char* str = data[line][col];
-            int len = strlen(str);
-            if ( maxlen < len ) {
-                maxlen = len;
+            if ( !!str ) {
+                int len = strlen(str);
+                if ( maxlen < len ) {
+                    maxlen = len;
+                }
+                bool highlight = cgl->yOffset + line - 1 == cgl->curSel;
+                if ( highlight ) {
+                    wstandout( win );
+                }
+                mvwaddstr( win, line + 1, offset, str );
+                if ( highlight ) {
+                    wstandend( win );
+                }
+                g_free( str );
             }
-            bool highlight = cgl->yOffset + line - 1 == cgl->curSel;
-            if ( highlight ) {
-                wstandout( win );
-            }
-            mvwaddstr( win, line + 1, offset, str );
-            if ( highlight ) {
-                wstandend( win );
-            }
-            g_free( str );
         }
         offset += maxlen + 2;
         maxlen = 0;
     }
 
-    XP_U32 relayID = linux_getDevIDRelay( cgl->params );
     char buf[cgl->width + 1];
 
     MQTTDevID devID;
-    dvc_getMQTTDevID( cgl->params->dutil, NULL_XWE, &devID );
+    dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
     XP_UCHAR didBuf[32];
-    gchar* dbName = g_path_get_basename(cgl->params->dbName);
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; relayid: %d; mqttid: %s; db: %s",
-              cgl->pid, nGames, relayID, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
-              dbName );
+    gchar* dbName = g_path_get_basename(params->dbName);
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; mqttid: %s; phone: %s; db: %s",
+              cgl->pid, nGames, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
+              params->connInfo.sms.myPhone, dbName );
     mvwaddstr( win, 0, 0, buf );
     g_free( dbName );
     
     wrefresh( win );
 }
 
-const GameRef
-cgl_getSel( CursGameList* cgl )
+void
+cgl_getSel( CursGameList* cgl, GameRef* gr, GroupRef* grp )
 {
-    return (GameRef)g_slist_nth_data( cgl->games, cgl->curSel );
+    GLItemRef ir = (GLItemRef)g_slist_nth_data( cgl->positions, cgl->curSel );
+    if ( gmgr_isGame(ir) )  {
+        if ( !!gr ) {
+            *gr = gmgr_toGame(ir);
+        }
+        if ( !!grp ) {
+            *grp = (GroupRef)0;
+        }
+    } else {
+        if ( !!grp ) {
+            *grp = gmgr_toGroup(ir);
+        }
+        if ( !!gr ) {
+            *gr = (GameRef)0;
+        }
+    }
 }
 
 void
 cgl_setSel( CursGameList* cgl, int sel )
 {
     if ( sel < 0 ) {
-        sel = XP_RANDOM() % g_slist_length( cgl->games );
+        sel = XP_RANDOM() % g_slist_length( cgl->positions );
     }
     cgl->curSel = sel;
     adjustCurSel( cgl );
@@ -276,7 +314,7 @@ cgl_setSel( CursGameList* cgl, int sel )
 int
 cgl_getNGames( CursGameList* cgl )
 {
-    int len = g_slist_length( cgl->games );
+    int len = g_slist_length( cgl->positions );
     XP_LOGFF( "() => %d", len );
     return len;
 }

@@ -41,7 +41,8 @@ static XP_U32 findFit( XWArray* array, XWEnv xwe, const void* node );
 static void moveUpOne( XWArray* array, int from );
 static void moveDownOne( XWArray* array, int from );
 #ifdef DEBUG
-static void assertSorted( XWArray* array, XWEnv xwe );
+static void _assertSorted( XWArray* array, XWEnv xwe, const char* proc, int line );
+#define assertSorted(ARR, XWE) _assertSorted((ARR), (XWE), __func__, __LINE__ );
 #else
 # define assertSorted(X, xwe)
 #endif
@@ -251,16 +252,19 @@ ensureRoom( XWArray* array, XP_U32 forNew )
 
 #ifdef DEBUG
 static void
-assertSorted( XWArray* array, XWEnv xwe )
+_assertSorted( XWArray* array, XWEnv xwe, const char* func, int line )
 {
     ArCompProc proc = array->proc;
     if ( !!proc ) {
         for ( int ii = 1; ii < array->nElems; ++ii ) {
             int res = callProc( array, xwe, array->elems[ii-1], array->elems[ii] );
             if ( 0 < res ) {
-                XP_LOGFF( "ERROR: array from %s line %d out-of-order", array->caller, array->line );
+                XP_LOGFF( "ERROR: array created at %s line %d out-of-order", array->caller, array->line );
                 XP_LOGFF( "bad elems are #%d,#%d of %d", ii-1, ii, array->nElems );
+                XP_LOGFF( "called from %s(), line %d", func, line );
+#ifndef ANDROID
                 XP_ASSERT( 0 );
+#endif
             }
         }
     }

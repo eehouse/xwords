@@ -898,6 +898,15 @@ and_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf, XP_U16
 }
 
 static void
+and_dutil_onPingReceived( XW_DUtilCtxt* duc, XWEnv xwe,
+                          XP_U32 tsStart, XP_U32 tsMid, XP_U32 tsEnd )
+{
+    DUTIL_CBK_HEADER( "onPingReceived", "(III)V" );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, tsStart, tsMid, tsEnd );
+    DUTIL_CBK_TAIL();
+}
+
+static void
 and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                               const CommsAddrRec* from )
 {
@@ -1264,6 +1273,7 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(onDupTimerChanged);
     SET_DPROC(onGroupChanged);
     SET_DPROC(onCtrlReceived);
+    SET_DPROC(onPingReceived);
 
     SET_DPROC(onGameGoneReceived);
     SET_DPROC(sendViaWeb);

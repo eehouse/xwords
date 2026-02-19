@@ -25,9 +25,9 @@
 
 #include "main.h"
 
-gboolean curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
-                           CommsAddrRec* addr, XP_Bool isNewGame,
-                           XP_Bool fireConnDlg );
+bool curNewGameDialog( WINDOW* parent, LaunchParams* params, CurGameInfo* gi,
+                       CommsAddrRec* addr, XP_Bool isNewGame,
+                       XP_Bool fireConnDlg );
 
 #endif /* _CURNEWGAME_H_ */
 #endif /* PLATFORM_NCURSES */

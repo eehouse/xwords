@@ -60,7 +60,7 @@ struct LinSMSData {
     XP_UCHAR myQueue[256];
     XP_U16 myPort;
     FILE* lock;
-    gchar* dataDir;   /* where fake messages are stored (defaults to /tmp) */
+    gchar* dataDir;   /* where fake messages are stored */
 
     const gchar* myPhone;
 };
@@ -72,7 +72,7 @@ static void
 formatQueuePath( const XP_UCHAR* phone, gchar* dir, XP_U16 port,
                  XP_UCHAR* path, XP_U16 pathlen )
 {
-    XP_ASSERT( 0 != port );
+    // XP_ASSERT( 0 != port );
     snprintf( path, pathlen, "%s/%s/%s_%d", dir, SMS_DIR, phone, port );
 }
 

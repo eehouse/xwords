@@ -479,6 +479,27 @@ formatSeconds( int unixSeconds, gchar* buf, int bufLen )
     g_free( str );
 }
 
+const char*
+get_tmp_dir()
+{
+    // 1. Check TMPDIR (The POSIX standard)
+    const char* out = getenv("TMPDIR");
+
+    // 2. Check P_tmpdir (Defined in stdio.h)
+    // On many systems this is "/tmp", but it can vary by platform.
+#ifdef P_tmpdir
+    if ( !out) {
+        out = P_tmpdir;
+    }
+#endif
+
+    // 3. Final Hardcoded Fallback
+    if ( !out ) {
+        out ="/tmp";
+    }
+    return out;
+}
+
 #ifdef TEXT_MODEL
 /* This is broken for UTF-8, even Spanish */
 void

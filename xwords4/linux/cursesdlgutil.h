@@ -46,4 +46,22 @@ void measureAskText( const XP_UCHAR* question, int maxWidth, FormatInfo* fip );
 void drawButtons( WINDOW* confWin, XP_U16 line, short spacePerButton, 
                   short numButtons, short curSelButton, const char** button1 );
 
+WINDOW* makeCenteredBox( WINDOW* parent, int width, int height );
+
+typedef struct _EditState {
+    WINDOW* win;
+    int msgLine, msgCol;
+    char msgBuf[256];
+    int offset;
+} EditState;
+
+void initEdit( EditState* es, WINDOW* win, int msgLine, const char* initial );
+void drawEdit( EditState* es, bool isFocussed );
+void handleEdit( EditState* es, int ch );
+void getEditText( EditState* es, char buf[], size_t* lenp );
+
+typedef bool (*OnKeyProc)( int key, void* closure );
+void startModalAlert( CursesAppGlobals* aGlobals, WINDOW* win,
+                      XP_Bool block, OnKeyProc proc, void* closure );
+
 #endif

@@ -1154,13 +1154,17 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
                 result = ((int)gs2->hasChat) - ((int)gs1->hasChat);
                 break;
             case SO_GAMENAME:
-                result = dvc_strcmp( duc, xwe, gi1->gameName, gi2->gameName );
+                if ( !!gi1 && !!gi2 ) {
+                    result = dvc_strcmp( duc, xwe, gi1->gameName, gi2->gameName );
+                }
                 break;
             case SO_CREATED:
-                if ( gi1->created < gi2->created ) {
-                    result = -1;
-                } else if ( gi1->created > gi2->created ) {
-                    result = 1;
+                if ( !!gi1 && !!gi2 ) {
+                    if ( gi1->created < gi2->created ) {
+                        result = -1;
+                    } else if ( gi1->created > gi2->created ) {
+                        result = 1;
+                    }
                 }
                 break;
             case SO_GAMESTATE: {
@@ -1181,7 +1185,9 @@ sortOrderSort( const void* dl1, const void* dl2, XWEnv xwe, void* closure )
                 break;
 
             case SO_LANGUAGE:
-                result = XP_STRCMP( gi1->isoCodeStr, gi2->isoCodeStr );
+                if ( !!gi1 && !!gi2 ) {
+                    result = dvc_strcmp( duc, xwe, gi1->isoCodeStr, gi2->isoCodeStr );
+                }
                 break;
 
             default:
@@ -1351,7 +1357,7 @@ loadGroupData( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp )
         }
     }
     LOG_RETURN_VOID();
-}
+} /* loadGroupData */
 
 static ForEachAct
 enableSortProc( void* elem, void* XP_UNUSED(closure), XWEnv xwe )

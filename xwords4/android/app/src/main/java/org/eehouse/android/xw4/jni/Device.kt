@@ -201,6 +201,12 @@ object Device {
         return UUID.fromString(dvc_getUUID())
     }
 
+    fun pingAll( gr: GameRef ) {
+        post( Priority.NETWORK ) {
+            dvc_pingAll(m_ptrGlobals, gr.gr)
+        }
+    }
+
     fun parseMQTTPacket(topic: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
             dvc_parseMQTTPacket(m_ptrGlobals, topic, packet)
@@ -353,6 +359,9 @@ object Device {
     private external fun cleanupJNIState(jniState: Long)
 	@JvmStatic
     private external fun dvc_getUUID(): String
+
+    @JvmStatic
+    private external fun dvc_pingAll(jniState: Long, gr: Long)
     @JvmStatic
     private external fun dvc_parseMQTTPacket(jniState: Long, topic: String, packet: ByteArray)
     @JvmStatic

@@ -38,7 +38,8 @@ void cgl_moveSel( CursGameList* cgl, bool down );
 
 void cgl_draw( CursGameList* cgl );
 
-const GameRef cgl_getSel( CursGameList* cgl );
+/* Returns with one or the other set */
+void cgl_getSel( CursGameList* cgl, GameRef* gr, GroupRef* grp );
 void cgl_setSel( CursGameList* cgl, int sel );
 int cgl_getNGames( CursGameList* cgl );
 

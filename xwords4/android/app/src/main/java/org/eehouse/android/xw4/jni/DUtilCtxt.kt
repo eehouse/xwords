@@ -395,6 +395,10 @@ class DUtilCtxt() {
         MQTTUtils.handleCtrlReceived(mContext, msg)
     }
 
+    fun onPingReceived( tsStart: Int, tsMid: Int, tsEnd: Int ) {
+        GamesListDelegate.onPingReceived(mContext, tsStart, tsMid, tsEnd)
+    }
+
     fun removeStored(key: String) {
         Log.d(TAG, "removeStored($key) called")
         DBUtils.delKVPair(mContext, key)

@@ -1411,6 +1411,7 @@ void
 model_addChat( ModelCtxt* model, XWEnv xwe, const XP_UCHAR* msg,
                XP_S16 from, XP_U32 timestamp )
 {
+    XP_ASSERT( ROLE_STANDALONE != model->vol.gi->deviceRole );
     cht_addChat( model->vol.chat, xwe, msg, from, timestamp );
 }
 

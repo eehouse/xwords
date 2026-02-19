@@ -64,4 +64,5 @@
   <string name="so_inverted">Inverted</string>
   <string name="so_showAll">Show all</string>
 
+  <string name="board_menu_game_ping">Ping others</string>
 </resources>

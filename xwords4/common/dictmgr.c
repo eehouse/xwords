@@ -21,7 +21,6 @@
 #include "dictnry.h"
 #include "strutils.h"
 #include "dictmgrp.h"
-#include "xwmutex.h"
 #include "xwarray.h"
 
 #ifdef CPLUS
@@ -35,7 +34,6 @@ typedef struct _DictPair {
 
 struct DictMgrCtxt {
     XWArray* pairs;
-    MutexState mutex;
 };
 
 static int
@@ -53,7 +51,6 @@ dmgr_make( XW_DUtilCtxt* dutil )
 {
     LOG_FUNC();
     DictMgrCtxt* dictMgr = XP_CALLOC( dutil->mpool, sizeof(*dictMgr) );
-    MUTEX_INIT( &dictMgr->mutex, XP_FALSE );
 
     dictMgr->pairs = arr_make(dutil->mpool, sortByKeyProc, NULL);
 
@@ -85,7 +82,6 @@ dmgr_destroy( XW_DUtilCtxt* dutil, XWEnv xwe )
     };
     arr_removeAll( dictMgr->pairs, destroyDictDataProc, &ddd );
     arr_destroy( dictMgr->pairs );
-    MUTEX_DESTROY( &dictMgr->mutex );
     XP_FREEP( dutil->mpool, &dutil->dictMgr );
 }
 
@@ -106,7 +102,6 @@ dmgr_get( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
     const DictionaryCtxt* result = NULL;
 
     DictMgrCtxt* dictMgr = dutil->dictMgr;
-    WITH_MUTEX_CHECKED( &dictMgr->mutex, 1 );
 
     XP_U32 indx;
     DictPair dp = { .key = (XP_UCHAR*)key };
@@ -123,7 +118,6 @@ dmgr_get( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
     
     XP_LOGFF( "(key=%s)=>%p", key, result );
     // printInOrder( dmgr );
-    END_WITH_MUTEX();
     return result;
 }
 
@@ -131,7 +125,6 @@ void
 dmgr_remove( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
 {
     DictMgrCtxt* dictMgr = dutil->dictMgr;
-    WITH_MUTEX_CHECKED( &dictMgr->mutex, 1 );
     XP_U32 indx;
     DictPair dp = { .key = (XP_UCHAR*)key };
     if ( arr_find( dictMgr->pairs, xwe, &dp, &indx ) ) {
@@ -143,7 +136,6 @@ dmgr_remove( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
         XP_LOGFF( "dict %s not found", key );
         XP_ASSERT(0);
     }
-    END_WITH_MUTEX();
 }
 
 void
@@ -155,9 +147,7 @@ dmgr_put( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key,
     DictPair dp = { .key = (XP_UCHAR*)key };
     XP_ASSERT( !arr_find( dictMgr->pairs, xwe, &dp, NULL ) );
 #endif
-    WITH_MUTEX( &dictMgr->mutex );
     putImpl( dutil, xwe, key, dict );
-    END_WITH_MUTEX();
 }
 
 #ifdef CPLUS

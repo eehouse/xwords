@@ -16,6 +16,7 @@ ifeq ($(BUILD_TARGET),debug)
 endif
 LOCAL_DEFINES += \
 	$(LOCAL_DEBUG) \
+	-DANDROID \
 	-DXWFEATURE_BLUETOOTH \
 	-DXWFEATURE_SMS \
 	-DXWFEATURE_P2P \
@@ -83,7 +84,6 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/contrlr.c    \
 	$(COMMON_PATH)/model.c      \
 	$(COMMON_PATH)/comms.c      \
-	$(COMMON_PATH)/xwmutex.c    \
 	$(COMMON_PATH)/xwstream.c  \
 	$(COMMON_PATH)/movestak.c   \
 	$(COMMON_PATH)/dbgutil.c    \

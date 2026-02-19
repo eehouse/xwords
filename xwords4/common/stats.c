@@ -23,12 +23,9 @@
 #include "dbgutil.h"
 #include "timers.h"
 
-#include "xwmutex.h"
-
 typedef struct StatsState {
     XP_U32* statsVals;
     XP_U32 startTime;
-    MutexState mutex;
     XP_Bool timerSet;
 } StatsState;
 
@@ -45,7 +42,6 @@ void
 sts_init( XW_DUtilCtxt* dutil )
 {
     StatsState* ss = XP_CALLOC( dutil->mpool, sizeof(*ss) );
-    MUTEX_INIT( &ss->mutex, XP_TRUE );
     dutil->statsState = ss;
 }
 
@@ -54,7 +50,6 @@ sts_cleanup( XW_DUtilCtxt* dutil, XWEnv XP_UNUSED(xwe) )
 {
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
-    MUTEX_DESTROY( &ss->mutex );
     XP_FREEP( dutil->mpool, &ss->statsVals );
     XP_FREEP( dutil->mpool, &ss );
 }
@@ -65,14 +60,12 @@ sts_increment( XW_DUtilCtxt* dutil, XWEnv xwe, STAT stat )
     if ( STAT_NONE < stat && stat < STAT_NSTATS ) {
         StatsState* ss = dutil->statsState;
         XP_ASSERT( !!ss );
-        WITH_MUTEX( &ss->mutex );
         if ( !ss->statsVals ) {
             loadCountsLocked( dutil, xwe );
         }
         ++ss->statsVals[stat];
 
         setStoreTimerLocked( dutil, xwe );
-        END_WITH_MUTEX();
     }
 }
 
@@ -85,7 +78,6 @@ sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
     cJSON* stats = cJSON_CreateObject();
     cJSON_AddItemToObject(result, "stats", stats );
 
-    WITH_MUTEX( &ss->mutex );
     if ( !ss->statsVals ) {
         loadCountsLocked( dutil, xwe );
     }
@@ -100,7 +92,6 @@ sts_export( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     cJSON_AddNumberToObject( result, "since", ss->startTime );
 
-    END_WITH_MUTEX();
     return result;
 }
 
@@ -110,19 +101,15 @@ sts_clearAll( XW_DUtilCtxt* dutil, XWEnv xwe )
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
 
-    /* grab outside the mutex */
     XP_U32 startTime = dutil_getCurSeconds( dutil, xwe );
     XP_U32* statsVals = XP_CALLOC( dutil->mpool,
                                    sizeof(*ss->statsVals) * STAT_NSTATS );
 
-
-    WITH_MUTEX( &ss->mutex );
     XP_FREEP( dutil->mpool, &ss->statsVals );
 
     ss->statsVals = statsVals;
     ss->startTime = startTime;
     storeCountsLocked( dutil, xwe );
-    END_WITH_MUTEX();
 }
 
 static const XP_UCHAR*
@@ -215,10 +202,8 @@ onStoreTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
     StatsState* ss = dutil->statsState;
     XP_ASSERT( !!ss );
 
-    WITH_MUTEX( &ss->mutex );
     storeCountsLocked( dutil, xwe );
     ss->timerSet = XP_FALSE;
-    END_WITH_MUTEX();
     LOG_RETURN_VOID();
 }
 

@@ -929,8 +929,14 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     mpool_stats( cGlobals->params->mpool, stream );
     catAndClose( stream );
 } /* handle_memstats */
-
 #endif
+
+static void
+handle_ping( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    dvc_pingAll( cGlobals->params->dutil, NULL_XWE, cGlobals->gr );
+}
 
 #ifdef XWFEATURE_ACTIVERECT
 static gint
@@ -1033,6 +1039,8 @@ makeMenus( GtkGameGlobals* globals )
     (void)createAddItem( fileMenu, "Mem stats", 
                          (GCallback)handle_memstats, globals );
 #endif
+    (void)createAddItem( fileMenu, "Ping remotes",
+                         (GCallback)handle_ping, globals );
 
 #ifdef XWFEATURE_ACTIVERECT
     fileMenu = makeAddSubmenu( menubar, "Test" );
@@ -1940,10 +1948,8 @@ gtk_util_cellSquareHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XWStreamCtxt* wo
     CommonGlobals* cGlobals = globalsForUtil( uc, XP_FALSE );
     GtkGameGlobals* globals = (GtkGameGlobals*)cGlobals;
     const XP_U8* bytes = strm_getPtr( words );
-    gchar* msg = g_strdup_printf( "words for lookup:\n%s",
-                                  (XP_UCHAR*)bytes );
-    gtktell( globals->window, msg );
-    g_free( msg );
+    gtktellf( globals->window, "words for lookup:\n%s",
+              (XP_UCHAR*)bytes );
 }
 #endif
 

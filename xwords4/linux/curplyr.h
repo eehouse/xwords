@@ -1,6 +1,5 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2020 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,14 +16,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CURSESLETTERASK_H_
-#define _CURSESLETTERASK_H_
+#ifndef _CURPLYR_H_
+#define _CURPLYR_H_
 
-#include "linuxmain.h"
-#include "cursesmain.h"
+#include <stdbool.h>
+#include <ncurses.h>
 
-XP_S16 curses_askLetter( WINDOW* window, XP_UCHAR* query,
-                         const XP_UCHAR** texts, XP_U16 nTiles );
+#include "main.h"
 
+bool editPlayerDlg( LaunchParams* params, WINDOW* win, LocalPlayer* player );
+
+void roleName( const LocalPlayer* lp, char buf[32], size_t buflen );
 
 #endif

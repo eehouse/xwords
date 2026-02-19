@@ -75,7 +75,6 @@
 #include "gsrcwrap.h"
 #include "dllist.h"
 #include "xwarray.h"
-#include "xwmutex.h"
 #include "lindmgr.h"
 #include "LocalizedStrIncludes.h"
 
@@ -2669,7 +2668,7 @@ main( int argc, char** argv )
     mainParams.connInfo.mqtt.port = 1883;
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
-    mainParams.connInfo.sms.dataDir = "/tmp";
+    mainParams.connInfo.sms.dataDir = get_tmp_dir();
 #endif
     mainParams.pgi.boardSize = 15;
     mainParams.pgi.traySize = 7;

@@ -40,6 +40,19 @@ gtktell( GtkWidget* parent, const gchar *message )
     (void)gtkask( parent, message, GTK_BUTTONS_OK, NULL );
 }
 
+void
+gtktellf( GtkWidget* parent, const gchar *fmt, ... )
+{
+    va_list ap;
+    va_start( ap, fmt );
+
+    gchar* msg = g_strdup_vprintf ( fmt, ap );
+    gtktell( parent, msg );
+
+    g_free( msg );
+    va_end(ap);
+}
+
 gint
 gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
         const AskPair* buttxts )

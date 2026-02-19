@@ -29,7 +29,7 @@
 
 typedef struct MsgChunker MsgChunker;
 
-typedef enum { NONE, INVITE, DATA, DEATH, ACK_INVITE, } CHUNK_CMD;
+typedef enum { NONE, INVITE, DATA, DEATH, ACK_INVITE, PING, } CHUNK_CMD;
 
 /* Unpacked/local format with relevant fields exposed */
 typedef struct _ChunkMsgLoc {

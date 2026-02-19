@@ -27,22 +27,22 @@
 #include "cursesask.h"
 #include "cursesdlgutil.h"
 
+typedef enum { EDIT, DONE, SEND, NSTATES, } FOCUSSED;
+
 typedef struct _State {
+    LaunchParams* params;
     XW_DUtilCtxt* dutil;
     GameRef gr;
 
     WINDOW* win;
     bool done;
-    int focussed;
+    FOCUSSED focussed;
 
-    int msgLine, msgCol;
-    gchar msgBuf[256];
-    int offset;
+    int msgLine;
+    EditState es;
 
     int buttonLine;
 } State;
-
-enum { EDIT, DONE, SEND, NSTATES, };
 
 static void
 upFocus( State* state)
@@ -77,58 +77,24 @@ drawChats( State* state )
 }
 
 static void
-initEdit( State* state )
-{
-    mvwaddnstr( state->win, state->msgLine, state->msgCol, " ", VSIZE(state->msgBuf) );
-    state->msgBuf[0] = '\0';
-    state->offset = 0;
-}
-
-static void
-drawEdit( State* state )
-{
-    WINDOW* win = state->win;
-    if ( EDIT == state->focussed ) {
-        wstandout( win );
-    }
-    const gchar* prompt = "->";
-    state->msgCol = 1 + strlen(prompt);
-    mvwaddstr( win, state->msgLine, 1, prompt );
-    mvwaddstr( win, state->msgLine, state->msgCol, state->msgBuf );
-    if ( EDIT == state->focussed ) {
-        wstandend( win );
-    }
-}
-
-static void
-handleEdit( State* state, int ch )
-{
-    if ( isprint(ch) && state->offset < VSIZE(state->msgBuf) - 1) {
-        state->msgBuf[state->offset++] = ch;
-        state->msgBuf[state->offset] = '\0';
-    } else if ( ch == 263 && state->offset > 2 ) {
-        XP_LOGFF( "ch: %d", ch );
-        state->msgBuf[--state->offset] = ' ';
-    }
-}
-
-static void
 handleSend( State* state, int ch )
 {
     if ( ch == '\r' || ch == '\n' ) {
         XP_LOGFF("calling gr_sendChat()");
-        state->msgBuf[state->offset] = '\0';
-
-        mvwaddnstr( state->win, state->msgLine, state->msgCol, " ", state->offset );
+        // es->msgBuf[es->offset] = '\0';
+        gchar msg[64];
+        size_t len = VSIZE(msg);
+        getEditText( &state->es, msg, &len );
 
         const char* buttons[] = { "Yes", "No" };
-       int res = cursesaskf( state->win, VSIZE(buttons), buttons,
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)state->params->cag;
+        int res = cursesaskf2( aGlobals, state->win, VSIZE(buttons), buttons,
                               "Are you sure you want to send message \"%s\"",
-                              state->msgBuf );
+                               msg );
         if ( res == 0 ) {
-            gr_sendChat( state->dutil, state->gr, NULL_XWE, state->msgBuf );
+            gr_sendChat( state->dutil, state->gr, NULL_XWE, msg );
         }
-        initEdit( state );
+        initEdit( &state->es, state->win, state->msgLine, NULL );
         upFocus( state );
     }
 }
@@ -147,58 +113,70 @@ updateButtons( State* state )
     drawButtons( state->win, state->buttonLine, 10, VSIZE(buttons), sel, buttons );
 }
 
-void
-curses_openChat( WINDOW* window, XW_DUtilCtxt* dutil, GameRef gr )
+static void
+drawWin( State* state )
 {
-    LOG_FUNC();
-    State state = {.dutil = dutil, .gr = gr, };
-    
-    int parentX, parentY;
-    getmaxyx( window, parentY, parentX );
-    parentX /= 2;
-    parentY /= 2;
+    updateButtons( state );
+    drawEdit( &state->es, EDIT == state->focussed );
+    wrefresh( state->win );
+}
 
+/* Refactored at a ryokan outside of Morioka :-) */
+static bool
+chatKeyProc( int key, void* closure )
+{
+    State* state = (State*)closure;
+    if ( '\t' == key ) {
+        upFocus( state );
+    } else {
+        switch ( state->focussed ) {
+        case EDIT:
+            handleEdit( &state->es, key );
+            break;
+        case DONE:
+            handleDone( state, key );
+            break;
+        case SEND:
+            handleSend( state, key );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+    drawWin( state );
+
+    return state->done;
+}
+
+void
+curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
+{
+    XW_DUtilCtxt* dutil = params->dutil;
+    LOG_FUNC();
+    State state = {.dutil = dutil, .gr = gr, .params = params, };
+    
     int chatCols = 40;
     int chatLines = 2 * gr_getChatCount( dutil, gr, NULL_XWE );
     chatLines += 6; // for buttons and msg edit space
 
-    state.win = newwin( chatLines, chatCols, parentY, parentX );
-    keypad( state.win, TRUE );
-    wclear( state.win );
-    box( state.win, '|', '-');
+    state.win = makeCenteredBox( parent, chatCols, chatLines );
+    // keypad( state.win, TRUE );
 
     int line = drawChats( &state );
     mvwaddstr( state.win, ++line, 1, "Edit message below" );
     state.msgLine = ++line;
 
     state.buttonLine = ++line;
-    
-    initEdit( &state );
-    drawEdit( &state );
-    while ( !state.done ) {
-        updateButtons( &state );
-        drawEdit( &state );
-        
-        int ch = wgetch( state.win );
-        if ( '\t' == ch ) {
-            upFocus( &state );
-        } else {
-            switch ( state.focussed ) {
-            case EDIT:
-                handleEdit( &state, ch );
-                break;
-            case DONE:
-                handleDone( &state, ch );
-                break;
-            case SEND:
-                handleSend( &state, ch );
-                break;
-            default:
-                XP_ASSERT(0);
-            }
-        }
-    }
 
-    wtouchln( window, parentY, chatLines, 1 );
-    wrefresh( window );
+    initEdit( &state.es, state.win, state.msgLine, NULL );
+    drawWin( &state );
+    // drawEdit( &state.es, EDIT == state.focussed );
+
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    startModalAlert( aGlobals, state.win, XP_TRUE, chatKeyProc, &state );
+    
+    // wtouchln( window, parentY, chatLines, 1 );
+    delwin( state.win );
+    touchwin( parent );
+    wrefresh( parent );
 }

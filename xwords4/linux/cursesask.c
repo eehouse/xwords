@@ -27,139 +27,266 @@
 
 #include "cursesask.h"
 #include "cursesdlgutil.h"
+#include "dbgutil.h"
 
+typedef struct _AskState {
+    CursesAppGlobals* aGlobals;
+    WINDOW* win;
+    WINDOW* parentWin;
+    int newSelButton;
+    int curSelButton;
+    int numButtons;
+    int spacePerButton;
+    int rows;
+    int xx, yy;
+    int nLines;
+    const char** buttons;
+    int* resultP;
+    guint timerSrc;
+} AskState;
+
+static bool
+onKey( int ch, void* closure )
+{
+    bool dismissed = false;
+    AskState* as = (AskState*)closure;
+
+    switch ( ch ) {
+    case 'L':
+    case KEY_RIGHT:
+    case 525:
+        as->newSelButton = (as->curSelButton+1) % as->numButtons;
+        break;
+    case 'H':
+    case '\t':
+    case KEY_LEFT:
+    case 524:
+        as->newSelButton = (as->numButtons+as->curSelButton-1) % as->numButtons;
+        break;
+    case EOF:
+    case 4:			/* C-d */
+    case 27:		/* ESC */
+        as->curSelButton = 0;	/* should be the cancel case */
+    case KEY_B2:                /* "center of keypad" */
+    case '\r':
+    case '\n':
+        dismissed = XP_TRUE;
+        break;
+    case '1':
+    case '2':
+    case '3':
+    case '4': {
+        int num = ch - '1';
+        if ( num < as->numButtons ) {
+            as->newSelButton = num;
+        }
+    }
+        break;
+    default:
+        beep();
+    }
+
+    if ( dismissed ) {
+        delwin( as->win );
+        as->win = NULL;
+
+        /* this leaves a ghost line, but I can't figure out a better way. */
+        wtouchln( as->parentWin, (as->yy/2)-(as->nLines/2), ASK_HEIGHT + as->rows - 1, 1 );
+        wrefresh( as->parentWin );
+
+        if ( !!as->resultP ) {
+            *as->resultP = as->curSelButton;
+        }
+        if ( !!as->timerSrc ) {
+            g_source_remove( as->timerSrc );
+        }
+
+        g_free( as );
+    } else if ( as->newSelButton != as->curSelButton ) {
+        drawButtons( as->win, as->rows+1, as->spacePerButton, as->numButtons,
+                     as->curSelButton=as->newSelButton, as->buttons );
+        wrefresh( as->win );
+    }
+
+    LOG_RETURNF( "%s", boolToStr(dismissed) );
+    return dismissed;
+}
+
+static gint
+askTimerProc( gpointer data )
+{
+    AskState* as = (AskState*)data;
+    XP_ASSERT( as->timerSrc );
+    as->timerSrc = 0;
+
+    cursesPushKey( as->aGlobals, '\n' );
+
+    return G_SOURCE_REMOVE;
+}
 
 /* Figure out how many lines there are and how wide the widest is.
  */
-int
-cursesask( WINDOW* parentWin, short numButtons,
-           const char** buttons, const char* question )
+static void
+cursesaskImpl( CursesAppGlobals* aGlobals, WINDOW* parentWin, int* resultP,
+               short numButtons, const char** buttons, const char* question,
+               int timeoutms )
 {
+    LOG_FUNC();
+    AskState* as = g_malloc0( sizeof(*as) );
+    as->aGlobals = aGlobals;
+    as->parentWin = parentWin;
+    as->buttons = buttons;
+    as->numButtons = numButtons;
+    as->resultP = resultP;
+
     XP_LOGFF( "(question=%s, parentWin=%p)", question, parentWin );
     XP_ASSERT( !!parentWin );
-    WINDOW* confWin;
-    int xx, yy, rows, row, nLines;
+    int row;
     int left, top;
-    short newSelButton = 0;
-    short curSelButton = 1;	/* force draw by being different */
-    short spacePerButton, num;
     short maxWidth;
-    XP_Bool dismissed = XP_FALSE;
     FormatInfo fi;
     int len;
 
-    getmaxyx( parentWin, yy, xx);
+    getmaxyx( parentWin, as->yy, as->xx);
     getbegyx( parentWin, top, left );
 
-    measureAskText( question, xx-2, &fi );
+    measureAskText( question, as->xx-2, &fi );
     len = fi.maxLen;
     if ( len < MIN_WIDTH ) {
         len = MIN_WIDTH;
     }
 
-    rows = fi.nLines;
-    maxWidth = xx - (PAD*2) - 2; /* 2 for two borders */
+    as->rows = fi.nLines;
+    maxWidth = as->xx - (PAD*2) - 2; /* 2 for two borders */
 
-    if ( len > xx-2 ) {
-        rows = (len / maxWidth) + 1;
+    if ( len > as->xx-2 ) {
+        as->rows = (len / maxWidth) + 1;
         len = maxWidth;
     }
 
-    nLines = ASK_HEIGHT + rows - 1;
-    confWin = newwin( nLines, len+(PAD*2), top + ((yy/2) - (nLines/2)),
-                      left + ((xx-len-2)/2) );
-    keypad( confWin, TRUE );
-    wclear( confWin );
-    box( confWin, '|', '-');
+    as->nLines = ASK_HEIGHT + as->rows - 1;
+    as->win = newwin( as->nLines, len+(PAD*2), top + ((as->yy/2) - (as->nLines/2)),
+                      left + ((as->xx-len-2)/2) );
+    keypad( as->win, TRUE );
+    wclear( as->win );
+    box( as->win, '|', '-');
 
-    for ( row = 0; row < rows; ++row ) {
-        mvwaddnstr( confWin, row+1, PAD, 
+    for ( row = 0; row < as->rows; ++row ) {
+        mvwaddnstr( as->win, row+1, PAD,
                     fi.line[row].substr, fi.line[row].len );
     }
-    spacePerButton = (len+(PAD*2)) / (numButtons + 1);
+    as->spacePerButton = (len+(PAD*2)) / (numButtons + 1);
 
-    while ( !dismissed ) {
-        int ch;
+    drawButtons( as->win, as->rows+1, as->spacePerButton, numButtons,
+                 as->curSelButton=as->newSelButton, as->buttons );
 
-        if ( newSelButton != curSelButton ) {
-            drawButtons( confWin, rows+1, spacePerButton, numButtons, 
-                         curSelButton=newSelButton, buttons );
-        }
-
-        ch = wgetch( confWin );
-        switch ( ch ) {
-        case 'L':
-        case KEY_RIGHT:
-        case 525:
-            newSelButton = (curSelButton+1) % numButtons;
-            break;
-        case 'H':
-        case '\t':
-        case KEY_LEFT:
-        case 524:
-            newSelButton = (numButtons+curSelButton-1) % numButtons;
-            break;
-        case EOF:
-        case 4:			/* C-d */
-        case 27:		/* ESC */
-            curSelButton = 0;	/* should be the cancel case */
-        case KEY_B2:                /* "center of keypad" */
-        case '\r':
-        case '\n':
-            dismissed = XP_TRUE;
-            break;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-            num = ch - '1';
-            if ( num < numButtons ) {
-                newSelButton = num;
-            }
-            break;
-        default:
-            beep();
-        }
+    if ( timeoutms ) {
+        XP_ASSERT( !as->timerSrc );
+        as->timerSrc = g_timeout_add( timeoutms, askTimerProc, as );
     }
-    delwin( confWin );
 
-    /* this leaves a ghost line, but I can't figure out a better way. */
-    wtouchln( parentWin, (yy/2)-(nLines/2), ASK_HEIGHT + rows - 1, 1 );
-    wrefresh( parentWin );
-    return curSelButton;
-} /* cursesask */
+    startModalAlert( aGlobals, as->win, !!resultP, onKey, as );
+
+    LOG_RETURN_VOID();
+} /* cursesaskImpl */
 
 int
-cursesaskf( WINDOW* window, short numButtons, const char** buttons,
-            const char* fmt, ... )
+_cursesask2( CursesAppGlobals* ag, WINDOW* parentWin, short numButtons,
+            const char** buttons, const char* question,
+            const char* file, const char* proc )
 {
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
+    int result;
+    cursesaskImpl( ag, parentWin, &result, numButtons, buttons, question, 0 );
+    return result;
+}
+
+int
+_cursesask( WINDOW* parentWin, short numButtons,
+            const char** buttons, const char* question,
+            const char* file, const char* proc )
+{
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
+    XP_ASSERT(0);
+    return _cursesask2( NULL, parentWin, numButtons, buttons,
+                        question, file, proc );
+}
+
+int
+_cursesaskf( WINDOW* window, short numButtons, const char** buttons,
+             const char* file, const char* proc, const char* fmt, ... )
+{
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
+    XP_ASSERT(0);
+    XP_USE(window);
+    XP_USE(numButtons);
+    XP_USE(buttons);
+    XP_USE(file);
+    XP_USE(proc);
+    XP_USE(fmt);
+    return 0;
+}
+
+int
+_cursesaskf2( CursesAppGlobals* aGlobals,  WINDOW* window, short numButtons,
+              const char** buttons, const char* file, const char* proc,
+              const char* fmt, ... )
+{
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     va_list args;
     va_start( args, fmt );
     gchar* msg = g_strdup_vprintf( fmt, args );
-    va_end( args );
-    int result = cursesask( window, numButtons, buttons, msg );
+
+    int result = _cursesask2( aGlobals, window, numButtons, buttons, msg,
+                              file, proc );
+
     g_free( msg );
     return result;
- }
-
-
-void
-ca_inform( WINDOW* window, const char* message )
-{
-    if ( !!window ) {
-        const char* buttons[] = { "Ok" };
-        (void)cursesask( window, VSIZE(buttons), buttons, message );
-    }
 }
 
 void
-ca_informf( WINDOW* window, const char* fmt, ... )
+_ca_inform2( CursesAppGlobals* aGlobals, WINDOW* window, const char* message,
+             const char* file, const char* proc )
 {
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
+    if ( !!window ) {
+        const char* buttons[] = { "Ok" };
+        (void)cursesaskImpl( aGlobals, window, NULL, VSIZE(buttons), buttons,
+                             message, /*1500*/ 0 );
+    }
+    LOG_RETURN_VOID();
+}
+
+void
+_ca_inform( WINDOW* window, const char* message, const char* file, const char* proc )
+{
+    _ca_inform2(NULL, window, message, file, proc );
+}
+
+void
+_ca_informf( WINDOW* window,
+             const char* file, const char* proc,
+             const char* fmt, ... )
+{
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
+    XP_ASSERT(0);
+    XP_USE(window);
+    XP_USE(file);
+    XP_USE(proc);
+    XP_USE(fmt);
+}
+
+void
+_ca_informf2( CursesAppGlobals* aGlobals, WINDOW* window,
+              const char* file, const char* proc,
+              const char* fmt, ... )
+{
+    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     va_list args;
     va_start( args, fmt );
     gchar* msg = g_strdup_vprintf( fmt, args );
     va_end( args );
-    ca_inform( window, msg );
+    _ca_inform2( aGlobals, window, msg, file, proc );
     g_free( msg );
 }
 

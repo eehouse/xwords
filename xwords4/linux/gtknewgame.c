@@ -758,10 +758,8 @@ static void
 checkAndWarn( GtkNewGameState* state, GtkWidget* dialog )
 {
     if ( state->nTrayTiles < state->bingoMin ) {
-        gchar buf[128];
-        XP_SNPRINTF( buf, VSIZE(buf),"\"%s\" cannot be greater than \"%s\"",
-                     BINGO_THRESHOLD, TRAY_SIZE );
-        gtktell( dialog, buf );
+        gtktellf( dialog, "\"%s\" cannot be greater than \"%s\"",
+                  BINGO_THRESHOLD, TRAY_SIZE );
         state->revert = XP_TRUE;
     }
 }

@@ -22,12 +22,30 @@
 
 #include "cursesmain.h"
 
-int cursesask( WINDOW* window, short numButtons, const char** buttons,
-               const char* question );
-int cursesaskf( WINDOW* window, short numButtons, const char** buttons,
-                const char* fmt, ... );
+int _cursesask( WINDOW* window, short numButtons,
+                const char** buttons, const char* question,  const char* file, const char* proc );
+#define cursesask( W, NB, B, Q ) _cursesask( (W), NB, B, Q, __FILE__, __func__ )
+int _cursesask2( CursesAppGlobals* aGlobals, WINDOW* window, short numButtons,
+                const char** buttons, const char* question,  const char* file, const char* proc );
+#define cursesask2( AG, W, NB, B, Q ) _cursesask2((AG), (W), NB, B, Q, __FILE__, __func__ )
+int _cursesaskf( WINDOW* window, short numButtons,
+                 const char** buttons,
+                 const char* file, const char* proc,
+                 const char* fmt, ... );
+#define cursesaskf( W, NB, B, FMT, ... ) _cursesaskf((W), NB, B, __FILE__, __func__, FMT, __VA_ARGS__ )
+int _cursesaskf2( CursesAppGlobals* aGlobals, WINDOW* window, short numButtons,
+                  const char** buttons, const char* file, const char* func,
+                  const char* fmt, ... );
+#define cursesaskf2( AG, W, NB, B, FMT, ... ) _cursesaskf2((AG), (W), NB, B, __FILE__, __func__, FMT, __VA_ARGS__ )
 
-void ca_inform( WINDOW* window, const char* message );
-void ca_informf( WINDOW* window, const char* fmt, ... );
+void _ca_inform( WINDOW* window, const char* message, const char* file, const char* proc );
+void _ca_informf( WINDOW* window, const char* file, const char* proc, const char* fmt, ... );
+void _ca_inform2( CursesAppGlobals* aGlobals, WINDOW* window, const char* message, const char* file, const char* proc );
+void _ca_informf2( CursesAppGlobals* aGlobals, WINDOW* window, const char* file, const char* proc, const char* fmt, ... );
+
+#define ca_inform(W,M) _ca_inform((W), (M), __FILE__, __func__ )
+#define ca_informf(W,M, FMT, ...) _ca_informf((W), (M), __FILE__, __func__, FMT, __VA_ARGS__ )
+#define ca_inform2(AG, W, M) _ca_inform2((AG), (W), (M), __FILE__, __func__ )
+#define ca_informf2(AG, W, FMT, ...) _ca_informf2((AG), (W), __FILE__, __func__, FMT, __VA_ARGS__ )
 
 #endif

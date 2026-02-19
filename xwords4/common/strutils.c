@@ -1051,6 +1051,20 @@ formatMQTTCtrlTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
     return buf;
 }
 
+XP_UCHAR*
+formatMQTTPongTopic( const MQTTDevID* devid, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    XP_SNPRINTF( buf, bufLen, MQTTPongTopic_FMT, *devid );
+    return buf;
+}
+
+XP_UCHAR*
+formatBrokerPingTopic(XP_UCHAR* buf, XP_U16 bufLen )
+{
+    XP_SNPRINTF( buf, bufLen, "%s", "xw4/broker/ping" );
+    return buf;
+}
+
 XP_Bool
 strToMQTTCDevID( const XP_UCHAR* str, MQTTDevID* result )
 {

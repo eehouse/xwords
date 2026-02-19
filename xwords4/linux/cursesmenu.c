@@ -35,26 +35,18 @@ struct CursesMenuState {
 
 static bool handleKeyEvent( CursesMenuState* state, char ch, bool altPressed );
 
-static gboolean
-handle_stdin( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
-              gpointer data )
+static bool
+menuKeyProc( int ch, void* data )
 {
-    if ( 0 != (G_IO_IN & condition) ) {
-#ifdef DEBUG
-        gint fd = g_io_channel_unix_get_fd( source );
-        XP_ASSERT( 0 == fd );
-#endif
-        CursesMenuState* state = (CursesMenuState*)data;
-        int ch = wgetch( state->menuWin );
+    CursesMenuState* state = (CursesMenuState*)data;
         // Alt (at least pressed with <ret>) comes in as a separate keypress
         // immediately before. So don't distribute it, but instead OR a
         // special bit into the key sent out.
-        if ( ch == 0x1b ) {
-            state->altPressed = true;
-        } else {
-            handleKeyEvent( state, ch, state->altPressed );
-            state->altPressed = false;
-        }
+    if ( ch == 0x1b ) {
+        state->altPressed = true;
+    } else {
+        handleKeyEvent( state, ch, state->altPressed );
+        state->altPressed = false;
     }
     return TRUE;
 }
@@ -76,15 +68,14 @@ sizeWindow( CursesMenuState* state )
 }
 
 CursesMenuState*
-cmenu_init( WINDOW* mainWindow )
+cmenu_init( CursesAppGlobals* aGlobals, WINDOW* mainWindow )
 {
     CursesMenuState* result = g_malloc0( sizeof(*result) );
     result->mainWin = mainWindow;
 
     sizeWindow( result );
-    nodelay( result->menuWin, 1 );		/* don't block on getch */
 
-    ADD_SOCKET( result, 0, handle_stdin );
+    cursesPushKeyHandler( aGlobals, menuKeyProc, result );
 
     return result;
 }

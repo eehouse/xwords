@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, datetime, glob, json, os, random, shutil, signal, \
-    socket, struct, subprocess, sys, threading, time
+    socket, struct, subprocess, sys, tempfile, threading, time
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 g_INVITE_HOWS = (('OutOfApp', 1), ('Internal', 1), ('KnownPlayer', 1))
@@ -361,7 +361,9 @@ class Device():
                     val = kp.get(key)
                     if val:
                         if not key in addr: addr[key] = val
-                        else: assert addr[key] == val
+                        elif addr[key] != val:
+                            self._log('checkKPs(): key: {}; {} != {}'.format(key, addr[key], val))
+                            assert False
 
     def _pickGid(self):
         result = None
@@ -729,8 +731,11 @@ class Device():
             scriptArgs += [ '--skip-mqtt-add' ]
 
         if self.args.WITH_SMS:
+            datadir = '{}/.smsdata'.format(tempfile.gettempdir())
+            try: os.mkdir(datadir)
+            except: None
             scriptArgs += [ '--sms-number', self.smsNumber ]
-            scriptArgs += [ '--sms-datadir', self.args.SMS_DATADIR ]
+            scriptArgs += [ '--sms-datadir', datadir ]
         if not self.args.WITH_BT:
             scriptArgs += [ '--disable-bt' ]
 
@@ -1043,7 +1048,6 @@ def mkParser():
 
     parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true', default=False)
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default=False, action='store_false')
-    parser.add_argument('--sms-datadir', dest = 'SMS_DATADIR', default = '/tmp' )
     # parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
     parser.add_argument('--with-bt', dest = 'WITH_BT', default = True, action = 'store_true')
@@ -1093,8 +1097,20 @@ def parseArgs():
     return args
     # print(options)
 
+DIRS = ['obj_linux_memdbg_curses', 'obj_linux_memdbg']
+
+def verifyApp(path):
+    if not os.path.exists(path):
+        app = os.path.basename(path)
+        for dir in DIRS:
+            path = './{}/{}'.format(dir, app)
+            if os.path.exists(path): break
+    return path
+
 def assignDefaults(args):
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
+    args.APP_NEW = verifyApp(args.APP_NEW)
+    args.APP_OLD = verifyApp(args.APP_OLD)
     assert 1 == (args.BOARD_SIZE_MAX % 2)
     assert 1 == (args.BOARD_SIZE_MIN % 2)
     assert args.BOARD_SIZE_MAX >= args.BOARD_SIZE_MIN
@@ -1112,7 +1128,8 @@ def initLogs(args):
     scriptName = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     statedir = scriptName + '_state'
     if not args.REUSE_DBS and os.path.exists(statedir):
-        shutil.move(statedir, '/tmp/{}_{}'.format(statedir, os.getpid()))
+        tmpdir = tempfile.gettempdir()
+        shutil.move(statedir, '{}/{}_{}'.format(tmpdir, statedir, os.getpid()))
     if not os.path.exists(statedir): os.mkdir(statedir)
 
     logfilepath = '{}/{}_logs.txt'.format(statedir, scriptName)
@@ -1131,7 +1148,8 @@ def main():
     if args.SEED: random.seed(args.SEED)
     # Hack: old files confuse things. Remove is simple fix good for now
     if args.WITH_SMS:
-        try: rmtree('/tmp/xw_sms')
+        tmpdir = tempfile.gettempdir()
+        try: rmtree('{}/xw_sms'.format(tmpdir))
         except: None
 
     Device.setup(statedir)       # deletes old logdif

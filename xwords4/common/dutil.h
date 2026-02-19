@@ -126,6 +126,9 @@ typedef struct _DUtilVtable {
 #endif
     void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
                                     const XP_U8* buf, XP_U16 len );
+    void (*m_dutil_onPingReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
+                                    XP_U32 tsStart, XP_U32 tsMid, XP_U32 tsEnd );
+
     /* Return platform-specific registration keys->values */
     cJSON* (*m_dutil_getRegValues)( XW_DUtilCtxt* duc, XWEnv xwe );
     void (*m_dutil_sendViaWeb)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
@@ -181,7 +184,6 @@ struct XW_DUtilCtxt {
     MsgChunker* btChunkerState;
     GameMgrState* gameMgrState; /* owned by gamemgr.c */
     void* kpCtxt;
-    MutexState kpMutex;
 #ifdef DEBUG
     XP_U32 magic;
 #endif
@@ -249,6 +251,8 @@ void dutil_super_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe );
     (duc)->vtable.m_dutil_onGroupChanged( (duc), __VA_ARGS__)
 #define dutil_onCtrlReceived(duc, ... )                         \
     (duc)->vtable.m_dutil_onCtrlReceived((duc), __VA_ARGS__ )
+#define dutil_onPingReceived(duc, ... )                         \
+    (duc)->vtable.m_dutil_onPingReceived((duc), __VA_ARGS__ )
 #define dutil_onGameGoneReceived(duc, ...)         \
     (duc)->vtable.m_dutil_onGameGoneReceived((duc), __VA_ARGS__)
 #define dutil_sendViaWeb( duc, ... )        \

@@ -23,7 +23,6 @@
 #include "msgchnkp.h"
 #include "comtypes.h"
 #include "strutils.h"
-#include "xwmutex.h"
 #include "devicep.h"
 
 /* To match the SMSService format */
@@ -70,7 +69,6 @@ typedef struct _FromPhoneRec {
 struct MsgChunker {
     XW_DUtilCtxt* dutil;
     pthread_t creator;
-    MutexState mutex;
     XP_U16 nNextID;
     int lastStoredSize;
     XP_U16 defaultMaxLen;
@@ -146,7 +144,6 @@ cnk_init( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 waitSecs,
           XP_U16 defaultMaxLen )
 {
     MsgChunker* state = (MsgChunker*)XP_CALLOC( dutil->mpool, sizeof(*state) );
-    MUTEX_INIT( &state->mutex, XP_FALSE );
     state->dutil = dutil;
     state->waitSecs = waitSecs;
     state->defaultMaxLen = defaultMaxLen - 4; /* 4 for my overhead */
@@ -197,8 +194,6 @@ cnk_free( MsgChunker* state )
         arr_removeAll( state->fromPhoneRecs, disposeFromPhoneEntry, state );
         arr_destroy( state->fromPhoneRecs );
         state->fromPhoneRecs = NULL;
-
-        MUTEX_DESTROY( &state->mutex );
 
         XP_FREEP( state->mpool, &state );
     }
@@ -277,7 +272,6 @@ cnk_prepOutbound( MsgChunker* state, XWEnv xwe, CHUNK_CMD cmd, XP_U32 gameID,
 {
     XP_USE( toPort );
     ChunkMsgArray* result = NULL;
-    WITH_MUTEX( &state->mutex );
 
 #if defined DEBUG
     Md5SumBuf sb;
@@ -318,7 +312,6 @@ cnk_prepOutbound( MsgChunker* state, XWEnv xwe, CHUNK_CMD cmd, XP_U32 gameID,
     XP_LOGF( "%s() => %p (count=%d, *waitSecs=%d)", __func__, result,
              !!result ? result->nMsgs : 0, *waitSecsP );
 
-    END_WITH_MUTEX();
     checkResult( state, xwe, toPhone, result );
     logResult( state, xwe, result, __func__ );
     return result;
@@ -368,7 +361,6 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
 #endif
 
     ChunkMsgArray* result = NULL;
-    WITH_MUTEX( &state->mutex );
 
     XWStreamCtxt* stream = dvc_makeStream( state->dutil );
     strm_putBytes( stream, data, len );
@@ -438,15 +430,12 @@ cnk_prepInbound( MsgChunker* state, XWEnv xwe, const XP_UCHAR* fromPhone,
     XP_LOGFF( "=> %p (len=%d)", result, (!!result) ? result->nMsgs : 0 );
     logResult( state, xwe, result, __func__ );
 
-    END_WITH_MUTEX();
     return result;
 }
 
 void
 cnk_freeMsgArray( MsgChunker* XP_UNUSED_DBG(state), ChunkMsgArray* arr )
 {
-    WITH_MUTEX( &state->mutex );
-
     for ( int ii = 0; ii < arr->nMsgs; ++ii ) {
         XP_U8** ptr = arr->format == FORMAT_LOC
             ? &arr->u.msgsLoc[ii].data : &arr->u.msgsNet[ii].data;
@@ -467,7 +456,6 @@ cnk_freeMsgArray( MsgChunker* XP_UNUSED_DBG(state), ChunkMsgArray* arr )
     }
     XP_FREEP( state->mpool, ptr );
     XP_FREEP( state->mpool, &arr );
-    END_WITH_MUTEX();
 }
 
 #if defined DEBUG
@@ -942,6 +930,7 @@ cmd2Str( CHUNK_CMD cmd )
         CASE_STR(DATA);
         CASE_STR(DEATH);
         CASE_STR(ACK_INVITE);
+        CASE_STR(PING);
     }
 #undef CASE_STR
     return str;

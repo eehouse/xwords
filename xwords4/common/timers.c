@@ -18,7 +18,6 @@
  */
 
 #include "timers.h"
-#include "xwmutex.h"
 #include "xwarray.h"
 #include "dbgutil.h"
 
@@ -31,7 +30,6 @@ typedef struct _TimerState {
 
 typedef struct _TimerMgrState {
     XW_DUtilCtxt* dutil;
-    MutexState mutex;
     XP_U32 nextKey;
     XWArray* timers;
 } TimerMgrState;
@@ -47,7 +45,6 @@ tmr_init( XW_DUtilCtxt* dutil )
     timersState->dutil = dutil;
     dutil->timersState = timersState;
     timersState->timers = arr_make( dutil->mpool, NULL, NULL);
-    MUTEX_INIT( &timersState->mutex, XP_TRUE );
 }
 
 void
@@ -57,7 +54,6 @@ tmr_cleanup( XW_DUtilCtxt* dutil, XWEnv xwe )
     XP_ASSERT( !!timersState );
     clearPendings( dutil, xwe );
     arr_destroy( timersState->timers );
-    MUTEX_DESTROY( &timersState->mutex );
     XP_FREEP( dutil->mpool, &dutil->timersState );
 }
 
@@ -75,10 +71,8 @@ tmr_set( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 inWhenMS,
     ts->closure = closure;
     ts->inWhenMS = inWhenMS;
     
-    WITH_MUTEX( &timersState->mutex );
     key = ts->key = ++timersState->nextKey;
     arr_insert( timersState->timers, xwe, ts );
-    END_WITH_MUTEX();
 
     dutil_setTimer( dutil, xwe, inWhenMS, ts->key );
     return key;
@@ -120,9 +114,7 @@ tmr_fired( XW_DUtilCtxt* dutil, XWEnv xwe, TimerKey key )
 
     FindByKeyState fbks = { .key = key };
 
-    WITH_MUTEX( &timersState->mutex );
     arr_map( timersState->timers, xwe, findByKeyProc, &fbks );
-    END_WITH_MUTEX();
 
     if ( !!fbks.found ) {
         timerFired( dutil, xwe, fbks.found, XP_TRUE );

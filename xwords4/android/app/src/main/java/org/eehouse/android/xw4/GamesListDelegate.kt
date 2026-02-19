@@ -3313,6 +3313,19 @@ class GamesListDelegate(delegator: Delegator) :
                     }
         }
 
+        fun onPingReceived(context: Context, tsStart: Int, tsMid: Int, tsEnd: Int) {
+            s_self?.get()?.let { self ->
+                        self.runOnUiThread {
+                            val toRemote = tsMid - tsStart
+                            val fromRemote = tsEnd - tsMid
+                            val msg = "Ping received. Took ${toRemote}s to reach remote " +
+                                "and ${fromRemote}s to come back."
+                            self.makeOkOnlyBuilder(msg)
+                                .show()
+                        }
+                    }
+        }
+
         fun clearThumbnails() {
             GameMgr.clearThumbnails()
         }

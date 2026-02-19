@@ -35,7 +35,6 @@
 #include "device.h"
 #include "nli.h"
 #include "dllist.h"
-#include "xwmutex.h"
 #include "utilsp.h"
 
 #define HEARTBEAT_NONE 0
@@ -49,6 +48,7 @@
 #define NO_CONNID_BIT 0x0008
 #define IS_SERVER_BIT 0x0010
 #define NO_MSGID_BIT 0x0020
+#define TIMESTAMP_BIT 0x0040
 #define HEADER_LEN_OFFSET 9
 
 /* Low two bits treated as channel, third as short-term flag indicating
@@ -115,7 +115,6 @@ typedef struct AddressRecord {
 struct CommsCtxt {
     XW_UtilCtxt** utilp;
     XW_DUtilCtxt* dutil;
-    MutexState mutex;
 
 #ifdef DEBUG
     pthread_t lockHolder;
@@ -232,9 +231,8 @@ static void forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure );
 
 static MsgQueueElem* makeNewElem( const CommsCtxt* comms, XWEnv xwe, MsgID msgID,
                                   XP_PlayerAddr channelNo );
-static XP_U16 makeFlags( const CommsCtxt* comms, XP_U16 headerLen,
-                         MsgID msgID );
-
+static XP_U16 makeFlags( const CommsCtxt* comms, MsgID msgID );
+static void augmentFlags( XP_U16* flags, XP_U16 headerLen );
 static XP_Bool formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                               XP_UCHAR* buf, XP_U16* lenp );
 
@@ -411,7 +409,6 @@ comms_make( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp, XP_Bool isServer,
     MemPoolCtx* mpool = util_getMemPool( *utilp, xwe );
 #endif
     CommsCtxt* comms = (CommsCtxt*)XP_CALLOC( mpool, sizeof(*comms) );
-    MUTEX_INIT_CHECKED( &comms->mutex, XP_TRUE, 3 );
     comms->utilp = utilp;
     comms->dutil = util_getDevUtilCtxt( *utilp );
 #ifdef DEBUG
@@ -460,7 +457,6 @@ comms_make( XWEnv XP_UNUSED_DBG(xwe), XW_UtilCtxt** utilp, XP_Bool isServer,
 static void
 forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure )
 {
-    WITH_MUTEX(&comms->mutex);
     for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
         for ( MsgQueueElem** home = &recs->_msgQueueHead; !!*home; ) {
             MsgQueueElem* elem = *home;
@@ -483,7 +479,6 @@ forEachElem( CommsCtxt* comms, EachMsgProc proc, void* closure )
     }
  done:
     assertQueueOk( comms );
-    END_WITH_MUTEX();
 }
 
 static ForEachAct
@@ -556,7 +551,6 @@ comms_destroyp( CommsCtxt** commsp, XWEnv xwe )
 {
     if ( !!*commsp ) {
         CommsCtxt* comms = *commsp;
-        WITH_MUTEX(&comms->mutex);
         /* did I call comms_stop()? */
         XP_ASSERT( ! addr_hasType( &comms->selfAddr, COMMS_CONN_RELAY )
                    || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
@@ -566,8 +560,6 @@ comms_destroyp( CommsCtxt** commsp, XWEnv xwe )
 
         util_clearTimer( *comms->utilp, xwe, TIMER_COMMS );
 
-        END_WITH_MUTEX();
-        MUTEX_DESTROY( &comms->mutex );
         XP_FREEP( comms->mpool, commsp );
     }
 } /* comms_destroy */
@@ -575,7 +567,6 @@ comms_destroyp( CommsCtxt** commsp, XWEnv xwe )
 void
 comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
 {
-    WITH_MUTEX(&comms->mutex);
     XP_ASSERT( CONN_ID_NONE != connID );
     XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
@@ -584,7 +575,6 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID, XP_U16 streamVersion )
     comms->streamVersion = streamVersion;
     COMMS_LOGFF( "set connID (gameID) to %08X, streamVersion to 0x%X",
                  connID, streamVersion );
-    END_WITH_MUTEX();
 } /* comms_setConnID */
 
 static XP_Bool
@@ -1210,7 +1200,6 @@ elemToStream( MsgQueueElem* elem, void* closure )
 void
 comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
 {
-    WITH_MUTEX(&comms->mutex);
     XP_U16 nAddrRecs;
     AddressRecord* rec;
 
@@ -1288,7 +1277,6 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, XP_U16 saveToken )
     }
 
     comms->lastSaveToken = saveToken;
-    END_WITH_MUTEX();
 } /* comms_writeToStream */
 
 static void
@@ -1302,7 +1290,6 @@ resetBackoff( CommsCtxt* comms )
 void
 comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken )
 {
-    WITH_MUTEX(&comms->mutex);
     COMMS_LOGFF( "(saveToken=%d)", saveToken );
     if ( saveToken == comms->lastSaveToken ) {
         for ( AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) {
@@ -1312,7 +1299,6 @@ comms_saveSucceeded( CommsCtxt* comms, XWEnv xwe, XP_U16 saveToken )
         }
         comms_ackAny( comms, xwe );  /* might not want this for all transports */
     }
-    END_WITH_MUTEX();
 }
 
 void
@@ -1340,7 +1326,6 @@ void
 comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
                     const MQTTDevID* devID )
 {
-    WITH_MUTEX(&comms->mutex);
 #ifdef NO_ADD_MQTT_TO_ALL       /* set for (usually) BT testing on Android */
     COMMS_LOGFF("ifdef'd out");
     XP_USE( comms );
@@ -1375,7 +1360,6 @@ comms_addMQTTDevID( CommsCtxt* comms, XP_PlayerAddr channelNo,
         XP_ASSERT(0);
     }
 #endif
-    END_WITH_MUTEX();
 }
 
 void
@@ -1466,14 +1450,12 @@ XP_U16
 comms_countPendingPackets( RELCONST CommsCtxt* comms, XP_Bool* quashed )
 {
     NonAcks na = {};
-    WITH_MUTEX(&comms->mutex);
     if ( !!quashed ) {
         *quashed = QUASHED(comms);
     }
 
     forEachElem( (CommsCtxt*)comms, countNonAcks, &na );
 
-    END_WITH_MUTEX();
     // COMMS_LOGFF( "=> %d (queueLen = %d)", na.count, comms->queueLen );
     return na.count;
 }
@@ -1570,10 +1552,8 @@ formatMsgNo( const CommsCtxt* comms, const MsgQueueElem* elem,
 void
 comms_dropHostAddr( CommsCtxt* comms, CommsConnType typ )
 {
-    WITH_MUTEX(&comms->mutex);
     addr_rmType( &comms->selfAddr, typ );
     ASSERT_ADDR_OK( &comms->selfAddr );
-    END_WITH_MUTEX();
 }
 
 XP_Bool
@@ -1615,9 +1595,15 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
 
     strm_putU16( hdrStream, channelNo );
 
+    XP_U16 flags = makeFlags( comms, msgID );
     if ( useSmallHeader ) {
-        if ( 0 != msgID ) {     /* bit in flags says not there */
+        if ( 0 == (flags & NO_MSGID_BIT) ) {
             strm_putU32VL( hdrStream, msgID );
+        }
+        if ( 0 != (flags & TIMESTAMP_BIT) ) {
+            XWStreamPos pos = strm_getPos( hdrStream, POS_WRITE );
+            strm_putU32( hdrStream, newElem->smp.createdStamp );
+            XP_LOGFF( "TIMESTAMP: wrote gameAge: %d (at %x)", newElem->smp.createdStamp, pos );
         }
         strm_putU32VL( hdrStream, lastMsgSaved );
 #if 0 && defined DEBUG
@@ -1637,7 +1623,7 @@ makeElemWithID( const CommsCtxt* comms, XWEnv xwe, MsgID msgID, AddressRecord* r
 
     /* Now we'll use a third stream to combine them all */
     XP_U16 headerLen = strm_getSize( hdrStream );
-    XP_U16 flags = makeFlags( comms, headerLen, msgID );
+    augmentFlags( &flags, headerLen );
     XWStreamCtxt* msgStream = strm_make_raw( MPPARM_NOCOMMA(comms->mpool));
     if ( useSmallHeader ) {
         XP_ASSERT( HAS_VERSION_FLAG != flags );
@@ -1846,7 +1832,6 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     COMMS_LOGFF("(sendNow=%s)", boolToStr(sendNow));
     LOGNLI(nli);
     logAddrComms( comms, destAddr, __func__ );
-    WITH_MUTEX(&comms->mutex);
     XP_PlayerAddr forceChannel = pickChannel( comms, xwe, nli, destAddr );
     XP_LOGFF( "forceChannel: %X", forceChannel );
     XP_ASSERT( 0 < forceChannel );
@@ -1883,7 +1868,6 @@ comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     } else {
         XP_LOGFF( "dropping invite; no open channel found" );
     }
-    END_WITH_MUTEX();
     LOG_RETURN_VOID();
 }
 
@@ -1912,12 +1896,10 @@ getInvitedProc( MsgQueueElem* elem, void* closure )
 void
 comms_getInvited( RELCONST CommsCtxt* comms, XP_U16* nInvites )
 {
-    WITH_MUTEX(&comms->mutex);
     GetInvitedData gid = {};
     forEachElem( (CommsCtxt*)comms, getInvitedProc, &gid );
     *nInvites = gid.count;
     // LOG_RETURNF( "%d", *nInvites );
-    END_WITH_MUTEX();
 }
 
 typedef struct _GetNamesData {
@@ -1955,14 +1937,12 @@ void
 comms_inviteeNames( CommsCtxt* comms, XWEnv xwe,
                     InviteeNames* names )
 {
-    WITH_MUTEX(&comms->mutex);
     GetNamesData gnd = {
         .comms = comms,
         .xwe = xwe,
         .names = names,
     };
     forEachElem( (CommsCtxt*)comms, getNamesProc, &gnd );
-    END_WITH_MUTEX();
 }
 
 /* Send a message using the sequentially next MsgID.  Save the message so
@@ -1971,7 +1951,6 @@ XP_S16
 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 {
     XP_S16 result = -1;
-    WITH_MUTEX(&comms->mutex);
     if ( 0 == strm_getSize(stream) ) {
         COMMS_LOGFF( "dropping 0-len message" );
     } else {
@@ -1998,7 +1977,6 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
             }
         }
     }
-    END_WITH_MUTEX();
     return result;
 } /* comms_send */
 
@@ -2010,7 +1988,6 @@ static MsgQueueElem*
 addToQueue( CommsCtxt* comms, MsgQueueElem* newElem )
 {
     MsgQueueElem* asAdded = newElem;
-    WITH_MUTEX( &comms->mutex );
     newElem->smp.next = NULL;
 
     MsgQueueElem** head;
@@ -2047,7 +2024,6 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newElem )
     }
  dropPacket:
     XP_ASSERT( comms->queueLen <= 128 ); /* reasonable limit in testing */
-    END_WITH_MUTEX();
     return asAdded;
 } /* addToQueue */
 
@@ -2183,7 +2159,6 @@ removeProc( MsgQueueElem* elem, void* closure )
 static void
 removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 {
-    WITH_MUTEX( &comms->mutex );
     assertQueueOk( comms );
     CNO_FMT( cbuf, channelNo );
     COMMS_LOGFFV( "(channelNo=%d): remove msgs <= " XP_LD " for %s (queueLen: %d)",
@@ -2210,7 +2185,6 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
     assertQueueOk( comms );
     printQueue( comms );
 #endif
-    END_WITH_MUTEX();
 } /* removeFromQueue */
 
 #ifdef DEBUG
@@ -2463,7 +2437,6 @@ static void
 ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force,
             const CommsConnType filter )
 {
-    WITH_MUTEX(&comms->mutex);
     if ( CONN_ID_NONE == comms->connID ) {
         COMMS_LOGFF( "doing nothing because connID still unset" );
     } else {
@@ -2488,7 +2461,6 @@ ackAnyImpl( CommsCtxt* comms, XWEnv xwe, XP_Bool force,
         }
         COMMS_LOGFF( "sent for %d channels (of %d)", nSent, nSeen );
     }
-    END_WITH_MUTEX();
 }
 
 void
@@ -3029,7 +3001,7 @@ validateInitialMessage( CommsCtxt* comms, XWEnv xwe,
 } /* validateInitialMessage */
 
 static XP_U16
-makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
+makeFlags( const CommsCtxt* comms, MsgID msgID )
 {
     XP_U16 flags = COMMS_VERSION;
     if ( comms->isServer ) {
@@ -3041,11 +3013,17 @@ makeFlags( const CommsCtxt* comms, XP_U16 headerLen, MsgID msgID )
     if ( 0 == msgID ) {
         flags |= NO_MSGID_BIT;
     }
-
-    XP_ASSERT( headerLen == ((headerLen << HEADER_LEN_OFFSET) >> HEADER_LEN_OFFSET) );
-    flags |= headerLen << HEADER_LEN_OFFSET;
-
+#ifdef DEBUG
+    flags |= TIMESTAMP_BIT;
+#endif
     return flags;
+}
+
+static void
+augmentFlags( XP_U16* flags, XP_U16 headerLen )
+{
+    XP_ASSERT( headerLen == ((headerLen << HEADER_LEN_OFFSET) >> HEADER_LEN_OFFSET) );
+    *flags |= headerLen << HEADER_LEN_OFFSET;
 }
 
 /* Messages with established connIDs are valid only if they have the msgID
@@ -3063,7 +3041,6 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe,
 
 {
     AddressRecord* rec;
-    WITH_MUTEX(&comms->mutex);
     LOG_FUNC();
 
     rec = getRecordFor( comms, channelNo );
@@ -3098,13 +3075,13 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe,
     }
 
     LOG_RETURNF( XP_P, rec );
-    END_WITH_MUTEX();
     return rec;
 } /* validateChannelMessage */
 
 typedef struct _HeaderStuff {
     XP_U16 flags;
     XP_U32 connID;
+    XP_U32 msgAge;
     XP_PlayerAddr channelNo;
     MsgID msgID;
     MsgID lastMsgRcd;
@@ -3114,7 +3091,6 @@ static XP_Bool
 getCheckChannelSeed( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff )
 {
     XP_Bool messageValid;
-    WITH_MUTEX(&comms->mutex);
     messageValid = strm_gotU16( stream, &stuff->channelNo );
     if ( messageValid ) {
         XP_U16 channelSeed = comms_getChannelSeed( comms );
@@ -3138,7 +3114,6 @@ getCheckChannelSeed( CommsCtxt* comms, XWStreamCtxt* stream, HeaderStuff* stuff 
         }
     }
     LOG_RETURNF( "%s", boolToStr(messageValid) );
-    END_WITH_MUTEX();
     return messageValid;
 }
 
@@ -3164,7 +3139,6 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
                   HeaderStuff* stuff )
 {
     XP_Bool messageValid = XP_FALSE;
-    WITH_MUTEX(&comms->mutex);
     XP_U16 headerLen = stuff->flags >> HEADER_LEN_OFFSET;
     XP_ASSERT( 0 < headerLen );
     XP_ASSERT( headerLen <= strm_getSize( msgStream ) );
@@ -3180,6 +3154,11 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
             if ( 0 == (stuff->flags & NO_MSGID_BIT) ) {
                 stuff->msgID = strm_getU32VL( hdrStream );
             }
+            if ( 0 != (stuff->flags & TIMESTAMP_BIT) ) {
+                XWStreamPos pos = strm_getPos( hdrStream, POS_READ );
+                stuff->msgAge = strm_getU32( hdrStream );
+                XP_LOGFF( "TIMESTAMP: read gameAge: %d (at %x)", stuff->msgAge, pos );
+            }
             stuff->lastMsgRcd = strm_getU32VL( hdrStream );
             messageValid = XP_TRUE;
         }
@@ -3187,7 +3166,6 @@ parseSmallHeader( CommsCtxt* comms, XWStreamCtxt* msgStream,
     }
 
     // LOG_RETURNF( "%s", boolToStr(messageValid) );
-    END_WITH_MUTEX();
     return messageValid;
 }
 
@@ -3198,7 +3176,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
                            CommsMsgState* state, const MsgCountState* mcs )
 {
     XP_Bool messageValid = XP_FALSE;
-    WITH_MUTEX(&comms->mutex);
     XP_MEMSET( state, 0, sizeof(*state) );
 #ifdef DEBUG
     state->comms = comms;
@@ -3294,9 +3271,12 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
             messageValid = messageValid && (NULL != rec)
                 && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= stuff.msgID);
             if ( messageValid ) {
+                XP_U32 now = dutil_getCurSeconds( comms->dutil, xwe );
                 CNO_FMT( cbuf, stuff.channelNo );
-                COMMS_LOGFF( TAGFMT() "got %s; msgID=%d; len=%d", TAGPRMS, cbuf,
-                             stuff.msgID, streamSize );
+                XP_U32 diff = stuff.msgAge == 0 ? 0 : now - stuff.msgAge;
+                COMMS_LOGFF( TAGFMT() "TIMESTAMP: got %s; msgID=%d; len=%d "
+                             "(took %ds to receive)", TAGPRMS, cbuf,
+                             stuff.msgID, streamSize, diff );
                 state->channelNo = stuff.channelNo;
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
                 strm_setAddress( stream, stuff.channelNo );
@@ -3307,7 +3287,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 
     }
     LOG_RETURNF( "%s (len: %d; sum: %s)", boolToStr(messageValid), state->len, state->sum );
-    END_WITH_MUTEX();
     return messageValid;
 } /* comms_checkIncomingStream */
 
@@ -3332,7 +3311,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream,
 void
 comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
 {
-    WITH_MUTEX(&comms->mutex);
     assertQueueOk( comms );
 
     COMMS_LOGFF( "rec: %p; len: %d; sum: %s; id: %d; rejected: %s", state->rec,
@@ -3369,7 +3347,6 @@ comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
 #ifdef DEBUG
     comms->processingMsg = XP_FALSE;
 #endif
-    END_WITH_MUTEX();
 }
 
 #ifdef XWFEATURE_RELAY
@@ -3485,7 +3462,6 @@ static void
 sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
               const CommsConnType filter )
 {
-    WITH_MUTEX(&comms->mutex);
     MsgQueueElem* elem = makeElemWithID( comms, xwe, 0 /* msgID */, 
                                          rec, rec? rec->channelNo : 0, NULL );
     XP_ASSERT( !!elem );
@@ -3493,7 +3469,6 @@ sendEmptyMsg( CommsCtxt* comms, XWEnv xwe, AddressRecord* rec,
     if ( !!elem ) {
         sendMsg( comms, xwe, elem, filter );
     }
-    END_WITH_MUTEX();
 } /* sendEmptyMsg */
 
 #ifdef RELAY_HEARTBEAT
@@ -3579,7 +3554,6 @@ XWStreamCtxt*
 comms_getStats( RELCONST CommsCtxt* comms )
 {
     XWStreamCtxt* stream = dvc_makeStream( comms->dutil );
-    WITH_MUTEX(&comms->mutex);
     XP_UCHAR buf[100];
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
@@ -3606,7 +3580,6 @@ comms_getStats( RELCONST CommsCtxt* comms )
                      rec->lastMsgRcd );
         strm_catString( stream, buf );
     }
-    END_WITH_MUTEX();
     return stream;
 } /* comms_getStats */
 
@@ -3635,7 +3608,6 @@ rememberChannelAddress( CommsCtxt* comms, const XP_PlayerAddr channelNo,
 {
     checkChannels( comms );
     AddressRecord* rec = NULL;
-    WITH_MUTEX( &comms->mutex);
     CNO_FMT( cbuf, channelNo );
     COMMS_LOGFF( "(%s)", cbuf );
     listRecs( comms, "entering rememberChannelAddress" );
@@ -3671,7 +3643,6 @@ rememberChannelAddress( CommsCtxt* comms, const XP_PlayerAddr channelNo,
         }
     }
     listRecs( comms, "leaving rememberChannelAddress()" );
-    END_WITH_MUTEX();
     checkChannels( comms );
     return rec;
 } /* rememberChannelAddress */
@@ -3681,7 +3652,6 @@ static void
 checkChannels( CommsCtxt* comms )
 {
     XP_USE(comms);
-    /* WITH_MUTEX( &comms->mutex); */
     /* int state = 0; */
     /* for ( const AddressRecord* rec = comms->recs; !!rec; rec = rec->next ) { */
     /*     XP_PlayerAddr channelNo = rec->channelNo & CHANNEL_MASK; */
@@ -3692,7 +3662,6 @@ checkChannels( CommsCtxt* comms )
     /*     } */
     /*     state |= flag; */
     /* } */
-    /* END_WITH_MUTEX(); */
 }
 
 static void
@@ -3796,7 +3765,6 @@ static void
 augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
                     const CommsAddrRec* addr, XWHostID hostID )
 {
-    WITH_MUTEX( &comms->mutex);
     augmentAddrIntrnl( comms, &rec->addr, addr, XP_TRUE );
 #ifdef XWFEATURE_RELAY
     if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
@@ -3817,7 +3785,6 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* const rec,
         }
     }
 #endif
-    END_WITH_MUTEX();
 }
 
 static XP_Bool

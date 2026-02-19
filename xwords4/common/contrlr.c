@@ -4510,7 +4510,7 @@ ctrl_disposeRematchInfo( CtrlrCtxt* XP_UNUSED_DBG(ctrlr), RematchInfo* rip )
 
 XP_Bool
 ctrl_ri_getAddr( const RematchInfo* rip, XP_U16 nth,
-                   CommsAddrRec* addr, XP_U16* nPlayersH )
+                 CommsAddrRec* addr, XP_U16* nPlayersH )
 {
     const CommsAddrRec* rec = &rip->addrs[nth];
     XP_Bool success = !addr_isEmpty( rec );
@@ -4599,10 +4599,10 @@ ctrl_gatherPlayers( CtrlrCtxt* ctrlr, XWEnv xwe, XP_U32 created )
         CurGameInfo tmpGi = *gi;
         RematchInfo* ripp;
         if ( getRematchInfoImpl( ctrlr, xwe, &tmpGi, &no, &ripp ) ) {
-            for ( int ii = 0, nRemotes = 0; ii < gi->nPlayers; ++ii ) {
-                const LocalPlayer* lp = &gi->players[ii];
+            for ( int ii = 0, nRemotes = 0; ii < tmpGi.nPlayers; ++ii ) {
+                const LocalPlayer* lp = &tmpGi.players[ii];
                 /* order unchanged? */
-                XP_ASSERT( lp->name == gi->players[ii].name );
+                XP_ASSERT( 0 == XP_STRCMP( lp->name, gi->players[ii].name ) );
                 if ( !lp->isLocal ) {
                     CommsAddrRec addr;
                     XP_U16 nPlayersH;

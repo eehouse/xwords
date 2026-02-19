@@ -22,6 +22,8 @@
 
 #include <ncurses.h>
 
+#include "main.h"
+
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
 # define BOARD_OFFSET 0
@@ -42,7 +44,7 @@ typedef struct MenuList {
 
 typedef struct CursesMenuState CursesMenuState;
 
-CursesMenuState* cmenu_init( WINDOW* mainWindow );
+CursesMenuState* cmenu_init( CursesAppGlobals* aGlobals, WINDOW* mainWindow );
 void cmenu_dispose( CursesMenuState* state );
 void cmenu_resized( CursesMenuState* state );
 

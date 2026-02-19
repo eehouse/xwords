@@ -1,5 +1,5 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
-/* 
+/*
  * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,13 +17,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef _CURSESEDIT_H_
+#define _CURSESEDIT_H_
 
-#ifndef _CURSESCHAT_H_
-#define _CURSESCHAT_H_
+#include <stdbool.h>
+#include <glib.h>
 
-#include "linuxmain.h"
-#include "cursesmain.h"
+#include "main.h"
 
-void curses_openChat( LaunchParams* params, WINDOW* window, GameRef gr );
+bool ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
+              gchar txt[], gint maxLen );
 
 #endif

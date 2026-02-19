@@ -26,7 +26,6 @@
 #include "mqttcon.h"
 #include "cursesask.h"
 #include "cursesmenu.h"
-#include "cursesletterask.h"
 #include "cursinvit.h"
 #include "linuxdict.h"
 #include "gamesdb.h"
@@ -38,6 +37,7 @@
 #include "gamemgr.h"
 #include "curseschat.h"
 #include "device.h"
+#include "curlistask.h"
 
 struct CursesBoardState {
     LaunchParams* params;
@@ -111,6 +111,7 @@ static bool handleRootKeyHide( void* closure, int key );
 #endif
 static bool sendInvite( void* closure, int key );
 static bool openChat( void* closure, int key );
+static bool doPing( void* closure, int key );
 
 static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
                                  XP_U32* newGameIDP );
@@ -272,6 +273,7 @@ const MenuList g_boardMenuList[] = {
 
     { sendInvite, "invitE", "E", 'E' },
     { openChat, "chAt", "A", 'A' },
+    { doPing, "Ping", "P", 'P' },
 
     { NULL, NULL, NULL, '\0'}
 };
@@ -400,8 +402,10 @@ disposeDraw( CursesBoardGlobals* bGlobals )
 {
     if ( !!bGlobals->boardWin ) {
         draw_unref( bGlobals->cGlobals.draw, NULL_XWE );
+        /* Need these? Yes, to erase board, but doesn't draw under it!! */
         wclear( bGlobals->boardWin );
         wrefresh( bGlobals->boardWin );
+
         delwin( bGlobals->boardWin );
     }
 }
@@ -682,11 +686,46 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
     va_end(ap);
 
     if ( !!bGlobals->boardWin ) {
-        (void)ca_inform( bGlobals->boardWin, buf );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+        (void)ca_inform2( aGlobals, bGlobals->boardWin, buf );
     } else {
         XP_LOGFF( "(msg=%s)", buf );
     }
 } /* cursesUserError */
+
+typedef struct _PBState {
+    CursesBoardGlobals* bGlobals;
+    // LaunchParams* params;
+    gchar** tiles;
+    XP_U16 playerNum;
+    int nTiles;
+} PBState;
+
+static gint
+pickBlankIdle( gpointer data )
+{
+    PBState* pbs = (PBState*)data;
+
+    CursesBoardGlobals* bGlobals = pbs->bGlobals;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    LaunchParams* params = cGlobals->params;
+    int chosen;
+    if ( curAskPickList( params, bGlobals->boardWin, "Pick tile for your blank",
+                         (const char**)pbs->tiles, pbs->nTiles, &chosen ) ) {
+        gr_setBlankValue( params->dutil, cGlobals->gr, NULL_XWE,
+                          pbs->playerNum, cGlobals->blankCol,
+                          cGlobals->blankRow, chosen );
+    }
+
+    for ( int ii = 0; ii < pbs->nTiles; ++ii ) {
+        g_free( pbs->tiles[ii] );
+    }
+    g_free( pbs->tiles );
+
+    g_free( data );
+    return FALSE;
+}
 
 static void
 curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 playerNum,
@@ -696,15 +735,17 @@ curses_util_notifyPickTileBlank( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 p
     CommonAppGlobals* cag = getCag( uc );
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
         globalsForGameRef( cag, uc->gr, XP_FALSE );
-    char query[128];
-    const char* playerName = bGlobals->cGlobals.gi->players[playerNum].name;
+    // char query[128];
 
-    snprintf( query, sizeof(query), 
-              "Pick tile for %s! (Tab or type letter to select "
-              "then hit <cr>.)", playerName );
-
-    /*index = */curses_askLetter( bGlobals->boardWin, query, texts, nTiles );
-    // return index;
+    PBState* pbs = g_malloc0( sizeof(*pbs) );
+    pbs->bGlobals = bGlobals;
+    pbs->tiles = g_malloc0( nTiles * sizeof(pbs->tiles[0]) );
+        pbs->playerNum = playerNum;
+    pbs->nTiles = nTiles;
+    for ( int ii = 0; ii < nTiles; ++ii ) {
+        pbs->tiles[ii] = g_strdup( texts[ii] );
+    }
+    (void)ADD_ONETIME_IDLE( pickBlankIdle, pbs );
 } /* util_userPickTile */
 
 static void
@@ -753,8 +794,9 @@ ask_move( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const char* answers[] = {"Ok", "Cancel", NULL};
 
-    if ( 0 == cursesask( bGlobals->boardWin,  VSIZE(answers)-1, answers,
-                         cGlobals->question ) ) {
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+    if ( 0 == cursesask2( aGlobals, bGlobals->boardWin,  VSIZE(answers)-1,
+                          answers, cGlobals->question ) ) {
         // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
         PhoniesConf pc = { .confirmed = XP_TRUE };
         XW_DUtilCtxt* dutil = cGlobals->params->dutil;
@@ -855,8 +897,9 @@ ask_trade( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
 
     const char* buttons[] = { "Ok", "Cancel" };
-    if (0 == cursesask( bGlobals->boardWin, VSIZE(buttons), buttons,
-                        cGlobals->question ) ) {
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+    if (0 == cursesask2( aGlobals, bGlobals->boardWin, VSIZE(buttons), buttons,
+                         cGlobals->question ) ) {
         // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
         PhoniesConf pc = { .confirmed = XP_TRUE };
         XW_DUtilCtxt* dutil = cGlobals->params->dutil;
@@ -1150,8 +1193,7 @@ curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     WINDOW* win = bGlobals->boardWin;
     XP_Bool shown = !!win;
     if ( shown ) {
-        XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-        curses_openChat( win, dutil, cGlobals->gr );
+        curses_openChat( cGlobals->params, win, cGlobals->gr );
     }
     return shown;
 }
@@ -1358,9 +1400,9 @@ sendInvite( void* closure, int XP_UNUSED(key) )
             ca_inform( bGlobals->boardWin, "No channel available" );
         } else {
             gint nPlayers = nMissing;
-            CommsAddrRec addr;
+            CommsAddrRec addr = {};
             XP_LOGFF( "calling cursesInviteDlg()" );
-            if ( cursesInviteDlg( cGlobals, &addr, &nPlayers ) ) {
+            if ( cursesInviteDlg( cGlobals, bGlobals->boardWin, &addr, &nPlayers ) ) {
                 logAddr(dutil, &addr, __func__);
 
                 CommsAddrRec myAddr = {};
@@ -1408,8 +1450,24 @@ openChat( void* closure, int XP_UNUSED(key) )
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    curses_openChat( bGlobals->boardWin, dutil, cGlobals->gr );
-    return XP_TRUE;
+
+    const CurGameInfo* gi = gr_getGI( dutil, cGlobals->gr, NULL_XWE );
+    if ( ROLE_STANDALONE == gi->deviceRole ) {
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+        ca_inform2( aGlobals, bGlobals->boardWin, "Chat is for networked games only" );
+    } else {
+        curses_openChat( cGlobals->params, bGlobals->boardWin, cGlobals->gr );
+    }
+    return true;
+}
+
+static bool
+doPing( void* closure, int XP_UNUSED(key) )
+{
+    CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    dvc_pingAll( cGlobals->params->dutil, NULL_XWE, cGlobals->gr );
+    return true;
 }
 
 static bool
