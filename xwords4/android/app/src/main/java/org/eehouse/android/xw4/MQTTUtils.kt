@@ -53,7 +53,6 @@ import org.eehouse.android.xw4.jni.Stats.STAT
 import org.eehouse.android.xw4.jni.Device.TopicsAndPackets
 import org.eehouse.android.xw4.loc.LocUtils
 
-private const val PONG_PREFIX = "xw4/pong/"
 private const val MIN_BACKOFF = (1000 * 60 * 2 // 2 minutes
 ).toLong()
 private const val MAX_BACKOFF = (1000 * 60 * 60 * 4 // 4 hours, to test
@@ -101,14 +100,6 @@ object MQTTUtils {
         } else {
             killConn()
         }
-    }
-
-    interface PingResult {
-        fun onSuccess(host: String, elapsed: Long)
-    }
-
-    fun ping(context: Context, pr: PingResult) {
-        getConn(context)?.ping(pr)
     }
 
     fun getStats( context: Context ): String?
@@ -353,27 +344,6 @@ object MQTTUtils {
             }
         }
 
-        val mPingProcs = HashMap<Int, PingResult>()
-        private fun setPingProc(id: Int, pr: PingResult)
-            = mPingProcs.put(id, pr)
-
-        internal fun ping(pr: PingResult)
-        {
-            val id = Math.abs(Utils.nextRandomInt())
-            setPingProc(id, pr)
-
-            val packet = JSONObject()
-                .putAnd("devid", mDevID)
-                .putAnd("time", System.currentTimeMillis())
-                .putAnd("id", id)
-                .toString()
-
-            val qos = chooseQOS(mContext, sQos)
-            val tap = TopicsAndPackets("xw4/ping/" + mDevID,
-                                       packet.toByteArray(), qos.ordinal)
-            add(SendTask(tap))
-        }
-
         internal fun getStats(): String
         {
             return mStats.toString()
@@ -475,10 +445,6 @@ object MQTTUtils {
 
         private inner class SubscribeAllTask(): Task() {
             override fun run() {
-                val qosArray = intArrayOf(0)
-                // val topics = XwJNI.dvc_getMQTTSubTopics(qosArray) + arrayOf(PONG_PREFIX + mDevID)
-                // val qos = chooseQOS(mContext, qosArray[0])
-                // topics.map{ add(SubscribeTask(it, qos)) }
                 val qos = chooseQOS(mContext, sQos)
                 sTopics!!.map {add(SubscribeTask(it, qos))}
             }
@@ -532,18 +498,10 @@ object MQTTUtils {
         {
             override fun run() {
                 Log.d(TAG, "got msg; topic: ${mTopic}, len: ${mPacket.size}")
-                if (mTopic.startsWith(PONG_PREFIX)) {
-                    handlePong(mPacket)
-                } else {
-                    Utils.launch(Dispatchers.IO) {
-                        Log.d(TAG, "calling Device.parseMQTTPacket")
-                        Device.parseMQTTPacket(mTopic, mPacket)
-                    }
-                }
+                Device.parseMQTTPacket(mTopic, mPacket)
                 ConnStatusHandler
                     .updateStatusIn(mContext, CommsAddrRec.CommsConnType.COMMS_CONN_MQTT,
                                     true)
-
             }
         }
 
@@ -589,13 +547,6 @@ object MQTTUtils {
                     .append("\nFailed sends: $mSendFails")
                     .toString()
             }
-        }
-
-        private fun handlePong(packet: ByteArray)
-        {
-            val payload = JSONObject(String(packet))
-            val proc = mPingProcs.remove(payload.getInt("id"))
-            proc?.onSuccess(mHost, System.currentTimeMillis() - payload.getLong("time"))
         }
 
         override fun toString(): String

@@ -2296,6 +2296,15 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1pingAll
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1pingMQTTBroker
+(JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_pingMQTTBroker( globalState->dutil, env );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1parseMQTTPacket
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jtopic, jbyteArray jmsg )
 {

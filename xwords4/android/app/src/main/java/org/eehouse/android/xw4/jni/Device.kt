@@ -207,6 +207,12 @@ object Device {
         }
     }
 
+    fun pingMQTTBroker() {
+        post(Priority.NETWORK) {
+            dvc_pingMQTTBroker(m_ptrGlobals)
+        }
+    }
+
     fun parseMQTTPacket(topic: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
             dvc_parseMQTTPacket(m_ptrGlobals, topic, packet)
@@ -362,6 +368,8 @@ object Device {
 
     @JvmStatic
     private external fun dvc_pingAll(jniState: Long, gr: Long)
+    @JvmStatic
+    private external fun dvc_pingMQTTBroker(jniState: Long)
     @JvmStatic
     private external fun dvc_parseMQTTPacket(jniState: Long, topic: String, packet: ByteArray)
     @JvmStatic

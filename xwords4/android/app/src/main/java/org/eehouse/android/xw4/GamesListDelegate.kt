@@ -76,7 +76,6 @@ import org.eehouse.android.xw4.GameLock.GameLockedException
 import org.eehouse.android.xw4.GameLock.GotLockProc
 import org.eehouse.android.xw4.GameUtils.NoSuchGameException
 import org.eehouse.android.xw4.Log.ResultProcs
-import org.eehouse.android.xw4.MQTTUtils.PingResult
 import org.eehouse.android.xw4.NewWithKnowns.ButtonCallbacks
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
@@ -1861,20 +1860,7 @@ class GamesListDelegate(delegator: Delegator) :
             }
 
             R.id.games_menu_setDevid -> showDialogFragment(DlgID.SET_MQTTID)
-            R.id.games_menu_pingMqtt -> {
-                MQTTUtils
-                    .ping(mActivity,
-                          object : PingResult {
-                              override fun onSuccess(host: String,
-                                                     elapsed: Long) {
-                                  val txt = LocUtils
-                                      .getString(mActivity,
-                                                 R.string.ping_result_fmt,
-                                                 host, elapsed)
-                                  runOnUiThread { Utils.showToast(mActivity, txt) }
-                              }
-                          })
-            }
+            R.id.games_menu_pingMqtt -> Device.pingMQTTBroker()
 
             R.id.games_menu_mqttStats -> {
                 val stats = MQTTUtils.getStats(mActivity).orEmpty()
