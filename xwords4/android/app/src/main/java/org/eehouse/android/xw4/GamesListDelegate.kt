@@ -1633,27 +1633,29 @@ class GamesListDelegate(delegator: Delegator) :
                 // four or more strings get loaded from resources, just so we
                 // don't get confused when somebody changes locales. That's
                 // wrong.
-                enable = nothingSelected
-                    && LocUtils.getCheckPref(mActivity, R.array.ka_menuwhen,
-                                             key = R.string.key_ka_menuwhen,
-                                             default = R.string.ka_menuwhen_available
-                    ).let {
-                        when (it) {
-                            LocUtils.getString(mActivity, R.string.ka_menuwhen_never)
-                                -> false
-                            LocUtils.getString(mActivity, R.string.ka_menuwhen_available)
-                                -> 0 < DBUtils.getKAMinutesLeft(mActivity)
-                            LocUtils.getString(mActivity, R.string.ka_menuwhen_running)
-                                -> KAService.isRunning()
-                            LocUtils.getString(mActivity, R.string.ka_menuwhen_always)
-                                -> true
-                            else -> {
-                                Assert.failDbg()
-                                false
+                launch {
+                    enable = nothingSelected
+                        && LocUtils.getCheckPref(mActivity, R.array.ka_menuwhen,
+                                                 key = R.string.key_ka_menuwhen,
+                                                 default = R.string.ka_menuwhen_available
+                        ).let {
+                            when (it) {
+                                LocUtils.getString(mActivity, R.string.ka_menuwhen_never)
+                                    -> false
+                                LocUtils.getString(mActivity, R.string.ka_menuwhen_available)
+                                    -> 0 < Utils.getKAMinutesLeft(mActivity)
+                                LocUtils.getString(mActivity, R.string.ka_menuwhen_running)
+                                    -> KAService.isRunning()
+                                LocUtils.getString(mActivity, R.string.ka_menuwhen_always)
+                                    -> true
+                                else -> {
+                                    Assert.failDbg()
+                                    false
+                                }
                             }
                         }
-                    }
-                Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
+                    Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)
+                }
 
                 enable = showDbg && takeFromClip(false)
                 Utils.setItemVisible(menu, R.id.games_menu_fromclip, enable)
@@ -2258,6 +2260,10 @@ class GamesListDelegate(delegator: Delegator) :
                         view.forceReload()
                     }
                 }
+            }
+
+            if (flags.contains(GameChangeEvent.GCE_MSGCOUNT_CHANGED)) {
+                KAService.startIf(mActivity)
             }
         }
     }

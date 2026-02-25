@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2024 - 2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -76,7 +76,7 @@ class KAService: Service() {
         if (versionCode < Build.VERSION_CODES.Q) {
             startForeground(id, notify)
         } else {
-            startForeground(id, notify, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            startForeground(id, notify, ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
         }
     }
 
@@ -123,7 +123,7 @@ class KAService: Service() {
 
             GlobalScope.launch(Dispatchers.IO) {
                 val context = this@KAService
-                val minsLeft = DBUtils.getKAMinutesLeft(context)
+                val minsLeft = Utils.getKAMinutesLeft(context)
                 Log.d(TAG, "will run $minsLeft minutes")
                 delay(minsLeft * 60 * 1000)
                 Log.d(TAG, "ran $minsLeft minutes; stopping now")
@@ -196,9 +196,12 @@ class KAService: Service() {
 
         fun startIf(context: Context) {
             if (!sIsRunning
-                    && getEnabled(context)
-                    && 0L < DBUtils.getKAMinutesLeft(context)) {
-                startWith(context, START_CMD)
+                    && getEnabled(context) ) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    if ( 0L < Utils.getKAMinutesLeft(context)) {
+                        startWith(context, START_CMD)
+                    }
+                }
             }
         }
 
@@ -232,7 +235,9 @@ class KAService: Service() {
 
         fun getEnabled(context: Context): Boolean
         {
-            return XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice, false)
+            val result = XWPrefs.getPrefsBoolean(context, R.string.key_enable_kaservice, false)
+            // Log.d(TAG, "getEnabled() => $result")
+            return result
         }
 
         fun setEnabled(context: Context, enabled: Boolean)

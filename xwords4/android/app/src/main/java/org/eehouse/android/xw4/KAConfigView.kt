@@ -94,31 +94,33 @@ class KAConfigView(private val mContext: Context, aset: AttributeSet?):
                     )
             }
 
-        KAService.getEnabled(context).let { enabled ->
-            val msg =
-                if ( !enabled ) {
-                    LocUtils.getString(context, R.string.ksconfig_disabled)
-                } else if (mIsRunning) {
-                    DBUtils.getKAMinutesLeft(context).let {
-                        val hoursMins = Utils.minsToHoursMins(it)
-                        val runningHoursMins = Utils.minsToHoursMins(KAService.runtimeMins())
-                        LocUtils.getString(context, R.string.ksconfig_running_fmt,
-                                           runningHoursMins[0], runningHoursMins[1],
-                                           hoursMins[0], hoursMins[1])
+        launch {
+            KAService.getEnabled(context).let { enabled ->
+                val msg =
+                    if ( !enabled ) {
+                        LocUtils.getString(context, R.string.ksconfig_disabled)
+                    } else if (mIsRunning) {
+                        Utils.getKAMinutesLeft(context).let {
+                            val hoursMins = Utils.minsToHoursMins(it)
+                            val runningHoursMins = Utils.minsToHoursMins(KAService.runtimeMins())
+                            LocUtils.getString(context, R.string.ksconfig_running_fmt,
+                                               runningHoursMins[0], runningHoursMins[1],
+                                               hoursMins[0], hoursMins[1])
+                        }
+                    } else {
+                        LocUtils.getString(context, R.string.ksconfig_notrunning)
                     }
-                } else {
-                    LocUtils.getString(context, R.string.ksconfig_notrunning)
-                }
-            findViewById<TextView>(R.id.start_stop_expl).setText(msg)
+                findViewById<TextView>(R.id.start_stop_expl).setText(msg)
 
-            val haveChannels = Build.VERSION_CODES.O <= Build.VERSION.SDK_INT
-            findViewById<View>(R.id.notify_group).setVisibility(
-                if ( haveChannels && enabled ) View.VISIBLE
-                else View.GONE
-            )
-            if ( enabled ) {
-                findViewById<Button>(R.id.hide_notify_button).also {
-                    it.setOnClickListener { gotoSettings() }
+                val haveChannels = Build.VERSION_CODES.O <= Build.VERSION.SDK_INT
+                findViewById<View>(R.id.notify_group).setVisibility(
+                    if ( haveChannels && enabled ) View.VISIBLE
+                    else View.GONE
+                )
+                if ( enabled ) {
+                    findViewById<Button>(R.id.hide_notify_button).also {
+                        it.setOnClickListener { gotoSettings() }
+                    }
                 }
             }
         }

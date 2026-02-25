@@ -87,6 +87,7 @@ import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.jni.CommonPrefs
 import org.eehouse.android.xw4.jni.Device
+import org.eehouse.android.xw4.jni.GameMgr
 import org.eehouse.android.xw4.jni.GameRef
 import org.eehouse.android.xw4.loc.LocUtils
 
@@ -794,6 +795,20 @@ object Utils {
         }
         parent.scrollTo(0, view.top)
     }
+
+    suspend fun getKAMinutesLeft(context: Context): Long
+    {
+        val nowSecs = getCurSeconds()
+        val lastMove = GameMgr.getLastNetMoveTime()
+        val minSecs = 60 * 60 * XWPrefs.getKAServiceHours(context)
+        val secsToGo = lastMove + minSecs - nowSecs
+        val result =
+            if (secsToGo <= 0) 0
+            else (secsToGo + 60)/60
+        Log.d(TAG, "getKAMinutesLeft() => $result")
+        return result
+    }
+
 
     fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
                block: suspend CoroutineScope.() -> Unit) {

@@ -524,86 +524,8 @@ object DBUtils {
         }
     }
 
-    // fun clearThumbnails(context: Context) {
-    //     val values = ContentValues()
-    //     values.putNull(DBHelper.THUMBNAIL)
-    //     initDB(context)
-    //     synchronized(s_dbHelper!!) {
-    //         val result = update(TABLE_NAMES.SUM, values, null).toLong()
-    //         notifyListeners(context, ROWIDS_ALL.toLong(), GameChangeType.GAME_CHANGED)
-    //     }
-    // }
-
-    fun getKAMinutesLeft(context: Context): Long
-    {
-        val result =
-            if ( KAService.getEnabled(context) ) {
-                val minHours = XWPrefs.getKAServiceHours(context)
-                val nowSecs = Utils.getCurSeconds()
-                val secsLast = nowSecs - (60*60*minHours)
-                val columns = arrayOf(DBHelper.CONTYPE, DBHelper.LASTMOVE)
-                var earliestMoveSecs = Long.MAX_VALUE
-                val selection =
-                    "${DBHelper.SERVERROLE} != ${DeviceRole.ROLE_STANDALONE.ordinal}" +
-                    " AND ${DBHelper.GROUPID} != ${getArchiveGroup(context)}" +
-                    " AND ${DBHelper.LASTMOVE} > $secsLast"
-                // Log.d(TAG, "getKAMinutesLeft: selection: $selection")
-                synchronized(s_dbHelper!!) {
-                    val cursor = query(TABLE_NAMES.SUM, columns, selection)
-                    val indxConType = cursor.getColumnIndex(DBHelper.CONTYPE)
-                    val indxLastMove = cursor.getColumnIndex(DBHelper.LASTMOVE)
-                    while (cursor.moveToNext()) {
-                        val types = CommsConnTypeSet(cursor.getInt(indxConType))
-                        if ( !types.contains(CommsConnType.COMMS_CONN_MQTT)) continue
-
-                        val lastmove = cursor.getLong(indxLastMove)
-                        // Log.d( TAG, "getKAMinutesLeft() lastMove: $lastmove")
-                        if (lastmove <= secsLast) {
-                            Assert.failDbg()
-                            continue
-                        }
-                        if (lastmove < earliestMoveSecs) {
-                            earliestMoveSecs = lastmove
-                        }
-                    }
-                }
-                if (earliestMoveSecs == Long.MAX_VALUE) 0
-                else (minHours * 60) - ((nowSecs - earliestMoveSecs) / 60)
-            } else 0
-        Log.d(TAG, "getKAMinutesLeft() => $result")
-        return result
-    }
-
-    fun getGamesWithSendsPending(context: Context): HashMap<Long, CommsConnTypeSet> {
-        val result = HashMap<Long, CommsConnTypeSet>()
-        // val columns = arrayOf(ROW_ID, DBHelper.CONTYPE)
-        // val selection = String.format(
-        //     "%s != %d AND %s > 0 AND %s != %d",
-        //     DBHelper.SERVERROLE,
-        //     DeviceRole.ROLE_STANDALONE.ordinal,
-        //     DBHelper.NPACKETSPENDING,
-        //     DBHelper.GROUPID, getArchiveGroup(context)
-        // )
-        // initDB(context)
-        // synchronized(s_dbHelper!!) {
-        //     val cursor = query(TABLE_NAMES.SUM, columns, selection)
-        //     val indx1 = cursor.getColumnIndex(ROW_ID)
-        //     val indx2 = cursor.getColumnIndex(DBHelper.CONTYPE)
-        //     var ii = 0
-        //     while (cursor.moveToNext()) {
-        //         val rowid = cursor.getLong(indx1)
-        //         val typs = CommsConnTypeSet(cursor.getInt(indx2))
-        //         // Better have an address if has pending sends
-        //         if (0 < typs.size) {
-        //             result[rowid] = typs
-        //         }
-        //         ++ii
-        //     }
-        //     cursor.close()
-        // }
-        return result
-    }
     fun getGameCountUsing(context: Context, typ: CommsConnType): Int {
+        Assert.failDbg()
         var result = 0
         val columns = arrayOf(DBHelper.CONTYPE)
         val selection = String.format("%s = 0", DBHelper.GAME_OVER)
