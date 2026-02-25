@@ -1170,6 +1170,17 @@ Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1clearThumbnails
     DVC_HEADER_END();
 }
 
+JNIEXPORT jlong JNICALL
+Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1getLastNetMoveTime
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
+{
+    jlong result;
+    DVC_HEADER(jniGlobalPtr);
+    result = gmgr_getLastNetMoveTime( globalState->dutil, env );
+    DVC_HEADER_END();
+    return result;
+}
+
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_GameMgr_gmgr_1addGroup
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jname )

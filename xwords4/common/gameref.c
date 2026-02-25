@@ -2326,6 +2326,8 @@ updateSummary( XW_DUtilCtxt* duc, XWEnv xwe,
         gmgr_rmFromGroup( duc, xwe, gd->gr, grp );
         gd->sum = *newSum;
         gmgr_addToGroup( duc, xwe, gd->gr, grp );
+
+        gmgr_updateLastMoveTime( duc, xwe, newSum->lastMoveTime );
     }
 }
 

@@ -223,6 +223,13 @@ object GameMgr {
         }
     }
 
+    suspend fun getLastNetMoveTime(): Long {
+        return Device.await {
+            val jniState = Device.ptrGlobals()
+            gmgr_getLastNetMoveTime(jniState)
+        } as Long
+    }
+
     suspend fun addGroup(name: String): GroupRef {
         val grp = Device.await {
             val jniState = Device.ptrGlobals()
@@ -356,6 +363,8 @@ object GameMgr {
     private external fun gmgr_addForInvite(jniState: Long, nli: NetLaunchInfo): Long
     @JvmStatic
     private external fun gmgr_clearThumbnails(jniState: Long)
+    @JvmStatic
+    private external fun gmgr_getLastNetMoveTime(jniState: Long): Long
 
     @JvmStatic
     private external fun gmgr_getDefaultGroup(jniState: Long): Int

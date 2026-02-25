@@ -131,6 +131,8 @@ void gmgr_moveGames( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                      GameRef games[], XP_U16 nGames  );
 void gmgr_resendAll( XW_DUtilCtxt* duc, XWEnv xwe, CommsConnType filter );
 
+XP_U32 gmgr_getLastNetMoveTime( XW_DUtilCtxt* duc, XWEnv xwe );
+
 #ifdef CPLUS
 }
 #endif

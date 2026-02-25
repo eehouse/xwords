@@ -122,6 +122,8 @@ struct GameMgrState {
     XP_U16 nextSaveToken;
     XP_U16 nextGroupID;
 
+    XP_U32 lastMoveTime; /* most recent of any game we have */
+
     XWArray* groups;
     XP_U8 defaultGrp;    /* the GroupRef of the current default */
     XP_U8 archiveGrp;    /* the GroupRef of the current archive group (may be 0) */
@@ -446,6 +448,19 @@ gmgr_getArchiveGroup( XW_DUtilCtxt* duc )
 {
     GameMgrState* gs = duc->gameMgrState;
     return gs->archiveGrp;
+}
+
+void
+gmgr_updateLastMoveTime( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 lastMoveTime )
+{
+    GameMgrState* gs = duc->gameMgrState;
+    if ( gs->lastMoveTime < lastMoveTime ) {
+        gs->lastMoveTime = lastMoveTime;
+        scheduleSaveState( duc, xwe );
+        /* XP_U32 now = dutil_getCurSeconds( duc, xwe ); */
+        /* XP_LOGFF( "updated lastMoveTime to %d (%ds ago)", lastMoveTime, */
+        /*           now - lastMoveTime ); */
+    }
 }
 
 void
@@ -1481,10 +1496,15 @@ loadGamesOnce( XW_DUtilCtxt* duc, XWEnv xwe )
             const XP_UCHAR* keys[] = { KEY_GAMEMGR, KEY_STATE, NULL };
             XWStreamCtxt* stream = dvc_loadStream( duc, xwe, keys );
             if ( !!stream ) {
-                gs->defaultGrp = strm_getU8(stream);
-                strm_gotU8( stream, &gs->archiveGrp );
-                strm_destroy( stream );
+                if ( strm_gotU8( stream, &gs->defaultGrp )
+                     && strm_gotU8( stream, &gs->archiveGrp )
+                     && strm_gotU32( stream, &gs->lastMoveTime ) ) {
+                    /* do nothing */
+                } else {
+                    XP_LOGFF( "not all there" );
+                }
             }
+            strm_destroyp( &stream );
         }
         
         loadGroups( duc, xwe, gs );
@@ -1528,6 +1548,16 @@ gmgr_resendAll( XW_DUtilCtxt* duc, XWEnv xwe, CommsConnType filter )
     XP_USE( xwe );
     XP_USE( filter );
     XP_LOGFF( "(filter=%s) doing nothing", ConnType2Str(filter) );
+}
+
+XP_U32
+gmgr_getLastNetMoveTime( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe) )
+{
+    const GameMgrState* gs = duc->gameMgrState;
+    XP_U32 result = gs->lastMoveTime;
+    /* XP_U32 now = dutil_getCurSeconds( duc, xwe ); */
+    /* XP_LOGFF( "result is %d seconds ago", now - result ); */
+    return result;
 }
 
 GameRef
@@ -1872,6 +1902,7 @@ saveGMStateProc( XW_DUtilCtxt* duc, XWEnv xwe, void* XP_UNUSED(closure),
             XWStreamCtxt* stream = dvc_makeStream( duc );
             strm_putU8( stream, gs->defaultGrp );
             strm_putU8( stream, gs->archiveGrp );
+            strm_putU32( stream, gs->lastMoveTime );
             const XP_UCHAR* keys[] = { KEY_GAMEMGR, KEY_STATE, NULL };
             dvc_storeStreamP( duc, xwe, keys, &stream );
 
