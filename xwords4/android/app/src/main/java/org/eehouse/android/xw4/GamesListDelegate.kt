@@ -3302,10 +3302,15 @@ class GamesListDelegate(delegator: Delegator) :
         fun onPingReceived(context: Context, tsStart: Int, tsMid: Int, tsEnd: Int) {
             s_self?.get()?.let { self ->
                         self.runOnUiThread {
-                            val toRemote = tsMid - tsStart
-                            val fromRemote = tsEnd - tsMid
-                            val msg = "Ping received. Took ${toRemote}s to reach remote " +
-                                "and ${fromRemote}s to come back."
+                            val context = self.mActivity
+                            val msg =
+                                if ( 0 == tsMid ) {
+                                    LocUtils.getString(context, R.string.ping_oneway_fmt,
+                                                       tsEnd - tsStart)
+                                } else {
+                                    LocUtils.getString(context, R.string.ping_twoway_fmt,
+                                                       tsMid - tsStart, tsEnd - tsMid)
+                                }
                             self.makeOkOnlyBuilder(msg)
                                 .show()
                         }

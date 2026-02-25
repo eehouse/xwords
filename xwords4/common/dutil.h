@@ -182,7 +182,7 @@ struct XW_DUtilCtxt {
     void* timersState;          /* owned by timers.c */
     MsgChunker* smsChunkerState;
     MsgChunker* btChunkerState;
-    GameMgrState* gameMgrState; /* owned by gamemgr.c */
+    GameMgrState* gameMgrState;
     void* kpCtxt;
 #ifdef DEBUG
     XP_U32 magic;

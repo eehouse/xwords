@@ -65,4 +65,8 @@
   <string name="so_showAll">Show all</string>
 
   <string name="board_menu_game_ping">Ping others</string>
+
+  <string name="ping_twoway_fmt">Here to remote: %1$ds; remote back: %2$ds</string>
+  <string name="ping_oneway_fmt">Here to broker and back: %1$ds</string>
+
 </resources>

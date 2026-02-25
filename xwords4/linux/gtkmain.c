@@ -1055,8 +1055,14 @@ onPingReceivedGTK( LaunchParams* params, XP_U32 tsStart, XP_U32 tsMid,
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
     GtkWidget* parent = apg->window;
-    (void)gtktellf( parent, "Here to remote: %ds; remote back: %ds",
-                     (tsMid-tsStart), (now-tsMid) );
+    gchar buf[256];
+    if ( tsMid ) {
+        snprintf( buf, VSIZE(buf), "Here to remote: %ds; remote back: %ds",
+                  (tsMid-tsStart), (now-tsMid) );
+    } else {
+        snprintf( buf, VSIZE(buf), "Here to broker and back: %ds", now-tsStart );
+    }
+    (void)gtktell( parent, buf );
 }
 
 static gint

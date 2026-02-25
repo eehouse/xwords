@@ -377,7 +377,7 @@ XP_U8
 dvc_getQOS( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
     DevCtxt* state = load( dutil, xwe );
-    // LOG_RETURNF("%d", state->mqttQOS);
+    // LOG_RETURNF( "%d", state->mqttQOS );
     return state->mqttQOS;
 }
 
@@ -714,9 +714,7 @@ makeMQTTPing( XW_DUtilCtxt* dutil, XWEnv xwe, const CommsAddrRec* addr,
         cJSON_AddStringToObject( params, "dest", devidStr );
     }
 
-    MQTTDevID devid;
-    getMQTTDevID( dutil, xwe, XP_FALSE, &devid );
-    XP_SNPRINTF( devidStr, VSIZE(devidStr), MQTTDevID_FMT, devid );
+    dvc_fmtMyMQTTDevID( dutil, xwe, devidStr, VSIZE(devidStr) - 1 );
     cJSON_AddStringToObject( params, "src", devidStr );
 
     return jsonToStream( dutil, &params );
@@ -738,14 +736,9 @@ parsePingData( XW_DUtilCtxt* XP_UNUSED(dutil), cJSON* pingData, XP_U16* pingID,
 
             item = cJSON_GetObjectItem( pingData, "tsBroker2" );
             *isReply = !!item;
-            if ( *isReply ) {
-                *ts2 = item->valueint;
-            } else {
-                item = cJSON_GetObjectItem( pingData, "tsMid" );
-                if ( !!item ) {
-                    *ts2 = item->valueint;
-                }
-            }
+
+            item = cJSON_GetObjectItem( pingData, "tsMid" );
+            *ts2 = !!item ? item->valueint : 0;
         }
     }
     return success;
@@ -788,7 +781,6 @@ postPingJsonOnce( XW_DUtilCtxt* dutil, XWEnv xwe, cJSON** pingDataP )
     XP_Bool isReply;
     XP_U32 ts1, ts2;
     if ( parsePingData( dutil, *pingDataP, &pingID, &ts1, &ts2, &isReply ) ) {
-        XP_ASSERT( isReply );
         DevCtxt* dc = load( dutil, xwe );
         void* asNode = (void*)(long)pingID;
         if ( arr_find( dc->pingIDs, xwe, asNode, NULL ) ) {
@@ -921,6 +913,14 @@ getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew, MQTTDevID* devID
     *devID = dutil->devID;
 #endif
     // LOG_RETURNF( MQTTDevID_FMT " key: %s", *devID, MQTT_DEVID_KEY );
+}
+
+void
+dvc_fmtMyMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_UCHAR buf[], XP_U16 len )
+{
+    MQTTDevID devID;
+    getMQTTDevID( dutil, xwe, XP_FALSE, &devID );
+    (void)formatMQTTDevID( &devID, buf, len );
 }
 
 void
@@ -1320,11 +1320,18 @@ onPongReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
     free(pstr);
 #endif
 
-    /* If it has a src, we're to send it back. If it doesn't, it's a reply to
-       something we sent and we should post results but send nothing. */
+    XP_Bool needsReply = XP_TRUE;
+    /* If it has a src and that's me, we're done: display only. */
     cJSON* tmp = cJSON_GetObjectItem( pingData, "src" );
     if ( !!tmp ) {
-        XP_ASSERT( !cJSON_GetObjectItem( pingData, "tsMid" ) );
+        XP_UCHAR buf[17];
+        dvc_fmtMyMQTTDevID( dutil, xwe, buf, VSIZE(buf) );
+        needsReply = 0 != XP_STRCMP( buf, tmp->valuestring );
+    }
+
+    /* If it has a src, we're to send it back. If it doesn't, it's a reply to
+       something we sent and we should post results but send nothing. */
+    if ( needsReply ) {
         XP_U32 now = dutil_getCurSeconds( dutil, xwe );
         cJSON_AddNumberToObject( pingData, "tsMid", now );
 
@@ -2033,10 +2040,8 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
         /* Start with the platform's values */
         cJSON* params = dutil_getRegValues( dutil, xwe );
 
-        MQTTDevID myID;
-        dvc_getMQTTDevID( dutil, xwe, &myID );
         XP_UCHAR tmp[32];
-        formatMQTTDevID( &myID, tmp, VSIZE(tmp) );
+        dvc_fmtMyMQTTDevID( dutil, xwe, tmp, VSIZE(tmp) );
         cJSON_AddStringToObject( params, "devid", tmp );
 
         cJSON_AddStringToObject( params, "gitrev", GITREV );
