@@ -18,6 +18,7 @@
  */
 package org.eehouse.android.xw4
 
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -37,6 +38,7 @@ class DrawSelDelegate(private val mView: View) {
     }
 
     companion object {
-        private val s_selDrawable = ColorDrawable(XWApp.SEL_COLOR)
+        private val SEL_COLOR = Color.argb(0xFF, 0x09, 0x70, 0x93)
+        private val s_selDrawable = ColorDrawable(SEL_COLOR)
     }
 }

@@ -20,11 +20,8 @@ package org.eehouse.android.xw4
 
 import android.app.Application
 import android.content.Context
-import android.graphics.Color
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 
 import org.eehouse.android.xw4.jni.Device
@@ -32,13 +29,12 @@ import org.eehouse.android.xw4.jni.GameMgr
 
 import java.util.UUID
 
-class XWApp : Application(), LifecycleObserver {
+class XWApp : Application() {
     override fun onCreate() {
         sContext = this
         Assert.assertTrue(sContext === sContext!!.getApplicationContext())
         super.onCreate()
         Log.init(this)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         android.util.Log.i(TAG, "onCreate(); git_rev=${BuildConfig.GIT_REV}")
         Log.enable(this)
         OnBootReceiver.startTimers(this)
@@ -60,22 +56,37 @@ class XWApp : Application(), LifecycleObserver {
         // Eventually only one of these will remain
         BTUtils.init(this, appName)
         BleNetwork.init(this)
+
+        ProcessLifecycleOwner.get().lifecycle
+            .addObserver(MyLifecycleListener(this))
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_ANY)
-    fun onAny(source: LifecycleOwner?, event: Lifecycle.Event?) {
-        Log.d(TAG, "onAny(%s)", event)
-        when (event) {
-            Lifecycle.Event.ON_CREATE -> Log.d(TAG, "git_rev=${BuildConfig.GIT_REV}")
-            Lifecycle.Event.ON_RESUME -> {
-                MQTTUtils.onResume(this)
-                BTUtils.onResume(this)
-                GameMgr.resendAll()
-            }
+    private class MyLifecycleListener(private val context: Context)
+        : DefaultLifecycleObserver {
+        override fun onCreate(owner: LifecycleOwner) {
+            Log.d(TAG, "git_rev=${BuildConfig.GIT_REV}")
+        }
 
-            Lifecycle.Event.ON_STOP -> BTUtils.onStop(this)
-            Lifecycle.Event.ON_DESTROY -> MQTTUtils.onDestroy(this)
-            else -> {}
+        override fun onResume(owner: LifecycleOwner) {
+            MQTTUtils.onResume(context)
+            BTUtils.onResume(context)
+            GameMgr.resendAll()
+        }
+
+        override fun onStart(owner: LifecycleOwner) {
+            sInForeground = true
+            Log.d(TAG, "onStart(): sInForeground now $sInForeground")
+        }
+
+        override fun onStop(owner: LifecycleOwner) {
+            sInForeground = false
+            Log.d(TAG, "onStop(): sInForeground now $sInForeground")
+            BTUtils.onStop(context)
+            // MQTTUtils.onStop(context) <- not yet
+        }
+
+        override fun onDestroy(owner: LifecycleOwner) {
+            MQTTUtils.onDestroy(context)
         }
     }
 
@@ -94,11 +105,12 @@ class XWApp : Application(), LifecycleObserver {
         const val OFFER_DUALPANE = false
         const val SMS_PUBLIC_HEADER = "-XW4"
         const val MIN_TRAY_TILES = 7 // comtypes.h
-        @JvmField
-        val SEL_COLOR = Color.argb(0xFF, 0x09, 0x70, 0x93)
         const val GREEN = -0xff5100
         const val RED = -0x510000
         private var sContext: Context? = null
+        var sInForeground: Boolean = false
+            private set
+
         val appName: String
             get() {
                 return getContext().getString(R.string.app_name)
