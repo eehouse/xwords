@@ -230,14 +230,15 @@ class GameConfigDelegate(delegator: Delegator) :
                 }
 
                 items.configure(this, conTypes, cew, null, this)
-                val cb = layout
+                val defaultCheck = layout
                     .findViewById<View>(R.id.default_check) as CheckBox
-                cb.visibility = View.VISIBLE // "gone" in .xml file
+                defaultCheck.visibility = View.VISIBLE // "gone" in .xml file
                 val lstnr = DialogInterface.OnClickListener { dlg, button ->
                     mConTypes = items.types
+                    Log.d(TAG, "makeDialog(): got types: $mConTypes")
                     // Remove it if it's actually possible it's there
                     Assert.assertTrueNR(!mConTypes!!.contains(CommsConnType.COMMS_CONN_RELAY))
-                    if (cb.isChecked) {
+                    if (defaultCheck.isChecked) {
                         XWPrefs.setAddrTypes(mActivity, mConTypes!!)
                     }
                     mCar!!.populate(mActivity, mConTypes!!)

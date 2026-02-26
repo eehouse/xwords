@@ -22,6 +22,7 @@ import android.content.Context
 import android.os.Build
 import com.hivemq.client.internal.mqtt.lifecycle.MqttClientAutoReconnectImpl
 import com.hivemq.client.mqtt.MqttClient
+import com.hivemq.client.mqtt.MqttClientState
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedListener
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Consumer
 import kotlin.concurrent.thread
@@ -63,6 +65,7 @@ object MQTTUtils {
     private var sDevID: String? = null
     private var sTopics: Array<String>? = null
     private var sQos: Int = 0
+    private var sDisconLogged = false
 
     private val sStateChangedIf = object:NetStateCache.StateChangedIf {
         override fun onNetAvail(context: Context, nowAvailable: Boolean) {
@@ -88,6 +91,16 @@ object MQTTUtils {
     fun getQOS(): Int {
         return sQos
     }
+
+    // fun forceResetConnection() {
+    //     // 1. Kill the existing state completely
+    //     mqttClient?.disconnectWith()?.send()?.whenComplete { _, _ ->
+    //         // 2. Wait a beat, then try a clean connect
+    //         Handler(Looper.getMainLooper()).postDelayed({
+    //                                                         safeConnect()
+    //                                                     }, 1000)
+    //     }
+    // }
 
     // HiveMQ's version requires 24 or better, not to compile but to run
     // without NoSuchClass exception
@@ -124,7 +137,11 @@ object MQTTUtils {
         send(context, tap)
     }
 
-    fun onResume(context: Context) = getConn(context)?.reconnect()
+    fun onResume(context: Context) {
+        Log.d(TAG, "onResume()")
+        sDisconLogged = false
+        getConn(context)?.reconnect() ?: Log.d(TAG, "onResume(): no conn!!!")
+    }
 
     fun onDestroy(context: Context)
     {
@@ -242,6 +259,7 @@ object MQTTUtils {
         private val mClient: Mqtt3BlockingClient
         private val mTaskThread: Thread
         private val mStats = MQTTStats()
+        private var mNeedsReset = false
 
         init {
             mHost = XWPrefs.getPrefsString(mContext, R.string.key_mqtt_host)!!
@@ -256,8 +274,12 @@ object MQTTUtils {
             mClient = MqttClient.builder()
                 .useMqttVersion3()
                 .identifier(mDevID)
-                .automaticReconnect(MqttClientAutoReconnectImpl.DEFAULT)
+                .automaticReconnect()
+                    .initialDelay(1, TimeUnit.SECONDS)
+                    .maxDelay(5, TimeUnit.SECONDS) // because there's no way to interrupt for 
+                    .applyAutomaticReconnect()
                 .addConnectedListener(this)
+                .addDisconnectedListener(this)
                 .serverHost(mHost)
                 .serverPort(port)
                 .simpleAuth().username("xwuser").password("xw4r0cks".toByteArray())
@@ -272,9 +294,10 @@ object MQTTUtils {
                 while ( true ) {
                     try {
                         val task = mTaskQueue.take()
-                        // Log.d(TAG, "took task: $task")
+                        Log.d(TAG, "took task: $task")
                         task.run()
                         task.isLast && break
+                        Log.d(TAG, "$task done")
                     } catch (ie: InterruptedException) {
                         Log.ex(TAG, ie)
                     }
@@ -302,9 +325,16 @@ object MQTTUtils {
             add(DisconnectTask(isLast=true))
         }
 
-        private fun add(task: Task) = mTaskQueue.add(task)
+        private fun add(task: Task) {
+            Log.d(TAG, "add($task)")
+            mTaskQueue.add(task)
+        }
 
-        internal fun reconnect() = add(ConnectTask())
+        internal fun reconnect() {
+            Log.d(TAG, "reconnect()")
+            mNeedsReset = true
+            add(ConnectTask(true))
+        }
 
         internal fun timerFired()
         {
@@ -349,8 +379,9 @@ object MQTTUtils {
             return mStats.toString()
         }
 
-        override fun onConnected(context: MqttClientConnectedContext) {
-            Log.d(TAG, "$this.onConnected($context)")
+        // MqttClientConnectedListener
+        override fun onConnected(cc: MqttClientConnectedContext) {
+            Log.d(TAG, "$this.onConnected($cc)")
             mConnectedLock.withLock {
                 Log.d(TAG, "signaling connected")
                 mConnectedCondition.signal()
@@ -360,9 +391,22 @@ object MQTTUtils {
             mStats.updateState(true)
         }
 
-        override fun onDisconnected(context: MqttClientDisconnectedContext) {
-            Log.d(TAG, "onDisconnected(cause=${context.getCause()})")
-            // try: context.getCause().printStackTrace()
+        // MqttClientDisconnectedListener
+        override fun onDisconnected(dc: MqttClientDisconnectedContext) {
+            val log = true
+                // if ( XWApp.sInForeground ) true
+                // else if ( !sDisconLogged ) {
+                //     sDisconLogged = true
+                //     true
+                // } else false
+            if (log) Log.d(TAG, "onDisconnected(): cause=${dc.getCause()}")
+
+            if (mNeedsReset) {
+                mNeedsReset = false
+                dc.reconnector.delay(0, TimeUnit.MILLISECONDS)
+            }
+
+            // try: dc.getCause().printStackTrace()
             updateStatus(false)
             mStats.updateState(false)
         }
@@ -384,7 +428,7 @@ object MQTTUtils {
                 now < it + DUP_THRESHHOLD_MS
             } ?: false
             mSeenSums[sum] = now
-            Log.d(TAG, "%H: isRecentDuplicate($sum) (on $topic)=> $isDup", this)
+            // Log.d(TAG, "%H: isRecentDuplicate($sum) (on $topic)=> $isDup", this)
             return isDup
         }
 
@@ -413,17 +457,41 @@ object MQTTUtils {
 
         private abstract inner class Task(val isLast: Boolean = false): Runnable
 
-        private inner class ConnectTask(): Task() {
+        private inner class ConnectTask(val isReset: Boolean = false): Task() {
             override fun run() {
                 try {
-                    if ( !mClient.state.isConnected ) {
-                        Log.d( TAG, "calling connectWith()...")
-                        mClient.connectWith()
-                            .cleanSession(true)
-                            .send()
-                            .also{ ack -> Log.d(TAG, "connect.also($ack)") }
-                    } else {
-                        Log.d(TAG, "$this: skipping connect; already connected")
+                    Log.d(TAG, "ConnectTask.run(): state=${mClient.state}")
+                    // if (!mClient.state.isConnectedOrReconnect()) {
+                    //     mClient.connectWith()
+                    //         .cleanSession(true)
+                    //         .send()
+                    //         .also{ ack -> Log.d(TAG, "connect.also($ack)") }
+                    // } else if (isReset) {
+                    //     Log.d(TAG, "trying toBlocking() disconnect")
+                    //     mClient.toBlocking().disconnect()
+                    //     // mClient.disconnect()
+                    //     add(ConnectTask())
+                    // }
+
+                    when (mClient.state) {
+                        MqttClientState.DISCONNECTED_RECONNECT -> {
+                            if ( isReset ) {
+                                add(ConnectTask())
+                                Log.d(TAG, "calling *connect*")
+                                mClient.connect()
+                                // mClient.disconnect()
+                            } else {
+                                Log.d(TAG, "doing nothing; library will try when appropriate")
+                            }
+                        }
+                        MqttClientState.DISCONNECTED -> {
+                            Log.d( TAG, "<new> $this: calling connectWith()...") // need to check state!!
+                            mClient.connectWith()
+                                .cleanSession(true)
+                                .send()
+                                .also{ ack -> Log.d(TAG, "connect.also($ack)") }
+                        }
+                        else -> Log.d(TAG, "$this: skipping connect; state: ${mClient.state}")
                     }
                 } catch (ex: Exception) {
                     Log.ex(TAG, ex)
@@ -552,7 +620,7 @@ object MQTTUtils {
         override fun toString(): String
         {
             val age = (System.currentTimeMillis() - mStart) / 1000
-            return String.format("Conn %H: {connected: ${mClient.state.isConnected}; "
+            return String.format("Conn %H: {connected: ${mClient.state}; "
                                  + "age: ${age}s}", this)
         }
     }
