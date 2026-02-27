@@ -180,7 +180,7 @@ object NetUtils {
             val directJson = true
             val result = runConn(conn, jsonParams, directJson)
             if (0 != resultKey) {
-                Device.onWebSendResult(resultKey, true, result)
+                Device.onWebSendResult(resultKey, result != null, result)
             }
         }
     }

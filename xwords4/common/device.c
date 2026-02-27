@@ -72,6 +72,7 @@ static void addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
                                    XP_U32 gameID, XWStreamCtxt* stream );
 static void getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew,
                           MQTTDevID* devID );
+static void registerIf( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 XWStreamCtxt*
 dvc_makeStream( XW_DUtilCtxt* dutil )
@@ -308,6 +309,7 @@ typedef struct _DevCtxt {
     XP_U16 devCount;
     XP_U8 mqttQOS;
     XP_Bool dirty;
+    XP_Bool inForeground;
     XWArray* pingIDs;              /* only latest will be reported */
 
     struct {
@@ -791,6 +793,29 @@ postPingJsonOnce( XW_DUtilCtxt* dutil, XWEnv xwe, cJSON** pingDataP )
     }
     cJSON_Delete( *pingDataP );
     *pingDataP = NULL;
+}
+
+static void
+tryRegProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
+            TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        DevCtxt* dc = load( dutil, xwe );
+        if ( dc->inForeground ) {
+            XP_LOGFF( "calling registerIf()" );
+            registerIf( dutil, xwe );
+        }
+    }
+}
+
+void
+dvc_setInForeground( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool inForeground )
+{
+    DevCtxt* dc = load( dutil, xwe );
+    dc->inForeground = inForeground;
+    if ( inForeground ) {
+        tmr_setIdle( dutil, xwe, tryRegProc, NULL );
+    }
 }
 
 void

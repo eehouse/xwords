@@ -18,19 +18,26 @@
  */
 package org.eehouse.android.xw4
 
+import android.content.Context
+
 import org.unifiedpush.android.connector.FailedReason
 import org.unifiedpush.android.connector.PushService
 import org.unifiedpush.android.connector.data.PushEndpoint
 import org.unifiedpush.android.connector.data.PushMessage
 
 private val TAG = Xw4PushService::class.java.simpleName
+private val KEY_ENDPOINT = TAG + "_KEY_ENDPOINT"
 
 class Xw4PushService : PushService() {
     override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
         val url = endpoint.url
         Log.d(TAG, "New UnifiedPush Endpoint: $url")
-        
-        // TODO: Save 'url' to SharedPreferences and send it to your server.
+
+        val oldVal = getPush(this)
+        if (! url.equals(oldVal) ) {
+            setPush(url)
+        }
+        DBUtils.setStringFor(this, KEY_ENDPOINT, url)
     }
 
     /**
@@ -50,5 +57,19 @@ class Xw4PushService : PushService() {
 
     override fun onRegistrationFailed(reason: FailedReason, instance: String) {
         Log.e(TAG, "Registration failed: ${reason.name}")
+    }
+
+    private fun setPush(url: String) {
+        Log.d(TAG, "setPush($url)")
+        DBUtils.setStringFor(this, KEY_ENDPOINT, url)
+    }
+
+    companion object {
+        fun getPush(context: Context): String {
+            val result = DBUtils.getStringFor(context, KEY_ENDPOINT, "")!!
+            Log.d(TAG, "getPush() => $result")
+            return result
+        }
+
     }
 }

@@ -38,10 +38,6 @@
   <uses-permission android:name="android.permission.NFC" />
   <uses-feature android:name="android.hardware.nfc.hce" android:required="false" />
 
-  <queries>
-    <package android:name="io.heckel.ntfy" />
-  </queries>
-
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
@@ -143,16 +139,12 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".UnifiedPushReceiver"
-              android:exported="true"
-              android:enabled="true"
-              >
-      <intent-filter android:priority="999">
-        <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
-        <action android:name="org.unifiedpush.android.connector.MESSAGE" />
-        <action android:name="org.unifiedpush.android.connector.UNREGISTERED" />
+    <service android:name=".Xw4PushService"
+             android:exported="false">
+      <intent-filter>
+        <action android:name="org.unifiedpush.android.connector.PUSH_EVENT" />
       </intent-filter>
-    </receiver>
+    </service>
 
     <receiver android:name="UpdateCheckReceiver"
               android:exported="true"

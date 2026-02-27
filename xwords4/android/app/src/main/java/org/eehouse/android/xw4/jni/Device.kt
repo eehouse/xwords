@@ -201,6 +201,12 @@ object Device {
         return UUID.fromString(dvc_getUUID())
     }
 
+    fun setInForeground(inForeground: Boolean) {
+        post {
+            dvc_setInForeground(m_ptrGlobals, inForeground)
+        }
+    }
+
     fun pingAll( gr: GameRef ) {
         post( Priority.NETWORK ) {
             dvc_pingAll(m_ptrGlobals, gr.gr)
@@ -366,6 +372,8 @@ object Device {
 	@JvmStatic
     private external fun dvc_getUUID(): String
 
+    @JvmStatic
+    private external fun dvc_setInForeground(jniState: Long, inForeground: Boolean)
     @JvmStatic
     private external fun dvc_pingAll(jniState: Long, gr: Long)
     @JvmStatic

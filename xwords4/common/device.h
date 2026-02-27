@@ -37,6 +37,8 @@ XP_S16 dvc_sendMsgs( XW_DUtilCtxt* duc, XWEnv xwe,
                      const CommsAddrRec* addr, CommsConnType typ,
                      GameRef gr );
 
+void dvc_setInForeground( XW_DUtilCtxt* duc, XWEnv xwe, XP_Bool inForeground );
+
 /* Ping the broker */
 void dvc_pingMQTTBroker( XW_DUtilCtxt* duc, XWEnv xwe );
 /* Ping each remote device in the game via all channels in the game */

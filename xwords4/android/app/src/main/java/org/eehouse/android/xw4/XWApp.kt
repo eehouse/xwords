@@ -84,11 +84,13 @@ class XWApp : Application() {
 
         override fun onStart(owner: LifecycleOwner) {
             sInForeground = true
+            Device.setInForeground(true)
             Log.d(TAG, "onStart(): sInForeground now $sInForeground")
         }
 
         override fun onStop(owner: LifecycleOwner) {
             sInForeground = false
+            Device.setInForeground(false)
             Log.d(TAG, "onStop(): sInForeground now $sInForeground")
             BTUtils.onStop(context)
             // MQTTUtils.onStop(context) <- not yet

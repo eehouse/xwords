@@ -2298,6 +2298,15 @@ Java_org_eehouse_android_xw4_jni_GameRef_gr_1setOpenCount
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1setInForeground
+(JNIEnv* env, jclass C, jlong jniGlobalPtr, jboolean inForeground )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_setInForeground( globalState->dutil, env, inForeground );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1pingAll
 (JNIEnv* env, jclass C, jlong jniGlobalPtr, jlong jgr )
 {

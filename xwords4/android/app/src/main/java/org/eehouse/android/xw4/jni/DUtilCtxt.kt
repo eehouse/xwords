@@ -57,6 +57,7 @@ import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.ThumbCanvas
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.XWApp
+import org.eehouse.android.xw4.Xw4PushService
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
 import org.eehouse.android.xw4.loc.LocUtils
 import org.eehouse.android.xw4.putAnd
@@ -339,6 +340,7 @@ class DUtilCtxt() {
 					.putAnd("vrntCode", BuildConfig.VARIANT_CODE)
 					.putAnd("vrntName", BuildConfig.VARIANT_NAME)
 					.putAnd("loc", LocUtils.getCurLocale(mContext))
+                    .putAnd("up_endpoint", Xw4PushService.getPush(mContext))
                 params.toString()
             } catch (je: JSONException) {
                 Log.e(TAG, "getRegValues() ex: %s", je)
