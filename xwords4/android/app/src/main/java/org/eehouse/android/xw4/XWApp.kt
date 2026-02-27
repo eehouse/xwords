@@ -62,12 +62,15 @@ class XWApp : Application() {
         ProcessLifecycleOwner.get().lifecycle
             .addObserver(MyLifecycleListener(this))
 
-        // registerWithNtfy(this)
-
-        Log.d(TAG, "calling UnifiedPush stuff")
-        UnifiedPush.saveDistributor(this, "io.heckel.ntfy")
-        UnifiedPush.register(this)
-        Log.d(TAG, "DONE calling UnifiedPush stuff")
+        val distributors = UnifiedPush.getDistributors(this)
+        if (distributors.isNotEmpty()) {
+            val distributor = distributors[0]
+            Log.d(TAG, "using distributor $distributor")
+            UnifiedPush.saveDistributor(this, distributor)
+            UnifiedPush.register(this)
+        }
+        // UnifiedPush.saveDistributor(this, "io.heckel.ntfy")
+        // UnifiedPush.register(this)
     }
 
     private class MyLifecycleListener(private val context: Context)

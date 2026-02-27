@@ -280,6 +280,17 @@ object Utils {
         clipboard.setPrimaryClip(clip)
     }
 
+    // This probably should be prepared to remove the notification if, as
+    // seems to happen, the very fact of receiving a broadcast allows a brief
+    // network connection that may itself result in a move-made notice being
+    // posted.
+    fun postWakeNotification(context: Context) {
+        val intent = GamesListDelegate.makeSelfIntent(context)
+        val titleID = R.string.wake_title
+        val bodyID = R.string.wake_body
+        postNotification(context, intent, titleID, bodyID, bodyID)
+    }
+
     fun postNotification(
         context: Context, intent: Intent?,
         titleID: Int, bodyID: Int, id: Int

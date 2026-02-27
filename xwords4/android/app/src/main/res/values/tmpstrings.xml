@@ -69,4 +69,6 @@
   <string name="ping_twoway_fmt">Here to remote: %1$ds; remote back: %2$ds</string>
   <string name="ping_oneway_fmt">Here to broker and back: %1$ds</string>
 
+  <string name="wake_title">Wake title</string>
+  <string name="wake_body">Wake body</string>
 </resources>

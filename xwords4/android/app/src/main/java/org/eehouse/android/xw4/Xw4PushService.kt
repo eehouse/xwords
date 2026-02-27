@@ -16,6 +16,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+// This file was written with a lot of help from Gemini. Though I had to
+// suggest that we look for a working open source example before it stopped
+// feeding me garbage.
+
 package org.eehouse.android.xw4
 
 import android.content.Context
@@ -47,8 +52,7 @@ class Xw4PushService : PushService() {
     override fun onMessage(message: PushMessage, instance: String) {
         val content = String(message.content)
         Log.d(TAG, "Push Message Received: $content")
-        
-        // TODO: Trigger your game board update logic here.
+        Utils.postWakeNotification(this)
     }
 
     override fun onUnregistered(instance: String) {
@@ -70,6 +74,5 @@ class Xw4PushService : PushService() {
             Log.d(TAG, "getPush() => $result")
             return result
         }
-
     }
 }
