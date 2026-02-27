@@ -27,6 +27,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameMgr
 
+import org.unifiedpush.android.connector.UnifiedPush
+
 import java.util.UUID
 
 class XWApp : Application() {
@@ -59,6 +61,13 @@ class XWApp : Application() {
 
         ProcessLifecycleOwner.get().lifecycle
             .addObserver(MyLifecycleListener(this))
+
+        // registerWithNtfy(this)
+
+        Log.d(TAG, "calling UnifiedPush stuff")
+        UnifiedPush.saveDistributor(this, "io.heckel.ntfy")
+        UnifiedPush.register(this)
+        Log.d(TAG, "DONE calling UnifiedPush stuff")
     }
 
     private class MyLifecycleListener(private val context: Context)

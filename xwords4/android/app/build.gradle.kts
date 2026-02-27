@@ -438,6 +438,7 @@ dependencies {
     kapt( "androidx.lifecycle:lifecycle-compiler:2.8.7" )
 
     implementation("com.hivemq:hivemq-mqtt-client:1.3.12")
+    implementation("org.unifiedpush.android:connector:3.0.10")
 
     implementation( "com.google.zxing:core:3.5.3" )
     implementation( "com.jakewharton:process-phoenix:3.0.0" )
