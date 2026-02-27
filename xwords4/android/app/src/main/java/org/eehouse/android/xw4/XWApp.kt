@@ -27,8 +27,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameMgr
 
-import org.unifiedpush.android.connector.UnifiedPush
-
 import java.util.UUID
 
 class XWApp : Application() {
@@ -58,29 +56,10 @@ class XWApp : Application() {
         // Eventually only one of these will remain
         BTUtils.init(this, appName)
         BleNetwork.init(this)
+        Xw4PushService.init(this)
 
         ProcessLifecycleOwner.get().lifecycle
             .addObserver(MyLifecycleListener(this))
-        installOPDistrubutor()
-    }
-
-    private fun installOPDistrubutor() {
-        // I'm not using anything but ntfy for now. For whatever reason,
-        // different distributors seem to require different code on the server
-        // side to reach them, and I don't want to wind up not working with
-        // some obscure thing a user's installed. If I can't find ntfy and
-        // thing the user should be advised to install it, I'll do so.
-
-        UnifiedPush.saveDistributor(this, "io.heckel.ntfy")
-        UnifiedPush.register(this)
-
-        // val distributors = UnifiedPush.getDistributors(this)
-        // if (distributors.isNotEmpty()) {
-        //     val distributor = distributors[0]
-        //     Log.d(TAG, "using distributor $distributor")
-        //     UnifiedPush.saveDistributor(this, distributor)
-        //     UnifiedPush.register(this)
-        // }
     }
 
     private class MyLifecycleListener(private val context: Context)

@@ -393,12 +393,12 @@ object MQTTUtils {
 
         // MqttClientDisconnectedListener
         override fun onDisconnected(dc: MqttClientDisconnectedContext) {
-            val log = true
-                // if ( XWApp.sInForeground ) true
-                // else if ( !sDisconLogged ) {
-                //     sDisconLogged = true
-                //     true
-                // } else false
+            val log = // true
+                if ( XWApp.sInForeground ) true
+                else if ( !sDisconLogged ) {
+                    sDisconLogged = true
+                    true
+                } else false
             if (log) Log.d(TAG, "onDisconnected(): cause=${dc.getCause()}")
 
             if (mNeedsReset) {

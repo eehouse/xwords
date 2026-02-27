@@ -1349,9 +1349,18 @@ onPongReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
     /* If it has a src and that's me, we're done: display only. */
     cJSON* tmp = cJSON_GetObjectItem( pingData, "src" );
     if ( !!tmp ) {
-        XP_UCHAR buf[17];
-        dvc_fmtMyMQTTDevID( dutil, xwe, buf, VSIZE(buf) );
-        needsReply = 0 != XP_STRCMP( buf, tmp->valuestring );
+        XP_UCHAR me[17];
+        dvc_fmtMyMQTTDevID( dutil, xwe, me, VSIZE(me) );
+        needsReply = 0 != XP_STRCMP( me, tmp->valuestring );
+        if ( !needsReply ) {
+            /* Double-check it's not also FROM me */
+            cJSON* dest = cJSON_GetObjectItem( pingData, "dest" );
+            if ( !dest ) {
+                // needsReply = XP_TRUE;
+            } else if ( 0 != XP_STRCMP( me, dest->valuestring ) ) {
+                needsReply = !cJSON_GetObjectItem( pingData, "tsMid" );
+            }
+        }
     }
 
     /* If it has a src, we're to send it back. If it doesn't, it's a reply to

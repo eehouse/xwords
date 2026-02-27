@@ -27,6 +27,7 @@ import android.content.Context
 
 import org.unifiedpush.android.connector.FailedReason
 import org.unifiedpush.android.connector.PushService
+import org.unifiedpush.android.connector.UnifiedPush
 import org.unifiedpush.android.connector.data.PushEndpoint
 import org.unifiedpush.android.connector.data.PushMessage
 
@@ -69,6 +70,25 @@ class Xw4PushService : PushService() {
     }
 
     companion object {
+        fun init(context: Context) {
+            // I'm not using anything but ntfy for now. For whatever reason,
+            // different distributors seem to require different code on the server
+            // side to reach them, and I don't want to wind up not working with
+            // some obscure thing a user's installed. If I can't find ntfy and
+            // thing the user should be advised to install it, I'll do so.
+
+            UnifiedPush.saveDistributor(context, "io.heckel.ntfy")
+            UnifiedPush.register(context)
+
+            // val distributors = UnifiedPush.getDistributors(this)
+            // if (distributors.isNotEmpty()) {
+            //     val distributor = distributors[0]
+            //     Log.d(TAG, "using distributor $distributor")
+            //     UnifiedPush.saveDistributor(this, distributor)
+            //     UnifiedPush.register(this)
+            // }
+        }
+
         fun getPush(context: Context): String {
             val result = DBUtils.getStringFor(context, KEY_ENDPOINT, "")!!
             Log.d(TAG, "getPush() => $result")
