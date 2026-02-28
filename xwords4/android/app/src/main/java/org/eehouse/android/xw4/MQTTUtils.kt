@@ -294,10 +294,10 @@ object MQTTUtils {
                 while ( true ) {
                     try {
                         val task = mTaskQueue.take()
-                        Log.d(TAG, "took task: $task")
+                        // Log.d(TAG, "took task: $task")
                         task.run()
                         task.isLast && break
-                        Log.d(TAG, "$task done")
+                        // Log.d(TAG, "$task done")
                     } catch (ie: InterruptedException) {
                         Log.ex(TAG, ie)
                     }
@@ -326,7 +326,7 @@ object MQTTUtils {
         }
 
         private fun add(task: Task) {
-            Log.d(TAG, "add($task)")
+            // Log.d(TAG, "add($task)")
             mTaskQueue.add(task)
         }
 

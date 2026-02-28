@@ -51,7 +51,9 @@
 #define PD_VERSION_1 2
 
 #ifndef ACK_TIMER_INTERVAL_MS
-# define ACK_TIMER_INTERVAL_MS 5000
+// Better not to wait too long. Sometimes when we're in the background the
+// connection is live for a very short time.
+# define ACK_TIMER_INTERVAL_MS 1000
 #endif
 
 #define SMS_WAIT_SECS 5
@@ -1293,7 +1295,17 @@ onAckSendTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
     if ( fired ) {
         cJSON* params = cJSON_CreateObject();
         cJSON_AddItemToObject( params, "msgs", ackMsgs );
+
+#if 0
         dutil_sendViaWeb( dutil, xwe, 0, "ack2", params );
+#else
+        char* pstr = cJSON_PrintUnformatted( params );
+        XP_U8 qos = 0;
+        dutil_sendViaMQTT( dutil, xwe, "xw4/broker/ack",
+                           (XP_U8*)pstr, XP_STRLEN(pstr), qos );
+        free( pstr );
+#endif
+
         cJSON_Delete( params );
     } else {
         XP_LOGFF( "Dropping ack messages -- but should store them!" );
