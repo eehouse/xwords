@@ -214,7 +214,7 @@ typedef struct _LaunchParams {
         struct {
             MQTTDevID devID;
             GSList* inviteeDevIDs;
-            const char* hostName;
+            char hostName[64];
             int port;
         } mqtt;
     } connInfo;

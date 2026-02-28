@@ -1,5 +1,5 @@
 /* 
- * Copyright 2000 - 2024 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000 - 2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -2664,7 +2664,13 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.port = DEFAULT_PORT;
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
-    mainParams.connInfo.mqtt.hostName = "localhost";
+    const char* hostName = getenv( "MQTT_HOST" );
+    if ( !hostName || !hostName[0] ) {
+        hostName = "localhost";
+    }
+    snprintf( mainParams.connInfo.mqtt.hostName,
+              VSIZE(mainParams.connInfo.mqtt.hostName),
+              "%s", hostName );
     mainParams.connInfo.mqtt.port = 1883;
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
@@ -2925,7 +2931,9 @@ main( int argc, char** argv )
             types_rmType( &mainParams.conTypes, COMMS_CONN_MQTT );
             break;
         case CMD_MQTTHOST:
-            mainParams.connInfo.mqtt.hostName = optarg;
+            snprintf( mainParams.connInfo.mqtt.hostName,
+                      VSIZE(mainParams.connInfo.mqtt.hostName),
+                      "%s", optarg );
             break;
         case CMD_MQTTPORT:
             mainParams.connInfo.mqtt.port = atoi(optarg);
