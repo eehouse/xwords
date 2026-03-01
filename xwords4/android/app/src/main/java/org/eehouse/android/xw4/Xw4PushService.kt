@@ -25,11 +25,15 @@ package org.eehouse.android.xw4
 
 import android.content.Context
 
+import org.json.JSONObject
+
 import org.unifiedpush.android.connector.FailedReason
 import org.unifiedpush.android.connector.PushService
 import org.unifiedpush.android.connector.UnifiedPush
 import org.unifiedpush.android.connector.data.PushEndpoint
 import org.unifiedpush.android.connector.data.PushMessage
+
+import org.eehouse.android.xw4.jni.GameRef
 
 private val TAG = Xw4PushService::class.java.simpleName
 private val KEY_ENDPOINT = TAG + "_KEY_ENDPOINT"
@@ -51,8 +55,17 @@ class Xw4PushService : PushService() {
      */
     override fun onMessage(message: PushMessage, instance: String) {
         val content = String(message.content)
-        Log.d(TAG, "Push Message Received: $content")
-        Utils.postWakeNotification(this)
+        val json = JSONObject(content)
+        Log.d(TAG, "onMessage(): jsonified: $json")
+        val ts = json.optLong("ts", 0L)
+        if ( 0L != ts ) {
+            val now = Utils.getCurSeconds()
+            Log.d(TAG, "took ${now - ts}s to receive")
+        }
+        val body = json.optString("body")
+        val gid = json.optInt("gid", 0)
+        Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
+        Utils.postPushNotification(this, gid, body)
     }
 
     override fun onUnregistered(instance: String) {
