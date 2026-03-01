@@ -37,13 +37,12 @@ private val KEY_ENDPOINT = TAG + "_KEY_ENDPOINT"
 class Xw4PushService : PushService() {
     override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
         val url = endpoint.url
-        Log.d(TAG, "New UnifiedPush Endpoint: $url")
 
         val oldVal = getPush(this)
         if (! url.equals(oldVal) ) {
+            Log.d(TAG, "new endpoint: $url")
             setPush(url)
         }
-        DBUtils.setStringFor(this, KEY_ENDPOINT, url)
     }
 
     /**
@@ -91,7 +90,7 @@ class Xw4PushService : PushService() {
 
         fun getPush(context: Context): String {
             val result = DBUtils.getStringFor(context, KEY_ENDPOINT, "")!!
-            Log.d(TAG, "getPush() => $result")
+            // Log.d(TAG, "getPush() => $result")
             return result
         }
     }
