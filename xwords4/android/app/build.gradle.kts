@@ -175,6 +175,8 @@ android {
             buildConfigField( "boolean", "HAVE_PASSWORD", "false" )
             buildConfigField( "boolean", "NO_NEW_RELAY", "true" )
             buildConfigField( "boolean", "LOCUTILS_ENABLED", "false" )
+            // Change this and Android.mk at the same time
+            buildConfigField( "boolean", "XWFEATURE_SMS", "false" )
             buildConfigField( "String", "LAST_COMMIT_FILE", "\"$LAST_COMMIT_FILE\"" )
             buildConfigField( "int", "BAD_COUNT", "2" )
             resValue( "string", "nbs_port", "0" )

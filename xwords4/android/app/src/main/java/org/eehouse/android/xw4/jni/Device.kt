@@ -253,8 +253,10 @@ object Device {
     }
 
     fun parseSMSPacket(fromPhone: String, packet: ByteArray) {
-        post( Priority.NETWORK ) {
-            dvc_parseSMSPacket(m_ptrGlobals, fromPhone, packet)
+        if ( BuildConfig.XWFEATURE_SMS ) {
+            post( Priority.NETWORK ) {
+                dvc_parseSMSPacket(m_ptrGlobals, fromPhone, packet)
+            }
         }
     }
 

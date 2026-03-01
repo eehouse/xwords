@@ -179,7 +179,7 @@ class CommsAddrRec : Serializable {
                 if (WiDirWrapper.enabled()) {
                     supported.add(CommsConnType.COMMS_CONN_P2P)
                 }
-                if (Utils.isGSMPhone(context)) {
+                if (BuildConfig.XWFEATURE_SMS && Utils.isGSMPhone(context)) {
                     supported.add(CommsConnType.COMMS_CONN_SMS)
                 }
                 if (NFCUtils.nfcAvail(context).get(0)) {

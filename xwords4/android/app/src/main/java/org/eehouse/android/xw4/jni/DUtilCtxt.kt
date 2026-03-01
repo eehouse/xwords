@@ -374,8 +374,10 @@ class DUtilCtxt() {
     }
 
     fun sendViaNBS(msg: ByteArray, phone: String, port: Int) {
-        Log.d(TAG, "sendViaNBS($msg, $phone, $port)")
-        NBSProto.sendPacket(mContext, msg, phone)
+        if ( BuildConfig.XWFEATURE_SMS ) {
+            Log.d(TAG, "sendViaNBS($msg, $phone, $port)")
+            NBSProto.sendPacket(mContext, msg, phone)
+        }
     }
 
     fun sendViaNFC(msg: ByteArray, gameID: Int) {

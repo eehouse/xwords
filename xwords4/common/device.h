@@ -61,9 +61,11 @@ void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
 
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
+#ifdef XWFEATURE_SMS
 void dvc_parseSMSPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                          const CommsAddrRec* fromAddr,
                          const XP_U8* buf, XP_U16 len );
+#endif
 void dvc_parseBTPacket( XW_DUtilCtxt* dutil, XWEnv xwe,
                         const XP_U8* buf, XP_U16 len,
                         const XP_UCHAR* fromName, const XP_UCHAR* fromAddr );

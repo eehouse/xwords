@@ -1,5 +1,4 @@
-# -*- mode: makefile; compile-command: "make -j3 MEMDEBUG=TRUE"; -*-
-# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# Copyright 2002-2025 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
 # This program is free software; you can redistribute it and/or

@@ -79,14 +79,16 @@ object NBSProto {
     fun sendPacket(
         context: Context, binmsg: ByteArray, phone: String
     ): Int {
-        Log.d(
-            TAG, "sendPacket(phone=%s, len=%d)",
-            phone, binmsg!!.size
-        )
-        val asArray = Array<ByteArray>(1, {binmsg})
-        sendBuffers(asArray, phone)
-        // addPacketTo(context, phone, binmsg)
-        return binmsg.size
+        if (BuildConfig.XWFEATURE_SMS) {
+            Log.d(
+                TAG, "sendPacket(phone=%s, len=%d)",
+                phone, binmsg!!.size
+            )
+            val asArray = Array<ByteArray>(1, {binmsg})
+            sendBuffers(asArray, phone)
+            // addPacketTo(context, phone, binmsg)
+            return binmsg.size
+        } else return -1
     }
 
     fun gameDied(context: Context, gameID: Int, phone: String?) {
@@ -184,12 +186,14 @@ object NBSProto {
         }
 
     private fun showToasts(context: Context): Boolean {
-        if (null == s_showToasts) {
-            s_showToasts =
-                XWPrefs.getPrefsBoolean(context, R.string.key_show_sms, false)
-        }
-        val result = s_showToasts!!
-        return result
+        if (BuildConfig.XWFEATURE_SMS) {
+            if (null == s_showToasts) {
+                s_showToasts =
+                    XWPrefs.getPrefsBoolean(context, R.string.key_show_sms, false)
+            }
+            val result = s_showToasts!!
+            return result
+        } else return false
     }
 
     // internal class NBSProtoThread : Thread("NBSProtoThread") {
@@ -370,61 +374,63 @@ object NBSProto {
     //     }
 
     private fun sendBuffers(fragments: Array<ByteArray>, phone: String) {
-        val context = XWApp.getContext()
-        var success = false
-        if (XWPrefs.getNBSEnabled(context) && Perms23.haveNBSPerms(context)
-        ) {
-            val port = nBSPort
-            // Try send-to-self
-            if (XWPrefs.getSMSToSelfEnabled(context)) {
-                val myPhone = SMSPhoneInfo.get(context)!!.number
-                if (null != myPhone
-                        && PhoneNumberUtils.compare(phone, myPhone)
-                ) {
-                    for (fragment in fragments) {
-                        handleFrom(context, fragment, phone, port)
+        if (BuildConfig.XWFEATURE_SMS) {
+            val context = XWApp.getContext()
+            var success = false
+            if (XWPrefs.getNBSEnabled(context) && Perms23.haveNBSPerms(context)
+            ) {
+                val port = nBSPort
+                // Try send-to-self
+                if (XWPrefs.getSMSToSelfEnabled(context)) {
+                    val myPhone = SMSPhoneInfo.get(context)!!.number
+                    if (null != myPhone
+                            && PhoneNumberUtils.compare(phone, myPhone)
+                    ) {
+                        for (fragment in fragments) {
+                            handleFrom(context, fragment, phone, port)
+                        }
+                        success = true
                     }
-                    success = true
                 }
+
+                if (!success) {
+                    try {
+                        val mgr = SmsManager.getDefault()
+                        val sent = makeStatusIntent(context, MSG_SENT)
+                        val delivery = makeStatusIntent(context, MSG_DELIVERED)
+                        fragments.map { fragment ->
+                            mgr.sendDataMessage(
+                                phone, null, port, fragment,
+                                sent, delivery
+                            )
+                            Log.d(TAG, "called $mgr.sendDataMessage(len=${fragment.size},port=$port)")
+                        }
+                        Stats.increment(STAT.STAT_NBS_SENT);
+                        success = true
+                    } catch (iae: IllegalArgumentException) {
+                        Log.w(TAG, "sendBuffers(%s): %s", phone, iae.toString())
+                    } catch (npe: NullPointerException) {
+                        Assert.failDbg() // shouldn't be trying to do this!!!
+                    } catch (se: SecurityException) {
+                        // getHelper().postEvent(MultiEvent.SMS_SEND_FAILED_NOPERMISSION)
+                        Assert.failDbg()
+                    } catch (ee: Exception) {
+                        Log.ex(TAG, ee)
+                    }
+                }
+            } else {
+                Log.i(TAG, "dropping because SMS disabled")
             }
 
-            if (!success) {
-                try {
-                    val mgr = SmsManager.getDefault()
-                    val sent = makeStatusIntent(context, MSG_SENT)
-                    val delivery = makeStatusIntent(context, MSG_DELIVERED)
-                    fragments.map { fragment ->
-                        mgr.sendDataMessage(
-                            phone, null, port, fragment,
-                            sent, delivery
-                        )
-                        Log.d(TAG, "called $mgr.sendDataMessage(len=${fragment.size},port=$port)")
-                    }
-                    Stats.increment(STAT.STAT_NBS_SENT);
-                    success = true
-                } catch (iae: IllegalArgumentException) {
-                    Log.w(TAG, "sendBuffers(%s): %s", phone, iae.toString())
-                } catch (npe: NullPointerException) {
-                    Assert.failDbg() // shouldn't be trying to do this!!!
-                } catch (se: SecurityException) {
-                    // getHelper().postEvent(MultiEvent.SMS_SEND_FAILED_NOPERMISSION)
-                    Assert.failDbg()
-                } catch (ee: Exception) {
-                    Log.ex(TAG, ee)
-                }
+            if (success && (0 == (++s_nSent % TOAST_FREQ) && showToasts(context))) {
+                DbgUtils.showf(context, "Sent msg %d", s_nSent)
             }
-        } else {
-            Log.i(TAG, "dropping because SMS disabled")
-        }
 
-        if (success && (0 == (++s_nSent % TOAST_FREQ) && showToasts(context))) {
-            DbgUtils.showf(context, "Sent msg %d", s_nSent)
+            ConnStatusHandler.updateStatusOut(
+                context, CommsConnType.COMMS_CONN_SMS,
+                success
+            )
         }
-
-        ConnStatusHandler.updateStatusOut(
-            context, CommsConnType.COMMS_CONN_SMS,
-            success
-        )
     }
 
     private fun makeStatusIntent(context: Context, msg: String): PendingIntent {

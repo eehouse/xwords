@@ -2391,11 +2391,11 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1onBLEMtuChanged
     DVC_HEADER_END();
 }
 
+#ifdef XWFEATURE_SMS
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1parseSMSPacket
 ( JNIEnv* env, jclass C, jlong jniGlobalPtr, jstring jphone, jbyteArray jmsg )
 {
-    LOG_FUNC();
     DVC_HEADER(jniGlobalPtr);
     XP_U16 len = (*env)->GetArrayLength( env, jmsg );
     jbyte* msg = (*env)->GetByteArrayElements( env, jmsg, NULL );
@@ -2410,6 +2410,7 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1parseSMSPacket
     (*env)->ReleaseByteArrayElements( env, jmsg, msg, 0 );
     DVC_HEADER_END();
 }
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1parseUrl

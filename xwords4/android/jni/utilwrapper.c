@@ -1085,6 +1085,7 @@ and_dutil_sendViaBT( XW_DUtilCtxt* duc, XWEnv xwe,
     return -1;
 }
 
+#ifdef XWFEATURE_SMS
 static XP_S16
 and_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf,
                       XP_U16 len, const XP_UCHAR* phone, XP_U16 port )
@@ -1101,6 +1102,7 @@ and_dutil_sendViaNBS( XW_DUtilCtxt* duc, XWEnv xwe, const XP_U8* buf,
     DUTIL_CBK_TAIL();
     return -1;
 }
+#endif
 
 static XP_S16
 and_dutil_sendViaNFC( XW_DUtilCtxt* duc, XWEnv xwe,
@@ -1285,7 +1287,9 @@ makeDUtil( MPFORMAL JNIEnv* env,
     SET_DPROC(startMQTTListener);
     SET_DPROC(sendViaMQTT);
     SET_DPROC(sendViaBT);
+#ifdef XWFEATURE_SMS
     SET_DPROC(sendViaNBS);
+#endif
     SET_DPROC(sendViaNFC);
     SET_DPROC(onKnownPlayersChange);
     SET_DPROC(onGameChanged);

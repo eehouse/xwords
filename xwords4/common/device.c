@@ -748,6 +748,7 @@ parsePingData( XW_DUtilCtxt* XP_UNUSED(dutil), cJSON* pingData, XP_U16* pingID,
     return success;
 }
 
+#ifdef XWFEATURE_SMS
 static XP_Bool
 parsePing( XW_DUtilCtxt* dutil, XWStreamCtxt* stream, XP_U16* pingID,
            XP_U32* ts1, XP_U32* ts2, XP_Bool* isReply )
@@ -777,6 +778,7 @@ postPingOnce( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U16 pingID, XP_U32 tsStart,
         dutil_onPingReceived( dutil, xwe, tsStart, tsMid, now );
     }
 }
+#endif
 
 static void
 postPingJsonOnce( XW_DUtilCtxt* dutil, XWEnv xwe, cJSON** pingDataP )
@@ -849,6 +851,7 @@ dvc_pingAll( XW_DUtilCtxt* dutil, XWEnv xwe, GameRef gr )
         for ( XP_U32 state = 0; addr_iter( &addrs[ii], &typ, &state ); ) {
             const CommsAddrRec* addr = &addrs[ii];
             switch ( typ ) {
+#ifdef XWFEATURE_SMS
             case COMMS_CONN_SMS: {
                 cJSON* pingData = makePing( dutil, xwe, pingID, now, 0 );
                 XWStreamCtxt* ping = jsonToStream( dutil, &pingData );
@@ -857,6 +860,7 @@ dvc_pingAll( XW_DUtilCtxt* dutil, XWEnv xwe, GameRef gr )
                 strm_destroy( ping );
             }
                 break;
+#endif
             case COMMS_CONN_MQTT: {
                 XWStreamCtxt* ping = makeMQTTPing( dutil, xwe, addr, pingID, now, 0 );
                 sendPingViaMQTT( dutil, xwe, &ping );

@@ -40,8 +40,12 @@ open class XWPrefs {
         private const val key_checked_upgrades = "key_checked_upgrades"
 
         fun getNBSEnabled(context: Context): Boolean {
-            val haveNative = Perms23.haveNativePerms()
-            return haveNative || getPrefsBoolean(context, R.string.key_enable_nbs, false)
+            val result =
+                if (BuildConfig.XWFEATURE_SMS)
+                    Perms23.haveNativePerms() ||
+                        getPrefsBoolean(context, R.string.key_enable_nbs, false)
+                else false
+            return result
         }
 
         fun setNBSEnabled(context: Context, enabled: Boolean) {

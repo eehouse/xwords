@@ -271,9 +271,17 @@ cgl_draw( CursGameList* cgl )
     dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
     XP_UCHAR didBuf[32];
     gchar* dbName = g_path_get_basename(params->dbName);
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; mqttid: %s; phone: %s; db: %s",
-              cgl->pid, nGames, formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
-              params->connInfo.sms.myPhone, dbName );
+    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; mqttid: %s;"
+#ifdef XWFEATURE_SMS
+                        " phone: %s;"
+#endif
+                        " db: %s",
+                        cgl->pid, nGames, formatMQTTDevID( &devID, didBuf,
+                                                           VSIZE(didBuf) ),
+#ifdef XWFEATURE_SMS
+                        params->connInfo.sms.myPhone,
+#endif
+                        dbName );
     mvwaddstr( win, 0, 0, buf );
     g_free( dbName );
     
