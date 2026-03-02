@@ -367,7 +367,7 @@ mqttc_init( LaunchParams* params )
         XP_LOGFF( "mosquitto_lib_init() => %d", err );
         XP_ASSERT( 0 == err );
 
-        bool cleanSession = false;
+        bool cleanSession = true;
         struct mosquitto* mosq = storage->mosq =
             mosquitto_new( storage->clientIDStr, cleanSession, storage );
 
