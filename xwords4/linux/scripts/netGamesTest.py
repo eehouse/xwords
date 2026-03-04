@@ -726,7 +726,8 @@ class Device():
         scriptArgs += '--cmd-socket-name', self.cmdSocketName
 
         if self.args.WITH_MQTT:
-            scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, '--mqtt-host', self.args.MQTT_HOST ]
+            scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, ]
+            if self.args.MQTT_HOST: scriptArgs += [ '--mqtt-host', self.args.MQTT_HOST ]
         else:
             scriptArgs += [ '--skip-mqtt-add' ]
 
@@ -861,8 +862,8 @@ def openOnExit(args):
     devs = Device.getAll()
     for dev in devs:
         appargs = [args.APP_NEW, '--db', dev.dbName]
-        if args.WITH_MQTT:
-            appargs += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
+        if args.WITH_MQTT: appargs += [ '--mqtt-port', args.MQTT_PORT, ]
+        if args.MQTT_HOST: appargs += ['--mqtt-host', args.MQTT_HOST, ]
         subprocess.Popen([str(arg) for arg in appargs], stdout = subprocess.DEVNULL,
                          stderr = subprocess.DEVNULL, universal_newlines = True)
 
@@ -1055,7 +1056,7 @@ def mkParser():
     parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', default = True, action = 'store_true')
     parser.add_argument('--without-mqtt', dest = 'WITH_MQTT', action = 'store_false')
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
-    parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
+    parser.add_argument('--mqtt-host', dest = 'MQTT_HOST' )
 
     parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
