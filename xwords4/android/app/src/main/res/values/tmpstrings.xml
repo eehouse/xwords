@@ -72,4 +72,7 @@
   <string name="wake_title">Wake title</string>
   <string name="wake_body">Wake body</string>
   <string name="wake_delay_fmt">Wake delay: %1$ds</string>
+
+  <string name="disable_ntfy">Disable ntfy</string>
+  <string name="disable_ntfy_summary">Don\'t use even if installed</string>
 </resources>

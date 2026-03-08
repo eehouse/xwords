@@ -111,6 +111,10 @@ open class XWPrefs {
             setPrefsBoolean(context, R.string.key_disable_mqtt, !enabled)
         }
 
+        fun getNTFYEnabled(context: Context): Boolean {
+            return !getPrefsBoolean(context, R.string.key_disable_ntfy, false)
+        }
+
         fun getBTDisabled(context: Context): Boolean {
             val disabled = getPrefsBoolean(
                 context, R.string.key_disable_bt,

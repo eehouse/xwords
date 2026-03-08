@@ -44,7 +44,7 @@ class Xw4PushService : PushService() {
         val url = endpoint.url
         Log.d(TAG, "Endpoint: $url")
 
-        val oldVal = getPush(this)
+        val oldVal = DBUtils.getStringFor(this, KEY_ENDPOINT, "")!!
         if (! url.equals(oldVal) ) {
             Log.d(TAG, "new endpoint: $url")
             setPush(url)
@@ -67,10 +67,14 @@ class Xw4PushService : PushService() {
                 Log.d(TAG, "took ${now - ts}s to receive")
                 now - ts
             } else -1
-        val body = json.optString("body")
-        val gid = json.optInt("gid", 0)
-        Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
-        Utils.postPushNotification(this, gid, delay, body)
+        if ( sEnabled ) {
+            val body = json.optString("body")
+            val gid = json.optInt("gid", 0)
+            Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
+            Utils.postPushNotification(this, gid, delay, body)
+        } else {
+            Log.d(TAG, "ntfy disabled; dropping message (but WTF??)")
+        }
     }
 
     override fun onUnregistered(instance: String) {
@@ -87,7 +91,9 @@ class Xw4PushService : PushService() {
     }
 
     companion object {
+        private var sEnabled: Boolean = true
         fun init(context: Context) {
+            sEnabled = XWPrefs.getNTFYEnabled(context)
             // I'm not using anything but ntfy for now. For whatever reason,
             // different distributors seem to require different code on the server
             // side to reach them, and I don't want to wind up not working with
@@ -107,9 +113,21 @@ class Xw4PushService : PushService() {
         }
 
         fun getPush(context: Context): String {
-            val result = DBUtils.getStringFor(context, KEY_ENDPOINT, "")!!
-            // Log.d(TAG, "getPush() => $result")
+            val enabled = XWPrefs.getNTFYEnabled(context)
+            Assert.assertTrueNR(enabled == sEnabled)
+            val result =
+                if (enabled) DBUtils.getStringFor(context, KEY_ENDPOINT, "")!!
+                else ""
+            Log.d(TAG, "getPush() => \"$result\"")
             return result
+        }
+
+        fun onEnabledChanged(context: Context, enabled: Boolean) {
+            Log.d(TAG, "onEnabledChanged($enabled)")
+            if (sEnabled != enabled) {
+                sEnabled = enabled
+                Device.setNeedsReg()
+            }
         }
     }
 }

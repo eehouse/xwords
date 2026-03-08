@@ -11,6 +11,12 @@
                 app:fragment="org.eehouse.android.xw4.gen.PrefsWrappers$prefs_net_kaservice"
                 />
 
+    <CheckBoxPreference android:key="@string/key_disable_ntfy"
+                        android:title="@string/disable_ntfy"
+                        android:summary="@string/disable_ntfy_summary"
+                        android:defaultValue="false"
+                        />
+
     <org.eehouse.android.xw4.MQTTCheckBoxPreference
         android:key="@string/key_disable_mqtt"
         android:title="@string/disable_mqtt"

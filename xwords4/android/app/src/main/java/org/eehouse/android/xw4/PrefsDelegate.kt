@@ -214,6 +214,11 @@ class PrefsDelegate(private val mActivity: XWActivity,
                     MQTTUtils.setEnabled(mActivity, enabled)
                 }
 
+                R.string.key_disable_ntfy -> {
+                    val enabled = !sp.getBoolean(key, true)
+                    Xw4PushService.onEnabledChanged(mActivity, enabled)
+                }
+
                 R.string.key_disable_bt -> BTUtils.disabledChanged(mActivity)
                 R.string.key_force_tablet -> makeOkOnlyBuilder(R.string.after_restart).show()
                 R.string.key_mqtt_host, R.string.key_mqtt_port, R.string.key_mqtt_qos ->
@@ -281,6 +286,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
             R.string.key_disable_nag,
             R.string.key_disable_nag_solo,
             R.string.key_disable_mqtt,
+            R.string.key_disable_ntfy,
             R.string.key_disable_bt,
             R.string.key_force_tablet,
             R.string.key_mqtt_host,
