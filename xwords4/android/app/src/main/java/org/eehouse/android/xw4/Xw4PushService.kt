@@ -33,6 +33,7 @@ import org.unifiedpush.android.connector.UnifiedPush
 import org.unifiedpush.android.connector.data.PushEndpoint
 import org.unifiedpush.android.connector.data.PushMessage
 
+import org.eehouse.android.xw4.jni.Device
 import org.eehouse.android.xw4.jni.GameRef
 
 private val TAG = Xw4PushService::class.java.simpleName
@@ -41,11 +42,13 @@ private val KEY_ENDPOINT = TAG + "_KEY_ENDPOINT"
 class Xw4PushService : PushService() {
     override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
         val url = endpoint.url
+        Log.d(TAG, "Endpoint: $url")
 
         val oldVal = getPush(this)
         if (! url.equals(oldVal) ) {
             Log.d(TAG, "new endpoint: $url")
             setPush(url)
+            Device.setNeedsReg()
         }
     }
 
@@ -58,14 +61,16 @@ class Xw4PushService : PushService() {
         val json = JSONObject(content)
         Log.d(TAG, "onMessage(): jsonified: $json")
         val ts = json.optLong("ts", 0L)
-        if ( 0L != ts ) {
-            val now = Utils.getCurSeconds()
-            Log.d(TAG, "took ${now - ts}s to receive")
-        }
+        val delay =
+            if ( 0L != ts ) {
+                val now = Utils.getCurSeconds()
+                Log.d(TAG, "took ${now - ts}s to receive")
+                now - ts
+            } else -1
         val body = json.optString("body")
         val gid = json.optInt("gid", 0)
         Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
-        Utils.postPushNotification(this, gid, body)
+        Utils.postPushNotification(this, gid, delay, body)
     }
 
     override fun onUnregistered(instance: String) {

@@ -74,7 +74,7 @@ static void addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
                                    XP_U32 gameID, XWStreamCtxt* stream );
 static void getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew,
                           MQTTDevID* devID );
-static void registerIf( XW_DUtilCtxt* dutil, XWEnv xwe );
+static void registerIf( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool force );
 
 XWStreamCtxt*
 dvc_makeStream( XW_DUtilCtxt* dutil )
@@ -807,7 +807,7 @@ tryRegProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
         DevCtxt* dc = load( dutil, xwe );
         if ( dc->inForeground ) {
             XP_LOGFF( "calling registerIf()" );
-            registerIf( dutil, xwe );
+            registerIf( dutil, xwe, XP_FALSE );
         }
     }
 }
@@ -820,6 +820,21 @@ dvc_setInForeground( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool inForeground )
     if ( inForeground ) {
         tmr_setIdle( dutil, xwe, tryRegProc, NULL );
     }
+}
+
+static void
+doRegProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
+           TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        registerIf( dutil, xwe, XP_TRUE );
+    }
+}
+
+void
+dvc_setNeedsReg( XW_DUtilCtxt* dutil, XWEnv xwe )
+{
+    tmr_setIdle( dutil, xwe, doRegProc, NULL );
 }
 
 void
@@ -2071,7 +2086,7 @@ dvc_isLegalPhony( XW_DUtilCtxt* dutil, XWEnv xwe,
 }
 
 static void
-registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
+registerIf( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool force )
 {
     XP_U32 atNext = 0;
     XP_U32 len = sizeof(atNext);
@@ -2085,7 +2100,11 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe )
     gitrev[len] = '\0';
 
     XP_U32 now = dutil_getCurSeconds( dutil, xwe );
-    if ( atNext < now || 0 != XP_STRCMP( gitrev, GITREV ) ) {
+    if ( force || atNext < now || 0 != XP_STRCMP( gitrev, GITREV ) ) {
+        /* Clear it so that we'll keep trying until we succeed, e.g. if force
+           was set */
+        XP_U32 atNext = 0;
+        dutil_storePtr( dutil, xwe, LAST_REG_KEY, &atNext, sizeof(atNext) );
 
         /* Start with the platform's values */
         cJSON* params = dutil_getRegValues( dutil, xwe );
@@ -2130,7 +2149,7 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 #ifdef DEBUG
     dutil->magic = MAGIC_INITED;
 #endif
-    registerIf( dutil, xwe );
+    registerIf( dutil, xwe, XP_FALSE );
 }
 
 void

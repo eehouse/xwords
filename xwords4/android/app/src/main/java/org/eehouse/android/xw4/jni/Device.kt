@@ -207,6 +207,12 @@ object Device {
         }
     }
 
+    fun setNeedsReg() {
+        post {
+            dvc_setNeedsReg(m_ptrGlobals)
+        }
+    }
+
     fun pingAll( gr: GameRef ) {
         post( Priority.NETWORK ) {
             dvc_pingAll(m_ptrGlobals, gr.gr)
@@ -373,9 +379,10 @@ object Device {
     private external fun cleanupJNIState(jniState: Long)
 	@JvmStatic
     private external fun dvc_getUUID(): String
-
     @JvmStatic
     private external fun dvc_setInForeground(jniState: Long, inForeground: Boolean)
+    @JvmStatic
+    private external fun dvc_setNeedsReg(jniState: Long)
     @JvmStatic
     private external fun dvc_pingAll(jniState: Long, gr: Long)
     @JvmStatic

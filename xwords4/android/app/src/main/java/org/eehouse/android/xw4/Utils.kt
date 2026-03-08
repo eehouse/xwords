@@ -284,13 +284,16 @@ object Utils {
     // seems to happen, the very fact of receiving a broadcast allows a brief
     // network connection that may itself result in a move-made notice being
     // posted.
-    fun postPushNotification(context: Context, gameID: Int,
+    fun postPushNotification(context: Context, gameID: Int, delay: Long,
                              bodyStr: String? = null) {
         launch {
             val intent = GamesListDelegate.makeSelfIntent(context)
             val gr = if (gameID == 0) null else GameMgr.getFor(gameID)
             val titleID = R.string.wake_title
-            val body = bodyStr?.let{it} ?: LocUtils.getString(context, R.string.wake_body)
+            var body = bodyStr?.let{it} ?: LocUtils.getString(context, R.string.wake_body) ?: ""
+            if (BuildConfig.NON_RELEASE && 0 < delay) {
+                body += "\n" + LocUtils.getString(context, R.string.wake_delay_fmt, delay)
+            }
             postNotification(context, intent, titleID, body, titleID)
         }
     }

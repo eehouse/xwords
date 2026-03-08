@@ -71,4 +71,5 @@
 
   <string name="wake_title">Wake title</string>
   <string name="wake_body">Wake body</string>
+  <string name="wake_delay_fmt">Wake delay: %1$ds</string>
 </resources>
