@@ -988,6 +988,8 @@ class GamesListDelegate(delegator: Delegator) :
                 showDialogFragment(DlgID.CONVERT_GAMES)
             }
         }
+
+        askNotifyPermsOnce()
     } // init
 
     private fun updateGamesView() {
