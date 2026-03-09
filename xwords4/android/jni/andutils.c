@@ -1067,7 +1067,7 @@ debugf( const char* format, va_list ap )
     const char* tag =
 # if defined VARIANT_xw4GPlay || defined VARIANT_xw4fdroid || defined VARIANT_xw4Foss
                                "xw4"
-# elif defined VARIANT_xw4d || defined VARIANT_xw4dGPlay
+# elif defined VARIANT_xw4d || defined VARIANT_xw4dGPlay || defined VARIANT_xw4grd
                                "x4bg"
 # elif defined VARIANT_xw4dup || defined VARIANT_xw4dupGPlay
                                "x4du"

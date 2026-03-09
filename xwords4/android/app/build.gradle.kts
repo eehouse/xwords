@@ -37,6 +37,7 @@ val XWD_UUID = "\"b079b640-35fe-11e5-a432-0002a5d5c51b\"" // from comms.h
 // AID must start with F (first 4 bits) and be from 5 to 16 bytes long
 val NFC_AID_XW4 = "FC8FF510B360"
 val NFC_AID_XW4d = "FDDA0A3EB5E5"
+val NFC_AID_XW4grd = "FDDA0A3EB5E6"
 
 fun String.runString(): String {
 	var bytesOut = ByteArrayOutputStream()
@@ -231,6 +232,25 @@ android {
             buildConfigField( "String", "NFC_AID", "\"${NFC_AID_XW4d}\"" )
             resValue( "string", "nfc_aid", "$NFC_AID_XW4d" )
             externalNativeBuild.ndkBuild.cFlags += arrayOf("-DVARIANT_xw4d")
+            externalNativeBuild.ndkBuild.arguments += arrayOf("XW_BT_UUID=" + XWD_UUID)
+        }
+
+		create("xw4grd") {
+            dimension = "variant"
+
+            buildConfigField( "String", "DB_NAME", "\"xwdgrdb\"" )
+            applicationId = "org.eehouse.android.xw4grd"
+            resValue( "string", "app_name", "CrogrDeb" )
+            resValue( "string", "invite_prefix", "/andgrd/" )
+			resValue( "string", "conf_prefix", "/cnfgrd/" )
+			resValue( "string", "newgame_scheme", "newxwgamed" )
+            buildConfigField( "boolean", "WIDIR_ENABLED", "true" )
+            buildConfigField( "String", "VARIANT_NAME", "\"Dev/Debug\"" )
+            buildConfigField( "int", "VARIANT_CODE", "6" )
+            buildConfigField( "boolean", "REPORT_LOCKS", "true" )
+            buildConfigField( "String", "NFC_AID", "\"${NFC_AID_XW4d}\"" )
+            resValue( "string", "nfc_aid", "$NFC_AID_XW4d" )
+            externalNativeBuild.ndkBuild.cFlags += arrayOf("-DVARIANT_xw4grd")
             externalNativeBuild.ndkBuild.arguments += arrayOf("XW_BT_UUID=" + XWD_UUID)
         }
 
