@@ -103,26 +103,26 @@ repositories {
 android {
 	// It'll compile without specifying these. So let's try going with
 	// the defaults for now
-     compileOptions {
-         sourceCompatibility = JavaVersion.VERSION_17
-         targetCompatibility = JavaVersion.VERSION_17
-	 }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+	}
 
-     packaging {
-         resources {
-             excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
+    packaging {
+        resources {
+            excludes += listOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
 
-             excludes += listOf("/META-INF/{AL2.0,LGPL2.1}")
-             excludes += listOf("META-INF/LICENSE.md")
-             excludes += listOf("META-INF/LICENSE-notice.md")
-             excludes += listOf("META-INF/INDEX.LIST")
-             excludes += listOf("META-INF/*.properties")
-         }
-     }
+            excludes += listOf("/META-INF/{AL2.0,LGPL2.1}")
+            excludes += listOf("META-INF/LICENSE.md")
+            excludes += listOf("META-INF/LICENSE-notice.md")
+            excludes += listOf("META-INF/INDEX.LIST")
+            excludes += listOf("META-INF/*.properties")
+        }
+    }
 
     // Specify buildToolsVersion so gradle will inform when the
     // default changes and .travis.yml can be kept in sync
-    ndkVersion  = "21.4.7075529" // upgrade this and may need to up minSdk below
+    ndkVersion  = "28.0.13004108"
     defaultConfig {
         minSdk = 21			// this will abandon some users; consider
         versionCode = VERSION_CODE_BASE
