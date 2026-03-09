@@ -1,13 +1,15 @@
 #!/bin/bash
 
-set -e -u
+set -e -u -x
 
 NO_RM=''
 NO_UPLOAD=''
 
+BRANCH=$(git branch --show-current)
 DIR=/tmp/build_$$_dir
-mkdir -p $DIR
-pushd $DIR
+
+# REMOTE=https://github.com/eehouse/xwords.git
+REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
@@ -35,18 +37,36 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
-git clone --branch main --recurse-submodules https://github.com/eehouse/xwords.git
+mkdir -p $DIR
+pushd $DIR
+
+git clone --branch $BRANCH --recurse-submodules ${REMOTE}
 cd xwords/xwords4/android
-./gradlew asXw4dDeb
+case $BRANCH in
+	"main")
+		TARGET=asXw4dDeb
+		;;
+	"gameref")
+		TARGET=asXw4grdDeb
+		;;
+	*) fail
+	   ;;
+esac
+./gradlew $TARGET
 
 APK="$(find . -name '*.apk')"
+# pull something like xw4d out of the path
+SERVER_DIR=$(basename $(dirname $(dirname $APK)))
+echo "APK: $APK; SERVER_DIR: ${SERVER_DIR}"
+
 if [ -n "${NO_UPLOAD}" ]; then
 	: # do nothing
 elif [ -n "${XW4D_UPLOAD}" ]; then
 	IFS=","
 	for UPPATH in ${XW4D_UPLOAD}; do
-		scp "$APK" ${UPPATH}
-		echo "uploaded $APK to ${UPPATH}"
+		WITH_DIR="${UPPATH}/${SERVER_DIR}/"
+		scp "$APK" "$WITH_DIR"
+		echo "uploaded $APK to ${WITH_DIR}"
 	done
 else
 	echo "not uploading $APK: XW4D_UPLOAD not set" >&2
