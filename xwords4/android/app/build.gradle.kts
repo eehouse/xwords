@@ -243,7 +243,7 @@ android {
             resValue( "string", "app_name", "CrogrDeb" )
             resValue( "string", "invite_prefix", "/andgrd/" )
 			resValue( "string", "conf_prefix", "/cnfgrd/" )
-			resValue( "string", "newgame_scheme", "newxwgamed" )
+			resValue( "string", "newgame_scheme", "newxwgamegrd" )
             buildConfigField( "boolean", "WIDIR_ENABLED", "true" )
             buildConfigField( "String", "VARIANT_NAME", "\"Dev/Debug\"" )
             buildConfigField( "int", "VARIANT_CODE", "6" )
@@ -505,6 +505,7 @@ tasks.create("myPreBuild") {
 			   "copyLocStrings",
 			   "mkPrefsWrapper",
 			   "copyStringsXw4D",
+			   "copyStringsXw4grD",
 			   "copyStringsXw4DGPlay"
 	)
 }
@@ -517,6 +518,12 @@ tasks.create<Exec>("copyStringsXw4D") {
     workingDir( "./" )
     environment.put("APPNAME", "CrossDeb")
     commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4d/res/values/strings.xml", "src/xw4d/res/values/tmpstrings.xml" )
+}
+
+tasks.create<Exec>("copyStringsXw4grD") {
+    workingDir( "./" )
+    environment.put("APPNAME", "CrogrDeb")
+    commandLine( "make", "-f", "../scripts/Variant.mk", "src/xw4grd/res/values/strings.xml", "src/xw4grd/res/values/tmpstrings.xml" )
 }
 
 tasks.create<Exec>("copyStringsXw4DGPlay" ) {
