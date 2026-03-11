@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
 
 NO_RM=''
 NO_UPLOAD=''
@@ -42,6 +42,7 @@ pushd $DIR
 
 git clone --branch $BRANCH --recurse-submodules ${REMOTE}
 cd xwords/xwords4/android
+
 case $BRANCH in
 	"main")
 		TARGET=asXw4dDeb
@@ -52,24 +53,30 @@ case $BRANCH in
 	*) fail
 	   ;;
 esac
-./gradlew $TARGET
 
-APK="$(find . -name '*.apk')"
-# pull something like xw4d out of the path
-SERVER_DIR=$(basename $(dirname $(dirname $APK)))
-echo "APK: $APK; SERVER_DIR: ${SERVER_DIR}"
-
-if [ -n "${NO_UPLOAD}" ]; then
-	: # do nothing
-elif [ -n "${XW4D_UPLOAD}" ]; then
-	IFS=","
-	for UPPATH in ${XW4D_UPLOAD}; do
-		WITH_DIR="${UPPATH}/${SERVER_DIR}/"
-		scp "$APK" "$WITH_DIR"
-		echo "uploaded $APK to ${WITH_DIR}"
-	done
+if [ -z "$(git describe 2>/dev/null)" ]; then
+	echo "git tags required but not found"
+	echo "skipping build"
 else
-	echo "not uploading $APK: XW4D_UPLOAD not set" >&2
+	./gradlew $TARGET
+
+	APK="$(find . -name '*.apk')"
+	# pull something like xw4d out of the path
+	SERVER_DIR=$(basename $(dirname $(dirname $APK)))
+	echo "APK: $APK; SERVER_DIR: ${SERVER_DIR}"
+
+	if [ -n "${NO_UPLOAD}" ]; then
+		: # do nothing
+	elif [ -n "${XW4D_UPLOAD}" ]; then
+		IFS=","
+		for UPPATH in ${XW4D_UPLOAD}; do
+			WITH_DIR="${UPPATH}/${SERVER_DIR}/"
+			scp "$APK" "$WITH_DIR"
+			echo "uploaded $APK to ${WITH_DIR}"
+		done
+	else
+		echo "not uploading $APK: XW4D_UPLOAD not set" >&2
+	fi
 fi
 
 popd

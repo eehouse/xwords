@@ -60,10 +60,10 @@ class UpdateCheckReceiver : BroadcastReceiver() {
     ) : AsyncTask<Void?, Void?, String?>() {
         override fun doInBackground(vararg params: Void?): String? {
             val conn = NetUtils.makeHttpUpdateConn(mContext, "getUpdates")
-            var json: String? = null
-            if (null != conn) {
-                json = NetUtils.runConn(conn, m_params)
-            }
+            val json =
+                conn?.let {
+                    NetUtils.runConn(it, m_params)
+                }
             return json
         }
 
@@ -226,6 +226,7 @@ class UpdateCheckReceiver : BroadcastReceiver() {
         private const val k_VARIANT = "variant"
         private const val k_GVERS = "gvers"
         private const val k_INSTALLER = "installer"
+        private const val k_BRANCH = "branch"
         private const val k_DEVOK = "devOK"
         private const val k_APP = "app"
         private const val k_DICTS = "dicts"
@@ -311,6 +312,7 @@ class UpdateCheckReceiver : BroadcastReceiver() {
                     appParams.put(k_VARIANT, BuildConfig.VARIANT_CODE)
                     appParams.put(k_GVERS, BuildConfig.GIT_REV)
                     appParams.put(k_INSTALLER, installer)
+                    appParams.put(k_BRANCH, BuildConfig.GITBRANCH)
                     if (devOK(context)) {
                         appParams.put(k_DEVOK, true)
                     }
