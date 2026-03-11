@@ -213,7 +213,13 @@ object Device {
         }
     }
 
-    fun pingAll( gr: GameRef ) {
+    fun onWakeReceived(key: Int) {
+        post {
+            dvc_onWakeReceived(m_ptrGlobals, key)
+        }
+    }
+
+    fun pingAll(gr: GameRef) {
         post( Priority.NETWORK ) {
             dvc_pingAll(m_ptrGlobals, gr.gr)
         }
@@ -383,6 +389,8 @@ object Device {
     private external fun dvc_setInForeground(jniState: Long, inForeground: Boolean)
     @JvmStatic
     private external fun dvc_setNeedsReg(jniState: Long)
+    @JvmStatic
+    private external fun dvc_onWakeReceived(jniState: Long, key: Int)
     @JvmStatic
     private external fun dvc_pingAll(jniState: Long, gr: Long)
     @JvmStatic

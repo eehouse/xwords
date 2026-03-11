@@ -72,6 +72,10 @@ class Xw4PushService : PushService() {
             val gid = json.optInt("gid", 0)
             Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
             Utils.postPushNotification(this, gid, delay, body)
+            val key = json.optInt("key", 0)
+            if ( 0 != key ) {
+                Device.onWakeReceived(key)
+            }
         } else {
             Log.d(TAG, "ntfy disabled; dropping message (but WTF??)")
         }

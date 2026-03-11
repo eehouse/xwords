@@ -2308,10 +2308,20 @@ Java_org_eehouse_android_xw4_jni_Device_dvc_1setInForeground
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_Device_dvc_1setNeedsReg
-(JNIEnv* env, jclass C, jlong jniGlobalPtr )
+( JNIEnv* env, jclass C, jlong jniGlobalPtr )
 {
     DVC_HEADER(jniGlobalPtr);
     dvc_setNeedsReg( globalState->dutil, env );
+    DVC_HEADER_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_Device_dvc_1onWakeReceived
+
+( JNIEnv* env, jclass C, jlong jniGlobalPtr, jint key )
+{
+    DVC_HEADER(jniGlobalPtr);
+    dvc_onWakeReceived( globalState->dutil, env, key );
     DVC_HEADER_END();
 }
 

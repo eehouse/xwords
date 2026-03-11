@@ -39,6 +39,7 @@ XP_S16 dvc_sendMsgs( XW_DUtilCtxt* duc, XWEnv xwe,
 
 void dvc_setInForeground( XW_DUtilCtxt* duc, XWEnv xwe, XP_Bool inForeground );
 void dvc_setNeedsReg( XW_DUtilCtxt* duc, XWEnv xwe );
+void dvc_onWakeReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 key );
 
 /* Ping the broker */
 void dvc_pingMQTTBroker( XW_DUtilCtxt* duc, XWEnv xwe );

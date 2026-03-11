@@ -75,6 +75,8 @@ static void addHeaderGameIDAndCmd( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTCmd cmd,
 static void getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew,
                           MQTTDevID* devID );
 static void registerIf( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool force );
+static void sendCJsonViaMQTTP( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
+                               XP_U8 qos, cJSON** msg );
 
 XWStreamCtxt*
 dvc_makeStream( XW_DUtilCtxt* dutil )
@@ -837,6 +839,41 @@ dvc_setNeedsReg( XW_DUtilCtxt* dutil, XWEnv xwe )
     tmr_setIdle( dutil, xwe, doRegProc, NULL );
 }
 
+static void
+sendCJsonViaMQTTP( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
+                   XP_U8 qos, cJSON** msg )
+{
+    char* pstr = cJSON_PrintUnformatted( *msg );
+    XP_LOGFF( "pstr: %s", pstr );
+    dutil_sendViaMQTT( dutil, xwe, topic, (XP_U8*)pstr, XP_STRLEN(pstr), qos );
+    free( pstr );
+    cJSON_Delete( *msg );
+    *msg = NULL;
+}
+
+static void
+sendWakeReceivedProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
+                      TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        XP_U32 key = (XP_U32)(intptr_t)closure;
+        cJSON* params = cJSON_CreateObject();
+
+        XP_UCHAR devidStr[20];
+        dvc_fmtMyMQTTDevID( dutil, xwe, devidStr, VSIZE(devidStr) - 1 );
+        cJSON_AddStringToObject( params, "devid", devidStr );
+
+        cJSON_AddNumberToObject( params, "key", key );
+        sendCJsonViaMQTTP( dutil, xwe, "xw4/broker/wakeack", 0, &params );
+    }
+}
+
+void
+dvc_onWakeReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 key )
+{
+    tmr_setIdle( dutil, xwe, sendWakeReceivedProc, (void*)(intptr_t)key );
+}
+
 void
 dvc_pingMQTTBroker( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
@@ -1318,11 +1355,7 @@ onAckSendTimer( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
 #if 0
         dutil_sendViaWeb( dutil, xwe, 0, "ack2", params );
 #else
-        char* pstr = cJSON_PrintUnformatted( params );
-        XP_U8 qos = 0;
-        dutil_sendViaMQTT( dutil, xwe, "xw4/broker/ack",
-                           (XP_U8*)pstr, XP_STRLEN(pstr), qos );
-        free( pstr );
+        sendCJsonViaMQTTP( dutil, xwe, "xw4/broker/ack", 0, &params );
 #endif
 
         cJSON_Delete( params );
