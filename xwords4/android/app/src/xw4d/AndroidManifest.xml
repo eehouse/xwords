@@ -10,9 +10,6 @@
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
   <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
 
-  <!-- No longer allowed in GooglePlay variant after Nov 22 -->
-  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
   <!-- for crittercism -->
   <uses-permission android:name="android.permission.GET_TASKS"/>
 
