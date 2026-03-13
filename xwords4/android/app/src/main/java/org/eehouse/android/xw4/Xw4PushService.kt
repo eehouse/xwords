@@ -64,14 +64,16 @@ class Xw4PushService : PushService() {
         val delay =
             if ( 0L != ts ) {
                 val now = Utils.getCurSeconds()
-                Log.d(TAG, "took ${now - ts}s to receive")
+                Log.d(TAG, "onMessage(): took ${now - ts}s to receive")
                 now - ts
             } else -1
         if ( sEnabled ) {
-            val body = json.optString("body")
-            val gid = json.optInt("gid", 0)
-            Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
-            Utils.postPushNotification(this, gid, delay, body)
+            if (!json.optBoolean("silent", false)) {
+                val body = json.optString("body")
+                val gid = json.optInt("gid", 0)
+                Log.d(TAG, "calling postWakeNotification(gid=%X, body=$body)", gid)
+                Utils.postPushNotification(this, gid, delay, body)
+            }
             val key = json.optInt("key", 0)
             if ( 0 != key ) {
                 Device.onWakeReceived(key)
