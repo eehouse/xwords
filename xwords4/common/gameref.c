@@ -379,7 +379,7 @@ setSaveTimer( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, GameRef gr )
 {
     if ( !gd->saveTimerKey ) {
         XP_LOGFF( "setting timer");
-        XP_U32 inWhenMS = 5 * 1000;
+        XP_U32 inWhenMS = 2 * 1000;
         SaveTimerData* std = XP_CALLOC( duc->mpool, sizeof(*std) );
         std->gr = gr;
         std->gd = gd;
@@ -1217,7 +1217,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
         thumbChanged( duc, xwe, gd );
     }
 
-    GR_HEADER_END();
+    GR_HEADER_END_SAVE();
 }
 
 void
