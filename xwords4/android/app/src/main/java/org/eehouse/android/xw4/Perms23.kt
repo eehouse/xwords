@@ -304,7 +304,6 @@ object Perms23 {
         READ_CONTACTS(Manifest.permission.READ_CONTACTS),
         BLUETOOTH_CONNECT(Manifest.permission.BLUETOOTH_CONNECT),
         BLUETOOTH_SCAN(Manifest.permission.BLUETOOTH_SCAN),
-        REQUEST_INSTALL_PACKAGES(Manifest.permission.REQUEST_INSTALL_PACKAGES),
         POST_NOTIFICATIONS(Manifest.permission.POST_NOTIFICATIONS);
 
         var string: String? = null

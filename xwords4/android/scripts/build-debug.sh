@@ -5,13 +5,26 @@ set -e -u
 NO_RM=''
 NO_UPLOAD=''
 
+BRANCH=$(git branch --show-current)
 DIR=/tmp/build_$$_dir
-mkdir -p $DIR
-pushd $DIR
+
+KNOWN_HOSTS=("eehouse.org"
+			 "staging"
+			 "eehouse"
+			 "dev"
+			 "pi4.liquidsugar.net"
+			)
+HOSTS=''
+
+# REMOTE=https://github.com/eehouse/xwords.git
+REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
-	echo "usage: $0 [--no-rm --no-upload]    # do not remove the build directory"
+	echo "usage: $0 [--no-upload]     # do not remove build directory \\"
+	echo "    [--no-rm]               # do not remove build directory \\"
+	echo "    [--branch <git-branch>] # build this branch, not current \\"
+	echo "    [--host <hostname>]* # add to list of upload targets \\"
     echo "builds debug variant from the current tip of github"
 	echo "(last modified Jan 2024)"
     exit 1
@@ -21,6 +34,14 @@ while [ $# -ge 1 ]; do
     case $1 in
 		--help)
 			usage
+			;;
+		--host)
+			HOSTS="${HOSTS} $2"
+			shift
+			;;
+		--branch)
+			BRANCH=$2
+			shift
 			;;
 		--no-rm)
 			NO_RM=1
@@ -35,21 +56,70 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
-git clone --branch main --recurse-submodules https://github.com/eehouse/xwords.git
-cd xwords/xwords4/android
-./gradlew asXw4dDeb
+if [ -z "$HOSTS" ]; then
+	while :; do
+		echo "Choose a host (by number); d when done; 'q' to exit: "
+		for ii in "${!KNOWN_HOSTS[@]}"; do
+			printf "[%d] %s\n" "$ii" "${KNOWN_HOSTS[$ii]}"
+		done
+		read CHOICE
 
-APK="$(find . -name '*.apk')"
-if [ -n "${NO_UPLOAD}" ]; then
-	: # do nothing
-elif [ -n "${XW4D_UPLOAD}" ]; then
-	IFS=","
-	for UPPATH in ${XW4D_UPLOAD}; do
-		scp "$APK" ${UPPATH}
-		echo "uploaded $APK to ${UPPATH}"
+		case $CHOICE in
+			[0-9])
+				HOSTS="${HOSTS} ${KNOWN_HOSTS[$CHOICE]}"
+				;;
+			q) break
+			   exit 1
+			   ;;
+			d) break
+			   ;;
+		esac
 	done
+fi
+
+[ -z "${HOSTS}" ] && usage "no host set"
+
+mkdir -p $DIR
+pushd $DIR
+
+git clone --branch $BRANCH --recurse-submodules ${REMOTE}
+cd xwords/xwords4/android
+
+case $BRANCH in
+	"main")
+		TARGET=asXw4dDeb
+		;;
+	"gameref")
+		TARGET=asXw4grdDeb
+		;;
+	*) fail
+	   ;;
+esac
+
+if [ -z "$(git describe 2>/dev/null)" ]; then
+	echo "git tags required but not found"
+	echo "skipping build"
 else
-	echo "not uploading $APK: XW4D_UPLOAD not set" >&2
+	./gradlew $TARGET
+
+	APK="$(find . -name '*.apk')"
+	# pull something like xw4d out of the path
+	SERVER_DIR=$(basename $(dirname $(dirname $APK)))
+	echo "APK: $APK; SERVER_DIR: ${SERVER_DIR}"
+
+	if [ -n "${NO_UPLOAD}" ]; then
+		: # do nothing
+	elif [ -n "${HOSTS}" ]; then
+		for HOST in ${HOSTS}; do
+			echo "need to upload to $HOST"
+			HOST_DIR="/var/www/html/android/${SERVER_DIR}/"
+			echo "ssh ${HOST} mkdir -p ${HOST_DIR}"
+			scp "$APK" "${HOST}:${HOST_DIR}"
+			echo "uploaded $APK to ${HOST}/${HOST_DIR}/"
+		done
+	else
+		echo "no host to upload to"
+	fi
 fi
 
 popd

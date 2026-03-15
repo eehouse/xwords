@@ -60,10 +60,10 @@ class UpdateCheckReceiver : BroadcastReceiver() {
     ) : AsyncTask<Void?, Void?, String?>() {
         override fun doInBackground(vararg params: Void?): String? {
             val conn = NetUtils.makeHttpUpdateConn(mContext, "getUpdates")
-            var json: String? = null
-            if (null != conn) {
-                json = NetUtils.runConn(conn, m_params)
-            }
+            val json =
+                conn?.let {
+                    NetUtils.runConn(it, m_params)
+                }
             return json
         }
 
@@ -85,87 +85,44 @@ class UpdateCheckReceiver : BroadcastReceiver() {
                 // Add upgrade
 
                 if (jobj.has(k_APP)) {
-                    if (Perms23.permInManifest(
-                            mContext,
-                            Perms23.Perm
-                                .REQUEST_INSTALL_PACKAGES
-                        )
-                    ) {
-                        val app = jobj.getJSONObject(k_APP)
-                        if (app.has(k_URL)) {
-                            val ai =
-                                m_pm.getApplicationInfo(m_packageName, 0)
-                            val label = m_pm.getApplicationLabel(ai).toString()
+                    val app = jobj.getJSONObject(k_APP)
+                    if (app.has(k_URL)) {
+                        val label = m_pm.getApplicationInfo(m_packageName, 0).also {
+                            m_pm.getApplicationLabel(it).toString()
+                        }
 
-                            // If there's a download dir AND an installer
-                            // app, handle this ourselves.  Otherwise just
-                            // launch the browser
-                            val useBrowser: Boolean
-                            val downloads = DictUtils.getDownloadDir(mContext)
-                            if (null == downloads) {
-                                useBrowser = true
+                        val useBrowser = true
+                        val urlParm = app.getString(k_URL)
+
+                        // Debug builds check frequently on a timer and
+                        // when it's something we don't want it's annoying
+                        // to get a lot of offers. So track the URL used,
+                        // and only offer once per URL unless the request
+                        // was manual.
+                        var skipIt = false
+                        if (BuildConfig.NON_RELEASE && !m_fromUI) {
+                            val prevURL = DBUtils.getStringFor(mContext, KEY_PREV_URL)
+                            if (urlParm == prevURL) {
+                                skipIt = true
                             } else {
-                                val tmp = File(
-                                    downloads,
-                                    "xx" + XWConstants.APK_EXTN
-                                )
-                                useBrowser = !Utils.canInstall(mContext, tmp)
-                            }
-
-                            val urlParm = app.getString(k_URL)
-
-                            // Debug builds check frequently on a timer and
-                            // when it's something we don't want it's annoying
-                            // to get a lot of offers. So track the URL used,
-                            // and only offer once per URL unless the request
-                            // was manual.
-                            var skipIt = false
-                            if (BuildConfig.NON_RELEASE && !m_fromUI) {
-                                val prevURL = DBUtils.getStringFor(mContext, KEY_PREV_URL)
-                                if (urlParm == prevURL) {
-                                    skipIt = true
-                                } else {
-                                    DBUtils.setStringFor(mContext, KEY_PREV_URL, urlParm)
-                                }
-                            }
-                            if (!skipIt) {
-                                gotOne = true
-                                val url = NetUtils.ensureProto(mContext, urlParm)
-                                val intent = if (useBrowser) {
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(url)
-                                    )
-                                } else {
-                                    DwnldDelegate.makeAppDownloadIntent(mContext, url)
-                                }
-
-                                // If I asked explicitly, let's download now.
-                                if (m_fromUI && !useBrowser) {
-                                    mContext.startActivity(intent)
-                                } else {
-                                    // title and/or body might be in the reply
-                                    var title = app.optString(k_UPGRADE_TITLE, null)
-                                    if (null == title) {
-                                        title = LocUtils.getString(
-                                            mContext,
-                                            R.string.new_app_avail_fmt,
-                                            label
-                                        )
-                                    }
-                                    var body = app.optString(k_UPGRADE_BODY, null)
-                                    if (null == body) {
-                                        body = LocUtils.getString(mContext, R.string.new_app_avail)
-                                    }
-                                    Utils.postNotification(
-                                        mContext, intent, title,
-                                        body, title.hashCode()
-                                    )
-                                }
+                                DBUtils.setStringFor(mContext, KEY_PREV_URL, urlParm)
                             }
                         }
-                    } else {
-                        Log.d(TAG, "need to notify upgrade available")
+                        if (!skipIt) {
+                            gotOne = true
+                            val intent = NetUtils.ensureProto(mContext, urlParm).let {
+                                Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                            }
+
+                            val title =
+                                app.optString(k_UPGRADE_TITLE, null)
+                                ?: LocUtils.getString( mContext, R.string.new_app_avail_fmt, label)
+                            val body =
+                                app.optString(k_UPGRADE_BODY, null)
+                                ?: LocUtils.getString(mContext, R.string.new_app_avail)
+                            Utils.postNotification(mContext, intent, title,
+                                                   body, title.hashCode())
+                        }
                     }
                 }
 
