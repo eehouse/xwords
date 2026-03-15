@@ -3,10 +3,10 @@ An open source implementation of the rules of Scrabble(tm) for handhelds
 
 # What I'm working on (updated March 2026)
 
-## While I'm doing incremental tweaks and bug-fixes on the main branch, my focus is the gameref branch, a significant rewrite that moves
-## a lot of functionality from Android into common (cross-platform) code. This makes the app much easier to improve and maintain and test,
-## and should also significantly reduce the effort required to produce, say, an iOS version. The gameref branch is nearing feature-equivalence with
-## the main branch, but is still months away from release.
+While I'm doing incremental tweaks and bug-fixes on the main branch, my focus is the gameref branch, a significant rewrite that moves
+a lot of functionality from Android into common (cross-platform) code. This makes the app much easier to improve and maintain and test,
+and should also significantly reduce the effort required to produce, say, an iOS version. The gameref branch is nearing feature-equivalence with
+the main branch, but is still months away from release.
 
 Other priorities:
 * Get back on the Google Play Store
