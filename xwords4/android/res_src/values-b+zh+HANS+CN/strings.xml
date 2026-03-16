@@ -1149,4 +1149,5 @@
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">通过 %1$s Ping 花了 %2$d 毫秒。</string>
     <string name="games_menu_mqttStats">连接统计数</string>
+    <string name="about_branch_fmt">分支：%1$s</string>
 </resources>
