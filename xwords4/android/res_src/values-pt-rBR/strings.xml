@@ -1266,4 +1266,5 @@
     <string name="gamel_menu_mqtt">MQTT</string>
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">Ping via %1$s levou %2$d ms.</string>
+    <string name="about_branch_fmt">Ramo: %1$s</string>
 </resources>
