@@ -87,6 +87,7 @@ void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr,
                           GameChangeEvents gces );
 void onGroupChangedCurses( LaunchParams* params, GroupRef grp,
                            GroupChangeEvents XP_gces );
+void onGameGoneReceivedCurses( LaunchParams* params, XP_U32 gameID );
 void onPingReceivedCurses( LaunchParams* params, XP_U32 tsStart,
                            XP_U32 tsMid, XP_U32 now );
 void onPositionsChangedCurses( CommonAppGlobals* cag, XWArray* positions );

@@ -216,26 +216,26 @@ class BoardDelegate(delegator: Delegator) :
 //                     .create()
 //             }
 
-//             DlgID.DLG_DELETED -> {
-//                 val gameName = GameUtils.getName(mActivity, mRowid)
-//                 val expl = if (params.size == 0) null else params[0] as? ConnExpl
-//                 var message = getString(R.string.msg_dev_deleted_fmt, gameName)
-//                 if (BuildConfig.NON_RELEASE && null != expl) {
-//                     message += """
+            DlgID.DLG_DELETED -> {
+                val gameName = mGi!!.gameName
+                val expl = if (params.size == 0) null else params[0] as? ConnExpl
+                var message = getString(R.string.msg_dev_deleted_fmt, gameName)
+                if (BuildConfig.NON_RELEASE && null != expl) {
+                    message += """
                         
                         
-//                         ${expl.getUserExpl(mActivity)}
-//                         """.trimIndent()
-//                 }
-//                 ab = ab.setMessage(message)
-//                     .setPositiveButton(android.R.string.ok, null)
-//                 lstnr = DialogInterface.OnClickListener { dlg, whichButton -> deleteAndClose() }
-//                 ab.setNegativeButton(R.string.button_delete, lstnr)
-//                 ab.setNeutralButton(
-//                     R.string.button_archive
-//                 ) { dlg, whichButton -> showArchiveNA(false) }
-//                 ab.create()
-//             }
+                        ${expl.getUserExpl(mActivity)}
+                        """.trimIndent()
+                }
+                ab = ab.setMessage(message)
+                    .setPositiveButton(android.R.string.ok, null)
+                lstnr = DialogInterface.OnClickListener { dlg, whichButton -> deleteAndClose() }
+                ab.setNegativeButton(R.string.button_delete, lstnr)
+                ab.setNeutralButton(
+                    R.string.button_archive
+                ) { dlg, whichButton -> showArchiveNA(false) }
+                ab.create()
+            }
 
             DlgID.QUERY_TRADE, DlgID.QUERY_MOVE -> {
                 val msg = params[0] as String
@@ -1502,6 +1502,10 @@ class BoardDelegate(delegator: Delegator) :
         }
     }
 
+    fun onGameGoneReceived() {
+        post { showDialogFragment(DlgID.DLG_DELETED) }
+    }
+
     private inner class BoardUtilCtxt(gr: GameRef) : UtilCtxt(gr) {
 
         override fun remSelected() {
@@ -2638,6 +2642,13 @@ class BoardDelegate(delegator: Delegator) :
         fun getIfOpen(gr: GameRef): BoardDelegate? {
             val result = sOpenGames.get(gr.gr)?.get()
             Log.d(TAG, "getIfOpen($gr) => %b", result)
+            return result
+        }
+
+        fun getIfOpen(gid: Int): BoardDelegate? {
+            val result = sOpenGames.values.firstOrNull {
+                it.get()?.mGi?.gameID == gid
+            } ?.get()
             return result
         }
     }

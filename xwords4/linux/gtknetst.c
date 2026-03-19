@@ -57,7 +57,7 @@ makeForAddr( NetStateState* nss, int index )
     }
 
     stream = gr_getPendingPacketsFor( nss->dutil, nss->gr,
-                                                    NULL_XWE, addr, NULL, NULL );
+                                      NULL_XWE, addr, NULL, NULL );
     if ( !!stream ) {
         const XP_UCHAR* ptr = (XP_UCHAR*)strm_getPtr( stream );
         XP_U16 len = strm_getSize( stream );

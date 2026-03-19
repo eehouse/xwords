@@ -39,6 +39,8 @@ void dvc_formatUrl( XP_UCHAR buf[], XP_U16 bufLen, const XP_UCHAR* host,
 
 void dvc_fmtMyMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_UCHAR buf[],
                          XP_U16 len );
+void dvc_postNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
+                         const CommsAddrRec* sender );
 
 /* Calls through to platform for caseless or otherwise locale-appropriate
    compare */

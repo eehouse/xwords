@@ -120,10 +120,8 @@ typedef struct _DUtilVtable {
                                    GameChangeEvents gces );
     void (*m_dutil_onGroupChanged)( XW_DUtilCtxt* duc, XWEnv xwe, GroupRef grp,
                                     GroupChangeEvents grces );
-#ifndef XWFEATURE_DEVICE_STORES
     void (*m_dutil_onGameGoneReceived)( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
                                        const CommsAddrRec* from );
-#endif
     void (*m_dutil_onCtrlReceived)( XW_DUtilCtxt* duc, XWEnv xwe,
                                     const XP_U8* buf, XP_U16 len );
     void (*m_dutil_onPingReceived)( XW_DUtilCtxt* duc, XWEnv xwe,

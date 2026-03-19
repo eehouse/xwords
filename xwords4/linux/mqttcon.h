@@ -38,8 +38,6 @@ const gchar* mqttc_getDevIDStr( LaunchParams* params );
 void mqttc_onInviteHandled( LaunchParams* params, const NetLaunchInfo* nli );
 void mqttc_enqueue( LaunchParams* params, const XP_UCHAR* topic, const XP_U8* buf,
                     XP_U16 len, XP_U8 qos );
-void mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID );
-
 bool mqttc_strToDevID( const gchar* str, MQTTDevID* result );
 
 #endif

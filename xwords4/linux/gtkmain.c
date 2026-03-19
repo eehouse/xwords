@@ -1050,6 +1050,16 @@ onGroupChangedGTK( LaunchParams* params, GroupRef XP_UNUSED_DBG(grp),
 }
 
 void
+onGameGoneReceivedGTK( LaunchParams* params, XP_U32 gameID )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)params->cag;
+    GtkWidget* parent = apg->window;
+    gchar buf[128];
+    snprintf( buf, VSIZE(buf), "Game %x has been deleted on remote", gameID );
+    (void)gtktell( parent, buf );
+}
+
+void
 onPingReceivedGTK( LaunchParams* params, XP_U32 tsStart, XP_U32 tsMid,
                    XP_U32 now )
 {

@@ -384,9 +384,8 @@ class DUtilCtxt() {
         /*(void)*/NFCUtils.addMsgFor(msg, gameID);
     }
 
-    fun onGameGoneReceived(gameID: Int, from: CommsAddrRec) {
-        Assert.assertTrueNR(from.contains(CommsAddrRec.CommsConnType.COMMS_CONN_MQTT))
-        MQTTUtils.handleGameGone(mContext, from, gameID)
+    fun onGameGoneReceived(gameID: Int) {
+        GamesListDelegate.onGameGoneReceived(mContext, gameID)
     }
 
     fun onGroupChanged(grpval: Int, flags: Int) {

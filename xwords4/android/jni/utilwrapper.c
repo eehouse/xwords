@@ -908,14 +908,10 @@ and_dutil_onPingReceived( XW_DUtilCtxt* duc, XWEnv xwe,
 
 static void
 and_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                              const CommsAddrRec* from )
+                              const CommsAddrRec* XP_UNUSED(from) )
 {
-    DUTIL_CBK_HEADER( "onGameGoneReceived",
-                      "(IL" PKG_PATH("jni/CommsAddrRec") ";)V" );
-    jobject jaddr = makeJAddr( env, from );
-    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID, jaddr );
-
-    deleteLocalRefs( env, jaddr, DELETE_NO_REF );
+    DUTIL_CBK_HEADER( "onGameGoneReceived", "(I)V" );
+    (*env)->CallVoidMethod( env, dutil->jdutil, mid, gameID );
     DUTIL_CBK_TAIL();
 }
 

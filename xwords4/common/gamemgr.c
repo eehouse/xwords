@@ -1752,16 +1752,45 @@ gmgr_addGame( XW_DUtilCtxt* duc, XWEnv xwe, GameData* gd, GameRef gr )
     gmgr_saveGame( duc, xwe, gr );
 }
 
+typedef struct _PostNoSuchGameData {
+    XP_U32 gameID;
+    CommsAddrRec from;
+} PostNoSuchGameData;
+
+static void
+postNoSuchGameProc( XW_DUtilCtxt* duc, XWEnv xwe, void* closure,
+                    TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        PostNoSuchGameData* pnsgd = (PostNoSuchGameData*)closure;
+        dvc_postNoSuchGame( duc, xwe, pnsgd->gameID, &pnsgd->from );
+    }
+    XP_FREEP( duc->mpool, &closure );
+}
+
+static void
+postNoSuchGame( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID, const CommsAddrRec* from )
+{
+    PostNoSuchGameData* pnsgd = XP_CALLOC(duc->mpool, sizeof(*pnsgd) );
+    pnsgd->from = *from;
+    pnsgd->gameID = gameID;
+    tmr_setIdle( duc, xwe, postNoSuchGameProc, pnsgd );
+}
+
 void
-gmgr_onMessageReceived(XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
-                       const CommsAddrRec* from, const XP_U8* msgBuf,
-                       XP_U16 msgLen, const MsgCountState* mcs )
+gmgr_onMessageReceived( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 gameID,
+                        const CommsAddrRec* from, const XP_U8* msgBuf,
+                        XP_U16 msgLen, const MsgCountState* mcs )
 {
     GameRef grs[3];
     XP_U16 nRefs = VSIZE(grs);
     gmgr_getForGID( duc, xwe, gameID, grs, &nRefs );
-    for ( int ii = 0; ii < nRefs; ++ii ) {
-        gr_onMessageReceived( duc, grs[ii], xwe, from, msgBuf, msgLen, mcs );
+    if ( 0 == nRefs ) {
+        postNoSuchGame( duc, xwe, gameID, from );
+    } else {
+        for ( int ii = 0; ii < nRefs; ++ii ) {
+            gr_onMessageReceived( duc, grs[ii], xwe, from, msgBuf, msgLen, mcs );
+        }
     }
 }
 

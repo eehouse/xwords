@@ -157,17 +157,6 @@ object MQTTUtils {
         getConn(context)        // kick off connection
     }
 
-    fun handleGameGone(context: Context, from: CommsAddrRec, gameID: Int)
-    {
-        Assert.failDbg()
-        // val player = XwJNI.kplr_nameForMqttDev(from.mqtt_devID)
-        // val args =
-        //     if (null == player) null
-        //     else arrayOf(ConnExpl(CommsConnType.COMMS_CONN_MQTT, player))
-        // MQTTServiceHelper(context, from)
-        //     .postEvent(MultiService.MultiEvent.MESSAGE_NOGAME, gameID, *args.orEmpty())
-    }
-
     fun handleCtrlReceived(context: Context, msg: ByteArray) {
         Assert.failDbg()
     //     try {

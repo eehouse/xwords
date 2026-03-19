@@ -1406,6 +1406,15 @@ onGroupChangedCurses( LaunchParams* params, GroupRef XP_UNUSED(grp),
 }
 
 void
+onGameGoneReceivedCurses( LaunchParams* params, XP_U32 gameID )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    gchar buf[256];
+    snprintf( buf, VSIZE(buf), "Game %X has been deleted on remote", gameID );
+    (void)ca_inform2( aGlobals, aGlobals->mainWin, buf );
+}
+
+void
 onPingReceivedCurses( LaunchParams* params, XP_U32 tsStart,
                       XP_U32 tsMid, XP_U32 now )
 {

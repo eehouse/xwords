@@ -270,17 +270,6 @@ dvc_getKeysLike( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* keys[],
 /* } */
 
 void
-dvc_onGameGoneReceived( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
-                        const CommsAddrRec* from )
-{
-    XP_LOGFF( "(gameID=%X)", gameID );
-    XP_USE(gameID);
-    XP_USE(dutil);
-    XP_USE(xwe);
-    XP_USE(from);
-}
-
-void
 dvc_onDictAdded( XW_DUtilCtxt* duc, XWEnv xwe, const XP_UCHAR* dictName )
 {
     gmgr_onDictAdded( duc, xwe, dictName );
@@ -1238,32 +1227,6 @@ makeMQTTMessages( XW_DUtilCtxt* dutil, XWEnv xwe,
     return XP_MAX( nSent0, nSent1 );
 }
 
-void
-dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
-                         MsgAndTopicProc proc, void* closure,
-                         const MQTTDevID* addressee,
-                         XP_U32 gameID )
-{
-    ASSERT_MAGIC();
-    XP_LOGFF( "(gameID: %X)", gameID );
-    XP_UCHAR devTopic[64];      /* used by two below */
-    formatMQTTDevTopic( addressee, devTopic, VSIZE(devTopic) );
-
-    XP_U8 qos = dvc_getQOS( dutil, xwe );
-    XWStreamCtxt* stream = dvc_makeStream( dutil );
-    addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
-    callProc( proc, closure, devTopic, stream, qos );
-
-    XP_UCHAR gameTopic[64];
-    size_t siz = XP_SNPRINTF( gameTopic, VSIZE(gameTopic),
-                              "%s/%X", devTopic, gameID );
-    XP_ASSERT( siz < VSIZE(gameTopic) );
-    XP_USE(siz);
-    callProc( proc, closure, gameTopic, stream, qos );
-
-    strm_destroy( stream );
-}
-
 static XP_Bool
 isDevMsg( const MQTTDevID* myID, const XP_UCHAR* topic, XP_U32* gameIDP )
 {
@@ -1441,6 +1404,33 @@ onPongReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
     XP_ASSERT( !pingData );
 }
 
+/* Notify sender that game no longer exists on this device */
+void
+dvc_postNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
+                    const CommsAddrRec* sender )
+{
+    CommsConnType typ;
+    for ( XP_U32 state = 0; addr_iter( sender, &typ, &state ); ) {
+        XP_LOGFF( "got type: %s", ConnType2Str( typ ) );
+        switch ( typ ) {
+        case COMMS_CONN_MQTT: {
+            XP_U8 qos = 0;
+            XWStreamCtxt* stream = dvc_makeStream( dutil );
+            addHeaderGameIDAndCmd( dutil, xwe, CMD_DEVGONE, gameID, stream );
+            XP_UCHAR devTopic[64];
+            formatMQTTDevTopic( &sender->u.mqtt.devID, devTopic, VSIZE(devTopic) );
+            dutil_sendViaMQTT( dutil, xwe, devTopic, strm_getPtr(stream),
+                               strm_getSize(stream), qos );
+            strm_destroyp( &stream );
+        }
+            break;
+        default:
+            XP_LOGFF( "not handling %s", ConnType2Str( typ ) );
+            XP_ASSERT(0);
+        }
+    }
+}
+
 void
 dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                      const XP_U8* buf, XP_U16 len )
@@ -1498,7 +1488,7 @@ dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                     if ( CMD_MSG == cmd ) {
                         dispatchMsgs( dutil, xwe, proto, stream, gameID, &from );
                     } else if ( CMD_DEVGONE == cmd ) {
-                        dvc_onGameGoneReceived( dutil, xwe, gameID, &from );
+                        dutil_onGameGoneReceived( dutil, xwe, gameID, &from );
                     }
                 }
                     break;

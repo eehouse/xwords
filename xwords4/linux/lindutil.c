@@ -226,6 +226,23 @@ linux_dutil_onGroupChanged( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), GroupRef gr
 }
 
 static void
+linux_dutil_onGameGoneReceived( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe), XP_U32 gameID,
+                                const CommsAddrRec* XP_UNUSED(from) )
+{
+    LaunchParams* params = (LaunchParams*)duc->closure;
+    if ( 0 ) {
+#ifdef PLATFORM_NCURSES
+    } else if ( params->useCurses ) {
+        onGameGoneReceivedCurses( params, gameID );
+#endif
+#ifdef PLATFORM_GTK
+    } else {
+        onGameGoneReceivedGTK( params, gameID );
+#endif
+    }
+}
+
+static void
 linux_dutil_onCtrlReceived( XW_DUtilCtxt* duc, XWEnv xwe,
                             const XP_U8* buf, XP_U16 len )
 {
@@ -679,6 +696,7 @@ linux_dutils_init( MPFORMAL void* closure )
     /* SET_PROC(haveGame); */
     SET_PROC(onDupTimerChanged);
     SET_PROC(onGroupChanged);
+    SET_PROC(onGameGoneReceived);
 #ifndef XWFEATURE_DEVICE_STORES
     SET_PROC(onInviteReceived);
     SET_PROC(onMessageReceived);

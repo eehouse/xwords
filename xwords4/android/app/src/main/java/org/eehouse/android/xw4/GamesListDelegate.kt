@@ -3283,6 +3283,12 @@ class GamesListDelegate(delegator: Delegator) :
             context.startActivity(intent)
         }
 
+        fun onGameGoneReceived(context:Context, gameID: Int) {
+            s_self?.get()?.runOnUiThread {
+                        BoardDelegate.getIfOpen(gameID)?.onGameGoneReceived()
+                    }
+        }
+
         fun onGroupChanged(context: Context, grp: GroupRef,
                            flags: GroupChangeEvents) {
             // Log.d(TAG, "onGroupChanged(grp=$grp, flags=$flags)")

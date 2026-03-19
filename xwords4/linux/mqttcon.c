@@ -457,12 +457,3 @@ mqttc_onInviteHandled( LaunchParams* params, const NetLaunchInfo* nli )
     dvc_makeMQTTNukeInvite( params->dutil, NULL_XWE,
                             msgAndTopicProc, storage, nli );
 }
-
-void
-mqttc_notifyGameGone( LaunchParams* params, const MQTTDevID* addressee, XP_U32 gameID )
-{
-    MQTTConStorage* storage = getStorage( params );
-    dvc_makeMQTTNoSuchGames( params->dutil, NULL_XWE,
-                             msgAndTopicProc, storage,
-                             addressee, gameID );
-}

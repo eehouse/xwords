@@ -56,11 +56,6 @@ void dvc_resetMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe );
 void dvc_makeMQTTNukeInvite( XW_DUtilCtxt* dutil, XWEnv xwe,
                              MsgAndTopicProc proc, void* closure,
                              const NetLaunchInfo* nli );
-void dvc_makeMQTTNoSuchGames( XW_DUtilCtxt* dutil, XWEnv xwe,
-                              MsgAndTopicProc proc, void* closure,
-                              const MQTTDevID* addressee,
-                              XP_U32 gameID );
-
 void dvc_parseMQTTPacket( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                           const XP_U8* buf, XP_U16 len );
 #ifdef XWFEATURE_SMS
