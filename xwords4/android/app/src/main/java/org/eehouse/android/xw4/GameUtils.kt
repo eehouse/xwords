@@ -236,14 +236,13 @@ object GameUtils {
 
     fun makeNewMultiGame1(context: Context, nli: NetLaunchInfo): GameRef? {
         return makeNewMultiGame2(
-            context, nli, null as MultiMsgSink?,
-            null as UtilCtxt?
+            context, nli, null as UtilCtxt?
         )
     }
 
     fun makeNewMultiGame2(
         context: Context, nli: NetLaunchInfo,
-        sink: MultiMsgSink?, util: UtilCtxt?
+        util: UtilCtxt?
     ): GameRef? {
         // Log.d( TAG, "makeNewMultiGame(nli=%s)", nli.toString() );
         // Called to create a client in response to invitation from host. As
@@ -254,7 +253,7 @@ object GameUtils {
         val isHost = false
 
         return makeNewMultiGame6(
-            context, sink, util, DBUtils.GROUPID_UNSPEC,
+            context, util, DBUtils.GROUPID_UNSPEC,
             selfAddr, hostAddr,
             arrayOf(nli.isoCode()),
             arrayOf(nli.dict), null, nli.nPlayersT,
@@ -265,68 +264,8 @@ object GameUtils {
         )
     }
 
-    fun makeNewMultiGame3(
-        context: Context, groupID: Long,
-        gameName: String?, invitee: CommsAddrRec?
-    ): GameRef? {
-        return makeNewMultiGame4(
-            context, groupID, null as String?,
-            null as ISOCode?, null as String?,
-            null as CommsConnTypeSet?, gameName,
-            invitee
-        )
-    }
-
-    fun makeNewMultiGame4(
-        context: Context, groupID: Long,
-        dict: String?, isoCode: ISOCode?,
-        jsonData: String?,
-        selfSet: CommsConnTypeSet?,
-        gameName: String?, invitee: CommsAddrRec?
-    ): GameRef? {
-        val inviteID = makeRandomID()
-        return makeNewMultiGame5(
-            context, groupID, inviteID, dict, isoCode,
-            jsonData, selfSet, gameName, invitee
-        )
-    }
-
-    private fun makeNewMultiGame5(
-        context: Context, groupID: Long,
-        inviteID: String, dict: String?,
-        isoCode: ISOCode?, jsonData: String?,
-        selfSet: CommsConnTypeSet?,
-        gameName: String?, invitee: CommsAddrRec?
-    ): GameRef? {
-        var selfSet = selfSet
-        val langArray = arrayOf(isoCode)
-        val dictArray = arrayOf(dict)
-        if (null == selfSet) {
-            selfSet = XWPrefs.getAddrTypes(context)
-        }
-
-        // Silently add this to any networked game if our device supports
-        // it. comms is unhappy if we later pass in a message using an address
-        // type the game doesn't have in its set.
-        if (nfcAvail(context)[0]) {
-            selfSet!!.add(CommsConnType.COMMS_CONN_NFC)
-        }
-
-        val selfAddr = CommsAddrRec(selfSet!!)
-            .populate(context)
-        val forceChannel = 0
-        return makeNewMultiGame6(
-            context, null as MultiMsgSink?, null as UtilCtxt?,
-            groupID, selfAddr, null as CommsAddrRec?,
-            langArray, dictArray, jsonData, 2, 1,
-            forceChannel, inviteID, 0, gameName,
-            true, false, invitee
-        )
-    }
-
     private fun makeNewMultiGame6(
-        context: Context, sink: MultiMsgSink?,
-        util: UtilCtxt?, groupID: Long,
+        context: Context, util: UtilCtxt?, groupID: Long,
         selfAddr: CommsAddrRec, hostAddr: CommsAddrRec?,
         isoCode: Array<ISOCode?>, dict: Array<String?>,
         jsonData: String?,
@@ -357,28 +296,13 @@ object GameUtils {
         // work
         Assert.assertTrue(gi.nPlayers == nPlayersT)
         return makeNewMultiGame8(
-            context, sink, gi, selfAddr, hostAddr,
+            context, gi, selfAddr, hostAddr,
             util, groupID, gameName, invitee
         )
     }
 
-    fun makeNewMultiGame7(
-        context: Context, gi: CurGameInfo,
-        selfSet: CommsConnTypeSet?, gameName: String?
-    ): GameRef? {
-        val selfAddr = CommsAddrRec(selfSet!!)
-            .populate(context)
-        return makeNewMultiGame8(
-            context, null as MultiMsgSink?,
-            gi, selfAddr, null as CommsAddrRec?,
-            null as UtilCtxt?,
-            DBUtils.GROUPID_UNSPEC, gameName, null
-        )
-    }
-
     private fun makeNewMultiGame8(
-        context: Context, sink: MultiMsgSink?,
-        gi: CurGameInfo, selfAddr: CommsAddrRec,
+        context: Context, gi: CurGameInfo, selfAddr: CommsAddrRec,
         hostAddr: CommsAddrRec?, util: UtilCtxt?,
         groupID: Long, gameName: String?,
         invitee: CommsAddrRec?
@@ -670,87 +594,6 @@ object GameUtils {
         }
 
         delegator.addFragment(BoardFrag.newInstance(delegator), extras)
-    }
-
-    fun feedMessage(
-        context: Context, rowid: Long, msg: ByteArray?,
-        ret: CommsAddrRec?, sink: MultiMsgSink?,
-        bmr: BackMoveResult?, isLocalOut: BooleanArray?
-    ): Boolean {
-        Assert.failDbg()
-        return false
-        // Assert.assertTrue(DBUtils.ROWID_NOTFOUND != rowid)
-        // var draw = false
-        // Assert.assertTrue(-1L != rowid)
-        // if (null != msg) {
-        //     // timed lock: If a game is opened by BoardActivity just
-        //     // as we're trying to deliver this message to it it'll
-        //     // have the lock and we'll never get it.  Better to drop
-        //     // the message than fire the hung-lock assert.  Messages
-        //     // belong in local pre-delivery storage anyway.
-        //     try {
-        //         GameLock.lock(rowid, 150).use { lock ->
-        //             if (null != lock) {
-        //                 val gi = CurGameInfo(context)
-        //                 val feedImpl = FeedUtilsImpl(context, rowid, gi)
-        //                 loadMakeGame(
-        //                     context, gi, feedImpl,
-        //                     sink, lock
-        //                 ).use { gamePtr ->
-        //                     if (null != gamePtr) {
-        //                         XwJNI.comms_resendAll(gamePtr, false, false)
-
-        //                         Assert.assertNotNull(ret)
-        //                         draw = false // XwJNI.game_receiveMessage(gamePtr, msg, ret)
-        //                         XwJNI.comms_ackAny(gamePtr)
-
-        //                         // update gi to reflect changes due to messages
-        //                         XwJNI.game_getGi(gamePtr, gi)
-
-        //                         // if (draw && XWPrefs.getThumbEnabled(context)) {
-        //                         //     val bitmap = takeSnapshot(context, gamePtr, gi)
-        //                         //     DBUtils.saveThumbnail(context, lock, bitmap)
-        //                         // }
-
-        //                         if (null != bmr) {
-        //                             if (null != feedImpl.m_chat) {
-        //                                 bmr.m_chat = feedImpl.m_chat
-        //                                 bmr.m_chatFrom = feedImpl.m_chatFrom
-        //                                 bmr.m_chatTs = feedImpl.m_ts
-        //                             } else {
-        //                                 Assert.failDbg()
-        //                                 // bmr.m_lmi = XwJNI.model_getPlayersLastScore(gamePtr, -1)
-        //                             }
-        //                         }
-
-        //                         saveGame(context, gamePtr, gi, lock, false)
-        //                         val summary = summarize(
-        //                             context, lock,
-        //                             gamePtr, gi
-        //                         )
-        //                         if (null != isLocalOut) {
-        //                             isLocalOut[0] = (0 <= summary.turn
-        //                                     && gi.players[summary.turn]!!.isLocal)
-        //                         }
-        //                     }
-        //                     val flags = setFromFeedImpl(feedImpl)
-        //                     if (GameSummary.MSG_FLAGS_NONE != flags) {
-        //                         draw = true
-        //                         val curFlags = DBUtils.getMsgFlags(context, rowid)
-        //                         DBUtils.setMsgFlags(context, rowid, flags or curFlags)
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     } catch (gle: GameLockedException) {
-        //         DbgUtils.toastNoLock(
-        //             TAG, context, rowid,
-        //             "feedMessage(): dropping message"
-        //                     + " for rowid %d", rowid
-        //         )
-        //     }
-        // }
-        // return draw
     }
 
     // This *must* involve a reset if the language is changing!!!

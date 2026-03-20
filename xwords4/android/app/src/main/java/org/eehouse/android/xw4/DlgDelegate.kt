@@ -43,7 +43,6 @@ class DlgDelegate(
         DELETE_GROUPS,
         OPEN_GAME,
         CLEAR_SELS,
-        NEW_NET_GAME,
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
         NEW_GAME_DFLT_NAME,

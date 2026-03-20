@@ -1039,9 +1039,7 @@ class GamesListDelegate(delegator: Delegator) :
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable(SAVE_MYSIS, m_mySIS)
-        if (null != m_netLaunchInfo) {
-            m_netLaunchInfo!!.putSelf(outState)
-        }
+        m_netLaunchInfo?.putSelf(outState)
         super.onSaveInstanceState(outState)
     }
 
@@ -1294,13 +1292,6 @@ class GamesListDelegate(delegator: Delegator) :
     {
         var handled = true
         when (action) {
-            Action.NEW_NET_GAME -> {
-                m_netLaunchInfo = params[0] as NetLaunchInfo
-                if (checkWarnNoDict(m_netLaunchInfo!!)) {
-                    makeNewNetGameIf()
-                }
-            }
-
             Action.RESET_GAMES -> {
                 val grs = params[0] as Array<GameRef>
                 var changed = false

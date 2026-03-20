@@ -1362,7 +1362,6 @@ object BTUtils {
 
     private class ReadThread private constructor() : Thread() {
         private val mQueue = LinkedBlockingQueue<BluetoothSocket>()
-        private val mBTMsgSink = BTMsgSink()
 
         init {
             sInstance.set(this)
@@ -1531,12 +1530,13 @@ object BTUtils {
 
         private fun receiveMessage(gameID: Int, buf: ByteArray, socket: BluetoothSocket) {
             val helper = BTHelper(socket)
-            val rslt = helper.receiveMessage(gameID, mBTMsgSink, buf, helper.getAddr())
+            // val rslt = helper.receiveMessage(gameID, mBTMsgSink, buf, helper.getAddr())
+            Assert.failDbg()
 
-            val response =
-                if (rslt == ReceiveResult.GAME_GONE) BTCmd.MESG_GAMEGONE else BTCmd.MESG_ACCPT
+            // val response =
+            //     if (rslt == ReceiveResult.GAME_GONE) BTCmd.MESG_GAMEGONE else BTCmd.MESG_ACCPT
 
-            writeBack(socket, response)
+            // writeBack(socket, response)
         }
 
         private fun receiveGameGone(gameID: Int, socket: BluetoothSocket) {
@@ -1587,26 +1587,6 @@ object BTUtils {
                     }
                 }
             }
-        }
-    }
-
-    private class BTMsgSink : MultiMsgSink(context) {
-        override fun sendViaBluetooth(
-            buf: ByteArray, msgID: String?, gameID: Int,
-            addr: CommsAddrRec
-        ): Int {
-            var nSent = -1
-            val btAddr = getSafeAddr(addr)
-            if (null != btAddr && 0 < btAddr.length) {
-                getPA(addr.bt_hostName!!, btAddr).addMsg(gameID, buf, msgID)
-                nSent = buf.size
-            } else {
-                Log.i(
-                    TAG, "sendViaBluetooth(): no addr for dev named %s",
-                    addr.bt_hostName
-                )
-            }
-            return nSent
         }
     }
 

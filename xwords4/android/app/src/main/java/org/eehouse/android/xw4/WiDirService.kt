@@ -277,7 +277,6 @@ class WiDirService : XWService() {
             val addr = nli.makeAddrRec(this)
             GameUtils.makeNewMultiGame2(
                 this, nli,
-                m_sink,
                 mHelper!!.utilCtxt
             )?.let { gr ->
                 val gameName = nli.gameName
