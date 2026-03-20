@@ -214,95 +214,95 @@ object DBUtils {
         return summary
     } // getSummary
 
-    fun saveSummary(
-        context: Context, lock: GameLock,
-        summary: GameSummary?
-    ) {
-        if ( !lock.canWrite() ) {
-            Log.d(TAG, "saveSummary(): lock not writeable")
-        } else {
-            Assert.assertTrue(lock.canWrite())
-            val rowid = lock.rowid
-            val selection = String.format(ROW_ID_FMT, rowid)
-            var values: ContentValues? = null
-            summary?.let { summary ->
-                values = ContentValues()
-				    .putAnd(DBHelper.NUM_MOVES, summary.nMoves)
-				    .putAnd(DBHelper.NUM_PLAYERS, summary.nPlayers)
-				    .putAnd(DBHelper.MISSINGPLYRS, summary.missingPlayers)
-				    .putAnd(DBHelper.TURN, summary.turn)
-				    .putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
-				    .putAnd(DBHelper.GIFLAGS, summary.giflags())
-				    // .putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
-                Assert.assertTrueNR(null != summary.isoCode)
-				values.putAnd(DBHelper.ISOCODE, summary.isoCode.toString())
-					.putAnd(DBHelper.GAMEID, summary.gameID)
-					.putAnd(DBHelper.GAME_OVER, if (summary.gameOver) 1 else 0)
-					.putAnd(DBHelper.QUASHED, if (summary.quashed) 1 else 0)
-					.putAnd(DBHelper.LASTMOVE, summary.lastMoveTime)
-					.putAnd(DBHelper.NEXTDUPTIMER, summary.dupTimerExpires)
-					.putAnd(DBHelper.CAN_REMATCH, if (summary.canRematch) 1 else 0)
+    // fun saveSummary(
+    //     context: Context, lock: GameLock,
+    //     summary: GameSummary?
+    // ) {
+    //     if ( !lock.canWrite() ) {
+    //         Log.d(TAG, "saveSummary(): lock not writeable")
+    //     } else {
+    //         Assert.assertTrue(lock.canWrite())
+    //         val rowid = lock.rowid
+    //         val selection = String.format(ROW_ID_FMT, rowid)
+    //         var values: ContentValues? = null
+    //         summary?.let { summary ->
+    //             values = ContentValues()
+	// 			    .putAnd(DBHelper.NUM_MOVES, summary.nMoves)
+	// 			    .putAnd(DBHelper.NUM_PLAYERS, summary.nPlayers)
+	// 			    .putAnd(DBHelper.MISSINGPLYRS, summary.missingPlayers)
+	// 			    .putAnd(DBHelper.TURN, summary.turn)
+	// 			    .putAnd(DBHelper.TURN_LOCAL, if (summary.turnIsLocal) 1 else 0)
+	// 			    .putAnd(DBHelper.GIFLAGS, summary.giflags())
+	// 			    // .putAnd(DBHelper.PLAYERS,summary.summarizePlayers() )
+    //             Assert.assertTrueNR(null != summary.isoCode)
+	// 			values.putAnd(DBHelper.ISOCODE, summary.isoCode.toString())
+	// 				.putAnd(DBHelper.GAMEID, summary.gameID)
+	// 				.putAnd(DBHelper.GAME_OVER, if (summary.gameOver) 1 else 0)
+	// 				.putAnd(DBHelper.QUASHED, if (summary.quashed) 1 else 0)
+	// 				.putAnd(DBHelper.LASTMOVE, summary.lastMoveTime)
+	// 				.putAnd(DBHelper.NEXTDUPTIMER, summary.dupTimerExpires)
+	// 				.putAnd(DBHelper.CAN_REMATCH, if (summary.canRematch) 1 else 0)
 
-                // Don't overwrite extras! Sometimes this method is called from
-                // JNIThread which has created the summary from common code that
-                // doesn't know about Android additions. Leave those unset to
-                // avoid overwriting.
-                val extras = summary.extras
-                if (null != extras) {
-                    values.put(DBHelper.EXTRAS, summary.extras)
-                }
-                val nextNag = if (summary.nextTurnIsLocal()) NagTurnReceiver.figureNextNag(
-                                                                 context,
-                                                                 1000 * summary.lastMoveTime.toLong()
-                                                             ) else 0
-                values.putAnd(DBHelper.NEXTNAG, nextNag)
-				    .putAnd(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
-                if (null != summary.scores) {
-                    val sb = StringBuffer()
-                    for (score in summary.scores) {
-                        sb.append(String.format("%d ", score))
-                    }
-                    values.put(DBHelper.SCORES, sb.toString())
-                }
-                Assert.failDbg()
-                // summary.conTypes()?.let { conTypes ->
-                //     values.putAnd(DBHelper.CONTYPE, conTypes.toInt())
-				// 	    .putAnd(DBHelper.SEED, summary.seed)
-				// 	    .putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
-                //     val iter: Iterator<CommsConnType> = conTypes.iterator()
-                //     while (iter.hasNext()) {
-                //         when (val typ = iter.next()) {
-                //             CommsConnType.COMMS_CONN_RELAY -> {
-                //                 val relayID = summary.relayID
-                //                 values.putAnd(DBHelper.ROOMNAME, summary.roomName)
-				// 				    .putAnd(DBHelper.RELAYID, summary.relayID)
-                //             }
+    //             // Don't overwrite extras! Sometimes this method is called from
+    //             // JNIThread which has created the summary from common code that
+    //             // doesn't know about Android additions. Leave those unset to
+    //             // avoid overwriting.
+    //             val extras = summary.extras
+    //             if (null != extras) {
+    //                 values.put(DBHelper.EXTRAS, summary.extras)
+    //             }
+    //             val nextNag = if (summary.nextTurnIsLocal()) NagTurnReceiver.figureNextNag(
+    //                                                              context,
+    //                                                              1000 * summary.lastMoveTime.toLong()
+    //                                                          ) else 0
+    //             values.putAnd(DBHelper.NEXTNAG, nextNag)
+	// 			    .putAnd(DBHelper.DICTLIST, summary.dictNames(DICTS_SEP))
+    //             if (null != summary.scores) {
+    //                 val sb = StringBuffer()
+    //                 for (score in summary.scores) {
+    //                     sb.append(String.format("%d ", score))
+    //                 }
+    //                 values.put(DBHelper.SCORES, sb.toString())
+    //             }
+    //             Assert.failDbg()
+    //             // summary.conTypes()?.let { conTypes ->
+    //             //     values.putAnd(DBHelper.CONTYPE, conTypes.toInt())
+	// 			// 	    .putAnd(DBHelper.SEED, summary.seed)
+	// 			// 	    .putAnd(DBHelper.NPACKETSPENDING, summary.nPacketsPending)
+    //             //     val iter: Iterator<CommsConnType> = conTypes.iterator()
+    //             //     while (iter.hasNext()) {
+    //             //         when (val typ = iter.next()) {
+    //             //             CommsConnType.COMMS_CONN_RELAY -> {
+    //             //                 val relayID = summary.relayID
+    //             //                 values.putAnd(DBHelper.ROOMNAME, summary.roomName)
+	// 			// 				    .putAnd(DBHelper.RELAYID, summary.relayID)
+    //             //             }
 
-                //             CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
-				// 			    -> values.put(DBHelper.REMOTEDEVS,
-				// 						      summary.summarizeDevs() )
-                //             else -> {} // Log.d( TAG, "unexpected type ${typ}")
-                //         }
-                //     }
-                // }
-                values.put(DBHelper.SERVERROLE, summary.deviceRole!!.ordinal)
-            }
-            initDB(context)
-            synchronized(s_dbHelper!!) {
-                if (null == summary) {
-                    delete(TABLE_NAMES.SUM, selection)
-                } else {
-                    val result = update(TABLE_NAMES.SUM, values, selection).toLong()
-                    Assert.assertTrue(result >= 0)
-                }
-                notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
-                invalGroupsCache()
-            }
-            summary?.let { // nag time may have changed
-                NagTurnReceiver.setNagTimer(context)
-            }
-        }
-    } // saveSummary
+    //             //             CommsConnType.COMMS_CONN_BT, CommsConnType.COMMS_CONN_SMS
+	// 			// 			    -> values.put(DBHelper.REMOTEDEVS,
+	// 			// 						      summary.summarizeDevs() )
+    //             //             else -> {} // Log.d( TAG, "unexpected type ${typ}")
+    //             //         }
+    //             //     }
+    //             // }
+    //             values.put(DBHelper.SERVERROLE, summary.deviceRole!!.ordinal)
+    //         }
+    //         initDB(context)
+    //         synchronized(s_dbHelper!!) {
+    //             if (null == summary) {
+    //                 delete(TABLE_NAMES.SUM, selection)
+    //             } else {
+    //                 val result = update(TABLE_NAMES.SUM, values, selection).toLong()
+    //                 Assert.assertTrue(result >= 0)
+    //             }
+    //             notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
+    //             invalGroupsCache()
+    //         }
+    //         summary?.let { // nag time may have changed
+    //             NagTurnReceiver.setNagTimer(context)
+    //         }
+    //     }
+    // } // saveSummary
 
     fun countGamesUsingISOCode(context: Context, isoCode: ISOCode?): Int {
         var result = 0
@@ -502,28 +502,6 @@ object DBUtils {
         return 0 != getSummaryInt(context, rowid, DBHelper.GAME_OVER, 0)
     }
 
-    fun saveThumbnail(
-        context: Context, lock: GameLock,
-        thumb: Bitmap?
-    ) {
-        val rowid = lock.rowid
-        val selection = String.format(ROW_ID_FMT, rowid)
-        val values = ContentValues()
-        if (null == thumb) {
-            values.putNull(DBHelper.THUMBNAIL)
-        } else {
-            val bas = ByteArrayOutputStream()
-            thumb.compress(CompressFormat.PNG, 0, bas)
-            values.put(DBHelper.THUMBNAIL, bas.toByteArray())
-        }
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            val result = update(TABLE_NAMES.SUM, values, selection).toLong()
-            Assert.assertTrue(result >= 0)
-            notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
-        }
-    }
-
     fun getGameCountUsing(context: Context, typ: CommsConnType): Int {
         Assert.failDbg()
         var result = 0
@@ -647,59 +625,6 @@ object DBUtils {
             }
             result[dev] = gameIDs
         }
-    }
-
-    fun saveNewGame(
-        context: Context, bytes: ByteArray,
-        groupID: Long, name: String?
-    ): GameLock {
-        Assert.assertTrue(GROUPID_UNSPEC.toLong() != groupID)
-        var lock: GameLock? = null
-        val timestamp = Date().time // milliseconds since epoch
-        val values = ContentValues()
-			.putAnd(DBHelper.SNAPSHOT, bytes)
-			.putAnd(DBHelper.CREATE_TIME, timestamp)
-			.putAnd(DBHelper.LASTPLAY_TIME, timestamp)
-			.putAnd(DBHelper.GROUPID, groupID)
-        if (null != name) {
-            values.put(DBHelper.GAME_NAME, name)
-        }
-        invalGroupsCache() // do first in case any listener has cached data
-        initDB(context)
-        synchronized(s_dbHelper!!) {
-            values.put(DBHelper.VISID, maxVISID(s_db))
-            val rowid = insert(TABLE_NAMES.SUM, values)
-            setCached(rowid, null) // force reread
-            lock = GameLock.tryLock(rowid)
-            Assert.assertNotNull(lock)
-            notifyListeners(context, rowid, GameChangeType.GAME_CREATED)
-            Log.d(TAG, "saveNewGame() => %d", rowid)
-            DbgUtils.printStack(TAG)
-        }
-        invalGroupsCache() // then again after
-        return lock!!
-    } // saveNewGame
-
-    fun saveGame(
-        context: Context, lock: GameLock,
-        bytes: ByteArray, setCreate: Boolean
-    ): Long {
-        Assert.assertTrue(lock.canWrite())
-        val rowid = lock.rowid
-        val values = ContentValues()
-			.putAnd(DBHelper.SNAPSHOT, bytes)
-        val timestamp = Date().time
-        if (setCreate) {
-            values.put(DBHelper.CREATE_TIME, timestamp)
-        }
-        values.put(DBHelper.LASTPLAY_TIME, timestamp)
-        updateRow(context, TABLE_NAMES.SUM, rowid, values)
-        setCached(rowid, null) // force reread
-        if (ROWID_NOTFOUND.toLong() != rowid) {      // Means new game?
-            notifyListeners(context, rowid, GameChangeType.GAME_CHANGED)
-        }
-        invalGroupsCache()
-        return rowid
     }
 
     data class GameVals(val name: String?, val group: Long,

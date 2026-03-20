@@ -45,20 +45,6 @@ object DbgUtils {
         showf(context, LocUtils.getString(context, formatid), *args)
     } // showf
 
-    fun toastNoLock(
-        tag: String, context: Context, rowid: Long,
-        format: String, vararg args: Any?
-    ) {
-        var format = format
-        format = "Unable to lock game; $format"
-        if (BuildConfig.DEBUG) {
-            showf(context, format, *args)
-        }
-        Log.w(tag, format, *args)
-        Log.w(tag, "stack for lock owner for %d", rowid)
-        Log.w(tag, GameLock.getHolderDump(rowid))
-    }
-
     fun assertOnUIThread(isOnThread: Boolean = true) {
         Assert.assertTrue(isOnThread == Utils.isOnUIThread())
     }

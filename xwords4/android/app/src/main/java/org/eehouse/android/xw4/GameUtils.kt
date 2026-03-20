@@ -38,7 +38,6 @@ import java.io.FileOutputStream
 import java.util.Arrays
 import kotlin.math.min
 
-import org.eehouse.android.xw4.GameLock.GameLockedException
 import org.eehouse.android.xw4.NFCUtils.nfcAvail
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommonPrefs
@@ -71,31 +70,6 @@ object GameUtils {
             ).toLong()
 
     private val s_syncObj = Any()
-
-    fun savedGame(context: Context, rowid: Long): ByteArray {
-        var result: ByteArray? = null
-        GameLock.tryLockRO(rowid).use { lock ->
-            lock?.let {
-                result = savedGame(context, it)
-            }
-        }
-        if (null == result) {
-            val msg = ("savedGame(): unable to get lock; holder dump: "
-                    + GameLock.getHolderDump(rowid))
-            Log.d(TAG, msg)
-            if (BuildConfig.NON_RELEASE) {
-                Utils.emailAuthor(context, msg)
-            }
-            throw NoSuchGameException(rowid)
-        }
-
-        return result
-    }
-
-    fun savedGame(context: Context, lock: GameLock): ByteArray? {
-        Assert.fail()
-        return null // DBUtils.loadGame(context, lock)
-    } // savedGame
 
     fun haveWithGameID(context: Context, gameID: Int): Boolean {
         return haveWithGameID(context, gameID, -1)
@@ -214,21 +188,6 @@ object GameUtils {
             }
         }
         return found
-    }
-
-    fun saveGame(
-        context: Context, bytes: ByteArray?,
-        lock: GameLock?, setCreate: Boolean
-    ): Long {
-        return DBUtils.saveGame(context, lock!!, bytes!!, setCreate)
-    }
-
-    @JvmOverloads
-    fun saveNewGame(
-        context: Context, bytes: ByteArray,
-        groupID: Long = DBUtils.GROUPID_UNSPEC
-    ): GameLock? {
-        return DBUtils.saveNewGame(context, bytes, groupID, null)
     }
 
     fun makeSaveNew(
@@ -836,63 +795,6 @@ object GameUtils {
         // }
         return success
     } // replaceDicts
-
-    fun applyChanges1(
-        context: Context, gi: CurGameInfo,
-        selfAddr: CommsAddrRec?,
-        disab: Map<CommsConnType, BooleanArray>?,
-        lock: GameLock, forceNew: Boolean
-    ) {
-        applyChanges2(
-            context, null as MultiMsgSink?, gi, null as UtilCtxt?,
-            selfAddr, disab, lock, forceNew
-        )
-    }
-
-    private fun applyChanges2(
-        context: Context, sink: MultiMsgSink?,
-        gi: CurGameInfo, util: UtilCtxt?,
-        selfAddr: CommsAddrRec?,
-        disab: Map<CommsConnType, BooleanArray>?,
-        lock: GameLock, forceNew: Boolean
-    ) {
-        Assert.failDbg()
-        // This should be a separate function, commitChanges() or
-        // somesuch.  But: do we have a way to save changes to a gi
-        // that don't reset the game, e.g. player name for standalone
-        // games?
-        // var madeGame = false
-        // val cp = CommonPrefs.get(context)
-
-        // if (forceNew) {
-        //     Assert.failDbg()
-        //     // tellDied(context, lock, true)
-        // } else {
-        //     val stream = savedGame(context, lock)
-        //     XwJNI.initFromStream(
-        //         lock.rowid, stream!!,
-        //         CurGameInfo(context),
-        //         null, null, cp, null
-        //     ).use { gamePtr ->
-        //         if (null != gamePtr) {
-        //             applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
-        //             madeGame = true
-        //         }
-        //     }
-        // }
-
-        // if (forceNew || !madeGame) {
-        //     val hostAddr: CommsAddrRec? = null
-        //     XwJNI.initNew(
-        //         gi, selfAddr, hostAddr,
-        //         util, null as DrawCtx?, cp, sink
-        //     ).use { gamePtr ->
-        //         if (null != gamePtr) {
-        //             applyChangesImpl(context, sink, gi, disab, lock, gamePtr)
-        //         }
-        //     }
-        // }
-    }
 
     fun formatGameID(gameID: Int): String {
         Assert.assertTrue(0 != gameID)

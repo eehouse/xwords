@@ -72,8 +72,6 @@ import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
-import org.eehouse.android.xw4.GameLock.GameLockedException
-import org.eehouse.android.xw4.GameLock.GotLockProc
 import org.eehouse.android.xw4.GameUtils.NoSuchGameException
 import org.eehouse.android.xw4.Log.ResultProcs
 import org.eehouse.android.xw4.NewWithKnowns.ButtonCallbacks

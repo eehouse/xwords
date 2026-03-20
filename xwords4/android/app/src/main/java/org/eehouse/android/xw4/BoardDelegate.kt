@@ -53,7 +53,6 @@ import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.GameOverAlert.OnDoneProc
 import org.eehouse.android.xw4.GameUtils.BackMoveResult
 import org.eehouse.android.xw4.GameUtils.NoSuchGameException
-import org.eehouse.android.xw4.MultiService.MultiEvent
 import org.eehouse.android.xw4.NFCUtils.Wrapper
 import org.eehouse.android.xw4.NFCUtils.Wrapper.Procs
 import org.eehouse.android.xw4.NFCUtils.getNFCDevID
