@@ -194,7 +194,7 @@ object DictLangCache {
     fun getLangNameForISOCode(context: Context, isoCode: ISOCode): String? {
         var langName: String?
         DLCache.get(context).use { cache ->
-            langName = cache!!.get(isoCode)
+            langName = cache.get(isoCode)
             if (null == langName) {
                 // Any chance we have a installed dict providing this? How to
                 // search given we can't read an ISOCode from a dict without
@@ -211,7 +211,7 @@ object DictLangCache {
     ) {
         // Log.d( TAG, "setLangNameForISOCode(%s=>%s)", isoCode, langName );
         DLCache.get(context).use { cache ->
-            cache!!.put(isoCode, langName)
+            cache.put(isoCode, langName)
         }
     }
 
@@ -219,7 +219,7 @@ object DictLangCache {
         var result: ISOCode? = null
         DLCache.get(context).use { cache ->
             // Log.d( TAG, "looking for %s in %H", langName, cache );
-            result = cache?.get(langName)
+            result = cache.get(langName)
         }
         // Log.d( TAG, "getLangIsoCode(%s) => %s", langName, result );
         return result
@@ -278,7 +278,7 @@ object DictLangCache {
                 val di = getInfo(context, dal)
                 name = di.langName!!
                 DLCache.get(context).use { cache ->
-                    cache!!.put(di.isoCode()!!, name)
+                    cache.put(di.isoCode()!!, name)
                 }
             }
             if (null != name && 0 < name.length) {
@@ -539,7 +539,7 @@ object DictLangCache {
             private val CACHE_KEY_REV = TAG + "/cache_rev"
             private val sCache = arrayOf<DLCache?>(null)
 
-            fun get(context: Context): DLCache? {
+            fun get(context: Context): DLCache {
                 var result: DLCache?
                 synchronized(sCache) {
                     result = sCache[0]
@@ -571,7 +571,7 @@ object DictLangCache {
                 }
 
                 // Log.d( TAG, "getCache() => %H", sCache[0] );
-                return sCache[0]
+                return sCache[0]!!
             }
         }
     }

@@ -1174,6 +1174,7 @@ class DictsDelegate(delegator: Delegator) :
 
         @Throws(JSONException::class)
         private fun parseLangs(langs: JSONArray): MutableSet<String> {
+            // Log.d(TAG, "parseLangs(%s)", langs.toString())
             val closedLangs: MutableSet<String> = HashSet()
             val curLangs: Set<String> = HashSet(Arrays.asList(*mLangs!!))
             val nLangs = langs.length()
