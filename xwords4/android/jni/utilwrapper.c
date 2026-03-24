@@ -925,7 +925,7 @@ and_dutil_sendViaWeb( XW_DUtilCtxt* duc, XWEnv xwe, XP_U32 resultKey,
     jstring jApi = (*env)->NewStringUTF( env, api );
     (*env)->CallVoidMethod( env, dutil->jdutil, mid, resultKey, jApi, jParams );
     deleteLocalRefs( env, jApi, jParams, DELETE_NO_REF );
-    free( pstr );
+    cJSON_free( pstr );
     DUTIL_CBK_TAIL();
 }
 

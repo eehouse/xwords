@@ -309,7 +309,7 @@ onGotData( gpointer data )
     }
 
     free( svdp->fd.payload );
-    free( svdp->pstr );
+    cJSON_free( svdp->pstr );
     g_free( svdp->api );
     g_free( svdp );
 
@@ -579,10 +579,8 @@ linux_dutil_strcmp( XW_DUtilCtxt* XP_UNUSED(duc), XWEnv XP_UNUSED(xwe),
 }
 
 static cJSON*
-linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv xwe )
+linux_dutil_getRegValues( XW_DUtilCtxt* duc, XWEnv XP_UNUSED(xwe) )
 {
-    XP_USE(xwe);
-
     LaunchParams* params = (LaunchParams*)duc->closure;
     const char* localName = params->localName;
     if ( !localName ) {

@@ -227,6 +227,7 @@ resignFromArgs( CmdWrapper* wr, cJSON* args )
     XP_U32 gameID = gidFromObject( args );
     return (*wr->procs.resign)( wr->closure, gameID );
 }
+
 static cJSON*
 knwnPlyrs( CmdWrapper* wr )
 {
@@ -252,13 +253,12 @@ rematchFromArgs( CmdWrapper* wr, cJSON* args )
 }
 
 static XP_Bool
-getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** orders )
+getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** statesP, cJSON** ordersP )
 {
     LOG_FUNC();
     LaunchParams* params = wr->params;
 
-    *states = cJSON_CreateArray();
-
+    cJSON* states = NULL;
     cJSON* gids = cJSON_GetObjectItem( args, "gids" );
     XP_Bool success = !!gids;
     XW_DUtilCtxt* dutil = params->dutil;
@@ -284,18 +284,21 @@ getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** order
             XP_S16 nTiles = gr_countTilesInPool( dutil, gr, NULL_XWE );
             cJSON_AddNumberToObject( item, "nTiles", nTiles );
 
-            cJSON_AddItemToArray( *states, item );
+            if ( !states ) {
+                states = cJSON_CreateArray();
+            }
+            cJSON_AddItemToArray( states, item );
         }        
     }
 
-    XP_LOGFF( "done with states" ); /* got here */
+    XP_LOGFF( "done with states" );
 
-    if ( success && !!orders ) {
+    if ( success && !!ordersP ) {
         cJSON* gids = cJSON_GetObjectItem( args, "orders" );
         if ( !gids ) {
-            *orders = NULL;
+            *ordersP = NULL;
         } else {
-            *orders = cJSON_CreateArray();
+            *ordersP = cJSON_CreateArray();
             for ( int ii = 0 ; ii < cJSON_GetArraySize(gids) ; ++ii ) {
                 XP_U32 gameID = castGid( cJSON_GetArrayItem( gids, ii ) );
 
@@ -319,10 +322,17 @@ getGamesStateForArgs( CmdWrapper* wr, cJSON* args, cJSON** states, cJSON** order
                         cJSON_AddItemToArray( players, cName);
                     }
                     cJSON_AddItemToObject( order, "players", players );
-                    cJSON_AddItemToArray( *orders, order );
+                    cJSON_AddItemToArray( *ordersP, order );
                 }
             }
         }
+    }
+
+    if ( success && !!statesP ) {
+        *statesP = states;
+    } else {
+        cJSON_Delete( states );
+        *statesP = NULL;
     }
 
     LOG_RETURNF( "%s", boolToStr(success) );
@@ -577,7 +587,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
         gboolean wroteall =
 #endif
             g_output_stream_write_all( ostream, replyStr, replyStrLen,
-                                                       &nwritten, NULL, NULL );
+                                       &nwritten, NULL, NULL );
         XP_ASSERT( wroteall && nwritten == replyStrLen );
         GError* error = NULL;
         g_output_stream_close( ostream, NULL, &error );
@@ -587,7 +597,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
         }
         cJSON_Delete( reply );
         XP_LOGFF( "=> %s", replyStr );
-        free( replyStr );
+        cJSON_free( replyStr );
     }
 
     XP_U32 consumed = dutil_getCurSeconds( params->dutil, NULL_XWE ) - startTime;
@@ -596,7 +606,7 @@ on_incoming_signal( GSocketService* XP_UNUSED(service),
     }
     // LOG_RETURN_VOID();
     return FALSE;
-}
+} /* on_incoming_signal */
 
 GSocketService*
 cmds_addCmdListener( const CmdWrapper* wr )

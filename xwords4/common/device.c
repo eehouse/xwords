@@ -675,7 +675,7 @@ jsonToStream( XW_DUtilCtxt* dutil, cJSON** jsonP )
     XWStreamCtxt* stream = dvc_makeStream( dutil );
     char* pstr = cJSON_PrintUnformatted( *jsonP );
     strm_catString( stream, pstr );
-    free( pstr );
+    cJSON_free( pstr );
     cJSON_Delete( *jsonP );
     *jsonP = NULL;
     return stream;
@@ -835,7 +835,7 @@ sendCJsonViaMQTTP( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
     char* pstr = cJSON_PrintUnformatted( *msg );
     XP_LOGFF( "pstr: %s", pstr );
     dutil_sendViaMQTT( dutil, xwe, topic, (XP_U8*)pstr, XP_STRLEN(pstr), qos );
-    free( pstr );
+    cJSON_free( pstr );
     cJSON_Delete( *msg );
     *msg = NULL;
 }
@@ -1369,7 +1369,7 @@ onPongReceived( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_U8* buf, XP_U16 len )
 #ifdef DEBUG
     char* pstr = cJSON_PrintUnformatted( pingData );
     XP_LOGFF( "(%s)", pstr );
-    free(pstr);
+    cJSON_free(pstr);
 #endif
 
     XP_Bool needsReply = XP_TRUE;
@@ -2154,6 +2154,23 @@ registerIf( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool force )
     }
 } /* registerIf */
 
+#ifdef DEBUG
+static MemPoolCtx* s_json_mpool = NULL;
+static void*
+json_malloc( size_t sz )
+{
+    void* result = XP_MALLOC( s_json_mpool, sz );
+    // XP_LOGFF( "(%ld) => %p", sz, result );
+    return result;
+}
+
+static void
+json_free( void *ptr )
+{
+    XP_FREE( s_json_mpool, ptr );
+}
+#endif
+
 void
 dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 {
@@ -2162,6 +2179,15 @@ dvc_init( XW_DUtilCtxt* dutil, XWEnv xwe )
 
     XP_ASSERT( !dutil->devCtxt );
     DevCtxt* dc = dutil->devCtxt = load( dutil, xwe );
+
+#ifdef DEBUG
+    s_json_mpool = dutil->mpool;
+    cJSON_Hooks hooks = { .malloc_fn = json_malloc,
+                          .free_fn = json_free,
+    };
+    cJSON_InitHooks( &hooks );
+#endif
+
     dc->webSend.data = NULL;
     dc->webSend.key = 0;
 

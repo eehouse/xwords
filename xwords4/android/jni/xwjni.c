@@ -2719,7 +2719,7 @@ Java_org_eehouse_android_xw4_jni_Stats_sts_1export
 
     char* replyStr = cJSON_PrintUnformatted( stats );
     result = (*env)->NewStringUTF( env, replyStr );
-    free( replyStr );
+    cJSON_free( replyStr );
     cJSON_Delete( stats );
 
     DVC_HEADER_END();
