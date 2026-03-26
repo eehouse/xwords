@@ -428,6 +428,7 @@ class BoardDelegate(delegator: Delegator) :
             mView!!.setUtils(BoardUtilCtxt(gr))
             Log.d(TAG, "gameRef: %X", gr.gr)
             noteOpened(mActivity, gr, this)
+            Utils.cancelNotification(mActivity, gr)
         }
         mOverNotShown = true
     } // init
@@ -920,7 +921,7 @@ class BoardDelegate(delegator: Delegator) :
                     while ( true ) {
                         val found = mGR!!.requestHint(action == Action.NEXT_HINT_ACTION, workRemains)
                         if ( !found || !workRemains[0] ) {
-                            break;
+                            break
                         }
                     }
                 }
