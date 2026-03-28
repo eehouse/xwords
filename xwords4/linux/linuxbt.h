@@ -46,6 +46,8 @@ void lbt_freeScan( LaunchParams* params, GSList* list );
 void lbt_setToSelf( LaunchParams* params, BTHostPair* hp );
 
 XP_Bool nameToBtAddr( const char* name, bdaddr_t* ba );
+XP_Bool isLocalAddr( const LaunchParams* params,
+                     const XP_BtAddrStr* btAddr );
 #else
 # define lbt_init( params )
 # define lbt_destroy( params )

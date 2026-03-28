@@ -75,9 +75,6 @@ struct LinuxBTState {
     GDBusConnection* conn;
 } LinBtStuff;
 
-static XP_Bool isLocalSend( const LaunchParams* params,
-                            const XP_BtAddrStr* btAddr );
-
 static void
 on_dbus_closed( GDBusConnection *connection,
                 gboolean XP_UNUSED(remote_peer_vanished),
@@ -464,7 +461,7 @@ lbt_send( LaunchParams* params, const XP_U8* buf, XP_U16 len,
         dp->btAddr = *btAddr;
         dp->params = params;
 
-        if ( isLocalSend(params, btAddr) ) {
+        if ( isLocalAddr(params, btAddr) ) {
             g_idle_add( sendToSelfIdle, dp );
         } else {
             pthread_t thread;
@@ -657,8 +654,8 @@ lbt_setToSelf( LaunchParams* params, BTHostPair* hp )
     strcpy( hp->btAddr.chars, btState->myBtAddr.chars );
 }
 
-static XP_Bool
-isLocalSend( const LaunchParams* params, const XP_BtAddrStr* btAddr )
+XP_Bool
+isLocalAddr( const LaunchParams* params, const XP_BtAddrStr* btAddr )
 {
     LinuxBTState* btState = params->btState;
     return 0 == strcmp( btState->myBtAddr.chars, btAddr->chars );

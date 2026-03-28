@@ -97,6 +97,17 @@ conTypeToPageNum( const GtkInviteState* state, CommsConnType conType )
 }
 
 static void
+checkAddrs( GtkInviteState* state )
+{
+    if ( addr_hasType( state->addr, COMMS_CONN_BT )
+         && isLocalAddr( state->globals->cGlobals.params,
+                         &state->addr->u.bt.btAddr ) ) {
+        XP_LOGFF( "removing bt address to avoid send-to-self" );
+        addr_rmType( state->addr, COMMS_CONN_BT );
+    }
+}
+
+static void
 handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkInviteState* state = (GtkInviteState*)closure;
@@ -109,6 +120,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         gchar* name =
             gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->knownsCombo) );
         kplr_getAddr( state->dutil, NULL_XWE, name, state->addr, NULL );
+        checkAddrs( state );
     } else {
         addr_addType( state->addr, conType );
         switch ( conType ) {
@@ -148,9 +160,14 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     }
 
     /* get the number to invite */
-    gchar* num = 
-        gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->nPlayersCombo) );
-    *(state->nPlayersP) = atoi( num );
+    gchar* num = gtk_combo_box_text_get_active_text
+        ( GTK_COMBO_BOX_TEXT(state->nPlayersCombo) );
+    if ( !!num ) {
+        *(state->nPlayersP) = atoi( num );
+        g_free( num );
+    } else {
+        XP_ASSERT( 0 );
+    }
         
     state->cancelled = XP_FALSE;
     gtk_main_quit();
@@ -398,6 +415,7 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
         .dutil = cGlobals->params->dutil,
         .gr = cGlobals->gr,
     };
+    XP_ASSERT( 1 <= state.maxPlayers );
 
     GtkWidget* hbox;
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );

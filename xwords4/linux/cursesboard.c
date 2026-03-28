@@ -538,7 +538,7 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
 static CursesBoardGlobals*
 findOrOpenForGameID( CursesBoardState* cbState, XP_U32 gameID )
 {
-    GameRef grs[1] = {0};
+    GameRef grs[1] = {};
     XP_U16 nRefs = VSIZE(grs);
     gmgr_getForGID( cbState->params->dutil, NULL_XWE, gameID, grs, &nRefs );
     return nRefs == 1 ? findOrOpen( cbState, grs[0], NULL ) : NULL;

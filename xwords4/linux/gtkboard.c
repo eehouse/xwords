@@ -317,39 +317,6 @@ relay_status_gtk( XWEnv XP_UNUSED(xwe), void* closure, CommsRelayState state )
     }
 }
 
-static void
-relay_connd_gtk( XWEnv XP_UNUSED(xwe), void* closure, XP_UCHAR* const room,
-                 XP_Bool XP_UNUSED(reconnect), XP_U16 devOrder, 
-                 XP_Bool allHere, XP_U16 nMissing )
-{
-    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-    globals->cGlobals.nMissing = nMissing;
-    XP_Bool skip = XP_FALSE;
-    char buf[256];
-
-    if ( allHere ) {
-        /* disable for now. Seeing this too often */
-        skip = XP_TRUE;
-        snprintf( buf, sizeof(buf),
-                  "All expected players have joined in %s.  Play!", room );
-    } else {
-        if ( nMissing > 0 ) {
-            snprintf( buf, sizeof(buf), "%dth connected to relay; waiting "
-                      "in %s for %d player[s].", devOrder, room, nMissing );
-        } else {
-            /* an allHere message should be coming immediately, so no
-               notification now. */
-            skip = XP_TRUE;
-        }
-    }
-
-    if ( !skip ) {
-        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, NULL, 500 );
-    }
-
-    disenable_buttons( globals );
-}
-
 static gint
 invoke_new_game( gpointer data )
 {
@@ -455,33 +422,6 @@ relay_requestJoin_gtk( void* closure, const XP_UCHAR* devID, const XP_UCHAR* roo
 /*               "\nGameID: %08X", newCount, */
 /*               quashed?"q":"", globals->cGlobals.gi->gameID); */
 /*     gtk_label_set_text( GTK_LABEL(globals->countLabel), buf ); */
-/* } */
-
-/* static void */
-/* setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )  */
-/* { */
-/*     XP_ASSERT( !procs->closure ); */
-/*     procs->closure = globals; */
-/*     procs->sendMsgs = linux_send; */
-/* #ifdef XWFEATURE_COMMS_INVITE */
-/*     procs->sendInvt = linux_send_invt; */
-/* #endif */
-/* #ifdef COMMS_XPORT_FLAGSPROC */
-/*     procs->getFlags = gtk_getFlags; */
-/* #endif */
-/* #ifdef COMMS_HEARTBEAT */
-/*     procs->reset = linux_reset; */
-/* #endif */
-/* #ifdef XWFEATURE_RELAY */
-/*     procs->rstatus = relay_status_gtk; */
-/*     procs->rconnd = relay_connd_gtk; */
-/*     procs->rerror = relay_error_gtk; */
-/*     procs->sendNoConn = relay_sendNoConn_gtk; */
-/* # ifdef RELAY_VIA_HTTP */
-/*     procs->requestJoin = relay_requestJoin_gtk; */
-/* # endif */
-/* #endif */
-/*     procs->countChanged = countChanged_gtk; */
 /* } */
 
 #ifdef DEBUG
@@ -1332,14 +1272,17 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommonGlobals* cGlobals = &globals->cGlobals;
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
     XP_U16 nMissing = gr_getPendingRegs( dutil, globals->cGlobals.gr, NULL_XWE );
+    if ( nMissing ) {
+        CommsAddrRec inviteAddr = {};
+        gint nPlayers = nMissing;
+        XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
+        XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
 
-    CommsAddrRec inviteAddr = {};
-    gint nPlayers = nMissing;
-    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
-    XP_LOGFF( "gtkInviteDlg() => %s", boolToStr(confirmed) );
-
-    if ( confirmed ) {
-        send_invites( cGlobals, nPlayers, &inviteAddr );
+        if ( confirmed ) {
+            send_invites( cGlobals, nPlayers, &inviteAddr );
+        }
+    } else {
+        gtktell( globals->window, "All game slots are filled." );
     }
 } /* handle_invite_button */
 
