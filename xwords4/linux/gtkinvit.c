@@ -97,7 +97,7 @@ conTypeToPageNum( const GtkInviteState* state, CommsConnType conType )
 }
 
 static void
-checkAddrs( GtkInviteState* state )
+checkAddr( GtkInviteState* state )
 {
     if ( addr_hasType( state->addr, COMMS_CONN_BT )
          && isLocalAddr( state->globals->cGlobals.params,
@@ -120,7 +120,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         gchar* name =
             gtk_combo_box_text_get_active_text( GTK_COMBO_BOX_TEXT(state->knownsCombo) );
         kplr_getAddr( state->dutil, NULL_XWE, name, state->addr, NULL );
-        checkAddrs( state );
+        checkAddr( state );
     } else {
         addr_addType( state->addr, conType );
         switch ( conType ) {

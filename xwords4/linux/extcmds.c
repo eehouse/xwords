@@ -21,6 +21,7 @@
 #include <sys/un.h>
 
 #include "extcmds.h"
+#include "linuxbt.h"
 #include "device.h" 
 #include "strutils.h"
 #include "linuxmain.h"
@@ -91,6 +92,16 @@ convertFromArgs( CmdWrapper* wr, cJSON* XP_UNUSED(args) )
     return (*wr->procs.convert)( wr->closure, XP_TRUE, XP_TRUE );
 }
 
+static void
+checkAddr( LaunchParams* params, CommsAddrRec* addr )
+{
+    if ( addr_hasType( addr, COMMS_CONN_BT )
+         && isLocalAddr( params, &addr->u.bt.btAddr ) ) {
+        XP_LOGFF( "removing bt address to avoid send-to-self" );
+        addr_rmType( addr, COMMS_CONN_BT );
+    }
+}
+
 /* Invite can be via a known player or via */
 static XP_Bool
 inviteFromArgs( CmdWrapper* wr, cJSON* args )
@@ -118,6 +129,7 @@ inviteFromArgs( CmdWrapper* wr, cJSON* args )
             XP_LOGFF( "found kplyr name: %s", item->valuestring );
             success = kplr_getAddr( dutil, NULL_XWE, item->valuestring,
                                     &destAddrs[ii], NULL );
+            checkAddr( wr->params, &destAddrs[ii] );
         } else {
             cJSON* addr = cJSON_GetObjectItem( item, "addr" );
             XP_ASSERT( !!addr );
