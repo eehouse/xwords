@@ -34,7 +34,7 @@ typedef struct _PageData {
     gboolean doUse;
     const char* labelText;
     GtkWidget* label;
-    const char* okButtonTxt;
+    char okButtonTxt[64];
 } PageData;
 
 #ifdef XWFEATURE_RELAY
@@ -241,7 +241,7 @@ handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
 static GtkWidget*
 makeRelayPage( GtkInviteState* state, PageData* data )
 {
-    data->okButtonTxt = "Invite via Relay";
+    sprintf( data->okButtonTxt, "Invite via Relay" );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     GtkWidget* hbox;
@@ -259,7 +259,7 @@ makeRelayPage( GtkInviteState* state, PageData* data )
 static GtkWidget*
 makeBTPage( GtkInviteState* state, PageData* data )
 {
-    data->okButtonTxt = "Invite via Bluetooth";
+    sprintf( data->okButtonTxt, "Invite via Bluetooth" );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
 
@@ -314,7 +314,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
 static GtkWidget*
 makeSMSPage( GtkInviteState* state, PageData* data )
 {
-    data->okButtonTxt = "Invite via SMS";
+    sprintf( data->okButtonTxt, "Invite via Bluetooth" );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
@@ -336,11 +336,30 @@ makeSMSPage( GtkInviteState* state, PageData* data )
 } /* makeSMSPage */
 #endif
 
-static GtkWidget*
-makeKnownsPage( GtkInviteState* state, PageData* data )
+static void
+onPageChanged( GtkInviteState* state, guint index )
 {
-    data->okButtonTxt = "Invite Known Player";
+    state->curPage = index;
+    PageData* pageData = &state->pageData[index];
+    gtk_button_set_label( GTK_BUTTON(state->okButton), pageData->okButtonTxt );
+}
 
+static void
+on_kpcombo_changed( GtkComboBoxText *combo, gpointer data )
+{
+    char* name = gtk_combo_box_text_get_active_text( combo );
+    if ( !!name ) {
+        GtkInviteState* state = (GtkInviteState*)data;
+        PageData* data = &state->pageData[0];
+        sprintf( data->okButtonTxt, "Invite %s", name );
+        g_free( name );
+        onPageChanged( state, state->curPage );
+    }
+}
+
+static GtkWidget*
+makeKnownsPage( GtkInviteState* state )
+{
     GtkWidget* hbox = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
     GtkWidget* label = gtk_label_new( "Invite which player:" );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
@@ -352,6 +371,7 @@ makeKnownsPage( GtkInviteState* state, PageData* data )
     kplr_getNames( state->dutil, NULL_XWE, XP_FALSE, names, &nFound );
 
     GtkWidget* combo = state->knownsCombo = gtk_combo_box_text_new();
+    g_signal_connect( combo, "changed", G_CALLBACK(on_kpcombo_changed), state);
     for ( int ii = 0; ii < nFound; ++ii ) {
         gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(combo), names[ii] );
     }
@@ -369,7 +389,7 @@ makeKnownsPage( GtkInviteState* state, PageData* data )
 static GtkWidget*
 makeMQTTPage( GtkInviteState* state, PageData* data )
 {
-    data->okButtonTxt = "Invite via MQTT";
+    sprintf( data->okButtonTxt, "Invite via MQTT" );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     GtkWidget* hbox;
@@ -394,13 +414,10 @@ getNextData( GtkInviteState* state, CommsConnType typ, gchar* label )
 }
 
 static void
-onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1), 
-               guint arg2, gpointer data )
+page_change_proc( GtkNotebook* XP_UNUSED(nb), gpointer XP_UNUSED(arg1),
+                  guint arg2, gpointer data )
 {
-    GtkInviteState* state = (GtkInviteState*)data;
-    state->curPage = arg2;
-    PageData* pageData = &state->pageData[arg2];
-    gtk_button_set_label(GTK_BUTTON(state->okButton), pageData->okButtonTxt );
+    onPageChanged( (GtkInviteState*)data, arg2 );
 }
 
 XP_Bool
@@ -437,13 +454,13 @@ gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 
     state.notebook = gtk_notebook_new();
     g_signal_connect( state.notebook, "switch-page",
-                      G_CALLBACK(onPageChanged), &state );
+                      G_CALLBACK(page_change_proc), &state );
 
     PageData* data;
     if ( kplr_havePlayers( state.dutil, NULL_XWE ) ) {
         data = getNextData( &state, COMMS_CONN_NONE, "Knowns" );
         (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
-                                        makeKnownsPage( &state, data ),
+                                        makeKnownsPage( &state ),
                                         data->label );
     }
     data = getNextData( &state, COMMS_CONN_MQTT, "MQTT" );
