@@ -28,6 +28,9 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 import kotlin.math.abs
 import kotlin.math.min
@@ -69,6 +72,20 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         val scale = resources.displayMetrics.density
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        ViewCompat.getRootWindowInsets(this)
+            ?.getInsets(WindowInsetsCompat.Type.systemGestures())
+            ?.let { insets ->
+                (layoutParams as ViewGroup.MarginLayoutParams).let {
+                    val pct = 60
+                    it.leftMargin = (insets.left * pct) / 100
+                    it.rightMargin = (insets.right * pct) / 100
+                    layoutParams = it // maybe trigger re-layout
+                }
+            }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
