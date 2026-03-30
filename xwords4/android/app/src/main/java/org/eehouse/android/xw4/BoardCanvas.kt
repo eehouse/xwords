@@ -51,8 +51,11 @@ import kotlin.math.abs
 import kotlin.math.max
 
 open class BoardCanvas private constructor(
-    private val mContext: Context, private val mActivity: Activity?,
-    private val mBitmap: Bitmap, private var mGR: GameRef?, dims: BoardDims?,
+    private val mContext: Context,
+    private val mActivity: Activity?,
+    private val mBitmap: Bitmap,
+    private var mGR: GameRef?,
+    mDims: BoardDims?,
     private val mNRP: NewRecentsProc?,
     private val mDrawProgProc: DrawProgress?,
     private var mDT: Int = DrawCtx.DT_SCREEN // DrawTarget
@@ -951,12 +954,13 @@ open class BoardCanvas private constructor(
     }
 
     init {
+        Log.d(TAG, "made with dims: $mDims")
         mHasSmallScreen = Utils.hasSmallScreen(mContext)
         val res = mContext.resources
         val scale = res.displayMetrics.density
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
-        dims?.let {
+        mDims?.let {
             mMinRemWidth = it.cellSize
         }
         mDrawPaint = Paint()

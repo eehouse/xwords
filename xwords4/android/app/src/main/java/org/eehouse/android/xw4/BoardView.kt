@@ -28,6 +28,9 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 import kotlin.math.abs
 import kotlin.math.min
@@ -72,6 +75,20 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
         val scale = resources.displayMetrics.density
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        ViewCompat.getRootWindowInsets(this)
+            ?.getInsets(WindowInsetsCompat.Type.systemGestures())
+            ?.let { insets ->
+                (layoutParams as ViewGroup.MarginLayoutParams).let {
+                    val pct = 60
+                    it.leftMargin = (insets.left * pct) / 100
+                    it.rightMargin = (insets.right * pct) / 100
+                    layoutParams = it // maybe trigger re-layout
+                }
+            }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -152,10 +169,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
                     mLayoutHeight = 0
                     mLayoutWidth = mLayoutHeight
                 } else {
-                    Log.d(
-                        TAG, "onMeasure(): unexpected width (%d) to height (%d) ratio"
-                                + "; proceeding", dims.width, dims.height
-                    )
+                    Log.d(TAG, "onMeasure(): unexpected width (%d) to height (%d) ratio"
+                          + "; proceeding", dims.width, dims.height)
                 }
             }
         }
@@ -177,9 +192,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
         if (width < minWidth) {
             width = minWidth
         }
+        // Log.d( TAG, "onMeasure: calling setMeasuredDimension( width=$width, height=$height )")
         setMeasuredDimension(width, height)
-        // Log.d( TAG, "onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
-        //        width, height );
     }
 
     // It may make sense to kick off layout from here rather than onDraw().
@@ -193,7 +207,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
     // starting a coroutine here and then drawing is a no-no. So leave that
     // operation in actuallyDraw()
     override fun onDraw(canvas: Canvas) {
-        val width = width
+        var width = width
         val height = height
         if (width == mLayoutWidth && height == mLayoutHeight) {
             actuallyDraw(canvas)
@@ -204,7 +218,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
             // nothing to do either
             Log.d(TAG, "onDraw(): no mGR")
         } else if (null == mDims) {
-            Log.d( TAG, "onDraw(): null mDims" ); // don't see this!!
+            Log.d( TAG, "onDraw(): null mDims" )
             val paint = Paint()
             paint.textSize = mMediumFontHt.toFloat()
             val scratch = Rect()
@@ -214,14 +228,14 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
             val fontWidth =
                 min(mDefaultFontHt.toDouble(), (timerWidth / timerTxt.length).toDouble())
                 .toInt()
-            doLayout( width, height, fontWidth, mDefaultFontHt)
+            doLayout(width, height, fontWidth, mDefaultFontHt)
             // We'll be back....
         } else {
             val gr = mGR!!
             // If board size has changed we need a new bitmap
             val bmHeight = 1 + mDims!!.height
             val bmWidth = 1 + mDims!!.width
-            Log.d(TAG, "onDraw(): DOING IT/creating mBitmap($bmWidth x $bmHeight)")
+            Log.d(TAG, "onDraw(): creating mBitmap(width=$bmWidth, height=$bmHeight)")
             mBitmap = Bitmap.createBitmap(
                 bmWidth, bmHeight,
                 Bitmap.Config.ARGB_8888
@@ -277,7 +291,7 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
     ) {
         Log.d(TAG, "doLayout($width, $height)")
         val squareTiles = XWPrefs.getSquareTiles(mContext!!)
-        Utils.launch {
+        launch {
             val gr = mGR!!
             val dims = gr.figureLayout(0, 0, width, height,
                                        150,  /*scorePct*/200,  /*trayPct*/

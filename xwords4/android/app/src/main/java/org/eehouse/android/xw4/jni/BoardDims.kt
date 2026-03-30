@@ -43,9 +43,9 @@ class BoardDims {
     var maxCellSize: Int = 0
     @JvmField
     var timerWidth: Int = 0 // @Override
-    // public String toString()
-    // {
-    //     StringBuilder sb = new StringBuilder()
+
+    // override fun toString(): String {
+    //     val sb = StringBuilder()
     //         .append( "width: " ).append( width )
     //         .append(" height: ").append( height )
     //         .append(" left: " ).append( left )
@@ -60,7 +60,6 @@ class BoardDims {
     //         .append(" trayHt: " ).append( trayHt )
     //         .append(" cellSize: " ).append(cellSize)
     //         .append(" maxCellSize: " ).append(maxCellSize)
-    //         ;
-    //     return sb.toString();
+    //     return sb.toString()
     // }
 }
