@@ -560,13 +560,19 @@ on_drawing_configure( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     short bdHeight = alloc.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
         - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
-    XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
+    LaunchParams* params = cGlobals->params;
+    XP_ASSERT( !params->verticalScore ); /* not supported */
 
     BoardDims dims;
     GameRef gr = cGlobals->gr;
-    XW_DUtilCtxt* dutil = cGlobals->params->dutil;
+    XW_DUtilCtxt* dutil = params->dutil;
+    XP_U16 bLeft = GTK_BOARD_LEFT;
+    if ( params->addMargins ) {
+        bLeft += GTK_MARGINS_WIDTH;
+        bdWidth -= 2 * GTK_MARGINS_WIDTH;
+    }
     gr_figureLayout( dutil, gr, NULL_XWE, 
-                     GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
+                     bLeft, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
                      110, 150, 200, bdWidth-25, 16, 16, XP_FALSE, &dims );
     gr_applyLayout( dutil, gr, NULL_XWE, &dims );
 

@@ -1226,6 +1226,14 @@ showGamesToggle( GtkWidget* toggle, void* closure )
     params->showGames = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
 }
 
+static void
+withMarginsProc( GtkWidget* toggle, void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->cag.params;
+    params->addMargins = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+}
+
 typedef struct _GroupState {
     GtkAppGlobals* apg;
     LaunchParams* params;
@@ -1469,6 +1477,14 @@ makeGamesWindow( GtkAppGlobals* apg )
                               apg );
             gtk_widget_show( showNewcheck );
             gtk_container_add( GTK_CONTAINER(hbox), showNewcheck );
+
+            GtkWidget* withMarginsCheck = gtk_check_button_new_with_label( "Open with margins" );
+            gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(withMarginsCheck),
+                                          params->addMargins );
+            g_signal_connect( withMarginsCheck, "toggled", G_CALLBACK(withMarginsProc),
+                              apg );
+            gtk_widget_show( withMarginsCheck );
+            gtk_container_add( GTK_CONTAINER(hbox), withMarginsCheck );
         }
     }
 
