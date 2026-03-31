@@ -56,27 +56,26 @@ open class XWActivity : FragmentActivity(), Delegator, DlgClickNotify {
             )
         }
         super.onCreate(savedInstanceState)
-        Assert.assertNotNull(dlgt)
         mDlgt = dlgt
         Assert.assertTrueNR(applicationContext === XWApp.getContext())
 
         // Looks like there's an Oreo-only bug
         if (setOrientation && Build.VERSION_CODES.O != Build.VERSION.SDK_INT) {
-            var orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-            orientation = if (XWPrefs.getIsTablet(this)) {
-                ActivityInfo.SCREEN_ORIENTATION_USER
-            } else {
-                Assert.assertTrueNR(9 <= Build.VERSION.SDK.toInt())
-                ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-            }
+            val orientation =
+                if (XWPrefs.getIsTablet(this)) {
+                    ActivityInfo.SCREEN_ORIENTATION_USER
+                } else {
+                    Assert.assertTrueNR(9 <= Build.VERSION.SDK.toInt())
+                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                }
             if (ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED != orientation) {
                 requestedOrientation = orientation
             }
         }
-        val layoutID = mDlgt!!.layoutID
+        val layoutID = dlgt.layoutID
         if (0 < layoutID) {
             Log.d(TAG, "onCreate() calling setContentView()")
-            mDlgt!!.setContentView(layoutID)
+            dlgt.setContentView(layoutID)
         }
         dlgt.init(savedInstanceState)
     }

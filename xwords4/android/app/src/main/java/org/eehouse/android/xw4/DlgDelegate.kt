@@ -198,7 +198,7 @@ class DlgDelegate(
             return this
         }
 
-        fun setTitle(str: String): Builder {
+        fun setTitle(str: String? = null): Builder {
             mState.setTitle(str)
             return this
         }

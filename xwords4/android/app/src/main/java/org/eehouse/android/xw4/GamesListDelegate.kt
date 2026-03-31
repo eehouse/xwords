@@ -1422,7 +1422,8 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     private fun mkLoadStoreDlg(uri: Uri?): Dialog {
-        val view = LocUtils.inflate(mActivity, R.layout.backup_config_view) as BackupConfigView
+        val view = LocUtils.inflate(mActivity, R.layout.backup_config_view)
+            as BackupConfigView
         view.init(uri)
 
         val ab = makeAlertBuilder()
@@ -1824,14 +1825,13 @@ class GamesListDelegate(delegator: Delegator) :
             R.id.games_menu_knownplyrs -> KnownPlayersDelegate.launchOrAlert(delegator, this)
             R.id.games_menu_about -> show(AboutAlert.newInstance())
             R.id.games_menu_email -> Utils.emailAuthor(mActivity)
-            R.id.games_menu_storedb -> if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
-                makeConfirmThenBuilder(
-                    Action.BACKUP_DO,
-                    R.string.backup_only_on_9
-                )
-                    .show()
-            } else {
-                onPosButton(Action.BACKUP_DO)
+            R.id.games_menu_storedb -> {
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
+                    makeConfirmThenBuilder(Action.BACKUP_DO, R.string.backup_only_on_9)
+                        .show()
+                } else {
+                    onPosButton(Action.BACKUP_DO)
+                }
             }
 
             R.id.games_menu_loaddb -> if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {

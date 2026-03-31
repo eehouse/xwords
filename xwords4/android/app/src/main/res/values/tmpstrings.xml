@@ -75,4 +75,13 @@
 
   <string name="disable_ntfy">Disable ntfy</string>
   <string name="disable_ntfy_summary">Don\'t use even if installed</string>
+
+  <string name="gesture_margins_title">gesture_margins_title</string>
+  <string name="gesture_margins_shrink">gesture_margins_shrink</string>
+  <string name="gesture_margins_ignore">gesture_margins_ignore</string>
+  <string name="not_again_margins">When \"Gesture Navigation\" is
+  enabled, as it is on this device, it is difficult to drag tiles near
+  the edge of the screen. So CrossWords draws the board and tray a bit
+  narrower by default. You can change this behavior in
+  settings.</string>
 </resources>

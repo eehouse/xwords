@@ -420,6 +420,7 @@ class BoardDelegate(delegator: Delegator) :
         val devID = getNFCDevID(mActivity)
         mNFCWrapper = Wrapper.init(mActivity, this, devID)
         mView = findViewById(R.id.board_view) as BoardView
+        mView!!.setDelegate(this)
 
         val args = arguments!!
         //         mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
