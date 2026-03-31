@@ -8,12 +8,29 @@ NO_UPLOAD=''
 BRANCH=$(git branch --show-current)
 DIR=/tmp/build_$$_dir
 
+KNOWN_HOSTS=("eehouse.org"
+			 "staging"
+			 "eehouse"
+			 "dev"
+			 "pi4.liquidsugar.net"
+			)
+HOSTS=''
+
+KNOWN_SRCS=("github"
+            "eehouse"
+            "staging"
+            )
+REMOTE=''
+
 # REMOTE=https://github.com/eehouse/xwords.git
-REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
+# REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
-	echo "usage: $0 [--no-rm --no-upload]    # do not remove the build directory"
+	echo "usage: $0 [--no-upload]     # do not remove build directory \\"
+	echo "    [--no-rm]               # do not remove build directory \\"
+	echo "    [--branch <git-branch>] # build this branch, not current \\"
+	echo "    [--host <hostname>]* # add to list of upload targets \\"
     echo "builds debug variant from the current tip of github"
 	echo "(last modified Jan 2024)"
     exit 1
@@ -23,6 +40,14 @@ while [ $# -ge 1 ]; do
     case $1 in
 		--help)
 			usage
+			;;
+		--host)
+			HOSTS="${HOSTS} $2"
+			shift
+			;;
+		--branch)
+			BRANCH=$2
+			shift
 			;;
 		--no-rm)
 			NO_RM=1
@@ -36,6 +61,59 @@ while [ $# -ge 1 ]; do
 	esac
 	shift
 done
+
+if [ -z "$HOSTS" ]; then
+	while :; do
+		echo "Choose a host (by number); d when done; 'q' to exit: "
+		for ii in "${!KNOWN_HOSTS[@]}"; do
+			printf "[%d] %s\n" "$ii" "${KNOWN_HOSTS[$ii]}"
+		done
+		read CHOICE
+
+		case $CHOICE in
+			[0-9])
+				HOSTS="${HOSTS} ${KNOWN_HOSTS[$CHOICE]}"
+				;;
+			q) break
+			   exit 1
+			   ;;
+			d) break
+			   ;;
+		esac
+	done
+fi
+
+while [ -z "$REMOTE" ]; do
+	echo "Choose a git source host (by number); 'q' to exit: "
+	for ii in "${!KNOWN_SRCS[@]}"; do
+		printf "[%d] %s\n" "$ii" "${KNOWN_SRCS[$ii]}"
+	done
+	read CHOICE
+
+	case $CHOICE in
+		[0-9])
+			REMOTE="${KNOWN_SRCS[$CHOICE]}"
+            case "$REMOTE" in
+                "github")
+                    REMOTE="https://github.com/eehouse/xwords.git"
+                    ;;
+                "eehouse")
+                    REMOTE="ssh://prod@eehouse/home/prod/repos/xwords"
+                    ;;
+                "staging")
+                    REMOTE="ssh://prod@staging/home/prod/repos/xwords"
+                    ;;
+                *) usage "bad host???"
+                   ;;
+            esac
+			;;
+		q) break
+		   exit 1
+		   ;;
+	esac
+done
+
+[ -z "${HOSTS}" ] && usage "no host set"
 
 mkdir -p $DIR
 pushd $DIR
@@ -67,15 +145,17 @@ else
 
 	if [ -n "${NO_UPLOAD}" ]; then
 		: # do nothing
-	elif [ -n "${XW4D_UPLOAD}" ]; then
-		IFS=","
-		for UPPATH in ${XW4D_UPLOAD}; do
-			WITH_DIR="${UPPATH}/${SERVER_DIR}/"
-			scp "$APK" "$WITH_DIR"
-			echo "uploaded $APK to ${WITH_DIR}"
+	elif [ -n "${HOSTS}" ]; then
+		for HOST in ${HOSTS}; do
+			echo "need to upload to $HOST"
+			HOST_DIR="/var/www/html/android/${SERVER_DIR}/"
+			ssh ${HOST} mkdir -p ${HOST_DIR}
+			echo "doing: scp $APK ${HOST}:${HOST_DIR}"
+			scp "$APK" "${HOST}:${HOST_DIR}"
+			echo "uploaded $APK to ${HOST}/${HOST_DIR}/"
 		done
 	else
-		echo "not uploading $APK: XW4D_UPLOAD not set" >&2
+		echo "no host to upload to"
 	fi
 fi
 
