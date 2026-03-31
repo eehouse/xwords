@@ -591,7 +591,8 @@ class GamesListDelegate(delegator: Delegator) :
                 }
 
                 DlgID.SET_MQTTID -> {
-                    val view = buildRenamer(null, R.string.set_devid_title)
+                    val curID = params[0] as String
+                    val view = buildRenamer(curID, R.string.set_devid_title)
                     makeAlertBuilder()
                         .setView(view)
                         .setNegativeButton(android.R.string.cancel, null)
@@ -1852,7 +1853,11 @@ class GamesListDelegate(delegator: Delegator) :
                 }
             }
 
-            R.id.games_menu_setDevid -> showDialogFragment(DlgID.SET_MQTTID)
+            R.id.games_menu_setDevid -> {
+                MQTTUtils.getMQTTDevID()?.let { devid ->
+                    showDialogFragment(DlgID.SET_MQTTID, devid)
+                }
+            }
             R.id.games_menu_pingMqtt -> Device.pingMQTTBroker()
 
             R.id.games_menu_mqttStats -> {

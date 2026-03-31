@@ -149,8 +149,11 @@ object MQTTUtils {
         NetStateCache.unregister(sStateChangedIf)
     }
 
+    // Will get called when devid changed by user
     fun startListener(context: Context, devID: String,
                       topics: Array<String>, qos: Int) {
+        killConn()
+
         sDevID = devID
         sTopics = topics
         sQos = qos

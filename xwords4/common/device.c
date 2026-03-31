@@ -77,6 +77,7 @@ static void getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool forceNew,
 static void registerIf( XW_DUtilCtxt* dutil, XWEnv xwe, XP_Bool force );
 static void sendCJsonViaMQTTP( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* topic,
                                XP_U8 qos, cJSON** msg );
+static void mqttInit( XW_DUtilCtxt* dutil, XWEnv xwe );
 
 XWStreamCtxt*
 dvc_makeStream( XW_DUtilCtxt* dutil )
@@ -1002,11 +1003,21 @@ dvc_getMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, MQTTDevID* devID )
     getMQTTDevID( dutil, xwe, XP_FALSE, devID );
 }
 
+static void
+reinitMQTTProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* XP_UNUSED(closure),
+                TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        mqttInit( dutil, xwe );
+    }
+}
+
 void
 dvc_setMQTTDevID( XW_DUtilCtxt* dutil, XWEnv xwe, const MQTTDevID* devID )
 {
     dutil->devID = *devID;
     dutil_storePtr( dutil, xwe, MQTT_DEVID_KEY, devID, sizeof(*devID) );
+    tmr_setIdle( dutil, xwe, reinitMQTTProc, NULL );
 }
 
 void
