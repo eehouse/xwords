@@ -379,7 +379,7 @@
         <item quantity="other">Sind Sie sicher, dass Sie die %1$d ausgewählten Telefonnummer löschen wollen?</item>
     </plurals>
     <string name="summary_conn_sms_fmt">Partie läuft mit %1$s</string>
-    <string name="warn_unlimited">Sind Sie sicher, dass diese Nummer in einem Tarif mit unbegrenztem SMS-Versand ist\? Tippen Sie auf „Abbrechen“ falls nicht.</string>
+    <string name="warn_unlimited">Sind Sie sicher, dass diese Nummer einen Tarif mit unbegrenztem SMS-Versand hat? Tippen Sie auf „Abbrechen“ falls nicht.</string>
     <string name="remote_undone">Externes Gerät hat einen Zug zurückgenommen.</string>
     <string name="menu_hint_prev">Vorheriger Tipp</string>
     <string name="menu_hint_next">Nächster Tipp</string>
@@ -454,12 +454,8 @@
     <string name="group_cur_games">Meine Partien</string>
     <string name="group_new_games">Neue Partien</string>
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="one">"
-\n
-\n(Eine Partie wird auch gelöscht.)"</item>
-        <item quantity="other">"
-\n
-\n(%1$d Partien werden auch gelöscht.)"</item>
+        <item quantity="one">\n\n(Eine Partie wird auch gelöscht.)</item>
+        <item quantity="other">\n\n(%1$d Partien werden auch gelöscht.)</item>
     </plurals>
     <string name="rename_group_label">Den Namen dieser Gruppe ändern in:</string>
     <string name="cannot_delete_default_group_fmt">Die Gruppe “%1$s” kann jetzt nicht gelöscht werden, weil es die Gruppe ist, in der neue Spiele platziert werden.</string>
@@ -764,9 +760,7 @@
         <item quantity="one">Bitte das Gerät auswählen, das an dieser Partie teilnehmen soll.</item>
         <item quantity="other">Bitte bis zu %1$d Geräte auswählen, die an dieser Partie teilnehmen sollen.</item>
     </plurals>
-    <string name="invite_bt_desc_postscript">"
-\n
-\n(Die Liste enthält gekoppelte Geräte, auf denen CrossWords durch einen Suchlauf erkannt wurde.)"</string>
+    <string name="invite_bt_desc_postscript">\n\n(Die Liste enthält gekoppelte Geräte, auf denen CrossWords durch einen Suchlauf erkannt wurde.)</string>
     <plurals name="bt_scan_progress_fmt">
         <item quantity="one">Scanne nach CrossWords</item>
         <item quantity="other">Scanne nach CrossWords auf %1$d gepaarten Geräten</item>
@@ -775,19 +769,12 @@
         <item quantity="one">Wollen Sie das gewählte Gerät wirklich vergessen\?</item>
         <item quantity="other">Wollen Sie die %1$d gewählten Geräte wirklich vergessen\?</item>
     </plurals>
-    <string name="confirm_clear_bt_postscript">"
-\n
-\n(Sie können nur Geräte erneut hinzufügen, die sich in Bluetooth-Reichweite befinden.)"</string>
+    <string name="confirm_clear_bt_postscript">\n\n(Sie können nur Geräte erneut hinzufügen, die sich in Bluetooth-Reichweite befinden.)</string>
     <string name="pct_suffix">" ％"</string>
     <string name="loc_item_copy_bless">Offiziell kopieren</string>
     <string name="bt_scan_age_fmt">Letzter Kontakt von: %1$s</string>
     <string name="gameevent_channel_expl">Ereignisse während der Partie</string>
-    <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird:
-\n • Zuerst: Scannen Sie erneut
-\n • Stellen Sie sicher, dass Bluetooth auf dem anderen Gerät eingeschaltet ist
-\n • Starten Sie CrossWords auf dem anderen Gerät
-\n • Wenn alles nichts hilft, starten Sie dieses Gerät neu
-\n</string>
+    <string name="not_again_emptybtscan">Wenn beim Scannen das erwartete Gerät nicht gefunden wird: \n • Zuerst scannen Sie erneut \n • Stellen Sie sicher, dass Bluetooth auf dem anderen Gerät eingeschaltet ist \n • Starten Sie CrossWords auf dem anderen Gerät \n • Wenn alles nichts hilft, starten Sie dieses Gerät neu</string>
     <string name="invit_expl_usrsms_fmt">"Einladung per SMS an %1$s gesendet"</string>
     <string name="sms_invite_flakey">Diese Option startet Ihre Standard-SMS-App mit einer versandfertigen Einladung — wenn es funktioniert. Jede SMS-App ist anders und mit einigen funktioniert es nicht.</string>
     <string name="sms_invite_fail">SMS-App konnte nicht gestartet werden</string>
@@ -931,12 +918,8 @@
 \n
 \nBluetooth ist nützlich für den Austausch von Zügen und insbesondere von Einladungen an Geräte in Ihrer Nähe. Solange Sie nicht sicher sind, dass Sie gegen niemanden in der Nähe spielen, ist es unproblematisch, es eingeschaltet zu lassen.</string>
     <plurals name="warn_bt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Sie haben eine aktive Bluetooth-Partie.)"</item>
-        <item quantity="other">"
-\n
-\n(Sie haben %1$d aktive Bluetooth-Partien.)"</item>
+        <item quantity="one">\n\n(Sie haben eine aktive Bluetooth-Partie.)</item>
+        <item quantity="other">\n\n(Sie haben %1$d aktive Bluetooth-Partien.)</item>
     </plurals>
     <string name="button_disable_bt">Bluetooth-Spiele deaktivieren</string>
     <string name="dict_avail_fmt">Tippen, um die Wortliste „%1$s“ herunterzuladen</string>
@@ -1054,12 +1037,8 @@
     <string name="skip_mqtt_add_title">Hinzufügen von MQTT überspringen</string>
     <string name="skip_mqtt_add_summary">NICHT versuchen, alle Nachrichten per MQTT zu senden</string>
     <plurals name="warn_mqtt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Sie haben jetzt eine aktive Partie über das Internet.)"</item>
-        <item quantity="other">"
-\n
-\n(Sie haben jetzt %1$d aktive Partien über das Internet.)"</item>
+        <item quantity="one">\n\n(Sie haben jetzt eine aktive Partie über das Internet.)</item>
+        <item quantity="other">\n\n(Sie haben jetzt %1$d aktive Partien über das Internet.)</item>
     </plurals>
     <string name="show_note_menu_fmt">Über %1$s</string>
     <string name="button_ask">Fragen</string>
@@ -1135,8 +1114,7 @@
     <string name="sort_by_date_label">Neueste zuerst</string>
     <string name="no_peers_info">Peer-Informationen nicht verfügbar</string>
     <string name="button_refresh">Aktualisieren</string>
-    <string name="sub_seven_allowed">Buchstabenwechsel auch bei
-    weniger als 7 Restbuchstaben im Säckchen erlauben.</string>
+    <string name="sub_seven_allowed">Handel unter sieben verbliebenen Buchstaben erlauben</string>
     <string name="sub_seven_allowed_sum">Lässt den Buchstabentausch
     zu, bis mindestens ein Buchstabenstein im Säckchen übrig ist. In
     Spanien eine übliche Regel.</string>
@@ -1223,7 +1201,7 @@
     <string name="ksconfig_killed_body_fmt">War aktiv für %1$dh%2$02dm</string>
     <string name="prefs_net_kaservice_summary">Aktualisierungsdienst aktivieren</string>
     <string name="expl_ka_hours">Wie lange aktiv bleiben</string>
-    <string name="title_ka_menuwhen">Menüeintrag des Aktualisierungsdienstes aktivieren.</string>
+    <string name="title_ka_menuwhen">Bewegungsprüfer-Menüeintrag aktivieren</string>
     <string name="ka_menuwhen_never">Nie</string>
     <string name="ka_menuwhen_available">Falls erhältlich</string>
     <string name="ka_menuwhen_running">Falls aktiv</string>
@@ -1244,9 +1222,16 @@
     <string name="confirm_clear_lps">Sind Sie sicher, dass die gespeicherten “erlaubten falsche Wörter” gelöscht werden sollen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.</string>
     <string name="legalphonies_title_fmt">Erlaubte falsche Wörter für %1$s</string>
     <string name="gamel_menu_logstore_prune">Gespeicherte Protokolle entfernen</string>
-
     <string name="pref_item_allowMulti_title">Erlaube doppelte Spiele-IDs</string>
     <string name="pref_item_allowMulti_summary">Gewöhnlich heißt das,
     Einladungen vom selben Gerät anzunehmen</string>
-
+    <string name="about_branch_fmt">Branch: %1$s</string>
+    <string name="warn_mqtt_gone">Die Möglichkeit, Bewegungen über das Internet über MQTT zu senden, wird auf Ihrer Android-Version nicht mehr unterstützt.</string>
+    <string name="warn_mqtt_gone_email_fmt">Bitte lassen Sie mich wissen, dass Sie diese Warnung gesehen haben (über die Schaltfläche “%1$s unten). Sehr wenige Leute verwenden noch diese Version von Android, und ich hoffte, keiner von ihnen verwendet CrossWords für Netzwerkspiele. Ich kann versuchen, dieses Problem zu umgehen, wenn ich weiß, dass es tatsächlich jemanden betrifft.</string>
+    <string name="have_mtqq_games_fmt">Ich habe %1$d Spiele mit mqtt.</string>
+    <string name="qos_prefs_default_expl_fmt">Verwenden, was MQTT Broker empfiehlt (aktuell %1$s)</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">Ping</string>
+    <string name="ping_result_fmt">Ping über %1$s dauerte %2$d ms.</string>
+    <string name="games_menu_mqttStats">Verbindungsstatistiken</string>
 </resources>
