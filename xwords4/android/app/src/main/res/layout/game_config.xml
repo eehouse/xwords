@@ -199,7 +199,6 @@
                   />
         <Spinner style="@style/config_spinner_spinner"
                  android:prompt="@string/phonies_spinner_prompt"
-                 android:entries="@array/phony_names"
                  />
       </org.eehouse.android.xw4.LabeledSpinner>
 

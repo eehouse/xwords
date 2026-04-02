@@ -48,6 +48,8 @@ import java.net.UnknownHostException
 import javax.net.SocketFactory
 import kotlin.concurrent.thread
 
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
+import org.eehouse.android.xw4.ListPrefsModels.URLScheme
 import org.eehouse.android.xw4.loc.LocUtils
 
 object NetUtils {
@@ -123,28 +125,14 @@ object NetUtils {
     // just to be safe.
     fun ensureProto(context: Context, url: String): String
     {
-        val pref = LocUtils.getCheckPref(
-            context, R.array.url_schemes,
-            key = R.string.key_url_scheme,
-            default = R.string.url_scheme_default
-        )
-        val dflt = LocUtils.getString(context, R.string.url_scheme_default)
-
         val useHTTPs =
-            if (dflt == pref) {
-                // On my emulator, https doesn't work for version 24 ("N") and
-                // below. So we'll try defaulting to http for everything up to
-                // and including 24.
-                Build.VERSION.SDK_INT > Build.VERSION_CODES.N
-            } else if (LocUtils.getString(
-                           context, R.string.url_scheme_http) == pref) {
-                false
-            } else {
-                Assert.assertTrueNR(
-                    LocUtils.getString(context, R.string.url_scheme_https)
-                        == pref
-                )
-                true
+            ListPrefsModels.getPrefItem(context, PrefKey.SCHEME_KEY).let { pref ->
+                when (pref) {
+                    URLScheme.DEFAULT -> Build.VERSION.SDK_INT > Build.VERSION_CODES.N
+                    URLScheme.HTTP -> false
+                    URLScheme.HTTPS -> true
+                    else -> { Assert.failDbg(); true }
+                }
             }
 
         val result =

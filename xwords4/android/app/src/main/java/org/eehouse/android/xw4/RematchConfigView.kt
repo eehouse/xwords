@@ -93,7 +93,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
             mUserEditing = ! mNameStr.equals( curName )
         }
 
-        mCurRO = mRos.get( checkedId )
+        mCurRO = mRos.get(checkedId)
         launch {
             mNewOrder = mGR!!.figureOrder(mCurRO!!)
 
@@ -123,8 +123,7 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
         if (null == mGI) {
             mGR?.let { gr ->
                 launch {
-                    gr.getGI()!!.let { gi ->
-                        mGI = gi
+                    mGI = gr.getGI()!!.also { gi ->
                         mNewOrder = Array<Int>(gi.nPlayers, {it})
 
                         mSep = LocUtils.getString( mContext, R.string.vs_join )
@@ -138,15 +137,15 @@ class RematchConfigView(val mContext: Context, attrs: AttributeSet)
                                                              RematchOrder.RO_SAME.ordinal )
                             val lastSel = RematchOrder.entries[ordinal]
 
-                            for ( ro in RematchOrder.entries ) {
-                                val strId = ro.strID
-                                if ( 0 != strId ) {
-                                    val button = RadioButton( mContext )
-                                    button.setText( LocUtils.getString( mContext, strId ) )
-                                    group.addView( button )
-                                    mRos.put( button.getId(), ro )
-                                    if ( lastSel == ro ) {
-                                        button.setChecked( true )
+                            RematchOrder.entries.map { ro ->
+                                ro.rop?.getString(context)?.let { text ->
+                                    RadioButton( mContext ).also { button ->
+                                        button.setText( text )
+                                        group.addView( button )
+                                        mRos.put( button.getId(), ro )
+                                        if ( lastSel == ro ) {
+                                            button.setChecked( true )
+                                        }
                                     }
                                 }
                             }

@@ -28,6 +28,8 @@ import androidx.preference.PreferenceManager
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.DictUtils
+import org.eehouse.android.xw4.ListPrefsModels
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
@@ -272,19 +274,10 @@ class CommonPrefs private constructor() : XWPrefs() {
         }
 
         fun getDefaultPhonies(context: Context): XWPhoniesChoice {
-            val value = getPrefsString(context, R.string.key_default_phonies)
-
-            var result =
-                XWPhoniesChoice.PHONIES_IGNORE
-            val res = context.resources
-            val names = res.getStringArray(R.array.phony_names)
-            for (ii in names.indices) {
-                val name = names[ii]
-                if (name == value) {
-                    result = XWPhoniesChoice.entries.toTypedArray().get(ii)
-                    break
-                }
-            }
+            val result =
+                ListPrefsModels.getPrefItem(context, PrefKey.PHONIES).let { item ->
+                    XWPhoniesChoice.values().find { item == it.phony }
+                }!!
             return result
         }
 

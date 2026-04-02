@@ -28,6 +28,7 @@ import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.DBUtils.HistoryPair
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.NetLaunchInfo
+import org.eehouse.android.xw4.ListPrefsModels.RematchOrderPref
 import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.jni.GameMgr.GroupRef
@@ -521,13 +522,12 @@ class GameRef(val gr: Long): Parcelable, Serializable {
     }
 
     // Keep in sync with server.h
-    enum class RematchOrder(val strID: Int) {
-        RO_NONE(0),
-        RO_SAME(R.string.ro_same),
-        RO_LOW_SCORE_FIRST(R.string.ro_low_score_first),
-        RO_HIGH_SCORE_FIRST(R.string.ro_high_score_first),
-        RO_JUGGLE(R.string.ro_juggle);
-		// fun getStrID(): Int = strID
+    enum class RematchOrder(val rop: RematchOrderPref? = null) {
+        RO_NONE(),
+        RO_SAME(RematchOrderPref.SAME),
+        RO_LOW_SCORE_FIRST(RematchOrderPref.LOW_FIRST),
+        RO_HIGH_SCORE_FIRST(RematchOrderPref.HIGH_FIRST),
+        RO_JUGGLE(RematchOrderPref.JUGGLE),
     }
 
     companion object {

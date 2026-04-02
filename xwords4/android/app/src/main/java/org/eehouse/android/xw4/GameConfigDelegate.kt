@@ -401,8 +401,19 @@ class GameConfigDelegate(delegator: Delegator) :
         mJugglePlayersButton!!.setOnClickListener(this)
         requireViewById(R.id.play_button).setOnClickListener(this)
         mPlayerLayout = findViewById(R.id.player_list) as LinearLayout
-        mPhoniesSpinner = (findViewById(R.id.phonies_spinner) as LabeledSpinner)
-            .getSpinner()
+        mPhoniesSpinner =
+            (findViewById(R.id.phonies_spinner) as LabeledSpinner).getSpinner()!!
+            .also { spinner ->
+                ArrayAdapter<String>(mActivity, android.R.layout.simple_spinner_item)
+                    .let { adapter ->
+                        ListPrefsModels.PrefsRegistry
+                            .getDefinition(ListPrefsModels.PrefKey.PHONIES)
+                            .entries(mActivity).map {
+                                adapter.add(it)
+                            }
+                        spinner.setAdapter(adapter)
+                    }
+            }
         mBoardsizeSpinner = (findViewById(R.id.boardsize_spinner) as LabeledSpinner)
             .getSpinner()
         mTraysizeSpinner = (findViewById(R.id.traysize_spinner) as LabeledSpinner)

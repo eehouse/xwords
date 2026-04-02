@@ -19,12 +19,9 @@
         android:entryValues="@array/empty_array"
         />
 
-    <org.eehouse.android.xw4.XWListPreference
+    <org.eehouse.android.xw4.ManagedListPreference
         android:key="@string/key_ka_menuwhen"
         android:title="@string/title_ka_menuwhen"
-        android:entries="@array/ka_menuwhen"
-        android:entryValues="@array/ka_menuwhen"
-        android:defaultValue="true"
         />
 
     <CheckBoxPreference android:key="@string/key_show_kaservicedied"

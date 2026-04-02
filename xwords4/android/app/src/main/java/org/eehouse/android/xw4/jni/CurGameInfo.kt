@@ -20,10 +20,19 @@ package org.eehouse.android.xw4.jni
 
 import android.content.Context
 import android.text.TextUtils
+
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.Serializable
+import java.util.Arrays
+import java.util.Random
+import kotlin.math.abs
+
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
 import org.eehouse.android.xw4.DictLangCache
 import org.eehouse.android.xw4.DictUtils.dictExists
+import org.eehouse.android.xw4.ListPrefsModels.Phonies
 import org.eehouse.android.xw4.Log
 import org.eehouse.android.xw4.R
 import org.eehouse.android.xw4.Utils
@@ -32,16 +41,13 @@ import org.eehouse.android.xw4.XWApp
 import org.eehouse.android.xw4.XWPrefs
 import org.eehouse.android.xw4.jni.CurGameInfo
 import org.eehouse.android.xw4.loc.LocUtils
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.Serializable
-import java.util.Arrays
-import java.util.Random
-import kotlin.math.abs
 
 class CurGameInfo(): Serializable {
-    enum class XWPhoniesChoice {
-        PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW, PHONIES_BLOCK,
+    enum class XWPhoniesChoice(val phony: Phonies) {
+        PHONIES_IGNORE(Phonies.IGNORE),
+        PHONIES_WARN(Phonies.WARN),
+        PHONIES_DISALLOW(Phonies.DISALLOW),
+        PHONIES_BLOCK(Phonies.BLOCK),
     }
 
     enum class DeviceRole {

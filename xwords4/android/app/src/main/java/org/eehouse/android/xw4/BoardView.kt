@@ -39,6 +39,8 @@ import kotlin.math.sqrt
 import org.eehouse.android.xw4.BoardCanvas.DrawProgress
 import org.eehouse.android.xw4.DbgUtils.printStack
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
+import org.eehouse.android.xw4.ListPrefsModels.Margins
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler
 import org.eehouse.android.xw4.jni.BoardHandler.DrawDoneProc
@@ -98,16 +100,11 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
         super.onAttachedToWindow()
         if (context is MainActivity && !(context as MainActivity).hasMultiPanes()) {
             val doIt =
-                LocUtils.getCheckPref(context, R.array.gesture_margins_names,
-                                      key=R.string.key_gesture_margins,
-                                      default=R.string.gesture_margins_shrink).let {
-                    when (it) {
-                        LocUtils.getString(context, R.string.gesture_margins_shrink) -> true
-                        LocUtils.getString(context, R.string.gesture_margins_ignore) -> false
-                        else -> {
-                            Assert.failDbg()
-                            false
-                        }
+                ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY).let { pref ->
+                    when(pref) {
+                        Margins.SHRINK -> true
+                        Margins.IGNORE -> false
+                        else -> {Assert.failDbg(); false}
                     }
                 }
             if (doIt) {

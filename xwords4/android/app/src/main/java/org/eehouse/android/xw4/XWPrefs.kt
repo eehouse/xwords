@@ -28,6 +28,8 @@ import org.json.JSONObject
 
 import org.eehouse.android.xw4.DBUtils.getAnyGroup
 import org.eehouse.android.xw4.DictUtils.DictLoc
+import org.eehouse.android.xw4.ListPrefsModels.ForceTab
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.GameRef.RematchOrder
@@ -316,23 +318,6 @@ open class XWPrefs {
             return groupID
         }
 
-        fun getDefaultRematchOrder(context: Context): RematchOrder? {
-            val storedStr = getPrefsString(context, R.string.key_rematch_order)
-
-            // Let's try to get this from the enum...
-            var ro: RematchOrder? = null
-            for (one in RematchOrder.entries) {
-                val strID = one.strID
-                val str = context.getString(strID)
-                if (str == storedStr) {
-                    ro = one
-                    break
-                }
-            }
-
-            return ro
-        }
-
         // fun setDefaultNewGameGroup(context: Context, `val`: Long) {
         //     Assert.assertTrue(DBUtils.GROUPID_UNSPEC != `val`)
         //     setPrefsLong(context, R.string.key_default_group, `val`)
@@ -365,11 +350,15 @@ open class XWPrefs {
             return getPrefsBoolean(context, R.string.key_studyon, true)
         }
 
-        fun getPrefsString(context: Context, keyID: Int, dflt: String?): String? {
-            val key = context.getString(keyID)
+        fun getPrefsString(context: Context, key: String, dflt: String?): String? {
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
             return sp.getString(key, dflt)
+        }
+
+        fun getPrefsString(context: Context, keyID: Int, dflt: String?): String? {
+            val key = context.getString(keyID)
+            return getPrefsString(context, key, dflt)
         }
 
         fun getPrefsString(context: Context, keyID: Int): String {
@@ -381,14 +370,15 @@ open class XWPrefs {
             return getPrefsString(context, keyID, dfltStr)
         }
 
-        fun setPrefsString(
-            context: Context, keyID: Int,
-            newValue: String?
-        ) {
+        fun setPrefsString(context: Context, keyID: Int, newValue: String?) {
+            val key = context.getString(keyID)
+            setPrefsString(context, key, newValue)
+        }
+
+        fun setPrefsString(context: Context, key: String, newValue: String?) {
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
             val editor = sp.edit()
-            val key = context.getString(keyID)
             editor.putString(key, newValue)
             editor.commit()
         }
@@ -428,17 +418,16 @@ open class XWPrefs {
         }
 
         fun getIsTablet(context: Context): Boolean {
-            var result = isTablet(context)
-            val setting = getPrefsString(context, R.string.key_force_tablet)
-            if (setting == context.getString(R.string.force_tablet_default)) {
-                // Leave it alone
-            } else if (setting == context.getString(R.string.force_tablet_tablet)) {
-                result = true
-            } else if (setting == context.getString(R.string.force_tablet_phone)) {
-                result = false
-            }
-
-            // Log.d( TAG, "getIsTablet() => %b (got %s)", result, setting );
+            val result =
+                ListPrefsModels.getPrefItem(context, PrefKey.FORCE_TABLET).let { pref ->
+                    when (pref) {
+                        ForceTab.DEFAULT -> isTablet(context)
+                        ForceTab.PHONE -> false
+                        ForceTab.TABLET -> true
+                        else -> { Assert.failDbg(); false }
+                    }
+                }
+            // Log.d( TAG, "getIsTablet() => $result" )
             return result
         }
 

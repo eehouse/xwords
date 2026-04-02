@@ -74,6 +74,8 @@ import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
 import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
 import org.eehouse.android.xw4.GameUtils.NoSuchGameException
 import org.eehouse.android.xw4.Log.ResultProcs
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
+import org.eehouse.android.xw4.ListPrefsModels.KAWhen
 import org.eehouse.android.xw4.NewWithKnowns.ButtonCallbacks
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
@@ -1628,23 +1630,13 @@ class GamesListDelegate(delegator: Delegator) :
                 // wrong.
                 launch {
                     enable = nothingSelected
-                        && LocUtils.getCheckPref(mActivity, R.array.ka_menuwhen,
-                                                 key = R.string.key_ka_menuwhen,
-                                                 default = R.string.ka_menuwhen_available
-                        ).let {
-                            when (it) {
-                                LocUtils.getString(mActivity, R.string.ka_menuwhen_never)
-                                    -> false
-                                LocUtils.getString(mActivity, R.string.ka_menuwhen_available)
-                                    -> 0 < Utils.getKAMinutesLeft(mActivity)
-                                LocUtils.getString(mActivity, R.string.ka_menuwhen_running)
-                                    -> KAService.isRunning()
-                                LocUtils.getString(mActivity, R.string.ka_menuwhen_always)
-                                    -> true
-                                else -> {
-                                    Assert.failDbg()
-                                    false
-                                }
+                        && ListPrefsModels.getPrefItem(mActivity, PrefKey.KAMENU_KEY).let { pref ->
+                            when (pref) {
+                                KAWhen.NEVER -> false
+                                KAWhen.AVAIL -> 0 < Utils.getKAMinutesLeft(mActivity)
+                                KAWhen.RUNNING -> KAService.isRunning()
+                                KAWhen.ALWAYS -> true
+                                else -> { Assert.failDbg(); false }
                             }
                         }
                     Utils.setItemVisible(menu, R.id.games_menu_ksconfig, enable)

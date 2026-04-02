@@ -77,6 +77,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                     val editor = sp!!.edit()
                     editor.clear()
                     editor.commit()
+                    ListPrefsModels.resetAll(mActivity)
                     self.relaunch()
                 }
             }
@@ -308,8 +309,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
         }
 
         fun resetPrefs(context: Context, mustCheck: Boolean) {
-            val prefIDs = PrefsWrappers.getPrefsResIDs()
-            for (id in prefIDs) {
+            PrefsWrappers.getPrefsResIDs().map { id ->
                 PreferenceManager.setDefaultValues(context, id, mustCheck)
             }
         }

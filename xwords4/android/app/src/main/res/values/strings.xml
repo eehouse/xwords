@@ -2773,8 +2773,6 @@
   <!-- Choice causing players in new game to be ordered randomly. -->
   <string name="ro_juggle">Randomly</string>
 
-  <!-- Title of the Preference setting the default rematch order -->
-  <string name="title_rematch_order">Rematched Players Order</string>
   <!-- Preference setting for rematch order that causes players to be
        asked each time. If any other choice is made (e.g. ro_same) the
        choice will not be offered at game creation time. -->
