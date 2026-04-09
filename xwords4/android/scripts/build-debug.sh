@@ -16,8 +16,14 @@ KNOWN_HOSTS=("eehouse.org"
 			)
 HOSTS=''
 
+KNOWN_SRCS=("github"
+            "eehouse"
+            "staging"
+            )
+REMOTE=''
+
 # REMOTE=https://github.com/eehouse/xwords.git
-REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
+# REMOTE=ssh://prod@eehouse/home/prod/repos/xwords
 
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
@@ -58,7 +64,7 @@ done
 
 if [ -z "$HOSTS" ]; then
 	while :; do
-		echo "Choose a host (by number); d when done; 'q' to exit: "
+		echo "Choose host[s] to upload the .apk to (by number); <cr> when done; 'q' to exit: "
 		for ii in "${!KNOWN_HOSTS[@]}"; do
 			printf "[%d] %s\n" "$ii" "${KNOWN_HOSTS[$ii]}"
 		done
@@ -71,13 +77,42 @@ if [ -z "$HOSTS" ]; then
 			q) break
 			   exit 1
 			   ;;
-			d) break
-			   ;;
+            '') break
+                ;;
 		esac
 	done
 fi
 
-[ -z "${HOSTS}" ] && usage "no host set"
+[ -z "${HOSTS}" ] && usage "no upload host set"
+
+while [ -z "$REMOTE" ]; do
+	echo "Choose a git source host (by number); 'q' to exit: "
+	for ii in "${!KNOWN_SRCS[@]}"; do
+		printf "[%d] %s\n" "$ii" "${KNOWN_SRCS[$ii]}"
+	done
+	read CHOICE
+
+	case $CHOICE in
+		[0-9])
+			REMOTE="${KNOWN_SRCS[$CHOICE]}"
+            case "$REMOTE" in
+                "github")
+                    REMOTE="https://github.com/eehouse/xwords.git"
+                    ;;
+                "eehouse")
+                    REMOTE="ssh://prod@eehouse/home/prod/repos/xwords"
+                    ;;
+                "staging")
+                    REMOTE="ssh://prod@staging/home/prod/repos/xwords"
+                    ;;
+                *) usage "bad host???"
+                   ;;
+            esac
+			;;
+		q) exit 1
+		   ;;
+	esac
+done
 
 mkdir -p $DIR
 pushd $DIR
@@ -113,7 +148,8 @@ else
 		for HOST in ${HOSTS}; do
 			echo "need to upload to $HOST"
 			HOST_DIR="/var/www/html/android/${SERVER_DIR}/"
-			echo "ssh ${HOST} mkdir -p ${HOST_DIR}"
+			ssh ${HOST} mkdir -p ${HOST_DIR}
+			echo "doing: scp $APK ${HOST}:${HOST_DIR}"
 			scp "$APK" "${HOST}:${HOST_DIR}"
 			echo "uploaded $APK to ${HOST}/${HOST_DIR}/"
 		done
