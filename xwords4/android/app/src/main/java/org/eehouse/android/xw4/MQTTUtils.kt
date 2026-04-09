@@ -592,9 +592,10 @@ object MQTTUtils {
 
         private fun handlePong(packet: ByteArray)
         {
-            val payload = JSONObject(String(packet))
-            val proc = mPingProcs.remove(payload.getInt("id"))
-            proc?.onSuccess(mHost, System.currentTimeMillis() - payload.getLong("time"))
+            JSONObject(String(packet)).also { payload ->
+                mPingProcs.remove(payload.optInt("id", 0))
+                    ?.onSuccess(mHost, System.currentTimeMillis() - payload.getLong("time"))
+            }
         }
 
         override fun toString(): String
