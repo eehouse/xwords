@@ -65,6 +65,7 @@ class PrefsDelegate(private val mActivity: XWActivity,
                         editor.remove(colorKey)
                     }
                     editor.commit()
+                    ListPrefsModels.resetAll(mActivity)
                     self.relaunch()
                 }
             }

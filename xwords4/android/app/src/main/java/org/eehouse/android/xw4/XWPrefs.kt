@@ -28,6 +28,7 @@ import org.json.JSONObject
 
 import org.eehouse.android.xw4.DBUtils.getAnyGroup
 import org.eehouse.android.xw4.DictUtils.DictLoc
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet
 import org.eehouse.android.xw4.jni.XwJNI.RematchOrder
@@ -357,11 +358,15 @@ open class XWPrefs {
             return getPrefsBoolean(context, R.string.key_studyon, true)
         }
 
-        fun getPrefsString(context: Context, keyID: Int, dflt: String?): String? {
-            val key = context.getString(keyID)
+        fun getPrefsString(context: Context, key: String, dflt: String?): String? {
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
             return sp.getString(key, dflt)
+        }
+
+        fun getPrefsString(context: Context, keyID: Int, dflt: String?): String? {
+            val key = context.getString(keyID)
+            return getPrefsString(context, key, dflt)
         }
 
         fun getPrefsString(context: Context, keyID: Int): String {
@@ -373,14 +378,15 @@ open class XWPrefs {
             return getPrefsString(context, keyID, dfltStr)
         }
 
-        fun setPrefsString(
-            context: Context, keyID: Int,
-            newValue: String?
-        ) {
+        fun setPrefsString(context: Context, keyID: Int, newValue: String?) {
+            val key = context.getString(keyID)
+            setPrefsString(context, key, newValue)
+        }
+
+        fun setPrefsString(context: Context, key: String, newValue: String?) {
             val sp = PreferenceManager
                 .getDefaultSharedPreferences(context)
             val editor = sp.edit()
-            val key = context.getString(keyID)
             editor.putString(key, newValue)
             editor.commit()
         }

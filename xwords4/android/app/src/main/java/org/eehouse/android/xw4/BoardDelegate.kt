@@ -450,6 +450,7 @@ class BoardDelegate(delegator: Delegator) :
         mUtils = BoardUtilCtxt()
         // needs to be in sync with XWTimerReason
         mView = findViewById(R.id.board_view) as BoardView
+        mView!!.setDelegate(this)
         val args = arguments!!
         mRowid = args.getLong(GameUtils.INTENT_KEY_ROWID, -1)
         Log.i(TAG, "opening rowid %d", mRowid)

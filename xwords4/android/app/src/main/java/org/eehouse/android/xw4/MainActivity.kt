@@ -368,6 +368,11 @@ class MainActivity : XWActivity(), FragmentManager.OnBackStackChangedListener {
         return result
     }
 
+    fun hasMultiPanes(): Boolean {
+        val result = 1 < maxPanes()
+        return result
+    }
+
     private fun setVisiblePanes() {
         // hide all but the right-most m_maxPanes children
         val nPanes = m_root!!.childCount

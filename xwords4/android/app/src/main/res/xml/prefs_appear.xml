@@ -49,6 +49,11 @@
         android:defaultValue="@string/force_tablet_default"
         />
 
+    <org.eehouse.android.xw4.ManagedListPreference
+        android:key="@string/key_gesture_margins"
+        android:title="@string/gesture_margins_title"
+        />
+
     <CheckBoxPreference android:key="@string/key_show_arrow"
                         android:title="@string/show_arrow"
                         android:summary="@string/show_arrow_summary"

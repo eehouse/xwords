@@ -46,6 +46,7 @@ class XWApp : Application(), LifecycleObserver {
         PrefsDelegate.resetPrefs(this, mustCheck)
         if (mustCheck) {
             XWPrefs.setHaveCheckedUpgrades(this, false)
+            ListPrefsModels.setDefaultValues(this)
         } else {
             mustCheck = !XWPrefs.getHaveCheckedUpgrades(this)
         }

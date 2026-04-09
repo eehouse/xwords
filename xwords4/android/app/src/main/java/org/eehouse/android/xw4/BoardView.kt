@@ -37,6 +37,9 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 import org.eehouse.android.xw4.DbgUtils.printStack
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
+import org.eehouse.android.xw4.ListPrefsModels.Margins
+import org.eehouse.android.xw4.ListPrefsModels.PrefKey
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -66,6 +69,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
     private var mConnTypes: CommsConnTypeSet? = null
     private var mNRP: NewRecentsProc? = null
     private var mLastSpacing = MULTI_INACTIVE
+    private var mSetMargins = false
+    private var mDlgDlgt: HasDlgDelegate? = null
 
     // called when inflating xml
     init {
@@ -74,18 +79,48 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         mMediumFontHt = mDefaultFontHt * 3 / 2
     }
 
+    fun setDelegate(dlgt: HasDlgDelegate? = null) {
+        dlgt?.also { mDlgDlgt = it }
+        mDlgDlgt?.let {
+            if (!sHaveWarnedMargins && mSetMargins) {
+                sHaveWarnedMargins = true
+                it.makeNotAgainBuilder(R.string.key_na_margins,
+                                       R.string.not_again_margins)
+                    .setTitle()
+                    .show()
+            }
+        }
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        ViewCompat.getRootWindowInsets(this)
-            ?.getInsets(WindowInsetsCompat.Type.systemGestures())
-            ?.let { insets ->
-                (layoutParams as ViewGroup.MarginLayoutParams).let {
-                    val pct = 60
-                    it.leftMargin = (insets.left * pct) / 100
-                    it.rightMargin = (insets.right * pct) / 100
-                    layoutParams = it // maybe trigger re-layout
+
+        if (context is MainActivity && !(context as MainActivity).hasMultiPanes()) {
+            val doIt =
+                ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY).let { pref ->
+                    when(pref) {
+                        Margins.SHRINK -> true
+                        Margins.IGNORE -> false
+                        else -> {Assert.failDbg(); false}
+                    }
+                }
+            if (doIt) {
+                if (doIt) {
+                    ViewCompat.getRootWindowInsets(this)
+                        ?.getInsets(WindowInsetsCompat.Type.systemGestures())
+                        ?.let { insets ->
+                            (layoutParams as ViewGroup.MarginLayoutParams).let {
+                                val pct = 60
+                                it.leftMargin = (insets.left * pct) / 100
+                                it.rightMargin = (insets.right * pct) / 100
+                                layoutParams = it // maybe trigger re-layout
+                                mSetMargins = true
+                                setDelegate()
+                            }
+                        }
                 }
             }
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -402,5 +437,6 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) : View(
         private var sCurGameID = 0
         private var sBitmap: Bitmap? = null // the board
         private const val PINCH_THRESHOLD = 40
+        private var sHaveWarnedMargins = false
     }
 }
