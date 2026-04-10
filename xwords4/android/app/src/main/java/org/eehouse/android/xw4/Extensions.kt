@@ -20,17 +20,19 @@ package org.eehouse.android.xw4
 
 import android.content.ContentValues
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import java.io.Serializable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.io.Serializable
 
 fun Bundle.putLongAnd(key: String, value: Long): Bundle {
 	this.putLong( key, value )
@@ -158,4 +160,13 @@ inline fun <reified T : Serializable> Intent.getSerializableExtraSafe
             getSerializableExtra(key) as? T
         }
     return result
+}
+
+// from Gemini
+fun Int.dpToPx(): Int {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this.toFloat(),
+        Resources.getSystem().displayMetrics
+    ).toInt()
 }

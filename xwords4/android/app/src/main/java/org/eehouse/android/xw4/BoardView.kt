@@ -29,8 +29,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 import kotlin.math.abs
 import kotlin.math.min
@@ -99,8 +97,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (context is MainActivity && !(context as MainActivity).hasMultiPanes()) {
-            val doIt =
-                ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY).let { pref ->
+            val doIt = inGestureMode()
+                && ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY).let { pref ->
                     when(pref) {
                         Margins.SHRINK -> true
                         Margins.IGNORE -> false
@@ -108,20 +106,32 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
                     }
                 }
             if (doIt) {
-                ViewCompat.getRootWindowInsets(this)
-                    ?.getInsets(WindowInsetsCompat.Type.systemGestures())
-                    ?.let { insets ->
-                        (layoutParams as ViewGroup.MarginLayoutParams).let {
-                            val pct = 60
-                            it.leftMargin = (insets.left * pct) / 100
-                            it.rightMargin = (insets.right * pct) / 100
-                            layoutParams = it // maybe trigger re-layout
-                            mSetMargins = true
-                            setDelegate()
-                        }
-                    }
+                (layoutParams as ViewGroup.MarginLayoutParams).let {
+                    val safeMargin = 32.dpToPx() // A safe fixed value
+                    val pct = 60
+                    it.leftMargin = (safeMargin * pct) / 100
+                    it.rightMargin = (safeMargin * pct) / 100
+                    layoutParams = it // maybe trigger re-layout
+                    mSetMargins = true
+                    setDelegate()
+                }
             }
         }
+    }
+
+    private fun inGestureMode(): Boolean {
+        val resources = context.resources
+        val resourceId = resources.getIdentifier("config_navBarInteractionMode",
+                                                 "integer", "android")
+        val mode = if (resourceId > 0) resources.getInteger(resourceId) else 0
+
+        val result =
+            when (mode) {
+                2 -> true
+                1 -> false    // Older Android
+                else -> false // Standard buttons
+            }
+        return result
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
