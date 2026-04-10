@@ -2949,14 +2949,14 @@ class GamesListDelegate(delegator: Delegator) :
     }
 
     private fun makeThenLaunchOrConfigure(): Boolean {
-        val handled = null != m_newGameParams
-        if (handled) {
-            val params = m_newGameParams!!
+        val handled = m_newGameParams?.let {
+            val params = it
             m_newGameParams = null
             val name = params[0] as String
             val doConfigure = params[1] as Boolean
             makeThenLaunchOrConfigure(name, doConfigure, true)
-        }
+            true
+        } ?: false
         return handled
     }
 

@@ -520,13 +520,15 @@ class CurGameInfo(): Serializable {
         return dname
     }
 
-    fun addPlayer(): Boolean {
+    fun addPlayer(context: Context): Boolean {
         val added = nPlayers < MAX_NUM_PLAYERS
         // We can add either by adding a player, if nPlayers <
         // MAX_NUM_PLAYERS, or by making an unusable player usable.
         if (added) {
-            players[nPlayers]!!.isLocal =
-                deviceRole == DeviceRole.ROLE_STANDALONE
+            players[nPlayers]!!.let {
+                it.isLocal = deviceRole == DeviceRole.ROLE_STANDALONE
+                it.name = DUtilCtxt.getUsername(context, nPlayers, it.isLocal, false)
+            }
             ++nPlayers
         }
         return added

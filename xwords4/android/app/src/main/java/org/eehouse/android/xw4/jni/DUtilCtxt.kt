@@ -195,17 +195,8 @@ class DUtilCtxt() {
         synchronized(sCleared) {sCleared.add(key)}
     }
 
-    // PENDING use prefs for this
-    fun getUsername(
-        posn: Int,
-        isLocal: Boolean,
-        isRobot: Boolean
-    ): String {
-        return if (isRobot) {
-			CommonPrefs.getDefaultRobotName(mContext)
-		} else{
-			CommonPrefs.getDefaultPlayerName( mContext, posn )
-		}
+    fun getUsername(posn: Int, isLocal: Boolean, isRobot: Boolean): String {
+        return getUsername(mContext, posn, isLocal, isRobot)
     }
 
     fun getSelfAddr(): CommsAddrRec {
@@ -526,6 +517,18 @@ class DUtilCtxt() {
             synchronized(sListeners) {
                 sListeners.add(WeakReference<Listeners>(proc))
             }
+        }
+
+        fun getUsername(context: Context, posn: Int,
+                        isLocal: Boolean, isRobot: Boolean ): String {
+            val result =
+                if (isRobot) {
+			        CommonPrefs.getDefaultRobotName(context)
+		        } else {
+			        CommonPrefs.getDefaultPlayerName(context, posn)
+		        }
+            Log.d(TAG, "getUsername($posn) => $result")
+            return result
         }
 
         private fun pruned(): List<Listeners> {

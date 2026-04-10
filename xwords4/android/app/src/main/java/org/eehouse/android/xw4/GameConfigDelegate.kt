@@ -711,7 +711,7 @@ class GameConfigDelegate(delegator: Delegator) :
                 R.id.add_player -> {
                     val curIndex = gi.nPlayers
                     if (curIndex < CurGameInfo.MAX_NUM_PLAYERS) {
-                        gi.addPlayer() // ups nPlayers
+                        gi.addPlayer(mActivity) // ups nPlayers
                         loadPlayersList()
                     }
                 }
