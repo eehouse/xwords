@@ -64,7 +64,7 @@ done
 
 if [ -z "$HOSTS" ]; then
 	while :; do
-		echo "Choose a host (by number); d when done; 'q' to exit: "
+		echo "Choose host[s] to upload the .apk to (by number); <cr> when done; 'q' to exit: "
 		for ii in "${!KNOWN_HOSTS[@]}"; do
 			printf "[%d] %s\n" "$ii" "${KNOWN_HOSTS[$ii]}"
 		done
@@ -77,11 +77,13 @@ if [ -z "$HOSTS" ]; then
 			q) break
 			   exit 1
 			   ;;
-			d) break
-			   ;;
+            '') break
+                ;;
 		esac
 	done
 fi
+
+[ -z "${HOSTS}" ] && usage "no upload host set"
 
 while [ -z "$REMOTE" ]; do
 	echo "Choose a git source host (by number); 'q' to exit: "
@@ -107,13 +109,10 @@ while [ -z "$REMOTE" ]; do
                    ;;
             esac
 			;;
-		q) break
-		   exit 1
+		q) exit 1
 		   ;;
 	esac
 done
-
-[ -z "${HOSTS}" ] && usage "no host set"
 
 mkdir -p $DIR
 pushd $DIR
