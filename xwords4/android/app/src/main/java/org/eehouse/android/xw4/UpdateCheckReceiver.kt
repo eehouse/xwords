@@ -80,14 +80,14 @@ class UpdateCheckReceiver : BroadcastReceiver() {
         private fun makeNotificationsIf(jstr: String) {
             var gotOne = false
             try {
-                // Log.d( TAG, "makeNotificationsIf(response=%s)", jstr );
+                // Log.d(TAG, "makeNotificationsIf(response=%s)", jstr);
                 val jobj = JSONObject(jstr)
                 // Add upgrade
 
                 if (jobj.has(k_APP)) {
                     val app = jobj.getJSONObject(k_APP)
                     if (app.has(k_URL)) {
-                        val label = m_pm.getApplicationInfo(m_packageName, 0).also {
+                        val label = m_pm.getApplicationInfo(m_packageName, 0).let {
                             m_pm.getApplicationLabel(it).toString()
                         }
 
