@@ -1050,6 +1050,10 @@ class BoardDelegate(delegator: Delegator) :
                 )
             }
 
+            Action.LAUNCH_APPEAR_CONFIG -> {
+                PrefsDelegate.launch(mActivity, PrefsWrappers.prefs_appear::class.java)
+            }
+
             Action.LAUNCH_INVITE_ACTION -> for (obj in params) {
                 if (obj is CommsAddrRec) {
                     tryOtherInvites(obj)

@@ -80,6 +80,10 @@ object ListPrefsModels {
         fun getDefinition(key: PrefKey): PrefsDef = registry[key]!!
     }
 
+    private fun updatePrefItem(context: Context, key: PrefKey, item: PrefsItem) {
+        XWPrefs.setPrefsString(context, key.getKey(context), item.stableKey)
+    }
+
     fun getPrefItem(context: Context, key: PrefKey): PrefsItem {
         val def = PrefsRegistry.getDefinition(key)
         val keyStr = key.getKey(context)
@@ -95,7 +99,7 @@ object ListPrefsModels {
             if (null == result) {
                 result = def.default
             }
-            XWPrefs.setPrefsString(context, keyStr, result.stableKey)
+            updatePrefItem(context, key, result)
         }
         return result!!
     }
