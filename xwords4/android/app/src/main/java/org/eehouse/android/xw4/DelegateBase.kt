@@ -510,7 +510,7 @@ abstract class DelegateBase @JvmOverloads constructor(
         return m_dlgDelegate.makeNotAgainBuilder(key, action, msgId, *params)
     }
 
-    fun makeNotAgainBuilder(key: Int, msg: String): DlgDelegate.Builder {
+    override fun makeNotAgainBuilder(key: Int, msg: String): DlgDelegate.Builder {
         return m_dlgDelegate.makeNotAgainBuilder(key, msg)
     }
 

@@ -93,6 +93,7 @@ class DlgDelegate(
         REMATCH_ACTION,
         DELETE_ACTION,
         CUSTOM_DICT_CONFIRMED,
+        LAUNCH_APPEAR_CONFIG,
 
         // Dict Browser
         FINISH_ACTION,
@@ -340,6 +341,7 @@ class DlgDelegate(
         ): Builder
 
         fun makeNotAgainBuilder(prefsKey: Int, msgID: Int, vararg params: Any?): Builder
+        fun makeNotAgainBuilder(prefsKey: Int, msg: String): Builder
     }
 
     private val m_dictName: String? = null

@@ -36,6 +36,7 @@ import kotlin.math.sqrt
 
 import org.eehouse.android.xw4.BoardCanvas.DrawProgress
 import org.eehouse.android.xw4.DbgUtils.printStack
+import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.ListPrefsModels.Margins
 import org.eehouse.android.xw4.ListPrefsModels.PrefKey
@@ -80,32 +81,46 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
         mDefaultFontHt = (MIN_FONT_DIPS * scale + 0.5f).toInt()
         mMediumFontHt = mDefaultFontHt * 3 / 2
     }
-
     fun setDelegate(dlgt: HasDlgDelegate? = null) {
         dlgt?.also { mDlgDlgt = it }
-        mDlgDlgt?.let {
-            if (!sHaveWarnedMargins && mSetMargins) {
+        mDlgDlgt?.let { dlgt ->
+            if (!sHaveWarnedMargins && inGestureMode()) {
                 sHaveWarnedMargins = true
-                it.makeNotAgainBuilder(R.string.key_na_margins,
-                                       R.string.not_again_margins)
+
+                val curVal = marginsPref().getString(context)
+                val settingsName = LocUtils.getString(context, R.string.menu_prefs)
+                val appearsPrefs = LocUtils.getString(context, R.string.gesture_margins_title)
+                val msg = LocUtils.getString(context, R.string.not_again_margins_fmt,
+                                             curVal, appearsPrefs, settingsName)
+                dlgt.makeNotAgainBuilder(R.string.key_na_margins, msg)
                     .setTitle()
+                    .setActionPair(Action.LAUNCH_APPEAR_CONFIG,
+                                   R.string.button_go_settings)
                     .show()
             }
         }
     }
 
+    private fun marginsPref(): Margins {
+        val result = ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY)
+        return result as Margins
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+
+        // IFF we're in gesture mode and the setting is SHRINK, add some
+        // margins. But otherwise if in gesture mode we want later to put up
+        // the KA notification (see setDelegate())
         if (context is MainActivity && !(context as MainActivity).hasMultiPanes()) {
-            val doIt = inGestureMode()
-                && ListPrefsModels.getPrefItem(context, PrefKey.MARGINS_KEY).let { pref ->
-                    when(pref) {
-                        Margins.SHRINK -> true
-                        Margins.IGNORE -> false
-                        else -> {Assert.failDbg(); false}
-                    }
+            val gesturesOn = inGestureMode()
+            val shrinkIt = gesturesOn
+                && when(marginsPref()) {
+                    Margins.SHRINK -> true
+                    Margins.IGNORE -> false
+                    else -> {Assert.failDbg(); false}
                 }
-            if (doIt) {
+            if (shrinkIt) {
                 (layoutParams as ViewGroup.MarginLayoutParams).let {
                     val safeMargin = 32.dpToPx() // A safe fixed value
                     val pct = 60
@@ -115,6 +130,8 @@ class BoardView(private val mContext: Context, attrs: AttributeSet?) :
                     mSetMargins = true
                     setDelegate()
                 }
+            } else if (gesturesOn) {
+                setDelegate()
             }
         }
     }

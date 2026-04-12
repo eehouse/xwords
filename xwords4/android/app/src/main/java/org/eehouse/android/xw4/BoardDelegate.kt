@@ -63,6 +63,7 @@ import org.eehouse.android.xw4.Perms23.PermCbck
 import org.eehouse.android.xw4.TilePickAlert.TilePickState
 import org.eehouse.android.xw4.Toolbar.Buttons
 import org.eehouse.android.xw4.Utils.ISOCode
+import org.eehouse.android.xw4.gen.PrefsWrappers
 import org.eehouse.android.xw4.jni.BoardDims
 import org.eehouse.android.xw4.jni.BoardHandler.DrawDoneProc
 import org.eehouse.android.xw4.jni.BoardHandler.NewRecentsProc
@@ -1027,6 +1028,9 @@ class BoardDelegate(delegator: Delegator) :
                     )
                 }
             }
+
+            Action.LAUNCH_APPEAR_CONFIG ->
+                PrefsDelegate.launch(mActivity, PrefsWrappers.prefs_appear::class.java)
 
             Action.LAUNCH_INVITE_ACTION -> {
                 for (obj in params) {
