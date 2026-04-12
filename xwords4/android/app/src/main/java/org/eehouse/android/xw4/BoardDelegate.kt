@@ -482,26 +482,24 @@ class BoardDelegate(delegator: Delegator) :
         } else {
             mStartSkipped = true
         }
-        // newThemeFeatureAlert()
+        newThemeFeatureAlert()
     }
 
-//     private fun newThemeFeatureAlert() {
-//         if (!s_themeNAShown) {
-//             s_themeNAShown = true
-//             if (CommonPrefs.darkThemeEnabled(mActivity)) {
-//                 val prefsName = LocUtils.getString(mActivity, R.string.theme_which)
-//                 makeNotAgainBuilder(
-//                     R.string.key_na_boardThemes,
-//                     R.string.not_again_boardThemes_fmt,
-//                     prefsName
-//                 )
-//                     .setTitle(R.string.new_feature_title)
-//                     .setActionPair(Action.LAUNCH_THEME_CONFIG,
-//                                    R.string.button_settings)
-//                     .show()
-//             }
-//         }
-//     }
+    private fun newThemeFeatureAlert() {
+        if (!s_themeNAShown) {
+            s_themeNAShown = true
+            if (CommonPrefs.darkThemeEnabled(mActivity)) {
+                LocUtils.getString(mActivity, R.string.theme_which).let {
+                    makeNotAgainBuilder(R.string.key_na_boardThemes,
+                                        R.string.not_again_boardThemes_fmt, it)
+                        .setTitle(R.string.new_feature_title)
+                        .setActionPair(Action.LAUNCH_THEME_CONFIG,
+                                       R.string.button_settings)
+                        .show()
+                }
+            }
+        }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -1042,19 +1040,19 @@ class BoardDelegate(delegator: Delegator) :
                 }
             }
 
-            //             Action.LAUNCH_THEME_CONFIG -> PrefsDelegate.launch(
-            //                 mActivity, PrefsWrappers.prefs_appear_themes::class.java
-            //             )
+            Action.LAUNCH_THEME_CONFIG ->
+                PrefsDelegate.launch(mActivity,
+                                     PrefsWrappers.prefs_appear_themes::class.java)
 
-            //             Action.LAUNCH_THEME_COLOR_CONFIG -> {
-            //                 val clazz: Class<*> =
-            //                     if (CommonPrefs.darkThemeInUse(mActivity)) {
-            //                         PrefsWrappers.prefs_appear_colors_dark::class.java
-            //                     } else {
-            //                         PrefsWrappers.prefs_appear_colors_light::class.java
-            //                     }
-            //                 PrefsDelegate.launch(mActivity, clazz)
-            //             }
+            Action.LAUNCH_THEME_COLOR_CONFIG -> {
+                if (CommonPrefs.darkThemeInUse(mActivity)) {
+                    PrefsWrappers.prefs_appear_colors_dark::class.java
+                } else {
+                    PrefsWrappers.prefs_appear_colors_light::class.java
+                }.let { clazz ->
+                    PrefsDelegate.launch(mActivity, clazz)
+                }
+            }
 
             //             Action.ENABLE_NBS_DO -> {
             //                 post { retryNBSInvites(params) }
@@ -2596,7 +2594,7 @@ class BoardDelegate(delegator: Delegator) :
 //         @JvmField
         val PAUSER_KEY = TAG + "/pauser"
 //         private var s_noLockCount = 0 // supports a quick debugging hack
-//         private var s_themeNAShown = false
+        private var s_themeNAShown = false
 //         private const val mCounter = 0
 
         private fun doRematchIf(activity: Activity, gr: GameRef,
