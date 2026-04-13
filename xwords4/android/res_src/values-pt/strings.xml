@@ -451,8 +451,8 @@
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
          characters.-->
-    <string name="board_menu_tray_hide">Esconder pedras</string>
-    <string name="board_menu_tray_show">Mostrar pedras</string>
+    <string name="board_menu_tray_hide">Esconder estante</string>
+    <string name="board_menu_tray_show">Mostrar estante</string>
     <!-- Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
          not-yet-committed turn.  This is disabled for networked
@@ -516,7 +516,7 @@
     <!-- Used in formatting game history and move summaries -->
     <string name="strs_move_down_fmt">jogada (de %1$s abaixo)\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_tray_at_start_fmt">Pedras iniciais: %1$s\n</string>
+    <string name="strs_tray_at_start_fmt">Estante inicial: %1$s\n</string>
     <!-- Used in formatting exchange move summaries -->
     <string name="strss_traded_for_fmt">Trocou %1$s por %2$s.</string>
     <!-- Used to alert user to loss of turn when a move is made and
@@ -684,8 +684,7 @@
          tray. -->
     <string name="show_arrow">Mostrar a seta no tabuleiro</string>
     <!-- clarification of above -->
-    <string name="show_arrow_summary">Pedras selecionadas são
-    colocadas nessa seta quando ela estiver visível</string>
+    <string name="show_arrow_summary">Pedras selecionadas na estante são colocadas nessa seta quando ela estiver visível</string>
     <!-- Checkbox that when set keeps the device screen from dimming
          if the board screen is what's displayed.  This is to allow
          users to think about a move without having to touch the
@@ -777,8 +776,7 @@
          i.e. after ever move.-->
     <string name="title_sort_tiles">Ordenar novas pedras</string>
     <!-- explanation of the above -->
-    <string name="summary_sort_tiles">Ordenar a mão quando novas
-    pedras são adicionadas</string>
+    <string name="summary_sort_tiles">Ordenar a estante quando pedras novas são adicionadas</string>
     <!-- if this preference is checked, the hardware volume keys will
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
@@ -1511,22 +1509,19 @@
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
     <string name="rename_label_caveat">Altere o nome deste jogo (apenas neste aparelho) para:</string>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">Tem certeza que deseja apagar o 1 jogo selecionado\? Esta ação não poderá ser desfeita.</item>
-        <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados\? Esta ação não poderá ser desfeita.</item>
+        <item quantity="one">Tem certeza que deseja apagar o jogo selecionado? Esta ação não poderá ser desfeita.</item>
+        <item quantity="many">Tem certeza que deseja apagar os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
+        <item quantity="other">Tem certeza que deseja apagar os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
     </plurals>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">Tem certeza de que deseja redefinir o 1 jogo selecionado\?
-\n
-\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
-        <item quantity="many"/>
-        <item quantity="other">Tem certeza de que deseja redefinir os %1$d jogos selecionados\?
-\n
-\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="one">Tem certeza de que deseja redefinir o jogo selecionado? \n \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="many">Tem certeza de que deseja redefinir os %1$d jogos selecionados? \n \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+        <item quantity="other">Tem certeza de que deseja redefinir os %1$d jogos selecionados? \n \n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
     </plurals>
     <string name="summary_invites_out">Jogadores convidados</string>
     <string name="summary_invites_out_fmt">Jogadores convidados à sala “%1$s”</string>
     <plurals name="moves_fmt">
-        <item quantity="one">1 movimento jogado</item>
+        <item quantity="one">Um movimento jogado</item>
         <item quantity="many">%1$d movimentos jogados</item>
         <item quantity="other">%1$d movimentos jogados</item>
     </plurals>
@@ -1538,13 +1533,9 @@
     <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
     <string name="connect_label_fmt">Conexão (através de %1$s)</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">Este jogo está a esperar que um jogador remoto receba e responda a um convite.
-\n
-\nVerá esta mensagem até que o jogador convidado tenha respondido.</item>
-        <item quantity="many"/>
-        <item quantity="other">Este jogo está a esperar que %1$d jogadores remotos recebam e respondam a um convite.
-\n
-\nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
+        <item quantity="one">Este jogo está a esperar que um jogador remoto responda a um convite. \n \nVerá esta mensagem até que o jogador convidado tenha respondido.</item>
+        <item quantity="many">Este jogo está a esperar que %1$d jogadores remotos respondam a um convite. \n \nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
+        <item quantity="other">Este jogo está a esperar que %1$d jogadores remotos respondam a um convite. \n \nVerá esta mensagem até que todos os jogadores convidados tenham respondido.</item>
     </plurals>
     <string name="list_item_netstats">Conexões</string>
     <string name="confirm_deleteonly_dicts_fmt">Apagar %1$s vai deixá-lo sem nenhuma lista de palavras em %2$s. Um ou mais jogos ficarão não jogáveis (até que descarregue de uma lista para substituir.)</string>
@@ -1552,8 +1543,9 @@
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="robot_iq_label">QI do Robô</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">Trocou uma pedra.</item>
-        <item quantity="other">Trocaram %1$d pedras.</item>
+        <item quantity="one">Um quadrado foi trocado.</item>
+        <item quantity="many">%1$d quadrados foram trocados.</item>
+        <item quantity="other">%1$d quadrados foram trocados.</item>
     </plurals>
     <string name="str_robot_moved_fmt">"O robô %1$s fez este movimento: "</string>
     <string name="msg_dev_deleted_fmt">O jogo chamado “%1$s“ foi apagado num outro aparelho. Já não será possível jogá-lo.</string>
@@ -2015,15 +2007,17 @@
     <string name="sms_invite_title">Convite SMS</string>
     <string name="bt_invite_title">Convite Bluetooth</string>
     <plurals name="bt_scan_progress_fmt">
-        <item quantity="one">Fazendo a varredura por CrossWords</item>
-        <item quantity="other">Fazendo a varredura por CrossWords nos %1$d aparelhos emparelhados</item>
+        <item quantity="one">A fazer a varredura por CrossWords</item>
+        <item quantity="many">A fazer a varredura por CrossWords nos %1$d aparelhos emparelhados</item>
+        <item quantity="other">A fazer a varredura por CrossWords nos %1$d aparelhos emparelhados</item>
     </plurals>
     <string name="invite_bt_desc_postscript">"
 \n
 \n(A lista é de aparelhos emparelhados onde CrossWords foi detetado via uma varredura.)"</string>
     <plurals name="invite_bt_desc_fmt_2">
-        <item quantity="one">Por favor cheque o aparelho que quer incluir neste jogo.</item>
-        <item quantity="other">Por favor cheque os %1$d aparelhos que quer incluir neste jogo.</item>
+        <item quantity="one">Verifique o dispositivo que deseja incluir neste jogo.</item>
+        <item quantity="many">Verifique até ao máximo de %1$d dispositivos que deseja incluir neste jogo.</item>
+        <item quantity="other">Verifique até ao máximo de %1$d dispositivos que deseja incluir neste jogo.</item>
     </plurals>
     <string name="sms_bad_proto_fmt">A versão de CrossWords no telefone com o número “%1$s” é incompatível com esta aqui para jogar a usar dados de SMS. Um de vocês talvez precisará de atualizar antes de continuar.</string>
     <string name="new_game_body">Toque para abrir o jogo novo</string>
@@ -2079,8 +2073,8 @@
     <string name="notify_title_fmt">jogada %1$s</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Muitas pedras selecionadas. Se faz favor, selecione apenas um.</item>
-        <item quantity="many"/>
-        <item quantity="other">Muitas pedras selecionadas. Se faz favor, favor selecione mais do que %1$d.</item>
+        <item quantity="many">Muitas pedras selecionadas. Se faz favor, favor selecione menos que %1$d.</item>
+        <item quantity="other">Muitas pedras selecionadas. Se faz favor, favor selecione menos que %1$d.</item>
     </plurals>
     <string name="chat_hint">Escreva aqui…</string>
     <plurals name="query_trade_fmt">
@@ -2116,16 +2110,14 @@
     <string name="phonies_found_title">Palavras falsas encontradas</string>
     <string name="pref_human_name">Jogador humano ( o seu nome)</string>
     <plurals name="strd_remains_expl_fmt">
-        <item quantity="one">Falta uma pedra no quadro escondido:
-\n</item>
-        <item quantity="many"/>
-        <item quantity="other">Faltam %1$d pedras no agrupamento e no quadro escondido:
-\n</item>
+        <item quantity="one">Falta uma pedra no agrupamento e no quadro escondido:\n</item>
+        <item quantity="many">Faltam %1$d pedras no agrupamento e no quadro escondido:\n</item>
+        <item quantity="other">Faltam %1$d pedras no agrupamento e no quadro escondido:\n</item>
     </plurals>
     <plurals name="strd_remains_header_fmt">
         <item quantity="one">Falta uma pedra no agrupamento.</item>
-        <item quantity="many"/>
-        <item quantity="other">Faltam %1$d pedras no agrupamento .</item>
+        <item quantity="many">Faltam %1$d pedras no agrupamento.</item>
+        <item quantity="other">Faltam %1$d pedras no agrupamento.</item>
     </plurals>
     <string name="str_pass">passar
 \n</string>
@@ -2360,4 +2352,13 @@
     <string name="legalphonies_title_fmt">Palavras falsas permitidas para %1$s</string>
     <string name="pref_item_allowMulti_title">Permitir gameIDs duplicados</string>
     <string name="pref_item_allowMulti_summary">Normalmente isso significa aceitar convites do mesmo dispositivo</string>
+    <string name="about_branch_fmt">Ramo: %1$s</string>
+    <string name="warn_mqtt_gone">A capacidade de enviar movimentos pela Internet via MQTT já não é apoiada na sua versão do Android.</string>
+    <string name="warn_mqtt_gone_email_fmt">Por favor, avise-me se viu este aviso (através do botão “%1$s” abaixo). Muito poucas pessoas continuam a usar esta versão do Android, e eu esperava que ninguém estivesse a usar CrossWords para jogos na rede. Eu posso tentar trabalhar à volta deste problema uma vez que eu sei que realmente impacta alguém.</string>
+    <string name="have_mtqq_games_fmt">Eu tenho %1$d jogos que usam MQTT.</string>
+    <string name="qos_prefs_default_expl_fmt">Usar o que o broker MQTT recomenda (atualmente %1$s)</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">Ping</string>
+    <string name="ping_result_fmt">Um ping via %1$s levou %2$d ms.</string>
+    <string name="games_menu_mqttStats">Estatísticas de conexão</string>
 </resources>
