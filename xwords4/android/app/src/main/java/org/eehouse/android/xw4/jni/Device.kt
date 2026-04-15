@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2025 - 2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,18 +20,8 @@ package org.eehouse.android.xw4.jni
 
 import android.content.Context
 import android.net.Uri
-import kotlin.concurrent.thread
-import kotlin.concurrent.withLock
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.locks.ReentrantLock
 
 import org.eehouse.android.xw4.Assert
 import org.eehouse.android.xw4.BuildConfig
@@ -40,22 +30,34 @@ import org.eehouse.android.xw4.NetUtils
 import org.eehouse.android.xw4.Utils
 import org.eehouse.android.xw4.Utils.ISOCode
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType
+import org.eehouse.android.xw4.jni.DvcThread.Priority
 
 object Device {
     private val TAG: String = Device::class.java.simpleName
 
-    private var m_ptrGlobals: Long
-    fun ptrGlobals(): Long { return m_ptrGlobals }
+    private var mPtrGlobals: Long
+    private val mDvcThread: DvcThread
 
     init {
         System.loadLibrary(BuildConfig.JNI_LIB_NAME)
+
+        // JNI thread must exist before initJNIState() is called in case
+        // anything in it results in jni calls being enqueued. But we can't
+        // *start* processing the queue until mPtrGlobals is set and the jni
+        // world's been initialized.
+        mDvcThread = DvcThread()
 
         var seed = Utils.nextRandomInt().toLong()
         seed = seed shl 32
         seed = seed or Utils.nextRandomInt().toLong()
         seed = seed xor System.currentTimeMillis()
-        m_ptrGlobals = initJNIState(DUtilCtxt(), JNIUtilsImpl.get(), seed)
+        mPtrGlobals = initJNIState(DUtilCtxt(), JNIUtilsImpl.get(), seed)
+
+        // Start *after* initJNIState()
+        mDvcThread.start()
     }
+
+    fun ptrGlobals(): Long { return mPtrGlobals }
 
     fun cleanGlobalsEmu() {
         cleanGlobals()
@@ -64,137 +66,21 @@ object Device {
     private fun cleanGlobals() {
         synchronized(Device::class.java) {
             // let's be safe here
-            cleanupJNIState(m_ptrGlobals) // tests for 0
-            m_ptrGlobals = 0
+            cleanupJNIState(mPtrGlobals) // tests for 0
+            mPtrGlobals = 0
         }
-    }
-
-    enum class Priority(val singleton: Boolean = false) {
-        BLOCKING,
-        UI,
-        DRAW(singleton=true),
-        NETWORK
-    }
-
-    class FIFOPriorityQueue {
-        val mLock = ReentrantLock()
-        val mCondition = mLock.newCondition()
-        val mQueues = Priority.entries.map {
-            ArrayDeque<Any>()
-        }
-            .toTypedArray()
-
-        fun add(elem: Any, priority: Priority = Priority.UI) {
-            mLock.withLock {
-                val queue = mQueues[priority.ordinal]
-                if (priority.singleton) {
-                    queue.clear()
-                }
-                queue.add(elem)
-                mCondition.signal()
-            }
-        }
-
-        fun take(): Any {
-            var elem: Any? = null
-            while ( null == elem ) {
-                mLock.withLock {
-                    elem = mQueues.firstNotNullOfOrNull{it.removeFirstOrNull()}
-                    if ( null == elem ) {
-                        mCondition.await()
-                    }
-                }
-            }
-            return elem!!
-        }
-        
-    }
-
-    abstract class WrapElem(val code: () -> Any?) {
-        val mCaller = Throwable().stackTrace[4] // for logging
-        abstract fun run()
-    }
-
-    class WrapElemBlocking( code: () -> Any? ): WrapElem(code) {
-        val startTime: Long = System.currentTimeMillis()
-        val done = AtomicBoolean(false)
-        var result: Any? = Unit
-        override fun run() {
-            result = code()
-            done.set(true)
-            val runtime = System.currentTimeMillis() - startTime
-            Log.d(TAG, "blocking task for $mCaller finished $runtime ms after creation")
-        }
-    }
-
-    class WrapElemWaiting( code: () -> Any? ): WrapElem(code) {
-        val deferred = CompletableDeferred<Any?>()
-        override fun run() {
-            deferred.complete(code())
-        }
-    }
-
-    // Only takes code that has no return value
-    class WrapElemRunning( code: () -> Unit ): WrapElem(code) {
-        override fun run() {
-            code()
-        }
-    }
-
-    private class Watcher(private val elem: WrapElem) {
-        var running = true
-        fun done() { running = false }
-
-        init {
-            Utils.launch(Dispatchers.IO) {
-                while (true) {
-                    delay(100)
-                    if (running) {
-                        Log.d(TAG, "Watcher: for ${elem.mCaller} still running")
-                    } else {
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    private val mQueue = FIFOPriorityQueue()
-    private val mThread: Thread = thread {
-        while (true) {
-            try {
-                val elem = mQueue.take() as WrapElem
-                val watcher = Watcher(elem)
-                Log.d(TAG, "thread: running for ${elem.mCaller}")
-                elem.run()
-                watcher.done()
-                Log.d(TAG, "thread: ${elem.mCaller} done")
-            } catch (ie: InterruptedException) {
-                Log.w(TAG, "interrupted; killing thread")
-                break
-            }
-        }
-    }
-
-    suspend fun await(priority: Priority = Priority.UI, code: () -> Any?): Any? {
-        val we = WrapElemWaiting(code)
-        mQueue.add(we, priority)
-        return we.deferred.await()
     }
 
     fun post(priority: Priority = Priority.UI, code: () -> Unit ) {
-        val we = WrapElemRunning(code)
-        mQueue.add(we, priority)
+        mDvcThread.post(priority, code)
+    }
+
+    suspend fun await(priority: Priority = Priority.UI, code: () -> Any?): Any? {
+        return mDvcThread.await(priority, code)
     }
 
     fun blockFor(code: () -> Any?): Any? {
-        Assert.assertFalse(mThread == Thread.currentThread())
-        val we = WrapElemBlocking(code)
-        mQueue.add(we, Priority.BLOCKING)
-        while ( !we.done.get() ) {
-            Thread.sleep(10)
-        }
-        return we.result
+        return mDvcThread.blockFor(code)
     }
 
     fun getUUID(): UUID {
@@ -203,111 +89,111 @@ object Device {
 
     fun setInForeground(inForeground: Boolean) {
         post {
-            dvc_setInForeground(m_ptrGlobals, inForeground)
+            dvc_setInForeground(mPtrGlobals, inForeground)
         }
     }
 
     fun setNeedsReg() {
         post {
-            dvc_setNeedsReg(m_ptrGlobals)
+            dvc_setNeedsReg(mPtrGlobals)
         }
     }
 
     fun onWakeReceived(key: Int) {
         post {
-            dvc_onWakeReceived(m_ptrGlobals, key)
+            dvc_onWakeReceived(mPtrGlobals, key)
         }
     }
 
     fun pingAll(gr: GameRef) {
         post( Priority.NETWORK ) {
-            dvc_pingAll(m_ptrGlobals, gr.gr)
+            dvc_pingAll(mPtrGlobals, gr.gr)
         }
     }
 
     fun pingMQTTBroker() {
         post(Priority.NETWORK) {
-            dvc_pingMQTTBroker(m_ptrGlobals)
+            dvc_pingMQTTBroker(mPtrGlobals)
         }
     }
 
     fun parseMQTTPacket(topic: String, packet: ByteArray) {
         post( Priority.NETWORK ) {
-            dvc_parseMQTTPacket(m_ptrGlobals, topic, packet)
+            dvc_parseMQTTPacket(mPtrGlobals, topic, packet)
         }
     }
 
     fun parseBTPacket(fromName: String?, fromMac: String?, packet: ByteArray) {
         post( Priority.NETWORK ) {
-            dvc_parseBTPacket(m_ptrGlobals, fromName, fromMac, packet)
+            dvc_parseBTPacket(mPtrGlobals, fromName, fromMac, packet)
         }
     }
 
     fun parseNFCPacket(gameID: Int, packet: ByteArray) {
         val from = CommsAddrRec(CommsConnType.COMMS_CONN_NFC)
         post( Priority.NETWORK ) {
-            dvc_parsePacketFor(m_ptrGlobals, gameID, packet, from)
+            dvc_parsePacketFor(mPtrGlobals, gameID, packet, from)
         }
     }
 
     suspend fun parseUrl(context: Context, uri: Uri): Boolean {
         val (host, prefix) = NetUtils.getHostAndPrefix(context)
         val result = await {
-            dvc_parseUrl(m_ptrGlobals, uri.toString(), host, prefix)
+            dvc_parseUrl(mPtrGlobals, uri.toString(), host, prefix)
         } as Boolean
         return result
     }
 
     fun onBLEMtuChanged(addr: String, newBTU: Int) {
         post( Priority.NETWORK ) {
-            dvc_onBLEMtuChanged(m_ptrGlobals, addr, newBTU)
+            dvc_onBLEMtuChanged(mPtrGlobals, addr, newBTU)
         }
     }
 
     fun parseSMSPacket(fromPhone: String, packet: ByteArray) {
         if ( BuildConfig.XWFEATURE_SMS ) {
             post( Priority.NETWORK ) {
-                dvc_parseSMSPacket(m_ptrGlobals, fromPhone, packet)
+                dvc_parseSMSPacket(mPtrGlobals, fromPhone, packet)
             }
         }
     }
 
     fun onTimerFired(key: Int) {
         post {
-            dvc_onTimerFired(m_ptrGlobals, key);
+            dvc_onTimerFired(mPtrGlobals, key);
         }
     }
 
     fun onWebSendResult(resultKey: Int, succeeded: Boolean, result: String?) {
         post {
-            dvc_onWebSendResult(m_ptrGlobals, resultKey, succeeded, result);
+            dvc_onWebSendResult(mPtrGlobals, resultKey, succeeded, result);
         }
     }
 
     suspend fun setMQTTDevID(newID: String): Boolean {
         return await {
-            dvc_setMQTTDevID(m_ptrGlobals, newID)
+            dvc_setMQTTDevID(mPtrGlobals, newID)
         } as Boolean
     }
 
     fun onDictAdded(dictName: String) {
         Log.d(TAG, "onDictAdded($dictName)")
         post {
-            dvc_onDictAdded(m_ptrGlobals, dictName )
+            dvc_onDictAdded(mPtrGlobals, dictName )
         }
     }
 
     fun onDictRemoved(dictName: String) {
         Log.d(TAG, "onDictRemoved($dictName)")
         post {
-            dvc_onDictRemoved(m_ptrGlobals, dictName )
+            dvc_onDictRemoved(mPtrGlobals, dictName )
         }
     }
 
     suspend fun getLegalPhonyCodes(): Array<ISOCode> {
         val codes = ArrayList<String>()
         await {
-            dvc_getLegalPhonyCodes(m_ptrGlobals, codes)
+            dvc_getLegalPhonyCodes(mPtrGlobals, codes)
         }
         val result = codes.map{ISOCode(it)}
         return result.toTypedArray()
@@ -316,20 +202,20 @@ object Device {
     suspend fun getLegalPhoniesFor(code: ISOCode): Array<String> {
         val list = ArrayList<String>()
         await {
-            dvc_getLegalPhoniesFor(m_ptrGlobals, code.toString(), list)
+            dvc_getLegalPhoniesFor(mPtrGlobals, code.toString(), list)
         }
         return list.toTypedArray<String>()
     }
 
     fun clearLegalPhony(isoCode: Utils.ISOCode, phony: String) {
         post {
-            dvc_clearLegalPhony(m_ptrGlobals, isoCode.toString(), phony)
+            dvc_clearLegalPhony(mPtrGlobals, isoCode.toString(), phony)
         }
     }
 
     fun lcToLocale(lc: Int): String? {
         return blockFor {
-            dvc_lcToLocale(m_ptrGlobals, lc)
+            dvc_lcToLocale(mPtrGlobals, lc)
         } as String?
     }
 

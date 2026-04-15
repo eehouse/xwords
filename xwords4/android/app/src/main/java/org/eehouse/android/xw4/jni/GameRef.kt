@@ -36,11 +36,7 @@ import org.eehouse.android.xw4.loc.LocUtils
 
 private val TAG: String = GameRef::class.java.simpleName
 class GameRef(val gr: Long): Parcelable, Serializable {
-    private val jniState: Long
-
-    init {
-        jniState = Device.ptrGlobals()
-    }
+    private val jniState = Device.ptrGlobals()
 
     override fun equals(other: Any?): Boolean {
         val result =

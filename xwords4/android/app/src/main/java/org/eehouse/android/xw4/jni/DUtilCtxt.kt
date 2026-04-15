@@ -172,19 +172,22 @@ class DUtilCtxt() {
     private val sCleared = HashSet<Int>()
     fun setTimer(inMS: Int, key: Int)
     {
-        val startMS = if (BuildConfig.DEBUG) System.currentTimeMillis() else 0
-        synchronized(sCleared) {sCleared.add(key)}
+        // Log.d(TAG, "setTimer($inMS, $key)")
+        if ( 0 == inMS ) {
+            Device.onTimerFired(key) // enque it immediately
+        } else {
+            // val startMS = if (BuildConfig.DEBUG) System.currentTimeMillis() else 0
+            synchronized(sCleared) {sCleared.add(key)}
+            GlobalScope.launch(Dispatchers.Default) {
+                delay(inMS.toLong())
+                // if (BuildConfig.DEBUG) {
+                //     Log.d(TAG, "setTimer($inMS, $key): firing; set for $inMS, "
+                //           + "took ${System.currentTimeMillis() - startMS}")
+                // }
 
-        GlobalScope.launch(Dispatchers.Default) {
-            delay(inMS.toLong())
-            if (BuildConfig.DEBUG) {
-                val wakeMS = System.currentTimeMillis()
-                // Log.d(TAG, "setTimer(): firing; set for $inMS, "
-                //       + "took ${wakeMS - startMS}")
-            }
-
-            if (synchronized(sCleared) {sCleared.remove(key)}) {
-                Device.onTimerFired(key)
+                if (synchronized(sCleared) {sCleared.remove(key)}) {
+                    Device.onTimerFired(key)
+                }
             }
         }
     }
