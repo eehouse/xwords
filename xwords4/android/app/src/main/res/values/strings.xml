@@ -1920,7 +1920,7 @@
          of the groups, joined by ", ", are substituted for %1$s. -->
     <plurals name="groups_confirm_del_fmt">
         <item quantity="one">Are you sure you want to delete
-      the group %1$s?</item>
+      the group “%1$s”?</item>
         <item quantity="other">Are you sure you want to delete
       the groups %1$s?</item>
     </plurals>

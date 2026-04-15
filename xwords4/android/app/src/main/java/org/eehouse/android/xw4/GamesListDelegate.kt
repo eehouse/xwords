@@ -2137,8 +2137,9 @@ class GamesListDelegate(delegator: Delegator) :
                             .show()
                     } else {
                         Assert.assertTrue(0 < groupIDs.size)
-                        val namesLst = groupIDs.map{GroupRef(it).getGroupName()}
-                        val names = TextUtils.join(", ", namesLst)
+                        val names = groupIDs.map{GroupRef(it).getGroupName()}.let {
+                            TextUtils.join(", ", it)
+                        }
                         var msg = getQuantityString(R.plurals.groups_confirm_del_fmt,
                                                     groupIDs.size, names)
 
