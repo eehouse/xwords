@@ -25,15 +25,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.SystemClock
 import android.text.TextUtils
 
+import java.io.File
+import kotlin.math.abs
+import kotlinx.coroutines.Dispatchers
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
-import kotlin.math.abs
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc
 import org.eehouse.android.xw4.DictUtils.DictLoc
@@ -52,13 +52,22 @@ class UpdateCheckReceiver : BroadcastReceiver() {
         }
     }
 
-    private class UpdateQueryTask(
-        private val mContext: Context, private val m_params: JSONObject,
-        private val m_fromUI: Boolean, private val m_pm: PackageManager,
-        private val m_packageName: String,
-        private val m_dals: Array<DictAndLoc>?
-    ) : AsyncTask<Void?, Void?, String?>() {
-        override fun doInBackground(vararg params: Void?): String? {
+    private class UpdateQueryTask
+        (private val mContext: Context,
+         private val m_params: JSONObject,
+         private val m_fromUI: Boolean, private val m_pm: PackageManager,
+         private val m_packageName: String,
+         private val m_dals: Array<DictAndLoc>?)
+    {
+        fun execute() {
+            Utils.launch(Dispatchers.IO) {
+                doInBackground()?.let {
+                    onPostExecute(it)
+                }
+            }
+        }
+
+        private fun doInBackground(): String? {
             val conn = NetUtils.makeHttpUpdateConn(mContext, "getUpdates")
             val json =
                 conn?.let {
@@ -67,14 +76,12 @@ class UpdateCheckReceiver : BroadcastReceiver() {
             return json
         }
 
-        override fun onPostExecute(json: String?) {
-            if (null != json) {
-                if (LOG_QUERIES) {
-                    Log.d(TAG, "onPostExecute(): received: %s", json)
-                }
-                makeNotificationsIf(json)
-                XWPrefs.setHaveCheckedUpgrades(mContext, true)
+        private fun onPostExecute(json: String) {
+            if (LOG_QUERIES) {
+                Log.d(TAG, "onPostExecute(): received: %s", json)
             }
+            makeNotificationsIf(json)
+            XWPrefs.setHaveCheckedUpgrades(mContext, true)
         }
 
         private fun makeNotificationsIf(jstr: String) {
