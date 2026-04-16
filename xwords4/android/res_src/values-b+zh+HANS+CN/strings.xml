@@ -638,11 +638,7 @@
     <string name="dup_minutes_label">每轮限时（分）</string>
     <string name="network_behavior">网络游戏设置</string>
     <string name="checkbox_archive">移动到归档</string>
-    <string name="not_again_arrow">将卡牌移动到棋盘有两种方式。
-\n
-\n • 你可以将其在牌架与棋盘间拖动。
-\n
-\n • 你也可以点击棋盘上的空方格来放置“粗箭头”。然后在点击牌架中的卡牌时，卡牌会将其替换。点击箭头可以改变其方向或将其隐藏。</string>
+    <string name="not_again_arrow">将卡牌移动到棋盘有两种方式。 \n \n • 你可以将其在牌架与棋盘间拖动。 \n \n • 你也可以点击棋盘上的空方格来放置“粗箭头”。然后在点击牌架中的卡牌时，卡牌会将其替换。点击箭头可以改变其方向或将其隐藏。</string>
     <string name="str_no_peek_remote_tiles">不允许偷看远程玩家的卡牌！</string>
     <string name="confirm_save">此游戏进行中，如果保存更改则必须重新开始。要保存更改吗？</string>
     <string name="button_deny">拒绝</string>
@@ -1024,7 +1020,7 @@
 \n（如果想稍后隐藏，请转到应用设置的外观小节）。</string>
     <string name="pick_tiles_title_fmt">选择“拼”作“%1$s”的卡牌</string>
     <string name="choose_expl_known">或者与之前一起玩过的玩家开始游戏，无需邀请</string>
-    <string name="archive_expl_colors">游戏棋盘元素颜色，比如玩家名称与加分格的颜色</string>
+    <string name="archive_expl_colors">棋盘元素颜色，比如玩家名称与加分格的颜色</string>
     <plurals name="confirm_clear_bt_fmt">
         <item quantity="other">确定要忘记选中的%1$d设备吗？</item>
     </plurals>
@@ -1034,9 +1030,7 @@
         <item quantity="other">请勾选要邀请到新游戏的%1$d手机号码，然后点击“%2$s”。</item>
     </plurals>
     <string name="disable_nags_title">局内提醒</string>
-    <string name="not_again_boardThemes_fmt">目前棋盘以深色绘制，因为设备启用了“深色主题”。
-\n
-\n如果你喜欢使用“浅色”主题，或是想选择独立于安卓“深色模式”的主题，可以随时在应用设置修改“%1$s”。下方的“设置”按钮会立即转到那里。</string>
+    <string name="not_again_boardThemes_fmt">目前棋盘以深色绘制，因为设备启用了“深色主题”。 \n \n如果你喜欢使用“浅色”主题，或是想选择独立于安卓“深色模式”的主题，可以随时在应用设置修改“%1$s”。下方的“设置”按钮会立即转到那里。</string>
     <string name="archive_expl_games">所有游戏以及用于辨识设备的其他数据。</string>
     <string name="offerdupmode_sum">（实验性）玩法，所有玩家拥有卡牌相同</string>
     <string name="invite_multi_summary">允许邀请一台远程设备上的多位玩家</string>
@@ -1150,4 +1144,8 @@
     <string name="ping_result_fmt">通过 %1$s Ping 花了 %2$d 毫秒。</string>
     <string name="games_menu_mqttStats">连接统计数</string>
     <string name="about_branch_fmt">分支：%1$s</string>
+    <string name="gesture_margins_title">当启用导航手势时</string>
+    <string name="gesture_margins_shrink">收缩棋盘排除边沿</string>
+    <string name="gesture_margins_ignore">绘制全宽棋盘</string>
+    <string name="not_again_margins_fmt">启用“手势导航”时（就如这台设备上的情况）难以拖动棋子靠近屏幕边缘。因此 CrossWords 可被配置为将棋盘和托盘绘制得略窄一点，避开手势开始的边沿。\n\n当前设置为“%1$s”。你可以随时在 %3$s 的 “%2$s” 部分更改此行为，或马上通过下方按钮转到那里。（更改会在下次开始游戏时生效）</string>
 </resources>
