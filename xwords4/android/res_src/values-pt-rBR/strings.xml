@@ -1267,4 +1267,8 @@
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">Ping via %1$s levou %2$d ms.</string>
     <string name="about_branch_fmt">Ramo: %1$s</string>
+    <string name="gesture_margins_title">Quando Navegação Gestual está ativa</string>
+    <string name="gesture_margins_shrink">Diminuir tabela para excluir margens</string>
+    <string name="gesture_margins_ignore">Desenhar tabela com tamanho máximo</string>
+    <string name="not_again_margins_fmt">Quando “Navegação Gestual” está ativa, como está neste dispositivo, é difícil arrastar quadrados próximos da borda da tela. Portanto, o CrossWords pode ser configurado para desenhar as tabelas um pouco mais estreitas, evitando as margens onde os gestos começam. \n\nA configuração atual é “%1$s”. Você pode mudar este comportamento a qualquer hora na seção “%2$s” de %3$s, ou vá agora com o botão abaixo. (As mudanças serão efetivadas na próxima vez que abrir um jogo.)</string>
 </resources>
