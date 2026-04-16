@@ -11,16 +11,4 @@
 
   <string name="button_copyAddr">Copy address</string>
 
-  <string name="gesture_margins_title">When Navigation Gestures are on</string>
-  <string name="gesture_margins_shrink">Shrink the board to exclude margins</string>
-  <string name="gesture_margins_ignore">Draw board full-width</string>
-  <string name="not_again_margins_fmt">When \"Gesture Navigation\" is
-  enabled, as it is on this device, it is difficult to drag tiles near
-  the edge of the screen. So CrossWords can be configured to draw the
-  board and tray a bit narrower.
-
-  \n\nThe current setting is “%1$s”. You can change this behavior
-  anytime in the “%2$s” section of %3$s, or go there now via the
-  button below. (Changes will take effect next time you open a
-  game.)</string>
 </resources>
