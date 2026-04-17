@@ -829,8 +829,9 @@ object Utils {
 
 
     fun launch(disp: CoroutineDispatcher = Dispatchers.Main,
-               block: suspend CoroutineScope.() -> Unit) {
-        CoroutineScope(Job() + disp).launch{block()}
+               block: suspend CoroutineScope.() -> Unit): Job {
+        val job = CoroutineScope(Job() + disp).launch{block()}
+        return job
     }
 
     // But see hexArray above
