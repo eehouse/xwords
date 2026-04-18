@@ -134,7 +134,6 @@ dmgr_remove( XW_DUtilCtxt* dutil, XWEnv xwe, const XP_UCHAR* key )
         destroyDictDataProc( dp, &ddd );
     } else {
         XP_LOGFF( "dict %s not found", key );
-        XP_ASSERT(0);
     }
 }
 

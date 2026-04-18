@@ -142,16 +142,16 @@ class DwnldDelegate(delegator: Delegator)
         }
 
         private fun onPostExecute() {
-            if (null != m_savedDict) {
-                val loc =
-                    XWPrefs.getDefaultLoc(mActivity)
-                DictLangCache.inval(mActivity, m_savedDict, loc, true)
-                callListener(m_uri, true)
-                Device.onDictAdded(m_savedDict!!)
-            } else {
-                // we failed at something....
-                callListener(m_uri, false)
-            }
+            m_savedDict?
+                .let { savedDict ->
+                    XWPrefs.getDefaultLoc(mActivity).also { loc ->
+                        DictLangCache.inval(mActivity, savedDict, loc, true)
+                    }
+                    true
+                } ?: false
+                .let { success ->
+                    callListener(m_uri, success)
+                }
 
             if (1 >= mViews.size) {
                 finish()

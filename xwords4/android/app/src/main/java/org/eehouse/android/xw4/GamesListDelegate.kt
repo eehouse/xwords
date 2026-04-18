@@ -2651,8 +2651,8 @@ class GamesListDelegate(delegator: Delegator) :
         ) {
             m_haveShownGetDict = true
 
-            val isoCode = LocUtils.getCurLangCode(mActivity)
-            if (!isoCode!!.equals(Utils.ISO_EN)) {
+            val isoCode = LocUtils.getCurLangCode(mActivity)!!
+            if (!isoCode.equals(Utils.ISO_EN)) {
                 val names = DictLangCache.getHaveLang(mActivity, isoCode)
                 if (0 == names.size) {
                     val lstnr: OnGotLcDictListener = object : OnGotLcDictListener {
@@ -2663,7 +2663,7 @@ class GamesListDelegate(delegator: Delegator) :
                             stopProgress()
                             if (success) {
                                 val langName = DictLangCache
-                                    .getLangNameForISOCode(mActivity, isoCode!!)
+                                    .getLangNameForISOCode(mActivity, isoCode)
                                 makeConfirmThenBuilder(
                                     Action.DWNLD_LOC_DICT,
                                     R.string.confirm_get_locdict_fmt,
