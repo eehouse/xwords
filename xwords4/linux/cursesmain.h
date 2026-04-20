@@ -81,8 +81,6 @@ bool handleQuit( void* closure, int unused_key );
 void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite );
 void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,
                             XP_U32 gameID, const XP_U8* buf, XP_U16 len );
-void gameGoneCurses( void* closure, const CommsAddrRec* from, XP_U32 gameID );
-void onCursesGameOpened( CommonAppGlobals* cag, GameRef gr );
 void onGameChangedCurses( CommonAppGlobals* cag, GameRef gr,
                           GameChangeEvents gces );
 void onGroupChangedCurses( LaunchParams* params, GroupRef grp,

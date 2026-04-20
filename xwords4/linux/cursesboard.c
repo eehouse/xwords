@@ -183,8 +183,10 @@ cb_open( CursesBoardState* cbState, GameRef gr, const cb_dims* dims )
     cGlobals->util = linux_util_make( dutil, gi, cGlobals->gr );
     setupLinuxUtilCallbacks( cGlobals->util, XP_TRUE );
 
-    gr_setDraw( dutil, cGlobals->gr, NULL_XWE, draw,
-                cGlobals->util );
+    XP_LOGFF( "calling gr_setDraw()" );
+    gr_setDraw( dutil, cGlobals->gr, NULL_XWE, draw, cGlobals->util );
+    gr_invalAll( dutil, cGlobals->gr, NULL_XWE );
+    gr_draw( dutil, cGlobals->gr, NULL_XWE );
 }
 
 bool

@@ -1360,15 +1360,6 @@ inviteReceivedCurses( void* closure, const NetLaunchInfo* nli )
 }
 
 void
-onCursesGameOpened( CommonAppGlobals* cag, GameRef gr )
-{
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cag;
-    cb_dims dims;
-    figureDims( aGlobals, &dims );
-    cb_open( aGlobals->cbState, gr, &dims );
-}
-
-void
 onGameChangedCurses( CommonAppGlobals* cag, GameRef XP_UNUSED(gr),
                      GameChangeEvents XP_UNUSED(gces) )
 {
@@ -1503,13 +1494,6 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     /* LOG_RETURN_VOID(); */
 }
 #endif
-
-void
-gameGoneCurses( void* XP_UNUSED(closure), const CommsAddrRec* XP_UNUSED(from),
-                XP_U32 XP_UNUSED_DBG(gameID) )
-{
-    XP_LOGFF( "(gameID=%d)", gameID );
-}
 
 #ifdef XWFEATURE_RELAY
 static void
