@@ -58,10 +58,6 @@ class DwnldDelegate(delegator: Delegator)
         fun downloadFinished(isoCode: ISOCode, name: String, success: Boolean)
     }
 
-    interface OnGotLcDictListener {
-        fun gotDictInfo(success: Boolean, isoCode: ISOCode, name: String?)
-    }
-
     // Track callbacks for downloads.
     private class ListenerData(
         var m_uri: Uri?,
@@ -142,8 +138,7 @@ class DwnldDelegate(delegator: Delegator)
         }
 
         private fun onPostExecute() {
-            m_savedDict?
-                .let { savedDict ->
+            m_savedDict?.let { savedDict ->
                     XWPrefs.getDefaultLoc(mActivity).also { loc ->
                         DictLangCache.inval(mActivity, savedDict, loc, true)
                     }

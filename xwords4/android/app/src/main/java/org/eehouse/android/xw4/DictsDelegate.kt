@@ -54,7 +54,6 @@ import org.eehouse.android.xw4.DictUtils.ON_SERVER
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
-import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
 import org.eehouse.android.xw4.MountEventReceiver.SDCardNotifiee
 import org.eehouse.android.xw4.Perms23.Perm
 import org.eehouse.android.xw4.SelectableItem.LongClickHandler
@@ -1012,94 +1011,6 @@ class DictsDelegate(delegator: Delegator) :
         return mSelDicts!!.containsKey(dictView.getText())
     }
 
-    private class GetDefaultDictTask(
-        private val m_context: Context,
-        private val m_lc: ISOCode,
-        private val m_lstnr: OnGotLcDictListener
-    ) {
-        private var m_langName: String? = null
-
-        fun execute() {
-            CoroutineScope(Dispatchers.IO).launch {
-                val result = doInBackground()
-                withContext(Dispatchers.Main) {
-                    onPostExecute(result)
-                }
-            }
-        }
-
-        private suspend fun doInBackground(): String? {
-            // FIXME: this should pass up the language code to retrieve and
-            // parse less data
-            var name: String? = null
-            val proc = listDictsProc(m_lc)
-            val conn = NetUtils.makeHttpUpdateConn(m_context, proc)
-            if (null != conn) {
-                var theOne: JSONObject? = null
-                val langName: String? = null
-                val json = NetUtils.runConn(conn, JSONObject())
-                if (null != json) {
-                    try {
-                        val obj = JSONObject(json)
-                        val langs = obj.optJSONArray("langs")
-                        val nLangs = langs.length()
-                        for (ii in 0 until nLangs) {
-                            val langObj = langs.getJSONObject(ii)
-                            val langCode = ISOCode.newIf(langObj.getString("lc"))
-                            if (langCode != m_lc) {
-                                continue
-                            }
-                            // we have our language; look for one marked default;
-                            // otherwise take the largest.
-                            m_langName = langObj.getString("lang")
-                            val dicts = langObj.getJSONArray("dicts")
-                            val nDicts = dicts.length()
-                            var theOneNWords = 0
-                            for (jj in 0 until nDicts) {
-                                val dict = dicts.getJSONObject(jj)
-                                if (dict.optBoolean("isDflt", false)) {
-                                    theOne = dict
-                                    break
-                                } else {
-                                    val nWords = dict.getInt("nWords")
-                                    if (null == theOne
-                                        || nWords > theOneNWords
-                                    ) {
-                                        theOne = dict
-                                        theOneNWords = nWords
-                                    }
-                                }
-                            }
-                        }
-
-                        // If we got here and theOne isn't set, there is
-                        // no wordlist available for this language. Set
-                        // the flag so we don't try again, even though
-                        // we've failed.
-                        if (null == theOne) {
-                            XWPrefs.setPrefsBoolean(
-                                m_context,
-                                R.string.key_got_langdict,
-                                true
-                            )
-                        }
-                    } catch (ex: JSONException) {
-                        Log.ex(TAG, ex)
-                        theOne = null
-                    }
-                }
-                if (null != theOne) {
-                    name = theOne.optString("xwd")
-                }
-            }
-            return name
-        }
-
-        private fun onPostExecute(name: String?) {
-            m_lstnr.gotDictInfo(null != name, m_lc, name)
-        }
-    }
-
     private inner class FetchListTask(private val mContext: Context) :
         DialogInterface.OnCancelListener
     {
@@ -1301,11 +1212,71 @@ class DictsDelegate(delegator: Delegator) :
         const val RESULT_LAST_DICT = "last_dict"
         private const val SEL_LOCAL = 0
         private const val SEL_REMOTE = 1
-        fun downloadDefaultDict(
-            context: Context, isoCode: ISOCode,
-            lstnr: OnGotLcDictListener
-        ) {
-            GetDefaultDictTask(context, isoCode, lstnr).execute()
+
+        data class GDLResult(val success: Boolean, val isoCode: ISOCode,
+                             val name: String?)
+        suspend fun downloadDefaultDict(context: Context, isoCode: ISOCode): GDLResult?
+        {
+            val result =
+                withContext(Dispatchers.IO) {
+                    val proc = listDictsProc(isoCode)
+                    NetUtils.makeHttpUpdateConn(context, proc)?.let { conn ->
+                        var theOne: JSONObject? = null
+                        NetUtils.runConn(conn, JSONObject())?.let { json ->
+                            try {
+                                val obj = JSONObject(json)
+                                val langs = obj.optJSONArray("langs")
+                                val nLangs = langs.length()
+                                for (ii in 0 until nLangs) {
+                                    val langObj = langs.getJSONObject(ii)
+                                    val langCode = ISOCode.newIf(langObj.getString("lc"))
+                                    if (langCode != isoCode) {
+                                        continue
+                                    }
+                                    // we have our language; look for one marked default;
+                                    // otherwise take the largest.
+                                    val dicts = langObj.getJSONArray("dicts")
+                                    val nDicts = dicts.length()
+                                    var theOneNWords = 0
+                                    for (jj in 0 until nDicts) {
+                                        val dict = dicts.getJSONObject(jj)
+                                        if (dict.optBoolean("isDflt", false)) {
+                                            theOne = dict
+                                            break
+                                        } else {
+                                            val nWords = dict.getInt("nWords")
+                                            if (null == theOne
+                                                    || nWords > theOneNWords
+                                            ) {
+                                                theOne = dict
+                                                theOneNWords = nWords
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // If we got here and theOne isn't set, there
+                                // is no wordlist available for this
+                                // language. Set the flag so we don't try
+                                // again, even though we've failed.
+                                if (null == theOne) {
+                                    XWPrefs.setPrefsBoolean(context,
+                                                            R.string.key_got_langdict,
+                                                            true)
+                                }
+                            } catch (ex: JSONException) {
+                                Log.ex(TAG, ex)
+                                theOne = null
+                            }
+                        }
+
+                        theOne?.let {
+                            val name = it.optString("xwd")
+                            GDLResult(true, isoCode, name)
+                        }
+                    }
+                }
+            return result
         }
 
         private const val FAKE_GROUP = 101

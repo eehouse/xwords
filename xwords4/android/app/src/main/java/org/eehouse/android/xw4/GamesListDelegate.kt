@@ -71,7 +71,6 @@ import org.eehouse.android.xw4.DBUtils.ROWID_NOTFOUND
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate
 import org.eehouse.android.xw4.DlgDelegate.Action
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener
-import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener
 import org.eehouse.android.xw4.GameUtils.NoSuchGameException
 import org.eehouse.android.xw4.Log.ResultProcs
 import org.eehouse.android.xw4.ListPrefsModels.PrefKey
@@ -2655,15 +2654,17 @@ class GamesListDelegate(delegator: Delegator) :
             if (!isoCode.equals(Utils.ISO_EN)) {
                 val names = DictLangCache.getHaveLang(mActivity, isoCode)
                 if (0 == names.size) {
-                    val lstnr: OnGotLcDictListener = object : OnGotLcDictListener {
-                        override fun gotDictInfo(
-                            success: Boolean, isoCode: ISOCode,
-                            name: String?
-                        ) {
-                            stopProgress()
-                            if (success) {
+                    val locLang = DictLangCache
+                        .getLangNameForISOCode(mActivity, isoCode)
+                    val msg = getString(R.string.checking_for_fmt, locLang)
+                    startProgress(R.string.checking_title, msg)
+                    launch {
+                        val res = DictsDelegate.downloadDefaultDict(mActivity, isoCode)
+                        stopProgress()
+                        res?.let { res ->
+                            if (res.success) {
                                 val langName = DictLangCache
-                                    .getLangNameForISOCode(mActivity, isoCode)
+                                    .getLangNameForISOCode(mActivity, res.isoCode)
                                 makeConfirmThenBuilder(
                                     Action.DWNLD_LOC_DICT,
                                     R.string.confirm_get_locdict_fmt,
@@ -2672,17 +2673,11 @@ class GamesListDelegate(delegator: Delegator) :
                                     .setPosButton(R.string.button_download)
                                     .setNegButton(R.string.button_no)
                                     .setNAKey(R.string.key_got_langdict)
-                                    .setParams(isoCode, name)
+                                    .setParams(res.isoCode, res.name)
                                     .show()
                             }
                         }
                     }
-
-                    val locLang = DictLangCache
-                        .getLangNameForISOCode(mActivity, isoCode)
-                    val msg = getString(R.string.checking_for_fmt, locLang)
-                    startProgress(R.string.checking_title, msg)
-                    DictsDelegate.downloadDefaultDict(mActivity, isoCode, lstnr)
                 }
             }
         }
