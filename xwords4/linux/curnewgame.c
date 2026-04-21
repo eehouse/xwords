@@ -238,7 +238,7 @@ newGameKeyProc( int key, void* closure )
         case SEL_PLAYER_4: {
             LocalPlayer* lp = &gi->players[sel - SEL_PLAYER_1];
             XP_LOGFF( "passing %s", lp->name );
-            if ( editPlayerDlg(ngs->params, ngs->win, lp ) ) {
+            if ( editPlayerDlg(ngs->params, lp ) ) {
                 XP_LOGFF( "got back: %s", lp->name );
             }
         }

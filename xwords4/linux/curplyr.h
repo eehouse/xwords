@@ -24,7 +24,7 @@
 
 #include "main.h"
 
-bool editPlayerDlg( LaunchParams* params, WINDOW* win, LocalPlayer* player );
+bool editPlayerDlg( LaunchParams* params, LocalPlayer* player );
 
 void roleName( const LocalPlayer* lp, char buf[32], size_t buflen );
 

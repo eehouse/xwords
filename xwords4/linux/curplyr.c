@@ -139,7 +139,7 @@ playerEditKeyProc( int key, void* closure )
 }
 
 bool
-editPlayerDlg( LaunchParams* params, WINDOW* parent, LocalPlayer* player )
+editPlayerDlg( LaunchParams* params, LocalPlayer* player )
 {
     LOG_FUNC();
 
@@ -158,7 +158,7 @@ editPlayerDlg( LaunchParams* params, WINDOW* parent, LocalPlayer* player )
     startModalAlert( aGlobals, cps.win, XP_TRUE, playerEditKeyProc, &cps );
 
     cws_delwin( aGlobals, &cps.win );
-    wrefresh( parent );
+    cws_refresh( aGlobals );
 
     bool confirmed = cps.confirmed;
     if ( confirmed ) {

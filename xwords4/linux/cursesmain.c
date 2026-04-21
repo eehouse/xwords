@@ -89,13 +89,16 @@ struct CursesAppGlobals {
     CurWinStack* winStack;
     CursGameList* gameList;
     CursesBoardState* cbState;
-    WINDOW* mainWin;
+    WINDOW* stdscr;
+    WINDOW* bgWin;
     int winWidth, winHeight;
 
     XP_U16 nLinesMenu;
     gchar* lastErr;
 
     short statusLine;
+
+    bool gotFirstChar;
 
     struct sockaddr_in listenerSockAddr;
 #ifdef USE_GLIBLOOP
@@ -206,20 +209,29 @@ initCurses( CursesAppGlobals* aGlobals )
 {
     /* ncurses man page says most apps want this sequence  */
     if ( !aGlobals->cag.params->closeStdin ) {
-        aGlobals->mainWin = initscr();
+        aGlobals->stdscr = initscr();
+        XP_ASSERT( aGlobals->stdscr == stdscr );
         cbreak();
         noecho();
         nonl();
+        // wbkgd( stdscr, '.' );
         intrflush(stdscr, FALSE);
         keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-        getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
+        getmaxyx( aGlobals->stdscr, aGlobals->winHeight, aGlobals->winWidth );
         XP_LOGFF( "getmaxyx()->w:%d; h:%d", aGlobals->winWidth,
                   aGlobals->winHeight );
 
-        WINDOW* backwin = cws_newwin( aGlobals, aGlobals->winHeight,
+        aGlobals->bgWin = cws_newwin( aGlobals, aGlobals->winHeight,
                                       aGlobals->winWidth, 0, 0 );
-        werase( backwin );
+#if 1
+        werase( aGlobals->bgWin );
+#else
+        wbkgd( aGlobals->bgWin, '-' );
+#endif
+
+        /* clearok(stdscr, FALSE); */
+        /* wnoutrefresh(stdscr); */
     }
 
     /* globals->statusLine = height - MENU_WINDOW_HEIGHT - 1; */
@@ -291,7 +303,7 @@ getSelOrWarn(CursesAppGlobals* aGlobals, GameRef* grp, const char* warning)
     if ( success ) {
         *grp = agr;
     } else {
-        ca_inform2( aGlobals, aGlobals->mainWin, warning );
+        ca_inform2( aGlobals, aGlobals->stdscr, warning );
     }
     return success;
 }
@@ -390,11 +402,11 @@ handleDeleteGame( void* closure, int XP_UNUSED(key) )
             "selected game? This action cannot be undone";
         const char* buttons[] = { "Cancel", "Ok", };
 
-        if ( 1 == cursesask2( aGlobals, aGlobals->mainWin, VSIZE(buttons), buttons, question ) ) {
+        if ( 1 == cursesask2( aGlobals, aGlobals->stdscr, VSIZE(buttons), buttons, question ) ) {
             gmgr_deleteGame( aGlobals->cag.params->dutil, NULL_XWE, gr );
         }
     } else {
-        ca_inform2( aGlobals, aGlobals->mainWin, "Group deleting coming soon." );
+        ca_inform2( aGlobals, aGlobals->stdscr, "Group deleting coming soon." );
     }
     return XP_TRUE;
 }
@@ -415,7 +427,7 @@ copyDevID( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     // CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const gchar* devIDStr = mqttc_getDevIDStr( aGlobals->cag.params );
-    ca_informf2( aGlobals, aGlobals->mainWin, "Unable to copy \"%s\" yet...", devIDStr );
+    ca_informf2( aGlobals, aGlobals->stdscr, "Unable to copy \"%s\" yet...", devIDStr );
     return true;
 }
 
@@ -431,13 +443,13 @@ showThumb( void* closure, int XP_UNUSED(key) )
         XWStreamCtxt* stream = gr_getThumbData( params->dutil, gr, NULL_XWE );
         if ( !!stream ) {
             XP_UCHAR* str = strFromStream( stream );
-            ca_informf2( aGlobals, aGlobals->mainWin, "Here's your thumbnail for %X: \n%s",
+            ca_informf2( aGlobals, aGlobals->stdscr, "Here's your thumbnail for %X: \n%s",
                          gr, str );
             free( str );
             strm_destroy( stream );
         }
     } else {
-        ca_inform2( aGlobals, aGlobals->mainWin, "No thumbnails for groups!" );
+        ca_inform2( aGlobals, aGlobals->stdscr, "No thumbnails for groups!" );
     }
     return true;
 }
@@ -469,7 +481,7 @@ toggleGroupExpanded( void* closure, int XP_UNUSED(key) )
         gmgr_setGroupCollapsed( dutil, NULL_XWE, grp, !collapsed );
         // invalGameList( aGlobals );
     } else {
-        ca_inform2( aGlobals, aGlobals->mainWin, "No expanding games!" );
+        ca_inform2( aGlobals, aGlobals->stdscr, "No expanding games!" );
     }
     return true;
 }
@@ -495,7 +507,7 @@ renameGroup( void* closure, int XP_UNUSED(key) )
         prompt = "Edit group name";
     }
 
-    if ( ca_edit( params, aGlobals->mainWin, prompt, name, VSIZE(name) ) ) {
+    if ( ca_edit( params, aGlobals->stdscr, prompt, name, VSIZE(name) ) ) {
         XP_LOGFF( "got back %s", name );
         if ( isGame ) {
             gr_setGameName( dutil, gr, NULL_XWE, name );
@@ -913,7 +925,7 @@ fireCursesTimer( CursesAppGlobals* globals )
 	
 /*         /\* stdin first *\/ */
 /*         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) { */
-/*             int evtCh = wgetch(globals->mainWin); */
+/*             int evtCh = wgetch(globals->stdscr); */
 /*             XP_LOGF( "%s: got key: %x", __func__, evtCh ); */
 /*             *ch = evtCh; */
 /*             result = XP_TRUE; */
@@ -1407,7 +1419,7 @@ onGameGoneReceivedCurses( LaunchParams* params, XP_U32 gameID )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     gchar buf[256];
     snprintf( buf, VSIZE(buf), "Game %X has been deleted on remote", gameID );
-    (void)ca_inform2( aGlobals, aGlobals->mainWin, buf );
+    (void)ca_inform2( aGlobals, aGlobals->stdscr, buf );
 }
 
 void
@@ -1419,14 +1431,14 @@ onPingReceivedCurses( LaunchParams* params, XP_U32 tsStart,
     XP_ASSERT( !!tsMid );
     snprintf( buf, VSIZE(buf), "Ping received: here->there: %ds; there -> here: %ds",
               tsMid - tsStart, now - tsMid );
-    (void)ca_inform2( aGlobals, aGlobals->mainWin, buf );
+    (void)ca_inform2( aGlobals, aGlobals->stdscr, buf );
 }
 
 void
 informMoveCurses( LaunchParams* params, XWStreamCtxt* expl )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
-    WINDOW* parent = aGlobals->mainWin;
+    WINDOW* parent = aGlobals->stdscr;
     char* question = strFromStream( expl );
     (void)ca_inform2( aGlobals, parent, question );
     free( question );
@@ -1587,7 +1599,7 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
         g_free( globals->lastErr );
         globals->lastErr = g_strdup( msg );
         const char* buttons[] = { "Ok" };
-        (void)cursesask( globals->mainWin, msg, VSIZE(buttons), buttons );
+        (void)cursesask( globals->stdscr, msg, VSIZE(buttons), buttons );
     }
 }
 #endif
@@ -1866,7 +1878,7 @@ getWinStack( CursesAppGlobals* aGlobals )
 WINDOW*
 getMainWin( CursesAppGlobals* aGlobals )
 {
-    return aGlobals->mainWin;
+    return aGlobals->stdscr;
 }
 
 static gboolean
@@ -1875,6 +1887,12 @@ stdioWrapper( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition),
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)data;
     int key = getch();
+    /* For some reason the first call to getch() erases the screen. So I
+       redraw it that once. Sue me: it's a test app. */
+    if ( ! aGlobals->gotFirstChar ) {
+        aGlobals->gotFirstChar = true;
+        cws_refresh( aGlobals );
+    }
     cursesPushKey( aGlobals, key );
     return TRUE;
 }
@@ -1889,7 +1907,7 @@ cursesmain( XP_Bool XP_UNUSED(isServer), LaunchParams* params )
 
     initCurses( &g_globals );
     if ( !params->closeStdin ) {
-        g_globals.menuState = cmenu_init( &g_globals, g_globals.mainWin );
+        g_globals.menuState = cmenu_init( &g_globals, g_globals.stdscr );
         cmenu_push( g_globals.menuState, &g_globals, g_sharedMenuList, NULL );
 
         GIOChannel* channel = g_io_channel_unix_new( 0 ); /* stdin */

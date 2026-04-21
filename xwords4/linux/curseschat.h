@@ -24,6 +24,6 @@
 #include "linuxmain.h"
 #include "cursesmain.h"
 
-void curses_openChat( LaunchParams* params, WINDOW* window, GameRef gr );
+void curses_openChat( LaunchParams* params, GameRef gr );
 
 #endif

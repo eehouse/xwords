@@ -25,10 +25,12 @@
 #include "comtypes.h"
 #include "cursesdlgutil.h"
 #include "dbgutil.h"
+#include "curwinstk.h"
 
 typedef enum { EDIT, DONE, CANCEL, NSTATES, } FOCUSSED;
 
 typedef struct _EditStrState {
+    CursesAppGlobals* aGlobals;
     WINDOW* win;
 
     /* From the caller: result goes here */
@@ -53,6 +55,8 @@ handleDone( EditStrState* state, int ch )
             getEditText( &state->es, state->txt, &maxLen );
         }
     }
+    cws_delwin( state->aGlobals, &state->win );
+    cws_refresh( state->aGlobals );
 }
 
 static void
@@ -108,6 +112,7 @@ ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
     int promptLine = line++;
     EditStrState state = { .txt = txt,
                            .maxLen = maxLen,
+                           .aGlobals = aGlobals,
     };
     state.editLine = line++;
     state.buttonLine = line++;

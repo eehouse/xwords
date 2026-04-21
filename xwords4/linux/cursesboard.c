@@ -1196,11 +1196,10 @@ curses_util_showChat( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
     bGlobals->nChatsSent = 0;
     XP_LOGFF( "got \"%s\" from player[%d]", msg, from );
 
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    WINDOW* win = bGlobals->boardWin;
-    XP_Bool shown = !!win;
+    XP_Bool shown = !!bGlobals->boardWin;
     if ( shown ) {
-        curses_openChat( cGlobals->params, win, cGlobals->gr );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        curses_openChat( cGlobals->params, cGlobals->gr );
     }
     return shown;
 }
@@ -1463,7 +1462,7 @@ openChat( void* closure, int XP_UNUSED(key) )
         CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
         ca_inform2( aGlobals, bGlobals->boardWin, "Chat is for networked games only" );
     } else {
-        curses_openChat( cGlobals->params, bGlobals->boardWin, cGlobals->gr );
+        curses_openChat( cGlobals->params, cGlobals->gr );
     }
     return true;
 }

@@ -150,7 +150,7 @@ chatKeyProc( int key, void* closure )
 }
 
 void
-curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
+curses_openChat( LaunchParams* params, GameRef gr )
 {
     XW_DUtilCtxt* dutil = params->dutil;
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
@@ -176,8 +176,6 @@ curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
 
     startModalAlert( aGlobals, state.win, XP_TRUE, chatKeyProc, &state );
     
-    // wtouchln( window, parentY, chatLines, 1 );
     cws_delwin( aGlobals, &state.win );
-    touchwin( parent );
-    wrefresh( parent );
+    cws_refresh( aGlobals );
 }
