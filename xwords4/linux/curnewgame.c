@@ -293,6 +293,7 @@ curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
         startModalAlert( aGlobals, ngs.win, XP_TRUE, newGameKeyProc, &ngs );
 
         cws_delwin( aGlobals, &ngs.win );
+        cws_refresh( aGlobals );
 
         confirmed = ngs.confirmed;
         if ( confirmed ) {

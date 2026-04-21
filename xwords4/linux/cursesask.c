@@ -89,10 +89,7 @@ onKey( int ch, void* closure )
 
     if ( dismissed ) {
         cws_delwin( as->aGlobals, &as->win );
-
-        /* this leaves a ghost line, but I can't figure out a better way. */
-        wtouchln( as->parentWin, (as->yy/2)-(as->nLines/2), ASK_HEIGHT + as->rows - 1, 1 );
-        wrefresh( as->parentWin );
+        cws_refresh( as->aGlobals );
 
         if ( !!as->resultP ) {
             *as->resultP = as->curSelButton;

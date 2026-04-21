@@ -71,6 +71,7 @@
 #include "gamemgr.h"
 #include "curnewgame.h"
 #include "cursesedit.h"
+#include "curwinstk.h"
 
 #ifndef CURSES_CELL_HT
 # define CURSES_CELL_HT 1
@@ -215,6 +216,10 @@ initCurses( CursesAppGlobals* aGlobals )
         getmaxyx( aGlobals->mainWin, aGlobals->winHeight, aGlobals->winWidth );
         XP_LOGFF( "getmaxyx()->w:%d; h:%d", aGlobals->winWidth,
                   aGlobals->winHeight );
+
+        WINDOW* backwin = cws_newwin( aGlobals, aGlobals->winHeight,
+                                      aGlobals->winWidth, 0, 0 );
+        werase( backwin );
     }
 
     /* globals->statusLine = height - MENU_WINDOW_HEIGHT - 1; */

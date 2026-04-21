@@ -84,3 +84,14 @@ cws_delwin( CursesAppGlobals* aGlobals, WINDOW** winp )
         *winp = NULL;
     }
 }
+
+void
+cws_refresh( CursesAppGlobals* aGlobals )
+{
+    CurWinStack* ws = getStack( aGlobals );
+    for ( GSList* iter = ws->wins; !!iter; iter = iter->next ) {
+        CWSElem* elem = (CWSElem*)iter->data;
+        touchwin( elem->win );
+        wrefresh( elem->win );
+    }
+}
