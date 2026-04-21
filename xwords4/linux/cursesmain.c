@@ -507,7 +507,7 @@ renameGroup( void* closure, int XP_UNUSED(key) )
         prompt = "Edit group name";
     }
 
-    if ( ca_edit( params, aGlobals->stdscr, prompt, name, VSIZE(name) ) ) {
+    if ( ca_edit( params, prompt, name, VSIZE(name) ) ) {
         XP_LOGFF( "got back %s", name );
         if ( isGame ) {
             gr_setGameName( dutil, gr, NULL_XWE, name );

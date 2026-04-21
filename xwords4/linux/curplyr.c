@@ -158,7 +158,6 @@ editPlayerDlg( LaunchParams* params, LocalPlayer* player )
     startModalAlert( aGlobals, cps.win, XP_TRUE, playerEditKeyProc, &cps );
 
     cws_delwin( aGlobals, &cps.win );
-    cws_refresh( aGlobals );
 
     bool confirmed = cps.confirmed;
     if ( confirmed ) {

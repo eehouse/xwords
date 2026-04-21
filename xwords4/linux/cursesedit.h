@@ -25,7 +25,7 @@
 
 #include "main.h"
 
-bool ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
+bool ca_edit( LaunchParams* params, const char* prompt,
               gchar txt[], gint maxLen );
 
 #endif

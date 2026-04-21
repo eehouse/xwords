@@ -84,8 +84,6 @@ cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* text, const char* ti
                 mvwaddstr( dialog, urlRow, (dialogWidth - strlen(text)) / 2, text );
             }
             mvwaddstr( dialog, dialogHeight - 2, (dialogWidth - strlen(instructions)) / 2, instructions );
-            wrefresh( dialog );
-            wgetch( dialog );
             cws_delwin( aGlobals, &dialog );
         }
         QRcode_free( qrCode );

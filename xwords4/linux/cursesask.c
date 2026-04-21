@@ -89,7 +89,6 @@ onKey( int ch, void* closure )
 
     if ( dismissed ) {
         cws_delwin( as->aGlobals, &as->win );
-        cws_refresh( as->aGlobals );
 
         if ( !!as->resultP ) {
             *as->resultP = as->curSelButton;

@@ -56,7 +56,6 @@ handleDone( EditStrState* state, int ch )
         }
     }
     cws_delwin( state->aGlobals, &state->win );
-    cws_refresh( state->aGlobals );
 }
 
 static void
@@ -70,7 +69,8 @@ updateButtons( EditStrState* state )
 {
     const char* buttons[] = { "OK", "Cancel" };
     int sel = state->focussed == EDIT ? -1 : state->focussed - 1;
-    drawButtons( state->win, state->buttonLine, 10, VSIZE(buttons), sel, buttons );
+    drawButtons( state->win, state->buttonLine, 10, VSIZE(buttons),
+                 sel, buttons );
 }
 
 static bool
@@ -104,8 +104,7 @@ onKeyProc( int ch, void* closure )
 }
 
 bool
-ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
-         gchar txt[], gint maxLen )
+ca_edit( LaunchParams* params, const char* prompt, gchar txt[], gint maxLen )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     int line = 1;
@@ -127,9 +126,6 @@ ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
     updateButtons( &state );
 
     startModalAlert( aGlobals, state.win, XP_TRUE, onKeyProc, &state );
-
-    // wtouchln( parent, parentY, height, 1 );
-    wrefresh( parent );
 
     LOG_RETURNF( "%s", boolToStr(state.accepted) );
     return state.accepted;
