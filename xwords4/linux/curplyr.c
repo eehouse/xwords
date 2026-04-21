@@ -18,6 +18,7 @@
 
 #include "curplyr.h"
 #include "cursesdlgutil.h"
+#include "curwinstk.h"
 
 enum {
     SEL_PLAYER,
@@ -142,9 +143,10 @@ editPlayerDlg( LaunchParams* params, WINDOW* parent, LocalPlayer* player )
 {
     LOG_FUNC();
 
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     CurPlayerState cps = {
         .player = *player,
-        .win = makeCenteredBox( parent, 30, 9 ),
+        .win = makeCenteredBox( aGlobals, 30, 9 ),
         .buttonsLine = 8,
     };
 
@@ -153,10 +155,9 @@ editPlayerDlg( LaunchParams* params, WINDOW* parent, LocalPlayer* player )
     initEdit( &cps.es, cps.win, 2, cps.player.name );
     updateWindow( &cps );
 
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     startModalAlert( aGlobals, cps.win, XP_TRUE, playerEditKeyProc, &cps );
 
-    delwin( cps.win );
+    cws_delwin( aGlobals, &cps.win );
     wrefresh( parent );
 
     bool confirmed = cps.confirmed;

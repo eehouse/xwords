@@ -38,6 +38,7 @@
 #include "curseschat.h"
 #include "device.h"
 #include "curlistask.h"
+#include "curwinstk.h"
 
 struct CursesBoardState {
     LaunchParams* params;
@@ -403,12 +404,14 @@ static void
 disposeDraw( CursesBoardGlobals* bGlobals )
 {
     if ( !!bGlobals->boardWin ) {
-        draw_unref( bGlobals->cGlobals.draw, NULL_XWE );
+        CommonGlobals* cGlobals = &bGlobals->cGlobals;
+        draw_unref( cGlobals->draw, NULL_XWE );
         /* Need these? Yes, to erase board, but doesn't draw under it!! */
         wclear( bGlobals->boardWin );
         wrefresh( bGlobals->boardWin );
 
-        delwin( bGlobals->boardWin );
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+        cws_delwin( aGlobals, &bGlobals->boardWin );
     }
 }
 
@@ -524,10 +527,12 @@ enableDraw( CursesBoardGlobals* bGlobals, const cb_dims* dims )
     LOG_FUNC();
     XP_ASSERT( !!dims );
     XP_ASSERT( !bGlobals->boardWin );
-    bGlobals->boardWin = newwin( dims->height, dims->width, dims->top, 0 );
+    CommonGlobals* cGlobals = &bGlobals->cGlobals;
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+    bGlobals->boardWin = cws_newwin( aGlobals, dims->height,
+                                     dims->width, dims->top, 0 );
     getmaxyx( bGlobals->boardWin, bGlobals->winHeight, bGlobals->winWidth );
 
-    CommonGlobals* cGlobals = &bGlobals->cGlobals;
     if( !!bGlobals->boardWin ) {
         cGlobals->draw =
             cursesDrawCtxtMake( cGlobals->params, cGlobals,
@@ -713,7 +718,7 @@ pickBlankIdle( gpointer data )
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
     LaunchParams* params = cGlobals->params;
     int chosen;
-    if ( curAskPickList( params, bGlobals->boardWin, "Pick tile for your blank",
+    if ( curAskPickList( params, "Pick tile for your blank",
                          (const char**)pbs->tiles, pbs->nTiles, &chosen ) ) {
         gr_setBlankValue( params->dutil, cGlobals->gr, NULL_XWE,
                           pbs->playerNum, cGlobals->blankCol,

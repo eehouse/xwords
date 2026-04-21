@@ -19,16 +19,17 @@
  */
 #ifdef PLATFORM_NCURSES
 
-#include "cursqr.h"
-#include "dbgutil.h"
-
 #include <ncurses.h>
 #include <qrencode.h>
 #include <string.h>
 
+#include "cursqr.h"
+#include "dbgutil.h"
+#include "curwinstk.h"
+
 /* Display QR code in full-screen dialog */
 void
-cursesShowQRDialog( const char* text, const char* title )
+cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* text, const char* title )
 {
     WINDOW* dialog = NULL;
     QRcode* qrCode = NULL;
@@ -49,7 +50,7 @@ cursesShowQRDialog( const char* text, const char* title )
         dialogWidth = terminalWidth - 2;
         startRow = 1;
         startCol = 1;
-        dialog = newwin( dialogHeight, dialogWidth, startRow, startCol );
+        dialog = cws_newwin( aGlobals, dialogHeight, dialogWidth, startRow, startCol );
         if ( !!dialog ) {
             box( dialog, 0, 0 );
             titleRow = 1;
@@ -85,7 +86,7 @@ cursesShowQRDialog( const char* text, const char* title )
             mvwaddstr( dialog, dialogHeight - 2, (dialogWidth - strlen(instructions)) / 2, instructions );
             wrefresh( dialog );
             wgetch( dialog );
-            delwin( dialog );
+            cws_delwin( aGlobals, &dialog );
         }
         QRcode_free( qrCode );
     }

@@ -26,6 +26,7 @@
 #include "curseschat.h"
 #include "cursesask.h"
 #include "cursesdlgutil.h"
+#include "curwinstk.h"
 
 typedef enum { EDIT, DONE, SEND, NSTATES, } FOCUSSED;
 
@@ -152,6 +153,7 @@ void
 curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
 {
     XW_DUtilCtxt* dutil = params->dutil;
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     LOG_FUNC();
     State state = {.dutil = dutil, .gr = gr, .params = params, };
     
@@ -159,7 +161,7 @@ curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
     int chatLines = 2 * gr_getChatCount( dutil, gr, NULL_XWE );
     chatLines += 6; // for buttons and msg edit space
 
-    state.win = makeCenteredBox( parent, chatCols, chatLines );
+    state.win = makeCenteredBox( aGlobals, chatCols, chatLines );
     // keypad( state.win, TRUE );
 
     int line = drawChats( &state );
@@ -172,11 +174,10 @@ curses_openChat( LaunchParams* params, WINDOW* parent, GameRef gr )
     drawWin( &state );
     // drawEdit( &state.es, EDIT == state.focussed );
 
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     startModalAlert( aGlobals, state.win, XP_TRUE, chatKeyProc, &state );
     
     // wtouchln( window, parentY, chatLines, 1 );
-    delwin( state.win );
+    cws_delwin( aGlobals, &state.win );
     touchwin( parent );
     wrefresh( parent );
 }

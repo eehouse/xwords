@@ -92,4 +92,9 @@ void onPositionsChangedCurses( CommonAppGlobals* cag, XWArray* positions );
 void informMoveCurses( LaunchParams* params, XWStreamCtxt* expl );
 void informGameOverCurses( LaunchParams* params, GameRef gr, XP_U16 quitter );
 void cursesShowFinalScores( CursesBoardGlobals* bGlobals );
+
+void setWinStack( CursesAppGlobals* aGlobals, CurWinStack* cws );
+CurWinStack* getWinStack( CursesAppGlobals* aGlobals );
+WINDOW* getMainWin( CursesAppGlobals* aGlobals );
+
 #endif

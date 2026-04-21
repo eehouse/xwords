@@ -234,7 +234,8 @@ CURSES_OBJS = \
 	$(BUILD_PLAT_DIR)/curlistask.o \
 	$(BUILD_PLAT_DIR)/curnewgame.o \
 	$(BUILD_PLAT_DIR)/cursinvit.o \
-	$(BUILD_PLAT_DIR)/cursqr.o
+	$(BUILD_PLAT_DIR)/cursqr.o \
+	$(BUILD_PLAT_DIR)/curwinstk.o
 endif
 ifndef LIB_NO_UI
 MAIN_OBJS = $(BUILD_PLAT_DIR)/linuxmain.o \

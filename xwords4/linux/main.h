@@ -56,6 +56,7 @@ typedef struct CursesBoardState CursesBoardState;
 typedef struct CursesBoardGlobals CursesBoardGlobals;
 typedef struct MQTTConStorage MQTTConStorage;
 typedef struct LinuxBTState LinuxBTState;
+typedef struct CurWinStack CurWinStack;
 
 #ifdef XWFEATURE_SMS
 typedef struct LinSMSData LinSMSData;

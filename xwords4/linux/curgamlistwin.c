@@ -27,6 +27,7 @@
 #include "device.h"
 #include "strutils.h"
 #include "linuxutl.h"
+#include "curwinstk.h"
 
 struct CursGameList {
     WINDOW* window;
@@ -45,8 +46,10 @@ cgl_init( LaunchParams* params, int width, int height )
 {
     CursGameList* cgl = g_malloc0( sizeof( *cgl ) );
     cgl->params = params;
-    cgl->window = newwin( height, width, 0, 0 );
-    XP_LOGF( "%s(): made window with height=%d, width=%d", __func__, height, width );
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+    cgl->window = cws_newwin( aGlobals, height, width, 0, 0 );
+    XP_LOGF( "%s(): made window with height=%d, width=%d", __func__,
+             height, width );
     cgl->width = width;
     cgl->height = height;
     cgl->pid = getpid();
@@ -58,7 +61,8 @@ cgl_destroy( CursGameList* cgl )
 {
     if ( !!cgl->window ) {
         g_slist_free( cgl->positions );
-        delwin( cgl->window );
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)cgl->params->cag;
+        cws_delwin( aGlobals, &cgl->window );
     } else {
         XP_LOGFF( "no window??" );
     }

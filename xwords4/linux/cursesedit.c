@@ -103,6 +103,7 @@ bool
 ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
          gchar txt[], gint maxLen )
 {
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     int line = 1;
     int promptLine = line++;
     EditStrState state = { .txt = txt,
@@ -112,7 +113,7 @@ ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
     state.buttonLine = line++;
     int height = line + 1;
     int width = maxLen + 4;
-    state.win = makeCenteredBox( parent, width, height );
+    state.win = makeCenteredBox( aGlobals, width, height );
 
     mvwaddstr( state.win, promptLine, 1, prompt );
 
@@ -120,7 +121,6 @@ ca_edit( LaunchParams* params, WINDOW* parent, const char* prompt,
     drawEdit( &state.es, true );
     updateButtons( &state );
 
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     startModalAlert( aGlobals, state.win, XP_TRUE, onKeyProc, &state );
 
     // wtouchln( parent, parentY, height, 1 );

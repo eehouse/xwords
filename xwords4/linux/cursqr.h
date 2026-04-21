@@ -18,8 +18,10 @@
 #ifdef PLATFORM_NCURSES
 
 #include "xptypes.h"
+#include "main.h"
 
 /* Display QR code in full-screen dialog */
-void cursesShowQRDialog( const char* url, const char* title );
+void cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* url,
+                         const char* title );
 
 #endif

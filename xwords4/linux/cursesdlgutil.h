@@ -46,7 +46,7 @@ void measureAskText( const XP_UCHAR* question, int maxWidth, FormatInfo* fip );
 void drawButtons( WINDOW* confWin, XP_U16 line, short spacePerButton, 
                   short numButtons, short curSelButton, const char** button1 );
 
-WINDOW* makeCenteredBox( WINDOW* parent, int width, int height );
+WINDOW* makeCenteredBox( CursesAppGlobals* aGlobals, int width, int height );
 
 typedef struct _EditState {
     WINDOW* win;

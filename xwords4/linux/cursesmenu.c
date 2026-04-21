@@ -25,8 +25,10 @@
 #include "cursesmain.h"
 #include "linuxmain.h"
 #include "gsrcwrap.h"
+#include "curwinstk.h"
 
 struct CursesMenuState {
+    CursesAppGlobals* aGlobals;
     WINDOW* menuWin;
     WINDOW* mainWin;
     GSList* menuLists;
@@ -62,8 +64,8 @@ sizeWindow( CursesMenuState* state )
         wresize( state->menuWin, MENU_WINDOW_HEIGHT, width );
         mvwin( state->menuWin, height-MENU_WINDOW_HEIGHT, 0 );
     } else {
-        state->menuWin = newwin( MENU_WINDOW_HEIGHT, width,
-                                 height-MENU_WINDOW_HEIGHT, 0 );
+        state->menuWin = cws_newwin( state->aGlobals,MENU_WINDOW_HEIGHT, width,
+                                     height-MENU_WINDOW_HEIGHT, 0 );
     }
 }
 
@@ -72,6 +74,7 @@ cmenu_init( CursesAppGlobals* aGlobals, WINDOW* mainWindow )
 {
     CursesMenuState* result = g_malloc0( sizeof(*result) );
     result->mainWin = mainWindow;
+    result->aGlobals = aGlobals;
 
     sizeWindow( result );
 

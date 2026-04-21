@@ -25,6 +25,7 @@
 #include "curnewgame.h"
 #include "cursesdlgutil.h"
 #include "curplyr.h"
+#include "curwinstk.h"
 
 typedef struct _NGState {
     LaunchParams* params;
@@ -266,7 +267,7 @@ initDefaults( NGState* ngs )
 }
 
 bool
-curNewGameDialog( WINDOW* parent, LaunchParams* params, CurGameInfo* gi,
+curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
                   CommsAddrRec* XP_UNUSED(addr), XP_Bool isNewGame,
                   XP_Bool XP_UNUSED(fireConnDlg) )
 {
@@ -282,16 +283,16 @@ curNewGameDialog( WINDOW* parent, LaunchParams* params, CurGameInfo* gi,
     };
 
     if ( isNewGame ) {
-        ngs.win = makeCenteredBox( parent, ngs.width, 20 );
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
+        ngs.win = makeCenteredBox( aGlobals, ngs.width, 20 );
         ngs.playerLines = 2;
         initDefaults( &ngs );
 
         drawWindow( &ngs );
 
-        CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
         startModalAlert( aGlobals, ngs.win, XP_TRUE, newGameKeyProc, &ngs );
 
-        delwin( ngs.win );
+        cws_delwin( aGlobals, &ngs.win );
 
         confirmed = ngs.confirmed;
         if ( confirmed ) {

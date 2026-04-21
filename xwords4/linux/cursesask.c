@@ -27,6 +27,7 @@
 
 #include "cursesask.h"
 #include "cursesdlgutil.h"
+#include "curwinstk.h"
 #include "dbgutil.h"
 
 typedef struct _AskState {
@@ -87,8 +88,7 @@ onKey( int ch, void* closure )
     }
 
     if ( dismissed ) {
-        delwin( as->win );
-        as->win = NULL;
+        cws_delwin( as->aGlobals, &as->win );
 
         /* this leaves a ghost line, but I can't figure out a better way. */
         wtouchln( as->parentWin, (as->yy/2)-(as->nLines/2), ASK_HEIGHT + as->rows - 1, 1 );
@@ -165,8 +165,9 @@ cursesaskImpl( CursesAppGlobals* aGlobals, WINDOW* parentWin, int* resultP,
     }
 
     as->nLines = ASK_HEIGHT + as->rows - 1;
-    as->win = newwin( as->nLines, len+(PAD*2), top + ((as->yy/2) - (as->nLines/2)),
-                      left + ((as->xx-len-2)/2) );
+    as->win = cws_newwin( as->aGlobals, as->nLines, len+(PAD*2),
+                          top + ((as->yy/2) - (as->nLines/2)),
+                          left + ((as->xx-len-2)/2) );
     keypad( as->win, TRUE );
     wclear( as->win );
     box( as->win, '|', '-');

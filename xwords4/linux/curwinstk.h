@@ -1,6 +1,6 @@
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
 /* 
- * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2026 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,17 +17,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef _CURWINSTK_H_
+#define _CURWINSTK_H_
 
-#ifdef PLATFORM_NCURSES
-
-#ifndef _CURNEWGAME_H_
-#define _CURNEWGAME_H_
+#include <panel.h>
 
 #include "main.h"
 
-bool curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
-                       CommsAddrRec* addr, XP_Bool isNewGame,
-                       XP_Bool fireConnDlg );
+WINDOW* cws_newwin( CursesAppGlobals* aGlobals, int nlines, int ncols,
+                    int begin_y, int begin_x );
+void cws_delwin( CursesAppGlobals* aGlobals, WINDOW** winp );
 
-#endif /* _CURNEWGAME_H_ */
-#endif /* PLATFORM_NCURSES */
+#endif

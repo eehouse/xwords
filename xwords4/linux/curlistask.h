@@ -19,7 +19,7 @@
 #define _CURLISTASK_H_
 
 /* Returns false if cancelled, otherwise the index 0 <= i < count */
-bool curAskPickList( LaunchParams* params, WINDOW* parent, const char* expl,
+bool curAskPickList( LaunchParams* params, const char* expl,
                      const char** choices, int count, int* chosen );
 
 #endif

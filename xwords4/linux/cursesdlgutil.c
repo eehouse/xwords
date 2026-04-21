@@ -24,6 +24,7 @@
 #include "comtypes.h"
 
 #include "cursesdlgutil.h"
+#include "curwinstk.h"
 #include "dbgutil.h"
 
 void
@@ -94,13 +95,14 @@ drawButtons( WINDOW* win, XP_U16 line, short spacePerButton,
 } /* drawButtons */
 
 WINDOW*
-makeCenteredBox( WINDOW* parent, int width, int height )
+makeCenteredBox( CursesAppGlobals* aGlobals, int width, int height )
 {
+    WINDOW* parent = getMainWin( aGlobals );
     int parentX, parentY;
     getmaxyx( parent, parentY, parentX );
 
-    WINDOW* win = newwin( height, width, (parentY-height)/2,
-                          (parentX-width)/2 );
+    WINDOW* win = cws_newwin( aGlobals, height, width, (parentY-height)/2,
+                              (parentX-width)/2 );
     wclear( win );
     box( win, '|', '-');
     return win;

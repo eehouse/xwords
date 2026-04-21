@@ -85,6 +85,7 @@
 struct CursesAppGlobals {
     CommonAppGlobals cag;
     CursesMenuState* menuState;
+    CurWinStack* winStack;
     CursGameList* gameList;
     CursesBoardState* cbState;
     WINDOW* mainWin;
@@ -352,8 +353,7 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     CurGameInfo gi = params->pgi;
     
     CommsAddrRec addr = {};
-    if ( curNewGameDialog( aGlobals->mainWin, params, &gi, &addr,
-                           XP_TRUE, XP_FALSE ) ) {
+    if ( curNewGameDialog( params, &gi, &addr, XP_TRUE, XP_FALSE ) ) {
         LOG_GI( &gi, __func__ );
         /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, &gi, NULL );
     }
@@ -591,8 +591,8 @@ handleRootKeyShow( CursesAppGlobals* globals )
         width = nCols;
     }
 
-    win = newwin( nLines+(padding*2), width+(padding*2), 
-                  ((winMaxY-nLines-padding-padding)/2), (winMaxX-width)/2 );
+    win = cws_newwin( aGlobals, nLines+(padding*2), width+(padding*2),
+                      ((winMaxY-nLines-padding-padding)/2), (winMaxX-width)/2 );
     wclear( win );
     box( win, '|', '-');
 
@@ -612,7 +612,7 @@ handleRootKeyShow( CursesAppGlobals* globals )
         }
     }
 
-    delwin( win );
+    cws_delwin( aGlobals, &win );
 
     touchwin( globals->boardWin );
     wrefresh( globals->boardWin );
@@ -1844,6 +1844,24 @@ cursesPushKey( CursesAppGlobals* aGlobals, int key )
     XP_LOGFF( "got ch: %d", kis->key );
     kis->aGlobals = aGlobals;
     ADD_ONETIME_IDLE( keyOnIdleProc, kis );
+}
+
+void
+setWinStack( CursesAppGlobals* aGlobals, CurWinStack* cws )
+{
+    aGlobals->winStack = cws;
+}
+
+CurWinStack*
+getWinStack( CursesAppGlobals* aGlobals )
+{
+    return aGlobals->winStack;
+}
+
+WINDOW*
+getMainWin( CursesAppGlobals* aGlobals )
+{
+    return aGlobals->mainWin;
 }
 
 static gboolean

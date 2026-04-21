@@ -20,6 +20,7 @@
 #include "cursesdlgutil.h"
 #include "strutils.h"
 #include "cursesask.h"
+#include "curwinstk.h"
 
 #define KPCOLS 30
 
@@ -90,25 +91,25 @@ claKeyProc( int key, void* closure )
 }
 
 bool
-curAskPickList( LaunchParams* params, WINDOW* parent, const char* expl,
+curAskPickList( LaunchParams* params, const char* expl,
                 const char** choices, int count, int* chosen )
 {
     XP_LOGFF( "count: %d", count );
     bool success = false;
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     ListAskState las = {
         .expl = expl,
         .params = params,
-        .win = makeCenteredBox( parent, KPCOLS, count + 4 ),
+        .win = makeCenteredBox( aGlobals, KPCOLS, count + 4 ),
         .count = count,
         .items = choices,
         .resultP = chosen,
     };
     drawLASWin( &las );
 
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     startModalAlert( aGlobals, las.win, XP_TRUE, claKeyProc, &las );
 
-    delwin( las.win );
+    cws_delwin( aGlobals, &las.win );
     success = las.confirmed;
 
     return success;

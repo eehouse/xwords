@@ -23,6 +23,7 @@
 #include "knownplyr.h"
 #include "cursesask.h"
 #include "curlistask.h"
+#include "curwinstk.h"
 
 #define KPCOLS 30
 
@@ -38,7 +39,7 @@ launchForKnowns( WINDOW* parent, LaunchParams* params, CommsAddrRec* addrP )
         kplr_getNames( params->dutil, NULL_XWE, XP_TRUE, players, &nFound );
 
         int chosen;
-        if ( curAskPickList( params, parent, "Pick your player",
+        if ( curAskPickList( params, "Pick your player",
                              players, nFound, &chosen ) ) {
             CommsAddrRec addr;
             if ( kplr_getAddr( params->dutil, NULL_XWE, players[chosen],
@@ -182,9 +183,10 @@ bool
 cursesInviteDlg( CommonGlobals* cGlobals, WINDOW* parent, CommsAddrRec* addr,
                  /*inout*/ gint* nPlayers )
 {
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
     CurInviteState cis = {
         .params = cGlobals->params,
-        .win = makeCenteredBox( parent, INVCOLS, INVLINES ),
+        .win = makeCenteredBox( aGlobals, INVCOLS, INVLINES ),
         .addr = *addr,
         .nPlayers = nPlayers,
     };
@@ -193,13 +195,12 @@ cursesInviteDlg( CommonGlobals* cGlobals, WINDOW* parent, CommsAddrRec* addr,
     
     drawWin( &cis );
     
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
     startModalAlert( aGlobals, cis.win, XP_TRUE, inviteKeyProc, &cis );
     if ( !cis.cancelled ) {
         *addr = cis.addr;
     }
 
-    delwin( cis.win );
+    cws_delwin( aGlobals, &cis.win );
     wrefresh( parent );
 
     return !cis.cancelled;
