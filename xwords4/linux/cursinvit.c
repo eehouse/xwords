@@ -150,16 +150,17 @@ static bool
 inviteKeyProc( int key, void* closure )
 {
     CurInviteState* cis = (CurInviteState*)closure;
+    LaunchParams* params = cis->params;
 
     switch ( key ) {
     case '\r':
     case '\n':
         switch ( cis->sel ) {
         case SEL_QRCODE: {
-            CursesAppGlobals* aGlobals = (CursesAppGlobals*)cis->params->cag;
+            CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
             GameRef gr = cis->cGlobals->gr;
-            XWStreamCtxt* invite = gr_inviteUrl( cis->params->dutil, gr, NULL_XWE,
-                                         NULL, NULL );
+            XWStreamCtxt* invite = gr_inviteUrl( params->dutil, gr, NULL_XWE,
+                                                 NULL, params->connInfo.invitePrefix );
             XP_U16 len = strm_getSize( invite );
             XP_UCHAR buf[len+1] = {};
             snprintf( buf, VSIZE(buf), "%s", strm_getPtr(invite) );
@@ -170,7 +171,7 @@ inviteKeyProc( int key, void* closure )
         }
             break;
         case SEL_KNOWNS:
-            if ( launchForKnowns( cis->win, cis->params, &cis->addr ) ) {
+            if ( launchForKnowns( cis->win, params, &cis->addr ) ) {
                 updateAddr( cis, &cis->addr );
             }
             break;

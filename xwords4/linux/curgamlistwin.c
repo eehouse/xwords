@@ -227,7 +227,7 @@ cgl_draw( CursGameList* cgl )
             data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );
             data[line][col++] = g_strdup_printf( "%d", sum->nMoves );
             data[line][col++] = g_strdup_printf( "%d", gr_getChatCount(params->dutil,
-                                                                   gr, NULL_XWE ));
+                                                                       gr, NULL_XWE ));
         } else {
             GroupRef grp = gmgr_toGroup( ir );
             XP_UCHAR name[36];
@@ -244,9 +244,8 @@ cgl_draw( CursGameList* cgl )
         ++line;
     }
 
-    int maxlen = 0;
-    int offset = 0;
-    for ( int col = 0; col < VSIZE(data[0]); ++col ) {
+    for ( int col = 0, offset = 0; col < VSIZE(data[0]); ++col ) {
+        int maxlen = 0;
         for ( int line = 0; line < VSIZE(data); ++line ) {
             char* str = data[line][col];
             if ( !!str ) {
@@ -266,29 +265,30 @@ cgl_draw( CursGameList* cgl )
             }
         }
         offset += maxlen + 2;
-        maxlen = 0;
     }
 
     char buf[cgl->width + 1];
-
-    MQTTDevID devID;
-    dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
-    XP_UCHAR didBuf[32];
     gchar* dbName = g_path_get_basename(params->dbName);
-    snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; mqttid: %s;"
-#ifdef XWFEATURE_SMS
-                        " phone: %s;"
-#endif
-                        " db: %s",
-                        cgl->pid, nGames, formatMQTTDevID( &devID, didBuf,
-                                                           VSIZE(didBuf) ),
-#ifdef XWFEATURE_SMS
-                        params->connInfo.sms.myPhone,
-#endif
-                        dbName );
-    mvwaddstr( win, 0, 0, buf );
+    size_t offset = snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; db: %s; ",
+                              cgl->pid, nGames, dbName );
     g_free( dbName );
-    
+
+    if ( !params->skipMQTTAdd ) {
+        XP_UCHAR didBuf[32];
+        MQTTDevID devID;
+        dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
+        offset += snprintf( buf+offset, VSIZE(buf)-offset,
+                            "mqttid: %s; host: %s; ",
+                            formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
+                            params->connInfo.mqtt.hostName );
+    }
+#ifdef XWFEATURE_SMS
+    if ( params->connInfo.sms.myPhone ) {
+        offset += snprintf( buf+offset, VSIZE(buf)-offset,
+                            "phone: %s; ", params->connInfo.sms.myPhone );
+    }
+#endif
+    mvwaddstr( win, 0, 0, buf );
     wrefresh( win );
 }
 

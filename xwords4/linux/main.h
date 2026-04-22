@@ -182,6 +182,7 @@ typedef struct _LaunchParams {
     XP_U16 conTypes;
     struct {
         XP_U16 inviteeCounts[MAX_NUM_PLAYERS];
+        const char* invitePrefix;
 #ifdef XWFEATURE_RELAY
         struct {
             char* relayName;

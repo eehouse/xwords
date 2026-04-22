@@ -724,6 +724,7 @@ typedef enum {
 
     ,CMD_INVITEE_MQTTDEVID
     ,CMD_INVITEE_COUNTS
+    ,CMD_INVITE_PREFIX
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
     ,CMD_ADVERTISEROOM
@@ -891,6 +892,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_INVITEE_COUNTS, true, "invitee-counts",
        "When invitations sent, how many on each device? e.g. \"1:2\" for a "
        "three-dev game with two players on second guest" }
+    ,{ CMD_INVITE_PREFIX, true, "invite-prefix", "The <id> in https://eehouse.org/<id>/ "
+       "when forming an invitation URL"}
 #ifdef XWFEATURE_RELAY
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
     ,{ CMD_ADVERTISEROOM, false, "make-public", "make room public on relay" }
@@ -2672,6 +2675,7 @@ main( int argc, char** argv )
               VSIZE(mainParams.connInfo.mqtt.hostName),
               "%s", hostName );
     mainParams.connInfo.mqtt.port = 1883;
+    mainParams.connInfo.invitePrefix = "/andgrd/"; /* for gameref android build */
 #ifdef XWFEATURE_SMS
     mainParams.connInfo.sms.port = 1;
     mainParams.connInfo.sms.dataDir = get_tmp_dir();
@@ -2914,6 +2918,9 @@ main( int argc, char** argv )
             }
             g_strfreev( strs );
         }
+            break;
+        case CMD_INVITE_PREFIX:
+            mainParams.connInfo.invitePrefix = optarg;
             break;
         case CMD_SMSPORT:
             mainParams.connInfo.sms.port = atoi(optarg);
