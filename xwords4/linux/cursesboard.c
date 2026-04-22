@@ -1408,7 +1408,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
             gint nPlayers = nMissing;
             CommsAddrRec addr = {};
             XP_LOGFF( "calling cursesInviteDlg()" );
-            if ( cursesInviteDlg( cGlobals, bGlobals->boardWin, &addr, &nPlayers ) ) {
+            if ( cursesInviteDlg( cGlobals, &addr, &nPlayers ) ) {
                 logAddr(dutil, &addr, __func__);
 
                 CommsAddrRec myAddr = {};

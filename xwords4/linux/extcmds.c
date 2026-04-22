@@ -92,6 +92,7 @@ convertFromArgs( CmdWrapper* wr, cJSON* XP_UNUSED(args) )
     return (*wr->procs.convert)( wr->closure, XP_TRUE, XP_TRUE );
 }
 
+#ifdef XWFEATURE_BLUETOOTH
 static void
 checkAddr( LaunchParams* params, CommsAddrRec* addr )
 {
@@ -101,6 +102,9 @@ checkAddr( LaunchParams* params, CommsAddrRec* addr )
         addr_rmType( addr, COMMS_CONN_BT );
     }
 }
+#else
+# define checkAddr(P,A)
+#endif
 
 /* Invite can be via a known player or via */
 static XP_Bool

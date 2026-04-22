@@ -24,6 +24,7 @@
 #include "cursesask.h"
 #include "curlistask.h"
 #include "curwinstk.h"
+#include "cursqr.h"
 
 #define KPCOLS 30
 
@@ -69,6 +70,7 @@ enum {
     SEL_EDITMQTT,
     SEL_EDITSMS,
     SEL_EDITBT,
+    SEL_QRCODE,
     SEL_KNOWNS,
     SEL_CANCEL,
     SEL_OK,
@@ -76,6 +78,7 @@ enum {
 };
 
 typedef struct _CurInviteState {
+    CommonGlobals* cGlobals;
     LaunchParams* params;
     WINDOW* win;
     bool cancelled, confirmed;
@@ -91,15 +94,16 @@ updateButtons( CurInviteState* cis )
     int sel;
 
     switch ( cis->sel ) {
+    case SEL_QRCODE:
     case SEL_KNOWNS:
     case SEL_CANCEL:
     case SEL_OK:
-        sel = cis->sel - SEL_KNOWNS;
+        sel = cis->sel - SEL_QRCODE;
         break;
     default:
         sel = -1;
     }
-    const char* buttons2[] = { "Knowns", "Cancel", "OK" };
+    const char* buttons2[] = { "QRCode", "Knowns", "Cancel", "OK" };
     drawButtons( cis->win, 10, 8, VSIZE(buttons2), sel, buttons2 );
 }
 
@@ -151,6 +155,20 @@ inviteKeyProc( int key, void* closure )
     case '\r':
     case '\n':
         switch ( cis->sel ) {
+        case SEL_QRCODE: {
+            CursesAppGlobals* aGlobals = (CursesAppGlobals*)cis->params->cag;
+            GameRef gr = cis->cGlobals->gr;
+            XWStreamCtxt* invite = gr_inviteUrl( cis->params->dutil, gr, NULL_XWE,
+                                         NULL, NULL );
+            XP_U16 len = strm_getSize( invite );
+            XP_UCHAR buf[len+1] = {};
+            snprintf( buf, VSIZE(buf), "%s", strm_getPtr(invite) );
+            strm_destroy( invite );
+            if ( !cursesShowQRDialog( aGlobals, buf ) ) {
+                ca_inform2( aGlobals, cis->win, "QR Code too big for terminal" );
+            }
+        }
+            break;
         case SEL_KNOWNS:
             if ( launchForKnowns( cis->win, cis->params, &cis->addr ) ) {
                 updateAddr( cis, &cis->addr );
@@ -180,11 +198,12 @@ inviteKeyProc( int key, void* closure )
 }
 
 bool
-cursesInviteDlg( CommonGlobals* cGlobals, WINDOW* parent, CommsAddrRec* addr,
+cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addr,
                  /*inout*/ gint* nPlayers )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
     CurInviteState cis = {
+        .cGlobals = cGlobals,
         .params = cGlobals->params,
         .win = makeCenteredBox( aGlobals, INVCOLS, INVLINES ),
         .addr = *addr,
@@ -201,7 +220,6 @@ cursesInviteDlg( CommonGlobals* cGlobals, WINDOW* parent, CommsAddrRec* addr,
     }
 
     cws_delwin( aGlobals, &cis.win );
-    wrefresh( parent );
 
     return !cis.cancelled;
 }

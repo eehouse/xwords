@@ -21,7 +21,6 @@
 #include "main.h"
 
 /* Display QR code in full-screen dialog */
-void cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* url,
-                         const char* title );
+bool cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* url );
 
 #endif
