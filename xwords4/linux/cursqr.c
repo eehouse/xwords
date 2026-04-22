@@ -29,6 +29,7 @@
 typedef struct QRState {
     CursesAppGlobals* aGlobals;
     WINDOW* win;
+    int oldState;
 } QRState;
 
 static bool
@@ -36,6 +37,7 @@ trueOnAny( int XP_UNUSED(key), void* closure )
 {
     QRState* qrs = (QRState*)closure;
     cws_delwin( qrs->aGlobals, &qrs->win );
+    curs_set( qrs->oldState );
     g_free( qrs );
     return true;
 }
@@ -45,8 +47,9 @@ trueOnAny( int XP_UNUSED(key), void* closure )
 #define COL_WIDTH 2
 
 static void
-addCode( WINDOW* win, const QRcode* qrCode, int multiple )
+addCode( QRState* qrs, const QRcode* qrCode, int multiple )
 {
+    WINDOW* win = qrs->win;
     char spaces[(multiple * COL_WIDTH)+1] = {};
     for ( int ii = 0; ii < multiple * COL_WIDTH; ++ii ) {
         spaces[ii] = ' ';
@@ -68,6 +71,7 @@ addCode( WINDOW* win, const QRcode* qrCode, int multiple )
 
     wattroff( win, A_REVERSE );
     wrefresh( win );
+    qrs->oldState = curs_set(0);        /* not needed if globally-off is ok */
 }
 
 bool
@@ -90,7 +94,7 @@ cursesShowQRDialog( CursesAppGlobals* aGlobals, const char* text )
                         QRState* qrs = g_malloc0( sizeof(*qrs) );
                         qrs->win = makeCenteredBox( aGlobals, width, height );
                         qrs->aGlobals = aGlobals;
-                        addCode( qrs->win, qrCode, multiple );
+                        addCode( qrs, qrCode, multiple );
                         startModalAlert( aGlobals, qrs->win, XP_TRUE, trueOnAny, qrs );
                         success = true;
                         break;

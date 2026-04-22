@@ -229,7 +229,7 @@ initCurses( CursesAppGlobals* aGlobals )
 #else
         wbkgd( aGlobals->bgWin, '-' );
 #endif
-
+        curs_set( 0 );          /* turn off cursor */
         /* clearok(stdscr, FALSE); */
         /* wnoutrefresh(stdscr); */
     }
