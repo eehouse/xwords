@@ -29,7 +29,7 @@
 #define KPCOLS 30
 
 static bool
-launchForKnowns( WINDOW* parent, LaunchParams* params, CommsAddrRec* addrP )
+launchForKnowns( LaunchParams* params, CommsAddrRec* addrP )
 {
     bool success = false;
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
@@ -51,7 +51,7 @@ launchForKnowns( WINDOW* parent, LaunchParams* params, CommsAddrRec* addrP )
         }
 
     } else {
-        ca_inform2( aGlobals, parent, "There are no known players" );
+        ca_inform2( aGlobals, "There are no known players" );
     }
     return success;
 }
@@ -166,12 +166,12 @@ inviteKeyProc( int key, void* closure )
             snprintf( buf, VSIZE(buf), "%s", strm_getPtr(invite) );
             strm_destroy( invite );
             if ( !cursesShowQRDialog( aGlobals, buf ) ) {
-                ca_inform2( aGlobals, cis->win, "QR Code too big for terminal" );
+                ca_inform2( aGlobals, "QR Code too big for terminal" );
             }
         }
             break;
         case SEL_KNOWNS:
-            if ( launchForKnowns( cis->win, params, &cis->addr ) ) {
+            if ( launchForKnowns( params, &cis->addr ) ) {
                 updateAddr( cis, &cis->addr );
             }
             break;

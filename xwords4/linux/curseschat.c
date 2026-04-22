@@ -89,7 +89,7 @@ handleSend( State* state, int ch )
 
         const char* buttons[] = { "Yes", "No" };
         CursesAppGlobals* aGlobals = (CursesAppGlobals*)state->params->cag;
-        int res = cursesaskf2( aGlobals, state->win, VSIZE(buttons), buttons,
+        int res = cursesaskf2( aGlobals, VSIZE(buttons), buttons,
                               "Are you sure you want to send message \"%s\"",
                                msg );
         if ( res == 0 ) {
