@@ -22,31 +22,15 @@
 
 #include "cursesmain.h"
 
-int _cursesask( short numButtons, const char** buttons, const char* question,
-                const char* file, const char* proc );
-#define cursesask( NB, B, Q ) _cursesask( (NB, B, Q, __FILE__, __func__ )
-int _cursesask2( CursesAppGlobals* aGlobals, short numButtons,
-                const char** buttons, const char* question,  const char* file, const char* proc );
-#define cursesask2( AG, NB, B, Q ) _cursesask2((AG), NB, B, Q, __FILE__, __func__ )
-int _cursesaskf( short numButtons,
-                 const char** buttons,
-                 const char* file, const char* proc,
-                 const char* fmt, ... );
-#define cursesaskf( W, NB, B, FMT, ... ) _cursesaskf((W), NB, B, __FILE__, __func__, FMT, __VA_ARGS__ )
-int _cursesaskf2( CursesAppGlobals* aGlobals, short numButtons,
-                  const char** buttons, const char* file, const char* func,
-                  const char* fmt, ... );
-#define cursesaskf2( AG, NB, B, FMT, ... ) _cursesaskf2((AG), NB, B, __FILE__, __func__, FMT, __VA_ARGS__ )
+int cursesask( CursesAppGlobals* aGlobals, short numButtons,
+               const char** buttons, const char* question );
+int cursesaskf( CursesAppGlobals* aGlobals, short numButtons,
+                const char** buttons, const char* fmt, ... );
 
-void _ca_inform( const char* message, const char* file, const char* proc );
-void
-_ca_informf( const char* file, const char* proc, const char* fmt, ... );
-void _ca_inform2( CursesAppGlobals* aGlobals, const char* message, const char* file, const char* proc );
-void _ca_informf2( CursesAppGlobals* aGlobals, const char* file, const char* proc, const char* fmt, ... );
+void ca_inform( CursesAppGlobals* aGlobals, const char* message );
+void ca_informf( CursesAppGlobals* aGlobals, const char* fmt, ... );
 
-#define ca_inform(M) _ca_inform((M), __FILE__, __func__ )
-#define ca_informf(M, FMT, ...) _ca_informf((M), __FILE__, __func__, FMT, __VA_ARGS__ )
-#define ca_inform2(AG, M) _ca_inform2((AG), (M), __FILE__, __func__ )
-#define ca_informf2(AG, FMT, ...) _ca_informf2((AG), __FILE__, __func__, FMT, __VA_ARGS__ )
+/* #define ca_inform2(AG, M) _ca_inform2((AG), (M), __FILE__, __func__ ) */
+/* #define ca_informf2(AG, FMT, ...) _ca_informf2((AG), __FILE__, __func__, FMT, __VA_ARGS__ ) */
 
 #endif

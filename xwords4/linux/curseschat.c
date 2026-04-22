@@ -89,9 +89,9 @@ handleSend( State* state, int ch )
 
         const char* buttons[] = { "Yes", "No" };
         CursesAppGlobals* aGlobals = (CursesAppGlobals*)state->params->cag;
-        int res = cursesaskf2( aGlobals, VSIZE(buttons), buttons,
+        int res = cursesaskf( aGlobals, VSIZE(buttons), buttons,
                               "Are you sure you want to send message \"%s\"",
-                               msg );
+                              msg );
         if ( res == 0 ) {
             gr_sendChat( state->dutil, state->gr, NULL_XWE, msg );
         }

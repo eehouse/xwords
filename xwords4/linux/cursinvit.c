@@ -51,7 +51,7 @@ launchForKnowns( LaunchParams* params, CommsAddrRec* addrP )
         }
 
     } else {
-        ca_inform2( aGlobals, "There are no known players" );
+        ca_inform( aGlobals, "There are no known players" );
     }
     return success;
 }
@@ -166,7 +166,7 @@ inviteKeyProc( int key, void* closure )
             snprintf( buf, VSIZE(buf), "%s", strm_getPtr(invite) );
             strm_destroy( invite );
             if ( !cursesShowQRDialog( aGlobals, buf ) ) {
-                ca_inform2( aGlobals, "QR Code too big for terminal" );
+                ca_inform( aGlobals, "QR Code too big for terminal" );
             }
         }
             break;

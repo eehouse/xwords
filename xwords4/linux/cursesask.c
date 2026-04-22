@@ -186,62 +186,31 @@ cursesaskImpl( CursesAppGlobals* aGlobals, int* resultP, short numButtons,
 } /* cursesaskImpl */
 
 int
-_cursesask2( CursesAppGlobals* ag, short numButtons,
-             const char** buttons, const char* question,
-             const char* file, const char* proc )
+cursesask( CursesAppGlobals* ag, short numButtons,
+           const char** buttons, const char* question )
 {
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     int result;
     cursesaskImpl( ag, &result, numButtons, buttons, question, 0 );
     return result;
 }
 
 int
-_cursesask( short numButtons, const char** buttons, const char* question,
-            const char* file, const char* proc )
+cursesaskf( CursesAppGlobals* aGlobals,  short numButtons,
+            const char** buttons, const char* fmt, ... )
 {
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
-    XP_ASSERT(0);
-    return _cursesask2( NULL, numButtons, buttons,
-                        question, file, proc );
-}
-
-int
-_cursesaskf( short numButtons, const char** buttons,
-             const char* file, const char* proc, const char* fmt, ... )
-{
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
-    XP_ASSERT(0);
-    XP_USE(numButtons);
-    XP_USE(buttons);
-    XP_USE(file);
-    XP_USE(proc);
-    XP_USE(fmt);
-    return 0;
-}
-
-int
-_cursesaskf2( CursesAppGlobals* aGlobals,  short numButtons,
-              const char** buttons, const char* file, const char* proc,
-              const char* fmt, ... )
-{
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     va_list args;
     va_start( args, fmt );
     gchar* msg = g_strdup_vprintf( fmt, args );
 
-    int result = _cursesask2( aGlobals, numButtons, buttons, msg,
-                              file, proc );
+    int result = cursesask( aGlobals, numButtons, buttons, msg );
 
     g_free( msg );
     return result;
 }
 
 void
-_ca_inform2( CursesAppGlobals* aGlobals, const char* message,
-             const char* file, const char* proc )
+ca_inform( CursesAppGlobals* aGlobals, const char* message )
 {
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     if ( !!getMainWin(aGlobals) ) {
         const char* buttons[] = { "Ok" };
         (void)cursesaskImpl( aGlobals, NULL, VSIZE(buttons), buttons,
@@ -251,32 +220,13 @@ _ca_inform2( CursesAppGlobals* aGlobals, const char* message,
 }
 
 void
-_ca_inform( const char* message, const char* file, const char* proc )
+ca_informf( CursesAppGlobals* aGlobals, const char* fmt, ... )
 {
-    _ca_inform2(NULL, message, file, proc );
-}
-
-void
-_ca_informf( const char* file, const char* proc,
-             const char* fmt, ... )
-{
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
-    XP_ASSERT(0);
-    XP_USE(file);
-    XP_USE(proc);
-    XP_USE(fmt);
-}
-
-void
-_ca_informf2( CursesAppGlobals* aGlobals, const char* file,
-              const char* proc, const char* fmt, ... )
-{
-    XP_LOGFF( "(file: %s, proc: %s)", file, proc );
     va_list args;
     va_start( args, fmt );
     gchar* msg = g_strdup_vprintf( fmt, args );
     va_end( args );
-    _ca_inform2( aGlobals, msg, file, proc );
+    ca_inform( aGlobals, msg );
     g_free( msg );
 }
 
