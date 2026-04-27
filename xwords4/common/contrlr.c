@@ -1,5 +1,5 @@
 /* 
- * Copyright 1997 - 2023 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2026 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -100,6 +100,17 @@ typedef struct _RemoteAddress {
     XP_U8 streamVersion;
 #endif
 } RemoteAddress;
+
+#if 0
+# define ADD_CHECK(STRM, VAL) strm_putU32VLLogged( STRM, VAL )
+# define CHECK_CHECK(STRM, VAL) {                   \
+        XP_U32 val = strm_getU32VLLogged( STRM );   \
+        XP_ASSERT( val == (VAL) );                  \
+}
+#else
+# define ADD_CHECK(STRM, VAL)
+# define CHECK_CHECK(STRM, VAL)
+#endif
 
 /* These are the parts of the ctrlr's state that needs to be preserved
    across a reset/new game */
@@ -859,16 +870,16 @@ ctrl_countTilesInPool( CtrlrCtxt* ctrlr )
 static void
 addMQTTDevIDIf( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 {
+    XP_UCHAR buf[32] = {};
     CommsAddrRec selfAddr = {};
     comms_getSelfAddr( ctrlr->vol.comms, &selfAddr );
     if ( addr_hasType( &selfAddr, COMMS_CONN_MQTT ) ) {
         MQTTDevID devID;
         dvc_getMQTTDevID( ctrlr->vol.dutil, xwe, &devID );
 
-        XP_UCHAR buf[32];
         formatMQTTDevID( &devID, buf, VSIZE(buf) );
-        stringToStream( stream, buf );
     }
+    stringToStream( stream, buf );
 }
 
 static void
@@ -2382,7 +2393,9 @@ client_readInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
             sortTilesIf( ctrlr, ii );
         }
 
+        CHECK_CHECK( stream, 0x4391 );
         readMQTTDevID( ctrlr, stream );
+        CHECK_CHECK( stream, 0x4319 );
         readGuestAddrs( ctrlr, stream, strm_getVersion( stream ) );
 
         syncPlayers( ctrlr );
@@ -2477,7 +2490,9 @@ sendInitialMessage( CtrlrCtxt* ctrlr, XWEnv xwe )
             }
         }
 
+        ADD_CHECK( stream, 0x4391 );
         addMQTTDevIDIf( ctrlr, xwe, stream );
+        ADD_CHECK( stream, 0x4319 );
         addGuestAddrsIf( ctrlr, xwe, deviceIndex, stream );
 
         closeAndSend( ctrlr, xwe, stream );

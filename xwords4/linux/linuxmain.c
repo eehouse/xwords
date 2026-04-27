@@ -2089,28 +2089,66 @@ static void
 testStreams( LaunchParams* params )
 {
     XP_USE(params);
-#if 0
-    XWStreamCtxt* stream = strm_make_raw( MPPARM(params->dutil->mpool)
-                                          params->vtMgr );
+#if 1
+    XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(params->dutil->mpool) );
 
-    XP_U32 nums[] = { 1, 4, 8, 200,
-                      makeRandomInt(),
-                      makeRandomInt(),
-                      makeRandomInt(),
-                      makeRandomInt(),
-                      makeRandomInt(),
-                      makeRandomInt(),
+    XP_U32 nums[] = { 1, 4, 8, 15, 16, 0, 17, 200,
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      0,
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      0,
+                      makeRandomInt() >> (makeRandomInt() % 31),
+                      0,
     };
+    int storeHows[VSIZE(nums)];
+    int nBits[VSIZE(nums)];
 
     for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
-        strm_putU32VL( stream, nums[ii] );
-        XP_LOGFF( "put num[%d]: %d", ii, nums[ii] );
+        storeHows[ii] = makeRandomInt() % 3;
+        int num = nums[ii];
+        switch( storeHows[ii]  ) {
+        case 0:
+            strm_putU32VLLogged( stream, num );
+            break;
+        case 1:
+            strm_putU32( stream, num );
+            break;
+        case 2:
+            nBits[ii] = bitsFor( num );
+            strm_putBits( stream, nBits[ii], num );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+        XP_LOGFF( "put num[%d]: %d", ii, num );
     }
 
     for ( int ii = 0; ii < VSIZE(nums); ++ii ) {
-        XP_U32 num = strm_getU32VL( stream );
-        XP_USE(num);
-        XP_LOGFF( "compariing num[%d]: %d with %d", ii, nums[ii], num );
+        XP_U32 num;
+        char* how = NULL;
+        switch( storeHows[ii]  ) {
+        case 0:
+            num = strm_getU32VLLogged( stream );
+            how = "strm_getU32VLLogged";
+            break;
+        case 1:
+            num = strm_getU32( stream );
+            how = "strm_getU32";
+            break;
+        case 2:
+            num = strm_getBits( stream, nBits[ii] );
+            how = "strm_getBits";
+            break;
+        default:
+            XP_ASSERT(0);
+        }
+        // XP_U32 num = useVL ? strm_getU32VLLogged( stream ) : strm_getU32( stream );
+        XP_LOGFF( "compariing num[%d]: %d with %d (how: %s)",
+                  ii, nums[ii], num, how );
         XP_ASSERT( num == nums[ii] );
     }
 

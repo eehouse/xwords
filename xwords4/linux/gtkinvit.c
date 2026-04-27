@@ -314,7 +314,7 @@ makeBTPage( GtkInviteState* state, PageData* data )
 static GtkWidget*
 makeSMSPage( GtkInviteState* state, PageData* data )
 {
-    sprintf( data->okButtonTxt, "Invite via Bluetooth" );
+    sprintf( data->okButtonTxt, "Invite via SMS" );
 
     GtkWidget* vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );

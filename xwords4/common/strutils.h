@@ -163,6 +163,10 @@ XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
 XP_U16 countBits( XP_U32 mask );
 
+#ifdef DEBUG
+XP_U16 bitsFor( const XP_U32 num );
+#endif
+
 #ifdef XWFEATURE_BASE64
 void binToB64( XP_UCHAR* b64, XP_U16* b64Len, const XP_U8* bin, XP_U16 binLen );
 void binToB64Streams( XWStreamCtxt* out, XWStreamCtxt* in );

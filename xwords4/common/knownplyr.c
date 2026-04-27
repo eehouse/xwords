@@ -208,8 +208,17 @@ addProc( void* dl, void* closure, XWEnv XP_UNUSED(xwe) )
     if ( 0 == XP_STRCMP( kp->name, adp->name ) ) {
         adp->withSameName = kp;
     }
-    if ( adp->addr->u.mqtt.devID == kp->addr.u.mqtt.devID ) {
-        adp->withSameDevID = kp;
+
+    if ( addr_hasType( adp->addr, COMMS_CONN_MQTT )
+         && addr_hasType( &kp->addr, COMMS_CONN_MQTT ) ) {
+        if ( adp->addr->u.mqtt.devID == kp->addr.u.mqtt.devID ) {
+            adp->withSameDevID = kp;
+        }
+    } else if ( addr_hasType( adp->addr, COMMS_CONN_SMS )
+         && addr_hasType( &kp->addr, COMMS_CONN_SMS ) ) {
+        if ( 0 == XP_STRCMP( adp->addr->u.sms.phone, kp->addr.u.sms.phone ) ) {
+            adp->withSameDevID = kp;
+        }
     }
     ForEachAct result = !!adp->withSameName && !!adp->withSameDevID
         ? FEA_EXIT : FEA_OK;

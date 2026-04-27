@@ -574,7 +574,7 @@ gotStringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
         goto failure;
     }
 
-    if ( len > 0 ) {
+    if ( 0 < len ) {
         if ( buflen < len ) {
             goto failure;
         }
@@ -609,7 +609,9 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
     } else {
         strm_putU32VL( stream, len );
     }
-    strm_putBytes( stream, str, len );
+    if ( len ) {
+        strm_putBytes( stream, str, len );
+    }
 } /* putStringToStream */
 
 XP_Bool
@@ -817,15 +819,31 @@ randIntArray( XP_U16* rnums, XP_U16 count )
 } /* randIntArray */
 
 XP_U16
-countBits( XP_U32 mask )
+countBits( const XP_U32 num )
 {
     XP_U16 result = 0;
-    while ( 0 != mask ) {
+    for ( XP_U32 mask = num; 0 != mask; ) {
         ++result;
         mask &= mask - 1;
     }
     return result;
 }
+
+#ifdef DEBUG
+XP_U16
+bitsFor( const XP_U32 num )
+{
+    XP_U32 result = 0;
+    for ( XP_U32 mask = 0; ; ) {
+        if (mask >= num) {
+            break;
+        }
+        mask = (mask << 1) + 1;
+        ++result;
+    }
+    return result;
+}
+#endif
 
 GameRef
 formatGR( XP_U32 gameID, DeviceRole role )

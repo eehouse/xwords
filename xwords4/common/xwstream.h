@@ -31,6 +31,10 @@ typedef XP_U32 XWStreamPos;     /* low 3 bits are bit offset; rest byte offset *
 enum { POS_READ, POS_WRITE };
 typedef XP_U8 PosWhich;
 
+#ifdef DEBUG
+XP_UCHAR* fmtPos( XWStreamPos pos, XP_UCHAR buf[], XP_U16 len );
+#endif
+
 #ifdef XWFEATURE_STREAMREF
 XWStreamCtxt* strm_ref( XWStreamCtxt* dctx );
 #endif
@@ -42,7 +46,9 @@ void strm_getBytes( XWStreamCtxt* dctx, void* where, XP_U16 count );
 XP_U16 strm_getU16( XWStreamCtxt* dctx );
 XP_U32 strm_getU32( XWStreamCtxt* dctx );
 XP_U32 strm_getU32VL( XWStreamCtxt* dctx );
+XP_U32 strm_getU32VLLogged( XWStreamCtxt* dctx );
 XP_Bool strm_gotU32VL( XWStreamCtxt* dctx, XP_U32* val );
+XP_Bool strm_gotU32VLLogged( XWStreamCtxt* dctx, XP_U32* val );
 XP_U32 strm_getBits( XWStreamCtxt* dctx, XP_U16 nBits );
 XP_Bool strm_gotBits( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32* bits );
 #if defined DEBUG
@@ -57,6 +63,7 @@ void strm_catf( XWStreamCtxt* dctx, const char* whence, ... );
 void strm_putU16( XWStreamCtxt* dctx, XP_U16 data );
 void strm_putU32( XWStreamCtxt* dctx, XP_U32 data );
 void strm_putU32VL( XWStreamCtxt* dctx, XP_U32 data );
+void strm_putU32VLLogged( XWStreamCtxt* dctx, XP_U32 data );
 void strm_putBits( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits );
 
 void strm_getFromStream( XWStreamCtxt* dctx, XWStreamCtxt* src,

@@ -20,6 +20,7 @@
 #include "xwstream.h"
 #include "comtypes.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -86,9 +87,7 @@ strm_make_sized( MPFORMAL XP_U16 startSize, XP_PlayerAddr channelNo )
 void
 strm_getBytes( XWStreamCtxt* stream, void* where, XP_U16 count )
 {
-    if ( stream->nReadBits != 0 ) {
-        stream->nReadBits = 0;
-    }
+    stream->nReadBits = 0;
 
 #ifdef MEM_DEBUG
     if( stream->curReadPos + count > stream->nBytesAllocated ) {
@@ -162,11 +161,11 @@ gotOneBit( XWStreamCtxt* stream, XP_Bool* setP )
 XP_U32
 strm_getBits( XWStreamCtxt* stream, XP_U16 nBits )
 {
-    XP_U32 result;
+    XP_U32 result = 0;
 #ifdef DEBUG
     XP_Bool success =
 #endif
-        strm_gotBits( stream, nBits, &result );
+        nBits == 0 || strm_gotBits( stream, nBits, &result );
     XP_ASSERT(success);
     return result;
 } /* strm_getBits */
@@ -193,23 +192,14 @@ strm_gotBits( XWStreamCtxt* stream, XP_U16 nBits, XP_U32* bits )
     return success;
 }
 
-XP_U32
-strm_getU32VL( XWStreamCtxt* stream )
-{
-    XP_U32 u32;
-#ifdef DEBUG
-    XP_Bool success =
-#endif
-        strm_gotU32VL( stream, &u32 );
-    XP_ASSERT(success);
-    return u32;
-} /* strm_getU32VL */
-
-XP_Bool
-strm_gotU32VL( XWStreamCtxt* stream, XP_U32* val )
+static XP_Bool
+strm_gotU32VLImpl( XWStreamCtxt* stream, XP_U32* val, XP_Bool log )
 {
     XP_Bool success = XP_FALSE;
     XP_U32 result = 0;
+#ifdef DEBUG
+    XWStreamPos pos = stream->curReadPos;
+#endif
     for ( int ii = 0; ; ++ii ) {
         XP_U32 byt;
         if ( !strm_gotBits( stream, 8, &byt ) ) {
@@ -224,7 +214,53 @@ strm_gotU32VL( XWStreamCtxt* stream, XP_U32* val )
 
     success = XP_TRUE;
  failure:
+#ifdef DEBUG
+    if ( log ) {
+        XP_UCHAR buf1[32];
+        fmtPos( pos, buf1, VSIZE(buf1) );
+        XP_UCHAR buf2[32];
+        fmtPos( stream->curReadPos, buf2, VSIZE(buf2) );
+        XP_LOGFF( "got 0x%X pos was %s, now %s (success=%s)", *val,
+                  buf1, buf2, boolToStr(success) );
+    }
+#endif
     return success;
+}
+
+static XP_U32
+strm_getU32VLImpl( XWStreamCtxt* stream, XP_Bool log )
+{
+    XP_U32 u32;
+#ifdef DEBUG
+    XP_Bool success =
+#endif
+        strm_gotU32VLImpl( stream, &u32, log );
+    XP_ASSERT(success);
+    return u32;
+} /* strm_getU32VL */
+
+XP_U32
+strm_getU32VLLogged( XWStreamCtxt* stream )
+{
+    return strm_getU32VLImpl(stream, XP_TRUE );
+}
+
+XP_U32
+strm_getU32VL( XWStreamCtxt* stream )
+{
+    return strm_getU32VLImpl(stream, XP_FALSE );
+}
+
+XP_Bool
+strm_gotU32VL( XWStreamCtxt* stream, XP_U32* val )
+{
+    return strm_gotU32VLImpl( stream, val, XP_FALSE );
+}
+
+XP_Bool
+strm_gotU32VLLogged( XWStreamCtxt* stream, XP_U32* val )
+{
+    return strm_gotU32VLImpl( stream, val, XP_TRUE );
 }
 
 #if defined DEBUG
@@ -246,7 +282,7 @@ strm_copyBits( const XWStreamCtxt* stream, XWStreamPos endPos,
 
 void
 strm_putBytes( XWStreamCtxt* stream, const void* whence, 
-                     XP_U16 count )
+               XP_U16 count )
 {
     if ( !stream->buf ) {
         XP_ASSERT( stream->nBytesAllocated == 0 );
@@ -257,9 +293,7 @@ strm_putBytes( XWStreamCtxt* stream, const void* whence,
     /* I don't yet deal with getting asked to get/put a byte when in the
        middle of doing bitwise stuff.  It's probably just a matter of skipping
        to the next byte, though -- and curPos should already be there. */
-    if ( stream->nWriteBits != 0 ) {
-        stream->nWriteBits = 0;
-    }
+    stream->nWriteBits = 0;
 
     /* Reallocation.  We may be writing into the middle of an existing stream,
        and doing so may still require expanding the stream.  So figure out if
@@ -358,8 +392,6 @@ strm_putBits( XWStreamCtxt* stream, XP_U16 nBits, XP_U32 data )
     XP_U16 origBits = nBits;
 #endif
 
-    XP_ASSERT( nBits > 0 );
-
     while ( nBits-- ) {
         putOneBit( stream, (XP_U16)(((data & 1L) != 0)? 1:0) );
         data >>= 1;
@@ -376,12 +408,15 @@ strm_putBits( XWStreamCtxt* stream, XP_U16 nBits, XP_U32 data )
 /* Variable-length format: each 7 bits goes in a byte, with the 8th bit
  * reserved for signaling whether there's another byte to come. */
 void
-strm_putU32VL( XWStreamCtxt* stream, XP_U32 data )
+strm_putU32VLImpl( XWStreamCtxt* stream, const XP_U32 data, XP_Bool logged )
 {
-    for ( ; ; ) {
-        XP_U8 byt = data & 0x7F;
-        data >>= 7;
-        XP_Bool haveMore = 0 != data;
+#ifdef DEBUG
+    XWStreamPos startPos = logged? strm_getPos( stream, POS_WRITE ) : 0;
+#endif
+    for ( XP_U32 datum = data; ; ) {
+        XP_U8 byt = datum & 0x7F;
+        datum >>= 7;
+        XP_Bool haveMore = 0 != datum;
         if ( haveMore ) {
             byt |= 0x80;
         }
@@ -390,6 +425,28 @@ strm_putU32VL( XWStreamCtxt* stream, XP_U32 data )
             break;
         }
     }
+#ifdef DEBUG
+    if ( logged ) {
+        XP_UCHAR startBuf[32];
+        fmtPos( startPos, startBuf, VSIZE(startBuf) );
+        XWStreamPos endPos = strm_getPos( stream, POS_WRITE );
+        XP_UCHAR endBuf[32];
+        fmtPos( endPos, endBuf, VSIZE(endBuf) );
+        XP_LOGFF( "put 0x%X; pos was %s now %s", data, startBuf, endBuf );
+    }
+#endif
+}
+
+void
+strm_putU32VL( XWStreamCtxt* stream, XP_U32 data )
+{
+    strm_putU32VLImpl( stream, data, XP_FALSE );
+} /* strm_putU32VL */
+
+void
+strm_putU32VLLogged( XWStreamCtxt* stream, XP_U32 data )
+{
+    strm_putU32VLImpl( stream, data, XP_TRUE );
 } /* strm_putU32VL */
 
 void
@@ -496,14 +553,9 @@ strm_getVersion( const XWStreamCtxt* stream )
 XWStreamPos
 strm_getPos( const XWStreamCtxt* stream, PosWhich which )
 {
-    XWStreamPos result;
-    
-    if ( which == POS_WRITE ) {
-        result = (stream->curWritePos << 3) | stream->nWriteBits;
-    } else {
-        result = (stream->curReadPos << 3) | stream->nReadBits;
-    }
-
+    XWStreamPos result = which == POS_WRITE
+        ? (stream->curWritePos << 3) | stream->nWriteBits
+        : (stream->curReadPos << 3) | stream->nReadBits;
     return result;
 } /* strm_getPos */
 
@@ -523,6 +575,15 @@ strm_setPos( XWStreamCtxt* stream, PosWhich which, XWStreamPos newpos )
 
     return oldPos;
 } /* strm_setPos */
+
+#ifdef DEBUG
+XP_UCHAR*
+fmtPos( XWStreamPos pos, XP_UCHAR buf[], XP_U16 len )
+{
+    XP_SNPRINTF( buf, len, "%d:%d", pos >> 3, pos & 0x03 );
+    return buf;
+}
+#endif
 
 #ifdef XWFEATURE_STREAMREF
 XWStreamCtxt*

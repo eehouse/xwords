@@ -1784,8 +1784,7 @@ getKPsWrapper( void* closure )
         cJSON_AddStringToObject( entry, "name", players[ii]);
 
         CommsAddrRec addr;
-        if ( kplr_getAddr( dutil, NULL_XWE, players[ii],
-                           &addr, NULL ) ) {
+        if ( kplr_getAddr( dutil, NULL_XWE, players[ii], &addr, NULL ) ) {
 
             if ( addr_hasType( &addr, COMMS_CONN_MQTT ) ) {
                 XP_UCHAR buf[17];

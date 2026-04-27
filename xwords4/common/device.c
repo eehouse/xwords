@@ -1435,6 +1435,9 @@ dvc_postNoSuchGame( XW_DUtilCtxt* dutil, XWEnv xwe, XP_U32 gameID,
             strm_destroyp( &stream );
         }
             break;
+        case COMMS_CONN_SMS:
+            XP_LOGFF( "TODO: handle SMS" );
+            break;
         default:
             XP_LOGFF( "not handling %s", ConnType2Str( typ ) );
             XP_ASSERT(0);
