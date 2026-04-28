@@ -176,6 +176,37 @@ adjustCurSel( CursGameList* cgl )
     cgl_draw( cgl );
 }
 
+static void
+drawTopLine( CursGameList* cgl, int nGames )
+{
+    if ( cgl->width ) {
+        LaunchParams* params = cgl->params;
+        char buf[cgl->width + 1];
+        gchar* dbName = g_path_get_basename(params->dbName);
+        size_t offset = snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; db: %s; ",
+                                  cgl->pid, nGames, dbName );
+        g_free( dbName );
+
+        if ( !params->skipMQTTAdd ) {
+            XP_UCHAR didBuf[32];
+            MQTTDevID devID;
+            dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
+            offset += snprintf( buf+offset, VSIZE(buf)-offset,
+                                "mqttid: %s; host: %s; ",
+                                formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
+                                params->connInfo.mqtt.hostName );
+        }
+#ifdef XWFEATURE_SMS
+        if ( params->connInfo.sms.myPhone ) {
+            offset += snprintf( buf+offset, VSIZE(buf)-offset,
+                                "phone: %s; ", params->connInfo.sms.myPhone );
+        }
+#endif
+        WINDOW* win = cgl->window;
+        mvwaddstr( win, 0, 0, buf );
+    }
+}
+
 void
 cgl_draw( CursGameList* cgl )
 {
@@ -267,28 +298,7 @@ cgl_draw( CursGameList* cgl )
         offset += maxlen + 2;
     }
 
-    char buf[cgl->width + 1];
-    gchar* dbName = g_path_get_basename(params->dbName);
-    size_t offset = snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; db: %s; ",
-                              cgl->pid, nGames, dbName );
-    g_free( dbName );
-
-    if ( !params->skipMQTTAdd ) {
-        XP_UCHAR didBuf[32];
-        MQTTDevID devID;
-        dvc_getMQTTDevID( params->dutil, NULL_XWE, &devID );
-        offset += snprintf( buf+offset, VSIZE(buf)-offset,
-                            "mqttid: %s; host: %s; ",
-                            formatMQTTDevID( &devID, didBuf, VSIZE(didBuf) ),
-                            params->connInfo.mqtt.hostName );
-    }
-#ifdef XWFEATURE_SMS
-    if ( params->connInfo.sms.myPhone ) {
-        offset += snprintf( buf+offset, VSIZE(buf)-offset,
-                            "phone: %s; ", params->connInfo.sms.myPhone );
-    }
-#endif
-    mvwaddstr( win, 0, 0, buf );
+    drawTopLine( cgl, nGames );
     wrefresh( win );
 }
 

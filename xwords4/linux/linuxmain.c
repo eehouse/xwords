@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <getopt.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <locale.h>
@@ -747,9 +746,10 @@ typedef enum {
 #ifdef USE_GLIBLOOP		/* just because hard to implement otherwise */
     ,CMD_UNDOPCT
 #endif
+    ,CMD_CURSES
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,CMD_GTK
-    ,CMD_CURSES
+
     ,CMD_CURSES_LIST_HT
 #endif
 #if defined PLATFORM_GTK
@@ -920,9 +920,10 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_UNDOPCT, true, "undo-pct",
        "each second, what are the odds of doing an undo" }
 #endif
+    /* Let's compile this in even if it's a no-op */
+    ,{ CMD_CURSES, false, "curses", "use curses for display" }
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
     ,{ CMD_GTK, false, "gtk", "use GTK for display" }
-    ,{ CMD_CURSES, false, "curses", "use curses for display" }
     ,{ CMD_CURSES_LIST_HT, true, "curses-list-ht", "how many cols tall is the games list" }
 #endif
 #if defined PLATFORM_GTK
@@ -939,20 +940,56 @@ static CmdInfoRec CmdInfoRecs[] = {
     { CMD_CMDS_SOCKET_NAME, true, "cmd-socket-name", "Unix domain socket on which to listen for commands"},
 };
 
-static struct option* 
-make_longopts()
+typedef struct _OptState {
+    int argc;
+    char** argv;
+    int index;                  /* must start out 0 */
+    /* Out params */
+    XwLinuxCmd cmd;
+    char* optarg;
+    char* param;                /* for logging */
+} OptState;
+
+static bool
+getNextOpt( OptState* os )
 {
-    int count = VSIZE( CmdInfoRecs );
-    struct option* result = calloc( count+1, sizeof(*result) );
-    int ii;
-    for ( ii = 0; ii < count; ++ii ) {
-        result[ii].name = CmdInfoRecs[ii].param;
-        result[ii].has_arg = CmdInfoRecs[ii].hasArg;
-        XP_ASSERT( ii == CmdInfoRecs[ii].cmd );
-        result[ii].val = ii;
+    XP_ASSERT( !!os->argv );
+    XP_ASSERT( os->argc );
+    bool success = false;
+    if ( ++os->index < os->argc ) {
+        os->param = os->argv[os->index];
+        if ( '-' == os->param[0] && '-' == os->param[1] ) {
+            // XP_LOGFF( "looking for %s", os->param );
+            bool found = false;
+            for ( int ii = 0; !found && ii < VSIZE( CmdInfoRecs ); ++ii ) {
+                CmdInfoRec* rec = &CmdInfoRecs[ii];
+                found = 0 == strcmp( os->param+2, rec->param );
+                if ( found ) {
+                    os->cmd = rec->cmd;
+                    if ( rec->hasArg ) {
+                        if ( ++os->index < os->argc ) {
+                            char* arg = os->argv[os->index];
+                            // XP_LOGFF( "grabbing arg %s", arg );
+                            os->optarg = arg;
+                            success = true;
+                        } else {
+                            XP_LOGFF( "no arg for param %s", os->param );
+                            XP_ASSERT(0);
+                        }
+                    } else {
+                        success = true;
+                    }
+                    break;
+                }
+            }
+            if ( !found ) {
+                XP_LOGFF( "ERROR: param %s not found", os->param );
+                XP_ASSERT(0);
+            }
+        }
     }
-    return result;
-}
+    return success;
+} /* getNextOpt */
 
 static void
 usage( char* appName, char* msg )
@@ -2089,7 +2126,7 @@ static void
 testStreams( LaunchParams* params )
 {
     XP_USE(params);
-#if 1
+#if 0
     XWStreamCtxt* stream = strm_make_raw( MPPARM_NOCOMMA(params->dutil->mpool) );
 
     XP_U32 nums[] = { 1, 4, 8, 15, 16, 0, 17, 200,
@@ -2147,7 +2184,7 @@ testStreams( LaunchParams* params )
             XP_ASSERT(0);
         }
         // XP_U32 num = useVL ? strm_getU32VLLogged( stream ) : strm_getU32( stream );
-        XP_LOGFF( "compariing num[%d]: %d with %d (how: %s)",
+        XP_LOGFF( "comparing num[%d]: %d with %d (how: %s)",
                   ii, nums[ii], num, how );
         XP_ASSERT( num == nums[ii] );
     }
@@ -2644,7 +2681,6 @@ main( int argc, char** argv )
     // mtx_crashToTest();
     // return 0;
 
-    int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
     // char* portNum = NULL;
@@ -2773,14 +2809,13 @@ main( int argc, char** argv )
     mainParams.useCurses = XP_TRUE;
 #endif
 
-    struct option* longopts = make_longopts();
-
-    bool done = false;
     const char* statusSocket = NULL;
-    while ( !done ) {
-        short index;
-        opt = getopt_long_only( argc, argv, "", longopts, NULL );
-        switch ( opt ) {
+
+    OptState os = {.argv = argv,
+                   .argc = argc,
+    };
+    while ( getNextOpt( &os ) ) {
+        switch ( os.cmd ) {
         case CMD_HELP:
             usage(argv[0], NULL);
             break;
@@ -2792,27 +2827,27 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:
-            mainParams.connInfo.relay.invite = optarg;
+            mainParams.connInfo.relay.invite = os.optarg;
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             // isServer = XP_TRUE; /* implicit */
             break;
 #endif
 #ifdef XWFEATURE_DIRECTIP
         case CMD_HOSTIP:
-            mainParams.connInfo.ip.hostName = optarg;
+            mainParams.connInfo.ip.hostName = os.optarg;
             types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_HOSTPORT:
-            mainParams.connInfo.ip.hostPort = atoi(optarg);
+            mainParams.connInfo.ip.hostPort = atoi(os.optarg);
             types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_MYPORT:
-            mainParams.connInfo.ip.myPort = atoi(optarg);
+            mainParams.connInfo.ip.myPort = atoi(os.optarg);
             types_addType( &mainParams.conTypes, COMMS_CONN_IP_DIRECT );
             break;
 #endif
         case CMD_DICT:
-            trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
+            trimDictPath( os.optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
             str2ChrArray( mainParams.pgi.dictName, dict );
             if ( !path ) {
                 path = ".";
@@ -2822,50 +2857,50 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_WALKDICT
         case CMD_TESTDICT:
-            testDicts = g_slist_prepend( testDicts, g_strdup(optarg) );
+            testDicts = g_slist_prepend( testDicts, g_strdup(os.optarg) );
             break;
         case CMD_TESTPRFX:
-            testPrefixes = g_slist_prepend( testPrefixes, g_strdup(optarg) );
+            testPrefixes = g_slist_prepend( testPrefixes, g_strdup(os.optarg) );
             break;
         case CMD_TESTMINMAX:
-            mainParams.testMinMax = optarg;
+            mainParams.testMinMax = os.optarg;
             break;
 #endif
 #ifdef XWFEATURE_TESTSORT
         case CMD_SORTDICT:
-            mainParams.sortDict = optarg;
-            XP_LOGFF( "set testdict: %s/%s", optarg, mainParams.sortDict );
+            mainParams.sortDict = os.optarg;
+            XP_LOGFF( "set testdict: %s/%s", os.optarg, mainParams.sortDict );
             break;
 #endif
         case CMD_DELIM:
-            mainParams.dumpDelim = optarg;
+            mainParams.dumpDelim = os.optarg;
             break;
 #ifdef XWFEATURE_TESTPATSTR
         case CMD_TESTPAT:
-            mainParams.iterTestPats = g_slist_append( mainParams.iterTestPats, optarg );
+            mainParams.iterTestPats = g_slist_append( mainParams.iterTestPats, os.optarg );
             break;
         case CMD_TESTSTR:
-            mainParams.iterTestPatStr = optarg;
+            mainParams.iterTestPatStr = os.optarg;
             break;
 #endif
         case CMD_B64:
             testB64Streams( mainParams.dutil );
             break;
         case CMD_TESTSTARTSW:
-            mainParams.patStartW = optarg;
+            mainParams.patStartW = os.optarg;
             break;
         case CMD_TESTCONTAINS:
-            mainParams.patContains = optarg;
+            mainParams.patContains = os.optarg;
             break;
         case CMD_TESTENDS:
-            mainParams.patEndsW = optarg;
+            mainParams.patEndsW = os.optarg;
             break;
 
         case CMD_DICTDIR:
-            ldm_addDir( mainParams.ldm, optarg );
+            ldm_addDir( mainParams.ldm, os.optarg );
             break;
         case CMD_PLAYERDICT:
-            trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
+            trimDictPath( os.optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
             mainParams.playerDictNames[nPlayerDicts++] = dict;
             if ( !path ) {
                 path = ".";
@@ -2873,28 +2908,28 @@ main( int argc, char** argv )
             ldm_addDir( mainParams.ldm, path );
             break;
         case CMD_SEED:
-            seed = atoi(optarg);
+            seed = atoi(os.optarg);
             break;
 #ifdef XWFEATURE_DEVID
         case CMD_LDEVID:
-            mainParams.lDevID = optarg;
+            mainParams.lDevID = os.optarg;
             break;
         case CMD_NOANONDEVID:
             mainParams.noAnonDevid = true;
             break;
 #endif
         case CMD_GAMESEED:
-            mainParams.gameSeed = atoi(optarg);
+            mainParams.gameSeed = atoi(os.optarg);
             break;
         case CMD_GAMEFILE:
-            mainParams.fileName = optarg;
+            mainParams.fileName = os.optarg;
             mainParams.dbName = NULL; /* clear the default */
             break;
         case CMD_DBFILE:
-            mainParams.dbName = optarg;
+            mainParams.dbName = os.optarg;
             break;
         case CMD_SAVEFAIL_PCT:
-            mainParams.saveFailPct = atoi( optarg );
+            mainParams.saveFailPct = atoi( os.optarg );
             break;
 
 #ifdef USE_SQLITE
@@ -2905,11 +2940,11 @@ main( int argc, char** argv )
             usage( argv[0], "Don't open android DBs without "
                    "disabling XWFEATURE_SEARCHLIMIT" );
 # endif
-            mainParams.dbFileName = optarg;
+            mainParams.dbFileName = os.optarg;
             mainParams.dbName = NULL;
             break;
         case CMD_GAMEDB_ID:
-            mainParams.dbFileID = atoi(optarg);
+            mainParams.dbFileID = atoi(os.optarg);
             break;
 #endif
         case CMD_NOMMAP:
@@ -2930,25 +2965,27 @@ main( int argc, char** argv )
             mainParams.skipWarnings = 1;
             break;
         case CMD_LOCALPWD:
-            str2ChrArray(mainParams.pgi.players[mainParams.nLocalPlayers-1].password, optarg );
+            str2ChrArray(mainParams.pgi.players[mainParams.nLocalPlayers-1].password, os.optarg );
             break;
-        case CMD_LOCALSMARTS:
-            index = mainParams.pgi.nPlayers - 1;
+        case CMD_LOCALSMARTS: {
+            short index = mainParams.pgi.nPlayers - 1;
             XP_ASSERT( LP_IS_ROBOT( &mainParams.pgi.players[index] ) );
-            mainParams.pgi.players[index].robotIQ = atoi(optarg);
+            mainParams.pgi.players[index].robotIQ = atoi(os.optarg);
+        }
             break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
-            mainParams.connInfo.sms.myPhone = optarg;
+            mainParams.connInfo.sms.myPhone = os.optarg;
+            XP_LOGFF( "set phone: %s", mainParams.connInfo.sms.myPhone );
             types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_SMSNUMBER:
             mainParams.connInfo.sms.inviteePhones =
-                g_slist_append( mainParams.connInfo.sms.inviteePhones, optarg );
+                g_slist_append( mainParams.connInfo.sms.inviteePhones, os.optarg );
             types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
         case CMD_INVITEE_COUNTS: {
-            gchar** strs = g_strsplit( optarg, ":", -1 );
+            gchar** strs = g_strsplit( os.optarg, ":", -1 );
             for ( int ii = 0;
                   !!strs[ii] && ii < VSIZE(mainParams.connInfo.inviteeCounts);
                   ++ii ) {
@@ -2958,15 +2995,15 @@ main( int argc, char** argv )
         }
             break;
         case CMD_INVITE_PREFIX:
-            mainParams.connInfo.invitePrefix = optarg;
+            mainParams.connInfo.invitePrefix = os.optarg;
             break;
         case CMD_SMSPORT:
-            mainParams.connInfo.sms.port = atoi(optarg);
+            mainParams.connInfo.sms.port = atoi(os.optarg);
             types_addType( &mainParams.conTypes, COMMS_CONN_SMS );
             break;
 
         case CMD_SMSDATADIR:
-            mainParams.connInfo.sms.dataDir = optarg;
+            mainParams.connInfo.sms.dataDir = os.optarg;
             break;
 #endif
         case CMD_WITHOUT_MQTT:
@@ -2978,22 +3015,22 @@ main( int argc, char** argv )
         case CMD_MQTTHOST:
             snprintf( mainParams.connInfo.mqtt.hostName,
                       VSIZE(mainParams.connInfo.mqtt.hostName),
-                      "%s", optarg );
+                      "%s", os.optarg );
             break;
         case CMD_MQTTPORT:
-            mainParams.connInfo.mqtt.port = atoi(optarg);
+            mainParams.connInfo.mqtt.port = atoi(os.optarg);
             break;
         case CMD_INVITEE_MQTTDEVID:
-            XP_ASSERT( 16 == strlen(optarg) );
+            XP_ASSERT( 16 == strlen(os.optarg) );
             mainParams.connInfo.mqtt.inviteeDevIDs =
-                g_slist_append( mainParams.connInfo.mqtt.inviteeDevIDs, optarg );
+                g_slist_append( mainParams.connInfo.mqtt.inviteeDevIDs, os.optarg );
             types_addType( &mainParams.conTypes, COMMS_CONN_MQTT );
             break;
         case CMD_DUPPACKETS:
             mainParams.duplicatePackets = XP_TRUE;
             break;
         case CMD_DROPNTHPACKET:
-            mainParams.dropNthRcvd = atoi( optarg );
+            mainParams.dropNthRcvd = atoi( os.optarg );
             break;
         case CMD_NOHINTS:
             mainParams.pgi.hintsNotAllowed = XP_TRUE;
@@ -3002,32 +3039,35 @@ main( int argc, char** argv )
             mainParams.pgi.allowPickTiles = XP_TRUE;
             break;
         case CMD_LOCALNAME:
-            mainParams.localName = optarg;
+            mainParams.localName = os.optarg;
             break;
-        case CMD_PLAYERNAME:
-            index = mainParams.pgi.nPlayers++;
+        case CMD_PLAYERNAME: {
+            short index = mainParams.pgi.nPlayers++;
             XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 0; /* means human */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
             XP_ASSERT( !mainParams.pgi.players[index].name[0] );
-            str2ChrArray(mainParams.pgi.players[index].name, optarg);
+            str2ChrArray(mainParams.pgi.players[index].name, os.optarg);
+        }
             break;
-        case CMD_REMOTEPLAYER:
-            index = mainParams.pgi.nPlayers++;
+        case CMD_REMOTEPLAYER: {
+            short index = mainParams.pgi.nPlayers++;
             XP_ASSERT( index < MAX_NUM_PLAYERS );
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
+        }
             break;
-        case CMD_ROBOTNAME:
+        case CMD_ROBOTNAME: {
             ++robotCount;
-            index = mainParams.pgi.nPlayers++;
+            short index = mainParams.pgi.nPlayers++;
             XP_ASSERT( index < MAX_NUM_PLAYERS );
             ++mainParams.nLocalPlayers;
             mainParams.pgi.players[index].robotIQ = 1; /* real smart by default */
             mainParams.pgi.players[index].isLocal = XP_TRUE;
             XP_ASSERT( !mainParams.pgi.players[index].name[0] );
-            str2ChrArray( mainParams.pgi.players[index].name, optarg );
+            str2ChrArray( mainParams.pgi.players[index].name, os.optarg );
+        }
             break;
         case CMD_SORTNEW:
             mainParams.sortNewTiles = XP_TRUE;
@@ -3039,7 +3079,7 @@ main( int argc, char** argv )
             mainParams.sleepOnAnchor = XP_TRUE;
             break;
         case CMD_TIMERMINUTES:
-            mainParams.pgi.gameSeconds = atoi(optarg) * 60;
+            mainParams.pgi.gameSeconds = atoi(os.optarg) * 60;
             mainParams.pgi.timerEnabled = XP_TRUE;
             break;
         case CMD_UNDOWHENDONE:
@@ -3052,13 +3092,13 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_RELAY
         case CMD_RELAY_PORT:
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
-            mainParams.connInfo.relay.defaultSendPort = atoi( optarg );
+            mainParams.connInfo.relay.defaultSendPort = atoi( os.optarg );
             break;
 
         case CMD_HOSTNAME:
             /* mainParams.info.clientInfo.serverName =  */
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
-            mainParams.connInfo.relay.relayName = optarg;
+            mainParams.connInfo.relay.relayName = os.optarg;
             break;
         case CMD_ADVERTISEROOM:
             mainParams.connInfo.relay.advertiseRoom = true;
@@ -3068,7 +3108,7 @@ main( int argc, char** argv )
             break;
         case CMD_INVITEE_RELAYID: {
             uint64_t* ptr = g_malloc( sizeof(*ptr) );
-            *ptr = (uint64_t)atoi(optarg);
+            *ptr = (uint64_t)atoi(os.optarg);
             mainParams.connInfo.relay.inviteeRelayIDs =
                 g_slist_append(mainParams.connInfo.relay.inviteeRelayIDs, ptr );
             addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
@@ -3076,7 +3116,7 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_PHONIES:
-            switch( atoi(optarg) ) {
+            switch( atoi(os.optarg) ) {
             case 0:
                 mainParams.pgi.phoniesAction = PHONIES_IGNORE;
                 break;
@@ -3094,7 +3134,7 @@ main( int argc, char** argv )
             }
             break;
         case CMD_BONUSFILE:
-            mainParams.bonusFile = optarg;
+            mainParams.bonusFile = os.optarg;
             break;
         case CMD_CLOSESTDIN:
             mainParams.closeStdin = XP_TRUE;
@@ -3106,13 +3146,13 @@ main( int argc, char** argv )
             mainParams.closeStdin = XP_FALSE;
             break;
         case CMD_QUITAFTER:
-            mainParams.quitAfter = atoi(optarg);
+            mainParams.quitAfter = atoi(os.optarg);
             break;
         case CMD_BOARDSIZE:
-            mainParams.pgi.boardSize = atoi(optarg);
+            mainParams.pgi.boardSize = atoi(os.optarg);
             break;
         case CMD_TRAYSIZE:
-            mainParams.pgi.traySize = atoi(optarg);
+            mainParams.pgi.traySize = atoi(os.optarg);
             XP_ASSERT( MIN_TRAY_TILES <= mainParams.pgi.traySize
                        && mainParams.pgi.traySize <= MAX_TRAY_TILES );
             break;
@@ -3125,7 +3165,7 @@ main( int argc, char** argv )
             break;
         case CMD_BTADDR:
             types_addType( &mainParams.conTypes, COMMS_CONN_BT );
-            mainParams.connInfo.bt.btaddr = optarg;
+            mainParams.connInfo.bt.btaddr = os.optarg;
             break;
 #endif
         case CMD_HIDEVALUES:
@@ -3141,11 +3181,11 @@ main( int argc, char** argv )
             mainParams.allowPeek = XP_FALSE;
             break;
         case CMD_CHAT:
-            mainParams.chatsInterval = atoi(optarg);
+            mainParams.chatsInterval = atoi(os.optarg);
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_SPLITPACKETS:
-            mainParams.splitPackets = atoi( optarg );
+            mainParams.splitPackets = atoi( os.optarg );
             break;
         case CMD_USEUDP:
             mainParams.useUdp = true;
@@ -3170,14 +3210,14 @@ main( int argc, char** argv )
             mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
             break;
         case CMD_SMSFAILPCT:
-            mainParams.smsSendFailPct = atoi(optarg);
+            mainParams.smsSendFailPct = atoi(os.optarg);
             XP_ASSERT( mainParams.smsSendFailPct >= 0 && mainParams.smsSendFailPct <= 100 );
             break;
         case CMD_DROPRCVSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
             break;
         case CMD_FORCECHANNEL:
-            mainParams.pgi.forceChannel = atoi( optarg );
+            mainParams.pgi.forceChannel = atoi( os.optarg );
             break;
 
         case CMD_FORCE_GAME:
@@ -3194,20 +3234,20 @@ main( int argc, char** argv )
             break;
 #endif
         case CMD_ADDPIPE:
-            mainParams.pipe = optarg;
+            mainParams.pipe = os.optarg;
             break;   
         case CMD_ADDNBS:
-            mainParams.nbs = optarg;
+            mainParams.nbs = os.optarg;
             break;
 #ifdef XWFEATURE_SLOW_ROBOT
         case CMD_SLOWROBOT:
-            if ( !parsePair( optarg, &mainParams.robotThinkMin,
+            if ( !parsePair( os.optarg, &mainParams.robotThinkMin,
                              &mainParams.robotThinkMax ) ) {
                 usage(argv[0], "bad param" );
             }
             break;
         case CMD_TRADEPCT:
-            mainParams.robotTradePct = atoi( optarg );
+            mainParams.robotTradePct = atoi( os.optarg );
             if ( mainParams.robotTradePct < 0 || mainParams.robotTradePct > 100 ) {
                 usage(argv[0], "must be 0 <= n <= 100" );
             }
@@ -3215,7 +3255,7 @@ main( int argc, char** argv )
 #endif
 #ifdef XWFEATURE_ROBOTPHONIES
         case CMD_MAKE_PHONY_PCT:
-            mainParams.makePhonyPct = atoi( optarg );
+            mainParams.makePhonyPct = atoi( os.optarg );
             if ( mainParams.makePhonyPct < 0 || mainParams.makePhonyPct > 100 ) {
                 usage(argv[0], "must be 0 <= n <= 100" );
             }
@@ -3224,7 +3264,7 @@ main( int argc, char** argv )
 
 #ifdef USE_GLIBLOOP
         case CMD_UNDOPCT:
-            mainParams.undoRatio = atoi( optarg );
+            mainParams.undoRatio = atoi( os.optarg );
             if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 1000 ) {
                 usage(argv[0], "must be 0 <= n <= 1000" );
             }
@@ -3239,7 +3279,7 @@ main( int argc, char** argv )
             mainParams.useCurses = XP_TRUE;
             break;
         case CMD_CURSES_LIST_HT:
-            mainParams.cursesListWinHt = atoi(optarg);
+            mainParams.cursesListWinHt = atoi(os.optarg);
             break;
 #endif
 #if defined PLATFORM_GTK
@@ -3247,10 +3287,10 @@ main( int argc, char** argv )
             mainParams.askNewGame = XP_TRUE;
             break;
         case CMD_NHIDDENROWS:
-            mainParams.nHidden = atoi(optarg);
+            mainParams.nHidden = atoi(os.optarg);
             break;
         case CMD_ASKTIME:
-            mainParams.askTimeout = atoi(optarg);
+            mainParams.askTimeout = atoi(os.optarg);
             break;
 #endif
         case CMD_SMSTEST:
@@ -3261,16 +3301,18 @@ main( int argc, char** argv )
             mainParams.rematchOnDone = XP_TRUE;
             break;
 
-        case CMD_STATUS_SOCKET_NAME:
-            statusSocket = optarg;
+        case CMD_STATUS_SOCKET_NAME: {
+            statusSocket = os.optarg;
             break;
+        }
 
         case CMD_CMDS_SOCKET_NAME:
-            mainParams.cmdsSocket = optarg;
+            mainParams.cmdsSocket = os.optarg;
             break;
 
         default:
-            done = true;
+            /* If param exists but isn't handled, that might be ok. */
+            XP_LOGFF( "param %s not handled", os.param );
             break;
         }
     }
@@ -3424,7 +3466,6 @@ main( int argc, char** argv )
         freeParams( &mainParams );
     }
 
-    free( longopts );
     ldm_destroy( mainParams.ldm );
 
     gsw_logIdles();
