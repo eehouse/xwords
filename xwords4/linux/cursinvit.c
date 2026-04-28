@@ -85,7 +85,11 @@ typedef struct _CurInviteState {
     CommsAddrRec addr;
     gint* nPlayers;
     int sel;
-    EditState ess[3];
+    EditState mqttEdit;
+#ifdef XWFEATURE_SMS
+    EditState smsEdit;
+#endif
+    EditState btEdit;
 } CurInviteState;
 
 static void
@@ -111,13 +115,13 @@ static void
 drawWin( CurInviteState* cis )
 {
     mvwaddstr( cis->win, MQTT_EXPL_LINE, 1, "MQTT" );
-    drawEdit( &cis->ess[0], cis->sel == SEL_EDITMQTT );
+    drawEdit( &cis->mqttEdit, cis->sel == SEL_EDITMQTT );
 
     mvwaddstr( cis->win, SMS_EXPL_LINE, 1, "SMS" );
-    drawEdit( &cis->ess[1], cis->sel == SEL_EDITSMS );
+    drawEdit( &cis->smsEdit, cis->sel == SEL_EDITSMS );
 
     mvwaddstr( cis->win, BT_EXPL_LINE, 1, "BT" );
-    drawEdit( &cis->ess[2], cis->sel == SEL_EDITBT );
+    drawEdit( &cis->btEdit, cis->sel == SEL_EDITBT );
 
     updateButtons( cis );
     wrefresh( cis->win );
@@ -131,19 +135,48 @@ updateAddr( CurInviteState* cis, const CommsAddrRec* addr )
     if ( addr_hasType( &cis->addr, COMMS_CONN_MQTT ) ) {
         formatMQTTDevID( &cis->addr.u.mqtt.devID, buf, VSIZE(buf) );
     }
-    initEdit( &cis->ess[0], win, MQTT_DEV_LINE, buf );
+    initEdit( &cis->mqttEdit, win, MQTT_DEV_LINE, buf );
 
     const char* phone = "";
     if ( addr_hasType( &cis->addr, COMMS_CONN_SMS ) ) {
         phone = addr->u.sms.phone;
     }
-    initEdit( &cis->ess[1], win, SMS_DEV_LINE, phone );
+    initEdit( &cis->smsEdit, win, SMS_DEV_LINE, phone );
 
     const char* bt = "";
     if ( addr_hasType( &cis->addr, COMMS_CONN_BT ) ) {
         bt = addr->u.bt.btAddr.chars;
     }
-    initEdit( &cis->ess[2], win, BT_DEV_LINE, bt );
+    initEdit( &cis->btEdit, win, BT_DEV_LINE, bt );
+}
+
+static void
+fillsAddrs( CurInviteState* cis )
+{
+    CommsAddrRec* addr = &cis->addr;
+    char buf[32];
+    size_t len;
+
+    len = VSIZE(buf);
+    getEditText( &cis->mqttEdit, buf, &len );
+    if ( len && strToMQTTCDevID( buf, &addr->u.mqtt.devID ) ) {
+        addr_addType( addr, COMMS_CONN_MQTT );
+    }
+
+    /* SMS */
+#ifdef XWFEATURE_SMS
+    len = VSIZE(buf);
+    getEditText( &cis->smsEdit, buf, &len );
+    if ( len ) {
+        addr_addType( addr, COMMS_CONN_SMS );
+        snprintf( addr->u.sms.phone, VSIZE(addr->u.sms.phone), "%s", buf );
+    }
+#endif
+
+    /* BT doesn't work on Linux but is still here.... */
+    len = VSIZE(buf);
+    getEditText( &cis->btEdit, buf, &len );
+    XP_ASSERT( !len );          /* otherwise fix me */
 }
 
 static bool
@@ -187,9 +220,15 @@ inviteKeyProc( int key, void* closure )
     default:
         switch ( cis->sel ) {
         case SEL_EDITMQTT:
+            handleEdit( &cis->mqttEdit, key );
+            break;
+#ifdef XWFEATURE_SMS
         case SEL_EDITSMS:
+            handleEdit( &cis->smsEdit, key );
+            break;
+#endif
         case SEL_EDITBT:
-            handleEdit( &cis->ess[cis->sel-SEL_EDITMQTT], key );
+            handleEdit( &cis->btEdit, key );
             break;
         }
     }
@@ -217,6 +256,7 @@ cursesInviteDlg( CommonGlobals* cGlobals, CommsAddrRec* addr,
     
     startModalAlert( aGlobals, cis.win, XP_TRUE, inviteKeyProc, &cis );
     if ( !cis.cancelled ) {
+        fillsAddrs( &cis );
         *addr = cis.addr;
     }
 

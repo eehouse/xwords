@@ -119,7 +119,7 @@ initEdit( EditState* es, WINDOW* win, int msgLine, const char* initial )
         es->offset = snprintf( es->msgBuf, VSIZE(es->msgBuf), "%s", initial );
         XP_ASSERT( es->offset < VSIZE(es->msgBuf) );
     }
-    XP_ASSERT( es->msgBuf[es->offset] == '\0' );
+    es->msgBuf[es->offset] = '\0'; /* required if !initial */
 }
 
 void
