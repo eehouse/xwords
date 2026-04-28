@@ -114,7 +114,7 @@ askTimerProc( gpointer data )
     XP_ASSERT( as->timerSrc );
     as->timerSrc = 0;
 
-    cursesPushKey( as->aGlobals, '\n' );
+    cursesPushKey( as->aGlobals, as, '\n' );
 
     return G_SOURCE_REMOVE;
 }
@@ -125,7 +125,6 @@ static void
 cursesaskImpl( CursesAppGlobals* aGlobals, int* resultP, short numButtons,
                const char** buttons, const char* question, int timeoutms )
 {
-    LOG_FUNC();
     AskState* as = g_malloc0( sizeof(*as) );
     as->aGlobals = aGlobals;
     as->buttons = buttons;
@@ -217,6 +216,16 @@ ca_inform( CursesAppGlobals* aGlobals, const char* message )
                              message, /*1500*/ 0 );
     }
     LOG_RETURN_VOID();
+}
+
+void
+ca_timeout_inform( CursesAppGlobals* aGlobals, int timeoutms, const char* message )
+{
+    if ( !!getMainWin(aGlobals) ) {
+        const char* buttons[] = { "Ok" };
+        (void)cursesaskImpl( aGlobals, NULL, VSIZE(buttons), buttons,
+                             message, timeoutms );
+    }
 }
 
 void

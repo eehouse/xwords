@@ -201,7 +201,7 @@ startModalAlert( CursesAppGlobals* aGlobals, WINDOW* win, XP_Bool block,
     ss->proc = proc;
     ss->closure = closure;
 
-    cursesPushKeyHandler( aGlobals, dlgKeyProc, ss );
+    cursesPushKeyHandler( aGlobals, dlgKeyProc, ss, closure );
 
     /* If we're to return a result, we need to block. Otherwise we can just return. */
     if ( block ) {

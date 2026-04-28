@@ -78,7 +78,7 @@ cmenu_init( CursesAppGlobals* aGlobals, WINDOW* mainWindow )
 
     sizeWindow( result );
 
-    cursesPushKeyHandler( aGlobals, menuKeyProc, result );
+    cursesPushKeyHandler( aGlobals, menuKeyProc, result, aGlobals );
 
     return result;
 }

@@ -72,11 +72,11 @@ DrawCtx* cursesDrawCtxtMake( LaunchParams* params,
 
 void cursesmain( XP_Bool isServer, LaunchParams* params );
 typedef bool (*KeyProc)(int key, void* closure );
-void _cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure,
+void _cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure, void* procID,
                             const char* file, const char* func );
-#define cursesPushKeyHandler( aGlobals, proc, closure ) \
-    _cursesPushKeyHandler(aGlobals, proc, closure, __FILE__, __func__ )
-void cursesPushKey( CursesAppGlobals* aGlobals, int key );
+#define cursesPushKeyHandler( aGlobals, proc, closure, procID )         \
+    _cursesPushKeyHandler(aGlobals, proc, closure, procID, __FILE__, __func__ )
+void cursesPushKey( CursesAppGlobals* aGlobals, void* procID, int key );
 bool handleQuit( void* closure, int unused_key );
 void inviteReceivedCurses( void* aGlobals, const NetLaunchInfo* invite );
 void mqttMsgReceivedCurses( void* closure, const CommsAddrRec* from,

@@ -303,7 +303,7 @@ getSelOrWarn(CursesAppGlobals* aGlobals, GameRef* grp, const char* warning)
     if ( success ) {
         *grp = agr;
     } else {
-        ca_inform( aGlobals, warning );
+        ca_timeout_inform( aGlobals, 3000, warning );
     }
     return success;
 }
@@ -1439,7 +1439,9 @@ informMoveCurses( LaunchParams* params, XWStreamCtxt* expl )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
     char* question = strFromStream( expl );
-    (void)ca_inform( aGlobals, question );
+    /* Let's pick a kinda-random timeout to test the stacking of timeout alerts */
+    int ms = 2000 + (XP_RANDOM() % 2000);
+    (void)ca_timeout_inform( aGlobals, ms, question );
     free( question );
 }
 
@@ -1805,17 +1807,19 @@ getKPsWrapper( void* closure )
 typedef struct _KeyData {
     KeyProc proc;
     void* closure;
+    void* procID;
     char* file;
     char* func;
 } KeyData;
 
 void
 _cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure,
-                       const char* file, const char* func )
+                       void* procID, const char* file, const char* func )
 {
     KeyData* datum = g_malloc0( sizeof(*datum) );
     datum->proc = proc;
     datum->closure = closure;
+    datum->procID = procID;
     datum->file = g_strdup(file);
     datum->func = g_strdup(func);
     aGlobals->keyProcs = g_slist_append( aGlobals->keyProcs, datum );
@@ -1823,6 +1827,7 @@ _cursesPushKeyHandler( CursesAppGlobals* aGlobals, KeyProc proc, void* closure,
 
 typedef struct _KeyIdle {
     int key;
+    void* procID;
     CursesAppGlobals* aGlobals;
 } KeyIdle;
 
@@ -1831,20 +1836,27 @@ keyOnIdleProc( gpointer closure )
 {
     KeyIdle* kis = (KeyIdle*)closure;
     CursesAppGlobals* aGlobals = kis->aGlobals;
-    XP_LOGFF( "got ch: %d", kis->key );
+    XP_LOGFF( "closure: %p", kis->procID );
     int nProcs = g_slist_length( aGlobals->keyProcs );
-    if ( nProcs ) {
-        XP_LOGFF( "using %dth proc", nProcs-1 );
-        KeyData* datum = g_slist_nth_data( aGlobals->keyProcs, nProcs-1 );
-        XP_LOGFF( "calling from %s() in %s", datum->func, datum->file );
-        bool keep = (*datum->proc)( kis->key, datum->closure );
-        if ( !keep ) {
-            XP_LOGFF( "uninstalling from %s() in %s", datum->func, datum->file );
-            aGlobals->keyProcs = g_slist_remove( aGlobals->keyProcs, datum );
-            g_free( datum->file );
-            g_free( datum->func );
-            g_free( datum );
+    bool found = false;
+    for ( int ii = nProcs-1; !found && ii >= 0; --ii ) {
+        KeyData* datum = g_slist_nth_data( aGlobals->keyProcs, ii );
+        if ( !kis->procID || kis->procID == datum->procID ) {
+            found = true;
+            XP_LOGFF( "using %dth proc", ii );
+            XP_LOGFF( "calling from %s() in %s", datum->func, datum->file );
+            bool keep = (*datum->proc)( kis->key, datum->closure );
+            if ( !keep ) {
+                XP_LOGFF( "uninstalling from %s() in %s", datum->func, datum->file );
+                aGlobals->keyProcs = g_slist_remove( aGlobals->keyProcs, datum );
+                g_free( datum->file );
+                g_free( datum->func );
+                g_free( datum );
+            }
         }
+    }
+    if ( !found ) {
+        XP_LOGFF( "never found proc!!" );
     }
     g_free( closure );
     LOG_RETURN_VOID();
@@ -1852,12 +1864,13 @@ keyOnIdleProc( gpointer closure )
 }
 
 void
-cursesPushKey( CursesAppGlobals* aGlobals, int key )
+cursesPushKey( CursesAppGlobals* aGlobals, void* procID, int key )
 {
     KeyIdle* kis = g_malloc0( sizeof(*kis) );
     kis->key = key;
-    XP_LOGFF( "got ch: %d", kis->key );
+    XP_LOGFF( "got ch: %d, procID %p", kis->key, procID );
     kis->aGlobals = aGlobals;
+    kis->procID = procID;
     ADD_ONETIME_IDLE( keyOnIdleProc, kis );
 }
 
@@ -1891,7 +1904,7 @@ stdioWrapper( GIOChannel* XP_UNUSED(source), GIOCondition XP_UNUSED(condition),
         aGlobals->gotFirstChar = true;
         cws_refresh( aGlobals );
     }
-    cursesPushKey( aGlobals, key );
+    cursesPushKey( aGlobals, NULL, key );
     return TRUE;
 }
 
