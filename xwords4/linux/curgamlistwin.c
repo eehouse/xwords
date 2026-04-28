@@ -177,14 +177,14 @@ adjustCurSel( CursGameList* cgl )
 }
 
 static void
-drawTopLine( CursGameList* cgl, int nGames )
+drawTopLine( CursGameList* cgl, int nLines )
 {
     if ( cgl->width ) {
         LaunchParams* params = cgl->params;
         char buf[cgl->width + 1];
         gchar* dbName = g_path_get_basename(params->dbName);
-        size_t offset = snprintf( buf, VSIZE(buf), "pid: %d; nGames: %d; db: %s; ",
-                                  cgl->pid, nGames, dbName );
+        size_t offset = snprintf( buf, VSIZE(buf), "pid: %d; nLines: %d; db: %s; ",
+                                  cgl->pid, nLines, dbName );
         g_free( dbName );
 
         if ( !params->skipMQTTAdd ) {
@@ -213,11 +213,11 @@ cgl_draw( CursGameList* cgl )
     WINDOW* win = cgl->window;
     werase( win );
 
-    const int nGames = g_slist_length( cgl->positions );
-    XP_LOGFF( "nGames: %d", nGames );
+    const int nLines = g_slist_length( cgl->positions );
+    XP_LOGFF( "nLines: %d", nLines );
 
     /* Draw '+' at far right if scrollable */
-    int nBelow = nGames - (cgl->height-2) - cgl->yOffset;
+    int nBelow = nLines - (cgl->height-2) - cgl->yOffset;
     XP_LOGF( "%s(): yOffset: %d; nBelow: %d", __func__, cgl->yOffset, nBelow );
     if ( 0 < nBelow ) {
         mvwaddstr( win, cgl->height-2, cgl->width - 1, "+" );
@@ -229,7 +229,7 @@ cgl_draw( CursGameList* cgl )
     const char* cols[] = {"#", "Name", "Turn", "Lang", "GameID", "Opponents",
                           "Role", "nTot", "nMoves", "Chats", };
 
-    int nShown = nGames <= cgl->height - 2 ? nGames : cgl->height - 2;
+    int nShown = nLines <= cgl->height - 2 ? nLines : cgl->height - 2;
     char* data[nShown + 1][VSIZE(cols)];
 
     /* Lay down the column heads (just one, for all games and groups, for
@@ -298,7 +298,7 @@ cgl_draw( CursGameList* cgl )
         offset += maxlen + 2;
     }
 
-    drawTopLine( cgl, nGames );
+    drawTopLine( cgl, nLines );
     wrefresh( win );
 }
 

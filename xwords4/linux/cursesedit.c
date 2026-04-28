@@ -98,6 +98,7 @@ onKeyProc( int ch, void* closure )
     if ( !state->done ) {
         updateButtons( state );
         drawEdit( &state->es, EDIT == state->focussed );
+        wrefresh( state->win );
     }
 
     return state->done;
