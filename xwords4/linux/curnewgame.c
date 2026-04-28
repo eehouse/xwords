@@ -26,9 +26,11 @@
 #include "cursesdlgutil.h"
 #include "curplyr.h"
 #include "curwinstk.h"
+#include "cursesask.h"
 
 typedef struct _NGState {
     LaunchParams* params;
+    CursesAppGlobals* aGlobals;
     CurGameInfo gi;
     WINDOW* win;
     bool confirmed, cancelled;
@@ -159,7 +161,7 @@ drawWindow( NGState* ngs )
     updatePlayers( ngs );
     updateAddrs( ngs );
     updateButtons( ngs );
-    wrefresh( ngs->win );
+    cws_refreshFrom( ngs->aGlobals, ngs->win );
 }
 
 static void
@@ -225,11 +227,15 @@ newGameKeyProc( int key, void* closure )
         case SEL_ADD:
             if ( gi->nPlayers < MAX_NUM_PLAYERS ) {
                 ++gi->nPlayers;
+            } else {
+                ca_timeout_inform( ngs->aGlobals, 2000, "No more than 4 players supported." );
             }
             break;
         case SEL_DELETE:
-            if ( 0 < gi->nPlayers ) {
+            if ( 1 < gi->nPlayers ) {
                 --gi->nPlayers;
+            } else {
+                ca_timeout_inform( ngs->aGlobals, 2000, "At least 1 player required." );
             }
             break;
         case SEL_PLAYER_1:
@@ -276,6 +282,7 @@ curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
     XP_ASSERT(isNewGame);
     NGState ngs = {
         .params = params,
+        .aGlobals = (CursesAppGlobals*)params->cag,
         .gi = *gi,
         // .addr = *addr,
         .buttonLine = 10,

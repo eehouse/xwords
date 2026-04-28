@@ -87,15 +87,31 @@ cws_delwin( CursesAppGlobals* aGlobals, WINDOW** winp )
     }
 }
 
-void
-cws_refresh( CursesAppGlobals* aGlobals )
+static void
+refreshImpl( CursesAppGlobals* aGlobals, WINDOW* from )
 {
     CurWinStack* ws = getStack( aGlobals );
+    bool started = false;
     for ( GSList* iter = ws->wins; !!iter; iter = iter->next ) {
         WINDOW* win = ((CWSElem*)iter->data)->win;
-        touchwin( win );
-        wnoutrefresh( win );
+        if ( started || !from || win == from ) {
+            touchwin( win );
+            wnoutrefresh( win );
+            started = true;
+        }
     }
 
     doupdate();
+}
+
+void
+cws_refreshFrom( CursesAppGlobals* aGlobals, WINDOW* win )
+{
+    refreshImpl( aGlobals, win );
+}
+
+void
+cws_refresh( CursesAppGlobals* aGlobals )
+{
+    refreshImpl( aGlobals, NULL );
 }

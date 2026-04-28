@@ -30,4 +30,5 @@ void cws_delwin( CursesAppGlobals* aGlobals, WINDOW** winp );
 
 /* touch and refresh all windows, in oldest to newest order */
 void cws_refresh( CursesAppGlobals* aGlobals );
+void cws_refreshFrom( CursesAppGlobals* aGlobals, WINDOW* win );
 #endif
