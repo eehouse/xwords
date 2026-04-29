@@ -207,15 +207,21 @@ cursesaskf( CursesAppGlobals* aGlobals,  short numButtons,
     return result;
 }
 
-void
-ca_inform( CursesAppGlobals* aGlobals, const char* message )
+static void
+informImpl( CursesAppGlobals* aGlobals, int timeoutms, const char* message )
 {
     if ( !!getMainWin(aGlobals) ) {
         const char* buttons[] = { "Ok" };
         (void)cursesaskImpl( aGlobals, NULL, VSIZE(buttons), buttons,
-                             message, /*1500*/ 0 );
+                             message, timeoutms );
     }
     LOG_RETURN_VOID();
+}
+
+void
+ca_inform( CursesAppGlobals* aGlobals, const char* message )
+{
+    informImpl( aGlobals, 0, message );
 }
 
 void
@@ -235,7 +241,18 @@ ca_informf( CursesAppGlobals* aGlobals, const char* fmt, ... )
     va_start( args, fmt );
     gchar* msg = g_strdup_vprintf( fmt, args );
     va_end( args );
-    ca_inform( aGlobals, msg );
+    informImpl( aGlobals, 0, msg );
+    g_free( msg );
+}
+
+void
+ca_timeout_informf( CursesAppGlobals* aGlobals, int timeoutms, const char* fmt, ... )
+{
+    va_list args;
+    va_start( args, fmt );
+    gchar* msg = g_strdup_vprintf( fmt, args );
+    va_end( args );
+    informImpl( aGlobals, timeoutms, msg );
     g_free( msg );
 }
 

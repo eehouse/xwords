@@ -113,7 +113,6 @@ static bool handleRootKeyHide( void* closure, int key );
 static bool sendInvite( void* closure, int key );
 static bool openChat( void* closure, int key );
 static bool doPing( void* closure, int key );
-static CursesAppGlobals* aGlobalsFor(CursesBoardGlobals* bGlobals);
 
 static XP_Bool rematch_and_save( CursesBoardGlobals* bGlobals, RematchOrder ro,
                                  XP_U32* newGameIDP );
@@ -694,7 +693,7 @@ cursesUserError( CursesBoardGlobals* bGlobals, const char* format, ... )
     va_end(ap);
 
     if ( !!bGlobals->boardWin ) {
-        CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+        CursesAppGlobals* aGlobals = aGlobalsFor(&bGlobals->cGlobals);
         ca_inform( aGlobals, buf );
     } else {
         XP_LOGFF( "(msg=%s)", buf );
@@ -949,7 +948,7 @@ cursesShowFinalScores( CursesBoardGlobals* bGlobals )
 
         text = strFromStream( stream );
 
-        CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+        CursesAppGlobals* aGlobals = aGlobalsFor(cGlobals);
         ca_inform( aGlobals, text );
 
         free( text );
@@ -964,7 +963,7 @@ curses_util_notifyDupStatus( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe),
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
         globalsForUtil( uc, XP_FALSE );
-    CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+    CursesAppGlobals* aGlobals = aGlobalsFor(&bGlobals->cGlobals);
     ca_inform( aGlobals, msg );
 }
 
@@ -973,7 +972,7 @@ curses_util_informUndo( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)
         globalsForUtil( uc, XP_FALSE );
-    CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+    CursesAppGlobals* aGlobals = aGlobalsFor(&bGlobals->cGlobals);
     ca_inform( aGlobals, "informUndo(): undo was done" );
 }
 
@@ -1123,7 +1122,7 @@ curses_util_remSelected( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe) )
         XP_UCHAR* text = strFromStream( stream );
         strm_destroy( stream );
 
-        CursesAppGlobals* aGlobals = aGlobalsFor((CursesBoardGlobals*)cGlobals);
+        CursesAppGlobals* aGlobals = aGlobalsFor(cGlobals);
         ca_inform( aGlobals, text );
 
         free( text );
@@ -1159,7 +1158,7 @@ curses_util_playerScoreHeld( XW_UtilCtxt* uc, XWEnv XP_UNUSED(xwe), XP_U16 playe
                                  NULL_XWE, player, &lmi ) ) {
         XP_UCHAR buf[128];
         formatLMI( &lmi, buf, VSIZE(buf) );
-        CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+        CursesAppGlobals* aGlobals = aGlobalsFor(cGlobals);
         ca_inform( aGlobals, buf );
     }
 }
@@ -1390,7 +1389,7 @@ sendInvite( void* closure, int XP_UNUSED(key) )
     XW_DUtilCtxt* dutil = params->dutil;
     // gr_getSelfAddr( dutil, cGlobals->gr, NULL_XWE, &selfAddr );
 
-    CursesAppGlobals* aGlobals = aGlobalsFor(bGlobals);
+    CursesAppGlobals* aGlobals = aGlobalsFor(cGlobals);
     if ( ROLE_ISHOST != cGlobals->gi->deviceRole ) {
         ca_inform( aGlobals, "Only hosts can invite" );
     } else {
@@ -1515,14 +1514,6 @@ handleHide( void* closure, int XP_UNUSED(key) )
 
     return XP_TRUE;
 } /* handleJuggle */
-
-static CursesAppGlobals*
-aGlobalsFor(CursesBoardGlobals* bGlobals)
-{
-    CommonGlobals* cGlobals = (CommonGlobals*)bGlobals;
-    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
-    return aGlobals;
-}
 
 #ifdef KEYBOARD_NAV
 static void

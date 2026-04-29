@@ -30,6 +30,7 @@ int cursesaskf( CursesAppGlobals* aGlobals, short numButtons,
 void ca_inform( CursesAppGlobals* aGlobals, const char* message );
 void ca_timeout_inform( CursesAppGlobals* aGlobals, int ms, const char* message );
 void ca_informf( CursesAppGlobals* aGlobals, const char* fmt, ... );
+void ca_timeout_informf( CursesAppGlobals* aGlobals, int ms, const char* fmt, ... );
 
 /* #define ca_inform2(AG, M) _ca_inform2((AG), (M), __FILE__, __func__ ) */
 /* #define ca_informf2(AG, FMT, ...) _ca_informf2((AG), __FILE__, __func__, FMT, __VA_ARGS__ ) */

@@ -328,9 +328,13 @@ handleRematchGame( void* closure, int XP_UNUSED(key) )
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     GameRef gr;
     if ( getSelOrWarn( aGlobals, &gr, "Only games can be rematched." ) ) {
-        (void)gr_makeRematch( aGlobals->cag.params->dutil, gr,
-                              NULL_XWE, "newName", RO_LOW_SCORE_FIRST,
-                              XP_TRUE, XP_FALSE );
+        XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+        if ( gr_canRematch( dutil, gr, NULL_XWE, NULL ) ) {
+            (void)gr_makeRematch( dutil, gr, NULL_XWE, "newName",
+                                  RO_LOW_SCORE_FIRST, XP_TRUE, XP_FALSE );
+        } else {
+            ca_timeout_inform( aGlobals, 3000, "Unable to rematch" );
+        }
     }
     return true;
 }
@@ -400,9 +404,9 @@ handleDeleteGame( void* closure, int XP_UNUSED(key) )
     if ( !!gr ) {
         const char* question = "Are you sure you want to delete the "
             "selected game? This action cannot be undone";
-        const char* buttons[] = { "Cancel", "Ok", };
+        const char* buttons[] = { "Ok", "Cancel", };
 
-        if ( 1 == cursesask( aGlobals, VSIZE(buttons), buttons, question ) ) {
+        if ( 0 == cursesask( aGlobals, VSIZE(buttons), buttons, question ) ) {
             gmgr_deleteGame( aGlobals->cag.params->dutil, NULL_XWE, gr );
         }
     } else {
@@ -425,9 +429,9 @@ static bool
 copyDevID( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
-    // CommonGlobals* cGlobals = &bGlobals->cGlobals;
     const gchar* devIDStr = mqttc_getDevIDStr( aGlobals->cag.params );
-    ca_informf( aGlobals, "Unable to copy \"%s\" yet...", devIDStr );
+    ca_timeout_informf( aGlobals, 1500, "Unable to copy devID \"%s\"...",
+                        devIDStr );
     return true;
 }
 
@@ -1884,6 +1888,13 @@ CurWinStack*
 getWinStack( CursesAppGlobals* aGlobals )
 {
     return aGlobals->winStack;
+}
+
+CursesAppGlobals*
+aGlobalsFor( CommonGlobals* cGlobals )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+    return aGlobals;
 }
 
 WINDOW*

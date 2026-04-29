@@ -236,6 +236,8 @@ typedef struct _LaunchParams {
 
 typedef struct CommonGlobals CommonGlobals;
 
+CursesAppGlobals* aGlobalsFor(CommonGlobals* cGlobals);
+
 typedef guint (*SocketAddedFunc)( void* closure, int newsock, GIOFunc func );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 

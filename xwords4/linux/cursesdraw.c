@@ -30,6 +30,7 @@
 #include "dbgutil.h"
 #include "linuxmain.h"
 #include "linuxutl.h"
+#include "curwinstk.h"
 
 typedef struct CursesDrawCtx {
     DrawCtx super;
@@ -96,8 +97,11 @@ curses_draw_beginDraw( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe) )
 }
 
 static void
-curses_draw_endDraw( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe) )
+curses_draw_endDraw( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe) )
 {
+    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    CursesAppGlobals* aGlobals = aGlobalsFor(dctx->cGlobals);
+    cws_refreshFrom( aGlobals, dctx->boardWin );
 }
 
 static XP_Bool
@@ -388,15 +392,12 @@ curses_draw_drawTimer( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe), const XP_Rect* rIn
 }
 
 static void
-curses_draw_objFinished( DrawCtx* p_dctx, XWEnv XP_UNUSED(xwe),
+curses_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx), XWEnv XP_UNUSED(xwe),
                          BoardObjectType XP_UNUSED(typ),
                          const XP_Rect* XP_UNUSED(rect), 
                          DrawFocusState XP_UNUSED(dfs) )
 {
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    wrefresh( dctx->boardWin );
 } /* curses_draw_objFinished */
-
 
 static XP_Bool
 curses_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XWEnv XP_UNUSED(xwe),
