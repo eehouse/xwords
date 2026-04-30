@@ -169,8 +169,7 @@
 \n</string>
     <string name="str_nonlocal_name_fmt">%1$s (remoto)</string>
     <string name="vs_join">" vs. "</string>
-    <string name="str_bonus_all">Bonificarión por utilizar todas las fichas: 50
-\n</string>
+    <string name="str_bonus_all">Bonificación por utilizar todas las fichas: 50\n</string>
     <string name="strd_turn_score_fmt">Puntuación en el turno: %1$d
 \n</string>
     <plurals name="strd_remains_header_fmt">
@@ -247,8 +246,8 @@
     <string name="explain_robot_summary">Mostrar resumen de puntuación después de la jugada de cada robot o jugador remoto</string>
     <string name="skip_confirm_turn">Omitir confirmación de la jugada</string>
     <string name="skip_confirm_turn_summary">NO mostrar resumen de puntuación después de cada turno de jugador</string>
-    <string name="title_sort_tiles">Ordenar nuevas fichas</string>
-    <string name="summary_sort_tiles">Ordenar atriles cuando se añadan nuevas fichas</string>
+    <string name="title_sort_tiles">Ordenar fichas nuevas</string>
+    <string name="summary_sort_tiles">Ordenar atriles cuando se agregan fichas nuevas</string>
     <string name="peek_other">Ver las fichas fuera de turno</string>
     <string name="qrcode_invite_expl">Para invitar con código QR, deja que tu oponente escanee el código con la cámara en su teléfono Android.</string>
     <string name="invit_expl_player_fmt">Invitación enviada por MQTT/Internet a el jugador conocido como “%1$s” en %2$s.</string>
@@ -271,7 +270,7 @@
     <string name="game_summary_field_created">Cuando se crea</string>
     <string name="langUnknownFmt">Desconocido (%1$s)</string>
     <string name="bonus_w4x_summary">4P</string>
-    <string name="tray_size">Fichas en el atril</string>
+    <string name="tray_size">Fichas del atril</string>
     <string name="list_item_relaypage">Tráfico de la partida</string>
     <string name="chat_title_fmt">Chat con %1$s</string>
     <string name="button_substdict">Sustituto</string>
@@ -302,20 +301,16 @@
     <string name="invite_choice_title">Invitando a un Jugador</string>
     <string name="invite_sms_fmt">Pulsa el enlace para aceptar mi invitación y unirte a una partida de Palabras Cruzadas: %1$s</string>
     <string name="ok_with_robots">De acuerdo (los otros jugadores serán la máquina)</string>
-    <string name="invite_choice_nfc">NFC (“Android beaming”)</string>
+    <string name="invite_choice_nfc">NFC (“Android radiante”)</string>
     <string name="invite_choice_relay">Internet/Retransmisión</string>
-    <string name="invite_choice_p2p">Wifi Direct</string>
+    <string name="invite_choice_p2p">Wifi Directo</string>
     <string name="invite_choice_data_sms">Datos SMS</string>
     <string name="invite_choice_email">Email</string>
     <string name="notify_sound">Reproducir sonido</string>
     <string name="hide_crosshairs_summary">No mostrar la celda del tablero que se toca</string>
     <string name="network_behavior">Configuraciones de la partida en red</string>
     <string name="hide_crosshairs">Deshabilitar retícula</string>
-    <string name="not_again_trading">Estás accediendo al modo de intercambio de fichas.
-\n
-\nToca las fichas para añadirlas/eliminarlas del conjunto a intercambiar.
-\n
-\n</string>
+    <string name="not_again_trading">Estás accediendo al modo de intercambio de ficha. \n \nToca las fichas para añadirlas/eliminarlas del conjunto a intercambiar.\n\n</string>
     <string name="newbie_title">Aqui tienes un consejo</string>
     <string name="query_title">Una pregunta</string>
     <string name="history_title">Historial de la partida</string>
@@ -329,7 +324,7 @@
     <string name="bonus_l4x_summary">4L</string>
     <string name="notify_other_summary">Cuando llegan movimientos del oponente</string>
     <string name="radio_who">¿Quien\?</string>
-    <string name="str_no_peek_remote_tiles">¡No puedes espiar las fichas de los jugadores remotos!</string>
+    <string name="str_no_peek_remote_tiles">¡No puedes ojear las fichas de los jugadores remotos!</string>
     <string name="button_yes">Si</string>
     <string name="not_again_trading_buttons">Utiliza los botones para remitir tu turno o salir del modo de intercambio.</string>
     <string name="msg_ask_password_fmt">Contraseña para “%1$s”:</string>
@@ -366,12 +361,12 @@
     <string name="old_apks_deleted_fmt">Eliminadas %1$d apks de actualizaciones antiguas</string>
     <plurals name="too_many_trade_fmt">
         <item quantity="one">Demasiadas fichas seleccionadas. Por favor selecciona solo una.</item>
-        <item quantity="many">Demasiadas fichas seleccionadas. Por favor no selecciones mas de %1$d.</item>
-        <item quantity="other">Demasiadas fichas seleccionadas. Por favor no selecciones mas de %1$d.</item>
+        <item quantity="many">Demasiadas fichas seleccionadas. Por favor no selecciones más de %1$d.</item>
+        <item quantity="other">Demasiadas fichas seleccionadas. Por favor no selecciones más de %1$d.</item>
     </plurals>
     <string name="button_close_game">Cerrar partida</string>
     <string name="str_too_few_tiles_left_to_trade">No quedan fichas suficientes para intercambiar.</string>
-    <string name="str_no_peek_robot_tiles">¡No puedes espiar las fichas de un robot!</string>
+    <string name="str_no_peek_robot_tiles">¡No puedes ojear las fichas de un robot!</string>
     <string name="button_discard">Descartar</string>
     <string name="no_dict_fmt">Partida “%1$s” requiere una Lista de Palabras en %2$s. Por favor descarga una para poder comenzar.</string>
     <string name="relaypage_url_copied">URL de la partida copiada al portapapeles</string>
@@ -423,7 +418,7 @@
     <string name="pat_starts_with">Comienza con</string>
     <string name="pat_contains">Contiene</string>
     <string name="changes_button">Cambios recientes</string>
-    <string name="show_tiles_title_fmt">Téseras en %1$s</string>
+    <string name="show_tiles_title_fmt">Fichas en %1$s</string>
     <string name="button_lookup_fmt">Buscar %1$s</string>
     <string name="button_move">Mover</string>
     <string name="pat_ends_with">Termina con</string>
@@ -440,9 +435,7 @@
     <string name="new_feature_filter">Puede filtrar las listas de palabras por las palabras que comienzan, terminan y/o contienen. Acceda al filtrado tocando la flecha de expansión en la esquina superior derecha de la ventana.
 \n
 \nVer más en las preguntas frecuentes clic en el botón a continuación.</string>
-    <string name="not_again_traysize">Esta nueva configuración cambia la cantidad de mosaicos en el estante.
-\n
-\nNota: si alguien en su partida en red está usando una versión anterior de CrossWords, esta configuración volverá a la 7 para todos en la partida.</string>
+    <string name="not_again_traysize">Este ajuste nuevo cambia la cantidad de fichas en el atril. \n \nNota: si alguien en su partida en red está usando una versión anterior de CrossWords, este ajuste volverá a la 7 para todos en la partida.</string>
     <string name="email_logs_subject">Registros de crucigramas</string>
     <string name="email_logs_chooser">Enviar registros vía</string>
     <string name="bt_bad_proto_fmt">La versión de CrossWords en “%1$s” no es compatible con esta para jugar mediante Bluetooth. Es posible que uno de ustedes deba actualizar antes de poder continuar.</string>
@@ -517,7 +510,7 @@
     <string name="missing_dict_title">Invitación a una partida pendiente</string>
     <string name="reload_new_dict_fmt">Ricargando partida con %1$s</string>
     <string name="download_path_hint">P.ej. donde se guardan los archivos adjuntos de correo electrónico</string>
-    <string name="default_loc_summary">(no a la memoria externa de la tarjeta SD)</string>
+    <string name="default_loc_summary">(No a la memoria externa/tarjeta SD)</string>
     <string name="download_path_title">Directorio Público</string>
     <string name="missing_dict_detail">Toca para descargar la lista de palabras que faltan</string>
     <string name="newgroup_label">Nombre del nuevo grupo:</string>
@@ -757,7 +750,7 @@
     <string name="button_pick_again">elegir de nuevo</string>
     <string name="archive_title_colors">Colores del tablero</string>
     <string name="color_theme_edit_dark">Editar tema oscuro</string>
-    <string name="not_again_done">Tocar el contador de “pts” que aparece en el extremo derecho del estante es la forma más fácil de realizar un movimiento.</string>
+    <string name="not_again_done">Tocar el contador de “pts” que aparece en el extremo derecho del atril es la forma más fácil de realizar un movimiento.</string>
     <string name="prefs_copy_dark">Copiar tema oscuro</string>
     <string name="archive_filename_fmt">CrossWords-backup-%1$s.zip</string>
     <string name="color_use_theme_dark">Usar tema oscuro</string>
@@ -781,11 +774,7 @@
     <string name="missing_host_fmt">(El anfitrión es un jugador conocido llamado“%1$s”.)</string>
     <string name="archive_expl_colors">Colores del tablero, p. ej. de nombres de jugadores y casillas de bonificación</string>
     <string name="byod_failure">Error al descargar %1$s.</string>
-    <string name="not_again_arrow">Hay dos formas de mover fichas al tablero.
-\n
-\n • Puedes arrastrarlos entre el rack y el tablero.
-\n
-\n • O puedes tocar un cuadrado vacío en el tablero para colocar la “flecha del tablero”. Luego, las fichas en el estante reemplazan la flecha cuando las tocas. Toque la flecha para cambiar su dirección u ocultarla.</string>
+    <string name="not_again_arrow">Hay dos formas de mover fichas al tablero. \n \n • Puedes arrastrarlos entre el atril y el tablero. \n \n • O puedes tocar un cuadrado vacío en el tablero para colocar la “flecha del tablero”. Luego, las fichas en el atril reemplazan la flecha cuando las tocas. Toque la flecha para cambiar su dirección u ocultarla.</string>
     <string name="pick_url_title_fmt">Busca %1$s en</string>
     <string name="button_done">Hecho</string>
     <string name="title_blank_picker">Elegir mosaico para el espacio en blanco</string>
@@ -856,7 +845,7 @@
     <string name="str_resigned_fmt" formatted="false">[Renunció] %1$s: %2$d</string>
     <string name="button_enable_bt">Activar el bluetooth</string>
     <string name="min_len">Longitud mínima</string>
-    <string name="confirm_sms_willpay">Sí: pagaré todos los gastos del SMS al operador</string>
+    <string name="confirm_sms_willpay">Sí: pagaré todos los gastos del operador</string>
     <string name="warn_nomobile_fmt">El número %1$s para %2$s no es un número “móvil”. ¿Importar de todos modos?</string>
     <string name="button_decline">Rechazar</string>
     <string name="new_app_avail">Pulsa para descargar e instalar</string>
@@ -871,7 +860,7 @@
     <string name="download_done">Descarga finalizada</string>
     <string name="button_addBlank">+En blanco</string>
     <string name="inform_dict_title">Lista de palabras incorrecta</string>
-    <string name="summary_gameover">Fin de la partida</string>
+    <string name="summary_gameover">Fin de partida</string>
     <string name="str_winner_fmt" formatted="false">[Ganador] %1$s: %2$d</string>
     <string name="menu_hint_next">Siguiente pista</string>
     <plurals name="invite_p2p_desc_fmt">
@@ -891,7 +880,7 @@
     <string name="changes_title">Últimos cambios</string>
     <string name="button_useconfig">Aplicar un filtro</string>
     <string name="about_credits">Créditos: Íconos de la barra de herramientas de Sarah Chu. Iconos de la barra de navegación del Noun Project: “archivo” de Trendy; “revancha” de Becris; y “intercambio” por iconomanía. Traducciones por voluntarios a través de weblate.org.</string>
-    <string name="show_tiles_menu">Mostrar los mosaicos</string>
+    <string name="show_tiles_menu">Mostrar fichas</string>
     <plurals name="warn_mqtt_games_fmt">
         <item quantity="one">\n\n(Ahora tienes un juego activo usando internet)</item>
         <item quantity="many">\n\n(Tienes %1$d partidas activas usando internet ahora)</item>
@@ -967,7 +956,7 @@
     <string name="board_menu_invite">Invita a</string>
     <string name="list_group_default">Poner aquí las nuevas partidas</string>
     <string name="new_feature_title">Alerta de novedades</string>
-    <string name="square_tiles">Baldosas cuadradas</string>
+    <string name="square_tiles">Fichas del atril cuadrado</string>
     <string name="knowns_bta_fmt">Dirección Bluetooth: %1$s</string>
     <string name="invite_multi_title">Invitar a varias personas</string>
     <string name="logstore_dumped_fmt">Registros escritos en el archivo %1$s</string>
@@ -1034,7 +1023,7 @@
 \n
 \nPuede denegar este permiso si nunca va a descargar las listas de palabras excepto desde dentro de CrossWords y no ha almacenado previamente ninguna allí.</string>
     <string name="group_cur_games">Mis partidas</string>
-    <string name="no_tiles_exist">“%1$s” no puede escribirse con %2$s fichas.</string>
+    <string name="no_tiles_exist">«%1$s» no se puede deletrear con %2$s fichas.</string>
     <string name="loc_filters_all">Todo</string>
     <string name="board_menu_game_unpause">Reanudar</string>
     <string name="games_menu_setDevid">Establecer el ID del dispositivo para MQTT</string>
@@ -1043,7 +1032,7 @@
     <string name="name_concat_dup">" y "</string>
     <string name="board_menu_game_netstats">Estadísticas de la red</string>
     <string name="show_remote">Ver descargables</string>
-    <string name="pick_tiles_title_fmt">Elija una “ortografía” para la casilla para “%1$s”</string>
+    <string name="pick_tiles_title_fmt">Toma una ficha de «deletreo» para «%1$s»</string>
     <string name="invite_copied">Invitación lista para pegar</string>
     <string name="not_again_longtap_lookup">Puedes buscar las palabras ANTES de que se confirmen como las jugadas pulsando prolongadamente, igual que con las palabras confirmadas.
 \n
@@ -1071,14 +1060,14 @@
     <string name="pause_forget_msg">Olvidar el mensaje</string>
     <string name="archive_title_settings">Ajustes</string>
     <string name="invite_multi_summary">Permitir invitar a varios jugadores por dispositivo remoto</string>
-    <string name="pref_group_sms_summary">Configuración relacionada con la partida por SMS</string>
+    <string name="pref_group_sms_summary">Preferencias relacionada con la partida por sms</string>
     <string name="unpause_title">Partida reanudada</string>
     <string name="lang_name_slovak">Eslovaco</string>
     <string name="default_language">Idioma predeterminado</string>
     <string name="default_loc">Almacenar listas de palabras internamentes</string>
     <string name="delete_dicts">Borrar la(s) lista[s] de palabra(s)</string>
     <string name="not_again_backclears">El botón Atrás borra cualquier selección en lugar de salir. Vuelve a pulsarlo para salir de la aplicación.</string>
-    <string name="menu_juggle">Estantería para accesorios para malabares</string>
+    <string name="menu_juggle">Atril de malabares</string>
     <string name="list_group_moveup">Mover hacia arriba</string>
     <string name="values_values">Sólo valores</string>
     <string name="enable_sms_toself_title">No autoenviar SMS</string>
@@ -1150,13 +1139,13 @@
     <string name="peers_info_pending">Consultando al servidor…</string>
     <string name="no_peers_info">Información de pares no disponible</string>
     <string name="selfName">Este dispositivo</string>
-    <string name="sub_seven_allowed">Permitir intercambios por debajo de siete mosaicos restantes</string>
+    <string name="sub_seven_allowed">Conceder intercambios por debajo de siete fichas restantes</string>
     <string name="sub_seven_allowed_sum">Esto te permite intercambiar fichas cuando queda tan sólo 1 en la reserva, como es habitual en el juego español.</string>
     <string name="prefs_board_buttons_summary">Desactiva los botones que no utilices</string>
     <string name="disable_dicts_button_title">Botón para desactivar listas de palabras</string>
     <string name="disable_dicts_button_summary">Ocultar el botón que abre la lista de palabras actual</string>
     <string name="disable_flip_button_title">Deshabilitar el botón girar el tablero</string>
-    <string name="disable_shuffle_button_title">Deshabilitar el botón mezclar fichas</string>
+    <string name="disable_shuffle_button_title">Inhabilitar el botón mezclar fichas</string>
     <string name="disable_undo_button_title">Desactivar botón deshacer</string>
     <string name="disable_chat_button_title">Desactivar el botón del chat</string>
     <string name="disable_chat_button_summary">Ocultar el botón que abre el chat</string>
@@ -1194,38 +1183,38 @@
     <string name="statsCopiedToast">Estadísticas copiadas al portapapeles</string>
     <string name="statsClearConfirm">¿Está seguro que desea borrar permanentemente las estadísticas?</string>
     <string name="movechecker_name">Mover Comprobante</string>
-    <string name="kaservice_title">Movimiento de crucigramas Checker</string>
+    <string name="kaservice_title">Inspector de Movimiento de CrossWords</string>
     <string name="kaservice_content">CrossWords se mantiene despierto para comprobar los movimientos remotos. Pulse para más información.</string>
     <string name="enable_kaservice_summary">Mantenga CrossWords despierto para recibir movimientos, incluso cuando no sea visible o el dispositivo está dormido. Nota: puede afectar la vida de la batería.</string>
-    <string name="ka_config_fmt">El Move Checker solo funciona cuando se ha hecho un movimiento en al menos un juego en red en las últimas %1$d horas. Puede configurarlo, o deshabilitarlo por completo, utilizando el botón “%2$s” a continuación.</string>
-    <string name="ksconfig_running_fmt">"El Movimiento Checker ha sido estando en cartelera %1$dh%2$02dm.  Parará en %3$dh%4$02dm a no ser que un movimiento está hecho o recibido antes de que entonces."</string>
-    <string name="ksconfig_notrunning">El Checker de movimiento no está funcionando actualmente.</string>
-    <string name="ksconfig_disabled">El Movimiento Checker es actualmente inutilizado.</string>
-    <string name="hide_notify_expl">Si te cansas de ver la notificación puedes usar la aplicación Ajustes de tu dispositivo para ocultarla. Ve con el botón de abajo.</string>
-    <string name="hide_notify_button">Ir a “Mostrar notificaciones”</string>
-    <string name="ksconfig_killed_title">Movimiento Checker paró</string>
-    <string name="ksconfig_killed_body_fmt">Estuvo en cartelera %1$dh%2$02dm</string>
-    <string name="prefs_net_kaservice_summary">Activar el control de movimiento</string>
+    <string name="ka_config_fmt">El Mover Inspector solo funciona cuando se ha hecho un movimiento en al menos un juego en red en las últimas %1$d horas. Puede configurarlo, o deshabilitarlo por completo, utilizando el botón «%2$s» a continuación.</string>
+    <string name="ksconfig_running_fmt">El Movimiento Checker ha sido estando en cartelera %1$dh%2$02dm. Parará en %3$dh%4$02dm a no ser que un movimiento está hecho o recibido antes de que entonces.</string>
+    <string name="ksconfig_notrunning">Actualmente el Inspector de movimiento no está en ejecución.</string>
+    <string name="ksconfig_disabled">El Movimiento Checker actualmente está inutilizado.</string>
+    <string name="hide_notify_expl">Si te cansas de ver la notificación puedes usar la aplicación Ajustes de tu dispositivo para ocultarla. obtenga ahí el botón abajo.</string>
+    <string name="hide_notify_button">Ir a «Mostrar notificaciones»</string>
+    <string name="ksconfig_killed_title">Movimiento Inspector detenido</string>
+    <string name="ksconfig_killed_body_fmt">Ejecutado por %1$dh%2$02dm</string>
+    <string name="prefs_net_kaservice_summary">Activar el inspector de movimiento</string>
     <string name="expl_ka_hours">Cuantas horas para permanecer despierto</string>
     <string name="title_ka_menuwhen">Activar movimiento Menú de verificación</string>
     <string name="ka_menuwhen_never">Nunca</string>
     <string name="ka_menuwhen_available">Cuando esté disponible</string>
     <string name="ka_menuwhen_running">Cuando corres</string>
     <string name="ka_menuwhen_always">Siempre</string>
-    <string name="expl_notagain_keepalive">CrossWords recibirá movimientos de otros jugadores más rápidamente si habilita la nueva función Move Checker. El botón Más información te dirá cómo.</string>
+    <string name="expl_notagain_keepalive">CrossWords recibirá movimientos de otros jugadores más rápidamente si habilita la función Move Checker nueva. El botón Más información te dirá cómo.</string>
     <string name="button_show_ka">Más información</string>
-    <string name="show_kaservicedied_title">Avisad cuando se detenga el control de movimiento</string>
-    <string name="show_kaservicedied_body">"Poste una notificación cuándo el Movimiento Checker está parado (normalmente porque  está sido demasiado mucho tiempo desde un movimiento estuvo enviado o recibió.)"</string>
-    <string name="pref_item_allowMulti_title">Permitir duplicados gameIDs</string>
-    <string name="pref_item_allowMulti_summary">Normalmente esto significa aceptar invitaciones del mismo dispositivo</string>
-    <string name="warn_mqtt_gone">La capacidad de enviar movimientos a través de Internet a través de MQTT ya no es compatible en su versión de Android.</string>
+    <string name="show_kaservicedied_title">Notifica cuando se detenga el Inspector de movimiento</string>
+    <string name="show_kaservicedied_body">Poste una notificación cuándo el Movimiento Inspector está parado (normalmente porque está sido demasiado mucho tiempo desde un movimiento estuvo enviado o recibió.)</string>
+    <string name="pref_item_allowMulti_title">Conceder duplicados gameIDs</string>
+    <string name="pref_item_allowMulti_summary">Usualmente esto significa aceptar invitaciones del mismo dispositivo</string>
+    <string name="warn_mqtt_gone">La habilitad de enviar movimientos a través de Internet a través de MQTT ya no es compatible en su versión de Android.</string>
     <string name="warn_mqtt_gone_email_fmt">Por favor hágame saber que ha visto esta advertencia (a través del botón “%1$s” a continuación). Muy pocas personas todavía están usando esta versión de Android, y esperaba que ninguno de ellos estaba usando CrossWords para jugar en red. Puedo intentar trabajar alrededor de este problema una vez que sé que realmente impacta a alguien.</string>
-    <string name="have_mtqq_games_fmt">Tengo juegos %1$d usando mqtt.</string>
+    <string name="have_mtqq_games_fmt">Tengo %1$d juegos usando mqtt.</string>
     <string name="qos_prefs_default_expl_fmt">Utilice lo que el broker MQTT recomienda (actualmente %1$s)</string>
-    <string name="gesture_margins_title">Cuando las Gesturas de Navegación están en</string>
-    <string name="gesture_margins_shrink">Arranque la tabla para excluir los márgenes</string>
-    <string name="gesture_margins_ignore">Junta de sorteo llena-ancho</string>
-    <string name="not_again_margins_fmt">"Cuándo \"Navegación de Gesto\" está habilitada, como  es en este aparato,  es difícil de arrastrar los azulejos se acercan el borde de la pantalla. Tan los crucigramas pueden ser configurados para dibujar la junta y la bandeja un poco más estrecha, evitando los márgenes donde los gestos empiezan. \n\nEl encuadre actual es “%1$s”.  Puedes cambiar este comportamiento en cualquier momento en el “%2$s” sección de %3$s, o ir allí ahora vía el botón abajo. (Los cambios tomarán efecto tiempo próximo  abres un juego.)"</string>
+    <string name="gesture_margins_title">Cuando los Gestos de Navegación están en</string>
+    <string name="gesture_margins_shrink">Contrae el tablero para excluir márgenes</string>
+    <string name="gesture_margins_ignore">Extrae el tablero a anchura completa</string>
+    <string name="not_again_margins_fmt">Cuando está habilitada «Navegación de Gesto», como en este dispositivo, es difícil de arrastrar las fichas se acercan el borde de la pantalla. Tan los crucigramas pueden ser configurados para dibujar el tablero y la bandeja un poco más estrecha, evitando los márgenes donde los gestos comienzan.\n\nEl encuadre actual es «%1$s». Puedes cambiar este comportamiento en cualquier momento en la sección «%2$s» de %3$s, o ir allí ahora por medio del botón de abajo. (Los cambios tomarán efecto la vez siguiente que abra un juego.)</string>
     <string name="gamel_menu_mqtt">MQTT</string>
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">Ping Vía %1$s tomó %2$d ms.</string>
