@@ -2361,4 +2361,7 @@
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">Um ping via %1$s levou %2$d ms.</string>
     <string name="games_menu_mqttStats">Estatísticas de conexão</string>
+    <string name="gesture_margins_title">Quando a navegação gestual está ativa</string>
+    <string name="gesture_margins_shrink">Diminuir tabuleiro para excluir margens</string>
+    <string name="gesture_margins_ignore">Desenhar tabuleiro com tamanho máximo</string>
 </resources>
