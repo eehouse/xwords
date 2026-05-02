@@ -2901,7 +2901,6 @@ nextTurn( ServerCtxt* server, XWEnv xwe, XP_S16 nxtTurn )
     if ( nxtTurn == PICK_CUR ) {
         nxtTurn = model_getNextTurn( server->vol.model );
     } else if ( nxtTurn == PICK_NEXT ) {
-        XP_ASSERT( server->nv.gameState == XWSTATE_INTURN );
         if ( server->nv.gameState != XWSTATE_INTURN ) {
             SRVR_LOGFF( "doing nothing; state %s != XWSTATE_INTURN",
                         getStateStr(server->nv.gameState) );

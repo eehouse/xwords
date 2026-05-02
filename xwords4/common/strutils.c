@@ -292,7 +292,9 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
     } else {
         stream_putU32VL( stream, len );
     }
-    stream_putBytes( stream, str, len );
+    if ( 0 < len ) {
+        stream_putBytes( stream, str, len );
+    }
 } /* putStringToStream */
 
 XP_Bool
