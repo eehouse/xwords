@@ -462,7 +462,9 @@ lbt_send( LaunchParams* params, const XP_U8* buf, XP_U16 len,
         dp->params = params;
 
         if ( isLocalAddr(params, btAddr) ) {
-            g_idle_add( sendToSelfIdle, dp );
+            if ( params->allowBTSend2Self ) {
+                g_idle_add( sendToSelfIdle, dp );
+            }
         } else {
             pthread_t thread;
             (void)pthread_create( &thread, NULL, sendProc, dp );

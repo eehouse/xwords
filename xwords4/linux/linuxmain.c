@@ -761,7 +761,7 @@ typedef enum {
     ,CMD_REMATCH_ON_OVER
     ,CMD_STATUS_SOCKET_NAME
     ,CMD_CMDS_SOCKET_NAME
-    ,N_CMDS
+    ,CMD_ALLOW_BTTOSELF
 } XwLinuxCmd;
 
 typedef struct _CmdInfoRec {
@@ -938,6 +938,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_STATUS_SOCKET_NAME, true, "status-socket-name",
        "Unix domain socket to which to write status" },
     { CMD_CMDS_SOCKET_NAME, true, "cmd-socket-name", "Unix domain socket on which to listen for commands"},
+    { CMD_ALLOW_BTTOSELF, false, "allow-bt-send2self", "Enable fake BT short-circuit sends"},
 };
 
 typedef struct _OptState {
@@ -3308,6 +3309,10 @@ main( int argc, char** argv )
 
         case CMD_CMDS_SOCKET_NAME:
             mainParams.cmdsSocket = os.optarg;
+            break;
+
+        case CMD_ALLOW_BTTOSELF:
+            mainParams.allowBTSend2Self = true;
             break;
 
         default:
