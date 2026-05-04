@@ -8,7 +8,7 @@ g_INVITE_HOWS = (('OutOfApp', 1), ('Internal', 1), ('KnownPlayer', 1))
 g_REMATCH_PCTS = (('Standalone', 10), ('Host', 10), ('Guest', 10))
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
-gDone = False
+gErr = 0
 gGamesMade = 0
 g_LOGFILE = None
 
@@ -889,9 +889,10 @@ def mainLoop(args, devs):
     startTime = datetime.datetime.now()
     nextStallCheck = startTime + datetime.timedelta(seconds = 20)
 
+    global gErr
     while 0 < len(devs):
-        if gDone:
-            print('gDone set; exiting loop')
+        if 0 != gErr:
+            print('gErr set; exiting loop')
             break
         elif nCores < countCores(args):
             print('core file count increased; exiting')
@@ -915,12 +916,14 @@ def mainLoop(args, devs):
             if allStalled:
                 log(args, 'exiting mainLoop with {} left (of {}) because all stalled' \
                     .format(len(devs), startCount))
+                gErr = 1
                 break
 
         lastChange = Device.printStatus(args.STATUS_STEPS, args.VERBOSE)
         if now - lastChange > datetime.timedelta(seconds=args.NO_CHANGE_SECS):
             print('exiting mainLoop because no change in {} seconds' \
                 .format(args.NO_CHANGE_SECS))
+            gErr = 1
             break
 
     # list info about any remaining games
@@ -1119,9 +1122,9 @@ def assignDefaults(args):
     assert args.BOARD_SIZE_MAX <= 23
 
 def termHandler(signum, frame):
-    global gDone
+    global gErr
     print('termHandler() called')
-    gDone = True
+    gErr = 1
 
 def printError(msg): print( 'ERROR: {}'.format(msg))
 
@@ -1176,6 +1179,8 @@ def main():
     if g_LOGFILE: g_LOGFILE.close()
 
     if args.OPEN_ON_EXIT: openOnExit(args)
+
+    exit(gErr)
 
 ##############################################################################
 if __name__ == '__main__':
