@@ -1234,4 +1234,8 @@
     <string name="games_menu_pingMqtt">Ping</string>
     <string name="ping_result_fmt">Ping über %1$s dauerte %2$d ms.</string>
     <string name="games_menu_mqttStats">Verbindungsstatistiken</string>
+    <string name="gesture_margins_ignore">Brett in voller Breite zeichnen</string>
+    <string name="not_again_margins_fmt">Wenn \"Gestennavigation\" aktiviert ist, wie es auf diesem Gerät ist, ist es schwierig, Fliesen in der Nähe des Bildschirmrandes zu ziehen. Also kann CrossWords konfiguriert werden, um das Brett und die Ablage etwas schmaler zu zeichnen, wodurch die Ränder vermieden werden, an denen Gesten beginnen.\n\nDie aktuelle Einstellung ist „%1$s“. Sie können dieses Verhalten jederzeit im Abschnitt “%2$s” von %3$s ändern oder jetzt über die Schaltfläche unten dorthin gehen. (Änderungen werden das nächste Mal wirksam, wenn Sie eine Partie öffnen.)</string>
+    <string name="gesture_margins_title">Wenn Navigationsgesten an sind</string>
+    <string name="gesture_margins_shrink">Brett schrumpfen, um Ränder auszuschließen</string>
 </resources>
