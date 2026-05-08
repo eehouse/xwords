@@ -21,6 +21,7 @@
 #include "enginep.h"
 #include "dictnry.h"
 #include "util.h"
+#include "modelp.h"
 #include "dbgutil.h"
 
 #ifdef CPLUS
@@ -498,8 +499,8 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
             }
             for ( ; ; ) {
                 XP_U16 firstRowToFill = 0;
-                engine->numRows = model_numRows(engine->model);
-                engine->numCols = model_numCols(engine->model);
+                engine->numRows = model_numRows(model);
+                engine->numCols = model_numCols(model);
                 if ( !engine->searchHorizontal ) {
                     XP_U16 tmp = engine->numRows;
                     engine->numRows = engine->numCols;
@@ -593,7 +594,7 @@ engine_findMove( EngineCtxt* engine, XWEnv xwe, const ModelCtxt* model,
 #ifdef XWFEATURE_SEARCHLIMIT
  exit:
 #endif
-    LOG_RETURNF( "%s", boolToStr(result) );
+    LOG_RETURNF( "<%X> %s", getGameID(model), boolToStr(result) );
     return result;
 } /* engine_findMove */
 

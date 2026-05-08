@@ -252,7 +252,7 @@ cgl_draw( CursGameList* cgl )
             data[line][col++] = g_strdup( gi->gameName );
             data[line][col++] = g_strdup( sum->turnIsLocal ? "Local":"Remote" );
             data[line][col++] = g_strdup( gi->isoCodeStr );
-            data[line][col++] = g_strdup_printf( "%x", gi->gameID );
+            data[line][col++] = g_strdup_printf( "%X", gi->gameID );
             data[line][col++] = g_strdup_printf( "%s", sum->opponents );
             data[line][col++] = g_strdup_printf( "%d", gi->deviceRole );
             data[line][col++] = g_strdup_printf( "%d", gi->nPlayers );

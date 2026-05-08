@@ -112,6 +112,12 @@ adjustScoreForUndone( ModelCtxt* model, XWEnv xwe, const MoveInfo* mi, XP_U16 tu
     player->curMoveValid = XP_TRUE;
 } /* adjustScoreForUndone */
 
+XP_U32
+getGameID( const ModelCtxt* model )
+{
+    return model->vol.gi->gameID;
+}
+
 XP_Bool
 model_checkMoveLegal( ModelCtxt* model, XWEnv xwe, XP_S16 turn, XWStreamCtxt* stream,
                       WordNotifierInfo* notifyInfo )

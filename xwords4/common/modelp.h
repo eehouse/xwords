@@ -97,6 +97,7 @@ void normalizeMoves( const ModelCtxt* model, XP_S16 turn,
 void normalizeMI( MoveInfo* moveInfoOut, const MoveInfo* moveInfoIn );
 void adjustScoreForUndone( ModelCtxt* model, XWEnv xwe, const MoveInfo* mi,
                            XP_U16 turn );
+XP_U32 getGameID( const ModelCtxt* model );
 #ifdef CPLUS
 }
 #endif

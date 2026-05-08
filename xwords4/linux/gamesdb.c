@@ -55,7 +55,8 @@ static void upgradeTables( sqlite3* pDb, int32_t oldVersion );
 static void execNoResult( sqlite3* pDb, const gchar* query, bool errOK );
 
 
-static void assertPrintResult( sqlite3* pDb, int result, int expect );
+static void assertPrintResult( sqlite3* pDb, int result,
+                               const gchar* query, int expect );
 
 /* Versioning:
  *
@@ -153,7 +154,7 @@ gamesTableExists( sqlite3* pDb )
 
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     result = sqlite3_step( ppStmt );
     XP_ASSERT( SQLITE_ROW == result );
     bool exists = 1 == sqlite3_column_int( ppStmt, 0 );
@@ -479,10 +480,9 @@ gdb_listGames( sqlite3* pDb )
     GSList* list = NULL;
     
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb,
-                                     "SELECT rowid FROM games ORDER BY rowid",
-                                     -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    const char* query = "SELECT rowid FROM games ORDER BY rowid";
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     XP_USE( result );
     while ( NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
@@ -530,7 +530,7 @@ gdb_keysLike( sqlite3* pDb, const XP_UCHAR* pattern )
 
     sqlite3_stmt* ppStmt;
     int sqlResult = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, sqlResult, SQLITE_OK );
+    assertPrintResult( pDb, sqlResult, query, SQLITE_OK );
     while ( NULL != ppStmt ) {
         sqlResult = sqlite3_step( ppStmt );
         switch ( sqlResult ) {
@@ -560,9 +560,10 @@ gdb_getRelayIDsToRowsMap( sqlite3* pDb )
 {
     GHashTable* table = g_hash_table_new( g_str_hash, g_str_equal );
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, "SELECT relayid, rowid FROM games "
-                                     "where NOT relayid = ''", -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    const char* query = "SELECT relayid, rowid FROM games "
+        "where NOT relayid = ''";
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     while ( result == SQLITE_OK && NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
         case SQLITE_ROW:        /* have data */
@@ -603,7 +604,7 @@ gdb_getGameInfoForRow( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 
     sqlite3_stmt* ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     result = sqlite3_step( ppStmt );
     if ( SQLITE_ROW == result ) {
         success = XP_TRUE;
@@ -672,12 +673,12 @@ gdb_getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
     int maxRowIDs = *nRowIDs;
     *nRowIDs = 0;
 
-    char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %d "
+    char query[256];
+    snprintf( query, sizeof(query), "SELECT rowid from games WHERE gameid = %d "
               "LIMIT %d", gameID, maxRowIDs );
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     int ii;
     for ( ii = 0; ii < maxRowIDs; ++ii ) {
         result = sqlite3_step( ppStmt );
@@ -694,13 +695,13 @@ static XP_Bool
 loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid, 
                 DeviceRole* role, const char* column )
 {
-    char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT %s, role from games WHERE rowid = %lld", 
+    char query[256];
+    snprintf( query, sizeof(query), "SELECT %s, role from games WHERE rowid = %lld", 
               column, rowid );
 
     sqlite3_stmt *ppStmt;
-    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    assertPrintResult( pDb, result, SQLITE_OK );
+    int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
+    assertPrintResult( pDb, result, query, SQLITE_OK );
     result = sqlite3_step( ppStmt );
     XP_Bool success = SQLITE_ROW == result;
     if ( success ) {
@@ -751,7 +752,7 @@ gdb_getSummary( sqlite3* pDb, DevSummary* ds )
             "ended = 0";
         sqlite3_stmt* ppStmt;
         int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-        assertPrintResult( pDb, err, SQLITE_OK );
+        assertPrintResult( pDb, err, query, SQLITE_OK );
         err = sqlite3_step( ppStmt );
         XP_ASSERT( SQLITE_ROW == err );
         ds->allDone = 0 == sqlite3_column_int( ppStmt, 0 );
@@ -763,7 +764,7 @@ gdb_getSummary( sqlite3* pDb, DevSummary* ds )
         const char* query = "SELECT nTiles FROM games";
         sqlite3_stmt* ppStmt;
         int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-        assertPrintResult( pDb, err, SQLITE_OK );
+        assertPrintResult( pDb, err, query, SQLITE_OK );
         for ( ; ; ) {
             err = sqlite3_step( ppStmt );
             if ( SQLITE_ROW != err ) {
@@ -784,7 +785,7 @@ gdb_getSummary( sqlite3* pDb, DevSummary* ds )
         const char* query = "SELECT count(rowid) FROM games";
         sqlite3_stmt* ppStmt;
         int err = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-        assertPrintResult( pDb, err, SQLITE_OK );
+        assertPrintResult( pDb, err, query, SQLITE_OK );
         err = sqlite3_step( ppStmt );
         XP_ASSERT( SQLITE_ROW == err );
         ds->nGames = sqlite3_column_int( ppStmt, 0 );
@@ -931,17 +932,17 @@ execNoResult( sqlite3* pDb, const gchar* query, bool errOk )
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
     if ( ! errOk ) {
-        assertPrintResult( pDb, result, SQLITE_OK );
+        assertPrintResult( pDb, result, query, SQLITE_OK );
     }
     result = sqlite3_step( ppStmt );
     if ( ! errOk ) {
-        assertPrintResult( pDb, result, SQLITE_DONE );
+        assertPrintResult( pDb, result, query, SQLITE_DONE );
     }
     sqlite3_finalize( ppStmt );
 }
 
 static void
-assertPrintResult( sqlite3* pDb, int result, int expect )
+assertPrintResult( sqlite3* pDb, int result, const char* query, int expect )
 {
     int code = sqlite3_errcode( pDb );
     if ( code != result ) {
@@ -952,6 +953,7 @@ assertPrintResult( sqlite3* pDb, int result, int expect )
         XP_LOGFF( "sqlite3 error: %d (%s)", result, sqlite3_errstr(result) );
         XP_LOGFF( "Err msg (which could be out-of-sync): %s",
                   sqlite3_errmsg( pDb ) );
+        XP_LOGFF( "query: %s", query );
         XP_ASSERT(0);
     }
 }
