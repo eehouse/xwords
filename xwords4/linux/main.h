@@ -126,6 +126,7 @@ typedef struct _LaunchParams {
     XP_Bool useMmap;
     XP_Bool closeStdin;
     XP_Bool skipUserErrs;
+    XP_Bool skipCleanup;
 
     XP_Bool useCurses;
     CommonAppGlobals* cag;           /* cursesmain or gtkmain sets this */

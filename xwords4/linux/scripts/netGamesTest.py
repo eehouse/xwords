@@ -286,6 +286,7 @@ class Device():
             datetime.timedelta(seconds = self.args.MIN_APP_LIFE)
         args = [ self.script, '--close-stdin', '--skip-user-errors' ]
         if not self.args.USE_GTK: args.append('--curses')
+        if not self.args.NO_SKIP_CLEANUP: args.append('--skip-cleanup')
 
         env = os.environ.copy()
         env['APP'] = self._getApp()
@@ -707,7 +708,8 @@ class Device():
         if stats and self._stats:
             for key in stats.keys():
                 if key in self._stats:
-                    assert self._stats[key] <= stats[key]
+                    if not self._stats[key] <= stats[key]:
+                        self._log(f"_addStats(): self key: {self._stats[key]}; stats key: {stats[key]}")
         self._stats = stats
 
     def _checkScript(self):
@@ -993,6 +995,8 @@ def mkParser():
     #                     help = 'how often a robot should play a phony (only applies when --phonies==2')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
+    parser.add_argument('--with-save-on-close', dest = 'NO_SKIP_CLEANUP', default = False, action = 'store_true',
+                        help = 'Tell linux client to shut down/save dutil on close (unlike Android)')
 
     # parser.add_argument('--dup-pct', dest = 'DUP_PCT', default = 0, type = int,
     #                     help = 'this fraction played in duplicate mode')

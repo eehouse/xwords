@@ -3040,10 +3040,8 @@ validateChannelMessage( CommsCtxt* comms, XWEnv xwe,
                         const MsgCountState* mcs )
 
 {
-    AddressRecord* rec;
     LOG_FUNC();
-
-    rec = getRecordFor( comms, channelNo );
+    AddressRecord* rec = getRecordFor( comms, channelNo );
     if ( !!rec ) {
         removeFromQueue( comms, channelNo, lastMsgRcd );
 

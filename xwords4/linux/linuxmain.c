@@ -762,6 +762,7 @@ typedef enum {
     ,CMD_STATUS_SOCKET_NAME
     ,CMD_CMDS_SOCKET_NAME
     ,CMD_ALLOW_BTTOSELF
+    ,CMD_SKIP_CLEANUP
 } XwLinuxCmd;
 
 typedef struct _CmdInfoRec {
@@ -939,6 +940,7 @@ static CmdInfoRec CmdInfoRecs[] = {
        "Unix domain socket to which to write status" },
     { CMD_CMDS_SOCKET_NAME, true, "cmd-socket-name", "Unix domain socket on which to listen for commands"},
     { CMD_ALLOW_BTTOSELF, false, "allow-bt-send2self", "Enable fake BT short-circuit sends"},
+    { CMD_SKIP_CLEANUP, false, "skip-cleanup", "Simulate Android situation by not shutting down dutil etc." },
 };
 
 typedef struct _OptState {
@@ -2212,12 +2214,16 @@ testPhonies( LaunchParams* params )
 static void
 freeParams( LaunchParams* params )
 {
-    linux_dutils_free( &params->dutil );
+    if ( !params->skipCleanup ) {
+        linux_dutils_free( &params->dutil );
+    }
 
     gdb_close( params->pDb );
     params->pDb = NULL;
 
-    mpool_destroy( params->mpool );
+    if ( !params->skipCleanup ) {
+        mpool_destroy( params->mpool );
+    }
 }
 
 static int
@@ -2379,16 +2385,17 @@ compByNameRev( const DLHead* dl1, const DLHead* dl2 )
 }
 
 static ForEachAct
-mapProc( const DLHead* XP_UNUSED_DBG(dl), void* XP_UNUSED(closure))
+mapProc( const DLHead* dl, void* XP_UNUSED(closure))
 {
-    XP_LOGFF( "name: %s", ((TestThing*)dl)->name );
+    XP_USE(dl);
+    // XP_LOGFF( "name: %s", ((TestThing*)dl)->name );
     return FEA_OK;
 }
 
 static TestThing*
 removeAndMap( TestThing* list, TestThing* node )
 {
-    XP_LOGFF( "removing %s", node->name );
+    // XP_LOGFF( "removing %s", node->name );
     list = (TestThing*)dll_remove( &list->links, &node->links );
     dll_map( &list->links, mapProc, NULL, NULL );
     return list;
@@ -3315,6 +3322,10 @@ main( int argc, char** argv )
             mainParams.allowBTSend2Self = true;
             break;
 
+        case CMD_SKIP_CLEANUP:
+            mainParams.skipCleanup = true;
+            break;
+
         default:
             /* If param exists but isn't handled, that might be ok. */
             XP_LOGFF( "param %s not handled", os.param );
@@ -3479,7 +3490,9 @@ main( int argc, char** argv )
         writeStatus( statusSocket, mainParams.dbName );
     }
 
-    mempool_dbg_checkall();
+    if ( !mainParams.skipCleanup ) {
+        mempool_dbg_checkall();
+    }
     
     XP_LOGFF( "%s exiting, returning %d", argv[0], result );
     return result;
