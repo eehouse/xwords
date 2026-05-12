@@ -1526,8 +1526,9 @@
         <item quantity="other">%1$d movimentos jogados</item>
     </plurals>
     <plurals name="confirm_delete_dict_fmt">
-        <item quantity="one">Você tem certeza que deseja apagar a lista de palavra %1$s?</item>
-        <item quantity="other">Você tem certeza que deseja apagar as listas de palavras %1$s?</item>
+        <item quantity="one">Tem certeza que deseja apagar a lista de palavras %1$s?</item>
+        <item quantity="many">Tem certeza que deseja apagar as listas de palavras %1$s?</item>
+        <item quantity="other">Tem certeza que deseja apagar as listas de palavras %1$s?</item>
     </plurals>
     <string name="download_more">Descarregar mais</string>
     <string name="set_default_message_fmt">Para quais jogadores deve a list de palavras %1$s ser o predefinição para os jogos novos\? (O idioma de %2$s será a predefinição para ambos.)</string>
@@ -1543,9 +1544,9 @@
     <string name="dup_minutes_label">Minutos por turno</string>
     <string name="robot_iq_label">QI do Robô</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">Um quadrado foi trocado.</item>
-        <item quantity="many">%1$d quadrados foram trocados.</item>
-        <item quantity="other">%1$d quadrados foram trocados.</item>
+        <item quantity="one">Uma pedra foi trocada.</item>
+        <item quantity="many">%1$d pedras foram trocadas.</item>
+        <item quantity="other">%1$d pedras foram trocadas.</item>
     </plurals>
     <string name="str_robot_moved_fmt">"O robô %1$s fez este movimento: "</string>
     <string name="msg_dev_deleted_fmt">O jogo chamado “%1$s“ foi apagado num outro aparelho. Já não será possível jogá-lo.</string>
@@ -1688,8 +1689,9 @@
     <string name="clip_label">URL do convite</string>
     <string name="invite_copied">Convite pronto para colar</string>
     <plurals name="resent_msgs_fmt">
-        <item quantity="one">Uma jogada reenviada</item>
-        <item quantity="other">%1$s jogadas reenviadas</item>
+        <item quantity="one">Um movimento reenviado</item>
+        <item quantity="many">%1$s movimentos reenviados</item>
+        <item quantity="other">%1$s movimentos reenviados</item>
     </plurals>
     <string name="show_sms_title">Mostrar dados que SMS envia, recebe</string>
     <string name="str_no_hint_found">Não pôde achar nenhuma jogada</string>
@@ -1706,7 +1708,7 @@
     <string name="pref_item_update_title">Atualização entre lançamentos</string>
     <string name="pref_group_relay_summary">Preferências relacionadas a jogar via internet/relay</string>
     <string name="pref_group_relay_title">Material da Internet</string>
-    <string name="pref_group_sms_summary">Preferências relacionadas a Jogar via SMS</string>
+    <string name="pref_group_sms_summary">Preferências relacionadas a jogar-via-sms</string>
     <string name="pref_group_sms_title">Coisas de SMS de dados</string>
     <string name="got_langdict_summary">Não tentar uma segunda vez</string>
     <string name="got_langdict_title">Captar lista de palavras padrão para o idioma</string>
@@ -1754,8 +1756,9 @@
     <string name="waiting_host_title">Esperando host</string>
     <string name="waiting_rematch_title">Revanche em progresso</string>
     <plurals name="waiting_title_fmt">
-        <item quantity="one">Esperando o jogador</item>
-        <item quantity="other">Esperando os %1$d jogadores</item>
+        <item quantity="one">À espera do jogador</item>
+        <item quantity="many">À espera de %1$d jogadores</item>
+        <item quantity="other">À espera de %1$d jogadores</item>
     </plurals>
     <string name="not_again_hidenewgamebuttons">Os dois botões no fim deste ecrã e os dois primeiros itens na sua Barra de Ação (ou menu) fazem a mesma coisa.
 \n
@@ -1767,6 +1770,7 @@
     <string name="err_dup_invite_fmt">Convite duplo rejeitado: aparelho “%1$s” já aceitou um convite para este jogo.</string>
     <plurals name="nplayers_fmt">
         <item quantity="one">Um jogador</item>
+        <item quantity="many">%1$d jogadores</item>
         <item quantity="other">%1$d jogadores</item>
     </plurals>
     <string name="nplayers_prompt">Número neste aparelho</string>
@@ -1785,11 +1789,12 @@
     <string name="lmi_phony_fmt">%1$s perdeu uma rodada</string>
     <plurals name="lmi_trade_fmt">
         <item quantity="one">%1$s trocou uma pedra</item>
-        <item quantity="many"/>
+        <item quantity="many">%1$s trocou %2$d pedras</item>
         <item quantity="other">%1$s trocou %2$d pedras</item>
     </plurals>
     <plurals name="lmi_move_fmt">
         <item quantity="one">%1$s jogou %2$s por um ponto</item>
+        <item quantity="many">%1$s jogaram %2$s por %3$d pontos</item>
         <item quantity="other">%1$s jogaram %2$s por %3$d pontos</item>
     </plurals>
     <string name="lmi_pass_fmt">%1$s passou (0 pontos)</string>
@@ -1798,14 +1803,17 @@
     <string name="nag_body_fmt">%1$s moveu mais de %2$s atrás.</string>
     <plurals name="nag_days_fmt">
         <item quantity="one">%1$d dia</item>
+        <item quantity="many">%1$d dias</item>
         <item quantity="other">%1$d dias</item>
     </plurals>
     <plurals name="nag_hours_fmt">
         <item quantity="one">%1$d hora</item>
+        <item quantity="many">%1$d horas</item>
         <item quantity="other">%1$d horas</item>
     </plurals>
     <plurals name="nag_minutes_fmt">
         <item quantity="one">%1$d minuto</item>
+        <item quantity="many">%1$d minutos</item>
         <item quantity="other">%1$d minutos</item>
     </plurals>
     <string name="nag_title">Lembrete: É a sua vez</string>
@@ -1863,8 +1871,9 @@
     <string name="loc_search_prompt">Pesquisar por:</string>
     <string name="loc_filters_prompt">Filtrar por:</string>
     <plurals name="new_xlations_fmt">
-        <item quantity="one">Foi instalada uma nova tradução</item>
-        <item quantity="other">Foram instaladas %1$d novas traduções</item>
+        <item quantity="one">Uma nova tradução foi instalada</item>
+        <item quantity="many">%1$d novas traduções foram instaladas</item>
+        <item quantity="other">%1$d novas traduções foram instaladas</item>
     </plurals>
     <string name="sel_items_fmt">Selecionado: %1$d</string>
     <string name="slmenu_deselect_all">Des-selecionar tudo</string>
@@ -1875,15 +1884,13 @@
     <string name="add_done_fmt">%1$s adicionado à lista de estudos %2$s</string>
     <plurals name="paste_done_fmt">
         <item quantity="one">Uma palavra copiada</item>
+        <item quantity="many">%1$d palavras copiadas</item>
         <item quantity="other">%1$d palavras copiadas</item>
     </plurals>
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">Tem certeza que quer apagar a palavra selecionada\?
-\n
-\n(Esta ação não pode ser desfeita.)</item>
-        <item quantity="other">Tem certeza que quer apagar as %1$d palavras selecionadas\?)
-\n
-\n(Esta ação não pode ser desfeita.)</item>
+        <item quantity="one">Tem certeza que quer apagar a palavra selecionada? \n \n(Esta ação não pode ser desfeita.)</item>
+        <item quantity="many">Tem certeza que quer apagar as %1$d palavras selecionadas?) \n \n(Esta ação não pode ser desfeita.)</item>
+        <item quantity="other">Tem certeza que quer apagar as %1$d palavras selecionadas?) \n \n(Esta ação não pode ser desfeita.)</item>
     </plurals>
     <string name="slmenu_clear_sel">Deletar selecionados</string>
     <string name="slmenu_copy_sel">Copiar para área de transferência</string>
@@ -1904,10 +1911,12 @@
     <string name="recovered_group">Jogos recuperados</string>
     <plurals name="sel_groups_fmt">
         <item quantity="one">Um grupo selecionado</item>
+        <item quantity="many">%1$d grupos selecionados</item>
         <item quantity="other">%1$d grupos selecionados</item>
     </plurals>
     <plurals name="sel_games_fmt">
         <item quantity="one">Um jogo selecionado</item>
+        <item quantity="many">%1$d jogos selecionados</item>
         <item quantity="other">%1$d jogos selecionados</item>
     </plurals>
     <string name="not_again_backclears">O botão Voltar limpa qualquer seleção ao invés de sair. Toque novamente para sair do app.</string>
@@ -1927,21 +1936,19 @@
     <string name="button_archive">Arquivar</string>
     <plurals name="group_name_fmt">
         <item quantity="one">%1$s (%2$d jogo)</item>
+        <item quantity="many">%1$s (%2$d jogos)</item>
         <item quantity="other">%1$s (%2$d jogos)</item>
     </plurals>
     <string name="cannot_delete_default_group_fmt">O grupo “%1$s” não pode ser apagado porque é o grupo em que novos jogos são postos.</string>
     <plurals name="groups_confirm_del_games_fmt">
-        <item quantity="one">"
-\n
-\n(Uma partida também será apagada.)"</item>
-        <item quantity="many">"
-\n
-\n(%1$d partidas também serão apagadas.)"</item>
-        <item quantity="other"/>
+        <item quantity="one">\n\n(Uma partida também será apagada.)</item>
+        <item quantity="many">\n\n(%1$d partidas também serão apagadas.)</item>
+        <item quantity="other">\n\n(%1$d partidas também serão apagadas.)</item>
     </plurals>
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">Tem certeza que quer deletar o grupo %1$s\?</item>
-        <item quantity="other">Tem certeza que quer deletar os grupos %1$s\?</item>
+        <item quantity="one">Tem certeza que quer apagar o grupo %1$s?</item>
+        <item quantity="many">Tem certeza que quer apagar os grupos %1$s?</item>
+        <item quantity="other">Tem certeza que quer apagar os grupos %1$s?</item>
     </plurals>
     <string name="download_path_hint">P. ex. onde os anexos de e-mail são salvos</string>
     <string name="no_dict_for_move_fmt">Toque para descarregar %1$s lista de palavras e recuperar</string>
@@ -1955,13 +1962,9 @@
     <string name="button_enable_bt">Ativar Bluetooth</string>
     <string name="button_enable_sms">Ativar dados SMS</string>
     <plurals name="warn_bt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Tem uma partida ativa a usar o Bluetooth.)"</item>
-        <item quantity="many">"
-\n
-\n(Tem %1$d partidas ativas a usar o Bluetooth.)"</item>
-        <item quantity="other"/>
+        <item quantity="one">\n\n(Tem uma partida ativa a usar o Bluetooth.)</item>
+        <item quantity="many">\n\n(Tem %1$d partidas ativas a usarem o Bluetooth.)</item>
+        <item quantity="other">\n\n(Tem %1$d partidas ativas a usarem o Bluetooth.)</item>
     </plurals>
     <string name="warn_bt_havegames">Tem certeza que quer desativar jogar a usar Bluetooth\?
 \n
@@ -1976,16 +1979,16 @@
 \n(Provavelmente foi criado de um convite que não especificou nenhuma forma de conexão que o seu aparelho suporta ou pode ter recentemente removido a sua última forma de conexão.)</string>
     <string name="summary_busy">Sumário indisponível</string>
     <string name="chat_sender_fmt">%1$s:</string>
-    <string name="confirm_clear_bt_postscript">"
-\n
-\n(Só pode readicionar aparelhos que estiverem no alcance do Bluetooth.)"</string>
+    <string name="confirm_clear_bt_postscript">\n\n(Só pode readicionar aparelhos que estiverem no alcance do Bluetooth.)</string>
     <plurals name="confirm_clear_bt_fmt">
-        <item quantity="one">Tem certeza que quer esquecer o aparelho checado\?</item>
-        <item quantity="other">Tem certeza que quer esquecer os %1$d aparelhos checados\?</item>
+        <item quantity="one">Tem certeza que quer esquecer o aparelho verificado?</item>
+        <item quantity="many">Tem certeza que quer esquecer os %1$d aparelhos verificados?</item>
+        <item quantity="other">Tem certeza que quer esquecer os %1$d aparelhos verificados?</item>
     </plurals>
     <plurals name="confirm_clear_sms_fmt">
-        <item quantity="one">Tem certeza que quer apagar o número de telefone verificado\?</item>
-        <item quantity="other">Tem certeza que quer apagar os %1$d números de telefone verificados\?</item>
+        <item quantity="one">Tem certeza que quer apagar o número de telefone verificado?</item>
+        <item quantity="many">Tem certeza que quer apagar os %1$d números de telefone verificados?</item>
+        <item quantity="other">Tem certeza que quer apagar os %1$d números de telefone verificados?</item>
     </plurals>
     <string name="password_hint">(Opcional)</string>
     <string name="get_sms_name">Nome do contato (opcional):</string>
@@ -1994,13 +1997,15 @@
     <string name="empty_bt_inviter">Nenhum aparelho emparelhado detectado ainda.</string>
     <string name="invite_p2p_desc_extra">Apenas aparelhos que estão atualmente disponíveis são exibidos. Se um aparelho próximo não estiver a aparecer por favor certifique-se que o WiFi está ativado, que o CrossWords esteja instalado e que jogar via WiFiDirect esteja ativo.</string>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">Selecione o nome do aparelho WiFiDirect que quer convidar para um novo jogo, depois toque no “%2$s”.</item>
-        <item quantity="other">Selecione os nomes dos %1$d aparelhos WiFiDirect que quer convidar para um novo jogo, depois toque no “%2$s”.</item>
+        <item quantity="one">Selecione o nome do aparelho WiFiDirect que quer convidar para um jogo novo, depois toque no “%2$s”.</item>
+        <item quantity="many">Selecione os nomes dos %1$d aparelhos WiFiDirect que quer convidar para um jogo novo, depois toque no “%2$s”.</item>
+        <item quantity="other">Selecione os nomes dos %1$d aparelhos WiFiDirect que quer convidar para um jogo novo, depois toque no “%2$s”.</item>
     </plurals>
     <string name="invite_nbs_desc">Uma mensagem de dados será então entregue ao aparelho com aquele número de telefone. Se CrossWords estiver instalado e tiver as permissões necessárias ele receberá o convite e poderá então jogar.</string>
     <plurals name="invite_sms_desc_fmt">
-        <item quantity="one">Por favor cheque o número de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
-        <item quantity="other">Por favor cheque os %1$d números de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
+        <item quantity="one">Por favor, verifique o número de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
+        <item quantity="many">Por favor, verifique os %1$d números de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
+        <item quantity="other">Por favor, verifique os %1$d números de telefone que quer convidar para o seu novo jogo, depois clique em “%2$s”.</item>
     </plurals>
     <string name="game_name_label">Nome do jogo:</string>
     <string name="p2p_invite_title">Convite do WiFi Direct</string>
@@ -2011,9 +2016,7 @@
         <item quantity="many">A fazer a varredura por CrossWords nos %1$d aparelhos emparelhados</item>
         <item quantity="other">A fazer a varredura por CrossWords nos %1$d aparelhos emparelhados</item>
     </plurals>
-    <string name="invite_bt_desc_postscript">"
-\n
-\n(A lista é de aparelhos emparelhados onde CrossWords foi detetado via uma varredura.)"</string>
+    <string name="invite_bt_desc_postscript">\n\n(A lista é de aparelhos emparelhados onde CrossWords foi detetado via uma varredura.)</string>
     <plurals name="invite_bt_desc_fmt_2">
         <item quantity="one">Verifique o dispositivo que deseja incluir neste jogo.</item>
         <item quantity="many">Verifique até ao máximo de %1$d dispositivos que deseja incluir neste jogo.</item>
@@ -2079,7 +2082,7 @@
     <string name="chat_hint">Escreva aqui…</string>
     <plurals name="query_trade_fmt">
         <item quantity="one">Tem certeza que quer mudar a pedra selecionado (%2$s)?</item>
-        <item quantity="many"/>
+        <item quantity="many">Tem certeza que quer mudar as %1$d pedras selecionadas (%2$s)?</item>
         <item quantity="other">Tem certeza que quer mudar as %1$d pedras selecionadas (%2$s)?</item>
     </plurals>
     <string name="invite_sms_fmt">Toque na ligação para aceitar o meu convite e se juntar ao jogo de Palavras Cruzadas: %1$s</string>
@@ -2130,8 +2133,9 @@
     <string name="phonies_block">Bloquear palavras falsas</string>
     <string name="phonies_label">Palavras Falsas</string>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="one">Tem certeza de que deseja apagar o jogo %1$s\? Essa ação não pode ser desfeita.</item>
-        <item quantity="other">Tem certeza de que deseja apagar os jogos %1$s\? Essa ação não pode ser desfeita.</item>
+        <item quantity="one">Tem certeza de que deseja apagar o jogo %1$s? Essa ação não pode ser desfeita.</item>
+        <item quantity="many">Tem certeza de que deseja apagar os jogos %1$s? Essa ação não pode ser desfeita.</item>
+        <item quantity="other">Tem certeza de que deseja apagar os jogos %1$s? Essa ação não pode ser desfeita.</item>
     </plurals>
     <string name="list_item_relaypage">Tráfego do jogo</string>
     <string name="invitee_fmt">(%1$s convidado)</string>
@@ -2211,13 +2215,9 @@
     <string name="warn_mqtt_disabled">O jogo na Internet está atualmente desativado neste aparelho. Nenhum movimento será enviado ou recebido através da Internet.</string>
     <string name="warn_mqtt_later">Pode ativar o jogo pela Internet agora ou mais tarde.</string>
     <plurals name="warn_mqtt_games_fmt">
-        <item quantity="one">"
-\n
-\n(Agora tem um jogo ativo usando a Internet.)"</item>
-        <item quantity="many">"
-\n
-\n(Agora tem %1$d jogos ativos usando a Internet.)"</item>
-        <item quantity="other"/>
+        <item quantity="one">\n\n(Agora tem um jogo ativo a usar a Internet.)</item>
+        <item quantity="many">\n\n(Agora tem %1$d jogos ativos a usarem a Internet.)</item>
+        <item quantity="other">\n\n(Agora tem %1$d jogos ativos a usarem a Internet.)</item>
     </plurals>
     <string name="archive_button_store">Exportar</string>
     <string name="archive_expl_colors">Cores no tabuleiro de jogo, por exemplo dos nomes de jogadores e quadrados de bónus</string>
@@ -2364,4 +2364,5 @@
     <string name="gesture_margins_title">Quando a navegação gestual está ativa</string>
     <string name="gesture_margins_shrink">Diminuir tabuleiro para excluir margens</string>
     <string name="gesture_margins_ignore">Desenhar tabuleiro com tamanho máximo</string>
+    <string name="not_again_margins_fmt">Quando a «Navegação gestual» está ativa, como é o caso neste dispositivo, é difícil arrastar pedras perto da borda do ecrã. Por isso, o CrossWords pode ser configurado para apresentar o tabuleiro e a bandeja um pouco mais estreitos, evitando as margens onde os gestos começam. \n\nA configuração atual é “%1$s”. Pode alterar este comportamento a qualquer momento na secção “%2$s” de %3$s, ou aceder-lhe agora através do botão abaixo. (As alterações entrarão em vigor na próxima vez que abrir um jogo.)</string>
 </resources>
