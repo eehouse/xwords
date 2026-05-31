@@ -1825,6 +1825,10 @@ pickChannel( const CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
     return result;
 }
 
+/* PENDING: This method needs to be replaced by comms_enqueueInvite(), and
+   like comms_enqueue() be called, then a save done, and then the send
+   triggered.
+*/
 void
 comms_invite( CommsCtxt* comms, XWEnv xwe, const NetLaunchInfo* nli,
               const CommsAddrRec* destAddr, XP_Bool sendNow )
@@ -1947,10 +1951,9 @@ comms_inviteeNames( CommsCtxt* comms, XWEnv xwe,
 
 /* Send a message using the sequentially next MsgID.  Save the message so
  * resend can work. */
-XP_S16
-comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
+void
+comms_enqueue( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 {
-    XP_S16 result = -1;
     if ( 0 == strm_getSize(stream) ) {
         COMMS_LOGFF( "dropping 0-len message" );
     } else {
@@ -1970,15 +1973,10 @@ comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream )
 
         elem = makeElemWithID( comms, xwe, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
-            elem = addToQueue( comms, elem );
-            if ( !!elem ) {
-                printQueue( comms );
-                result = sendMsg( comms, xwe, elem, COMMS_CONN_NONE );
-            }
+            addToQueue( comms, elem );
         }
     }
-    return result;
-} /* comms_send */
+} /* comms_enqueue */
 
 /* Add new message to the end of the list.  The list needs to be kept in order
  * by ascending msgIDs within each channel since if there's a resend that's

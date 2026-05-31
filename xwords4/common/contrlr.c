@@ -2617,10 +2617,22 @@ messageStreamWithHeader( const CtrlrCtxt* ctrlr, XP_U16 devIndex, XW_Proto code 
 } /* messageStreamWithHeader */
 
 static void
+saveAndSendProc( XW_DUtilCtxt* dutil, XWEnv xwe, void* closure,
+                 TimerKey XP_UNUSED(key), XP_Bool fired )
+{
+    if ( fired ) {
+        CtrlrCtxt* ctrlr = (CtrlrCtxt*)closure;
+        gr_save( dutil, ctrlr->vol.gr, xwe );
+        comms_resendAll( ctrlr->vol.comms, xwe, COMMS_CONN_NONE, XP_TRUE );
+    }
+}
+
+static void
 closeAndSend( const CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
 {
-    comms_send( ctrlr->vol.comms, xwe, stream );
+    comms_enqueue( ctrlr->vol.comms, xwe, stream );
     strm_destroy( stream );
+    tmr_setIdle( ctrlr->vol.dutil, xwe, saveAndSendProc, (void*)ctrlr );
 }
 
 static void

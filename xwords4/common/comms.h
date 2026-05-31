@@ -137,7 +137,7 @@ typedef struct _InviteeNames {
 } InviteeNames;
 void comms_inviteeNames( CommsCtxt* comms, XWEnv xwe, InviteeNames* names );
 
-XP_S16 comms_send( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
+void comms_enqueue( CommsCtxt* comms, XWEnv xwe, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms, XWEnv xwe, CommsConnType filter,
                         XP_Bool force );
 

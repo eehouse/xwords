@@ -1178,9 +1178,9 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
     strm_putBytes( stream, msgBuf, msgLen );
 
     CommsMsgState commsState;
-    XP_Bool result = comms_checkIncomingStream( gd->comms, xwe, stream, from,
-                                                &commsState, mcs );
-    if ( result ) {
+    XP_Bool success = comms_checkIncomingStream( gd->comms, xwe, stream, from,
+                                                 &commsState, mcs );
+    if ( success ) {
         XP_Bool haveCtrlr = !!gd->ctrlr;
         if ( !haveCtrlr ) {
             GameData* gd2 = loadToLevel( duc, gr, xwe, MODEL, &haveCtrlr, NULL );
@@ -1189,8 +1189,8 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
         }
         if ( haveCtrlr ) {
             XP_Bool needsChatNotify = XP_FALSE;;
-            result = ctrl_receiveMessage( gd->ctrlr, xwe, stream,
-                                          &needsChatNotify );
+            success = ctrl_receiveMessage( gd->ctrlr, xwe, stream,
+                                           &needsChatNotify );
             if ( needsChatNotify ) {
                 postGameChangeEvents( duc, xwe, gd, GCE_CHAT_ARRIVED );
                 if ( !gd->sum.hasChat ) {
@@ -1201,8 +1201,8 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
             }
         }
     }
-    comms_msgProcessed( gd->comms, &commsState, !result );
-    if ( result ) {
+    comms_msgProcessed( gd->comms, &commsState, !success );
+    if ( success ) {
         ctrl_addIdle( gd->ctrlr, xwe );
     }
 
@@ -1210,7 +1210,7 @@ gr_onMessageReceived( DUTIL_GR_XWE, const CommsAddrRec* from,
 
     checkMessageCount( duc, xwe, gd );
 
-    if ( result ) {
+    if ( success ) {
         if ( !!gd->board ) {
             schedule_draw( duc, xwe, gd );
         }
