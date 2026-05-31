@@ -898,6 +898,7 @@ def mainLoop(args, devs):
             break
         elif nCores < countCores(args):
             print('core file count increased; exiting')
+            gErr = 1
             break
 
         dev = random.choice(devs)
