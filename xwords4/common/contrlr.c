@@ -3357,10 +3357,21 @@ reflectMoveAndInform( CtrlrCtxt* ctrlr, XWEnv xwe, XWStreamCtxt* stream )
             }
 
             if ( !!mvStream ) {
-                XP_ASSERT( !ctrlr->nv.prevMoveStream );
-                ctrlr->nv.prevMoveStream = mvStream;
-                XP_ASSERT( !ctrlr->nv.prevWordsStream );
-                ctrlr->nv.prevWordsStream = wordsStream;
+                if ( !!ctrlr->nv.prevMoveStream ) {
+                    XWStreamCtxt* strm = ctrlr->nv.prevMoveStream;
+                    strm_putU8( strm, '\n' );
+                    strm_putBytes( strm, mvStream, strm_getSize(mvStream) );
+                    strm_destroyp( &mvStream );
+#ifdef DEBUG
+                    XP_UCHAR buf[strm_getSize(strm) + 1];
+                    XP_SNPRINTF( buf, VSIZE(buf), "%s", strm_getPtr(strm) );
+                    XP_LOGFF( "oops: prevMoveStream set; combined now: \"%s\"", buf );
+#endif
+                } else {
+                    ctrlr->nv.prevMoveStream = mvStream;
+                    XP_ASSERT( !ctrlr->nv.prevWordsStream );
+                    ctrlr->nv.prevWordsStream = wordsStream;
+                }
             }
         } else {
             /* The client from which the move came still needs to be told.  But we
