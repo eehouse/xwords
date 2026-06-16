@@ -118,17 +118,20 @@ struct CursesAppGlobals {
 static bool handleOpenGame( void* closure, int key );
 static bool handleRematchGame( void* closure, int key );
 static bool handleNewGame( void* closure, int key );
+static bool handleNewGroup( void* closure, int key );
 static bool handleDeleteGame( void* closure, int key );
 static bool handleSel( void* closure, int key );
 static bool copyDevID( void* closure, int key );
 static bool showThumb( void* closure, int key );
 static bool toggleGroupExpanded( void* closure, int key );
-static bool renameGroup( void* closure, int key );
+static bool handleRename( void* closure, int key );
+static bool handleMove( void* closure, int key );
 static bool pingBroker( void* closure, int key );
 
 const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
     { handleNewGame, "New game", "N", 'N' },
+    { handleNewGroup, "new Group", "G", 'G' },
     { handleOpenGame, "Open Sel.", "O", 'O' },
     { handleRematchGame, "Rematch sel.", "R", 'R' },
     { handleDeleteGame, "Delete Sel.", "D", 'D' },
@@ -137,7 +140,8 @@ const MenuList g_sharedMenuList[] = {
     { copyDevID, "Copy devID", "C", 'C' },
     { showThumb, "Show Thumb", "T", 'T' },
     { toggleGroupExpanded, "eXpand", "X", 'X' },
-    { renameGroup, "renaMe group", "M", 'M' },
+    { handleRename, "renaMe", "M", 'M' },
+    { handleMove, "moVe", "V", 'V' },
     { pingBroker, "Ping broker", "P", 'P' },
 /*     { handleResend, "Resend", "R", 'R' }, */
 /*     { handleSpace, "Raise focus", "<spc>", ' ' }, */
@@ -376,7 +380,11 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
     
     if ( curNewGameDialog( params, &gi, XP_TRUE, XP_FALSE ) ) {
         LOG_GI( &gi, __func__ );
-        /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, &gi, NULL );
+
+        /* If a group's selected, put it there */
+        GroupRef grp = GROUP_DEFAULT;
+        cgl_getSel( aGlobals->gameList, NULL, &grp );
+        gmgr_newFor( params->dutil, NULL_XWE, grp, &gi, NULL );
     }
 
     /* cb_dims dims; */
@@ -395,22 +403,39 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
 }
 
 static bool
+handleNewGroup( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+    gmgr_addGroup( dutil, NULL_XWE, "Rename Me" );
+    return XP_TRUE;
+}
+
+static bool
 handleDeleteGame( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     GameRef gr;
     GroupRef grp;
     cgl_getSel( aGlobals->gameList, &gr, &grp );
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
     if ( !!gr ) {
         const char* question = "Are you sure you want to delete the "
             "selected game? This action cannot be undone";
         const char* buttons[] = { "Ok", "Cancel", };
 
         if ( 0 == cursesask( aGlobals, VSIZE(buttons), buttons, question ) ) {
-            gmgr_deleteGame( aGlobals->cag.params->dutil, NULL_XWE, gr );
+            gmgr_deleteGame( dutil, NULL_XWE, gr );
         }
     } else {
-        ca_inform( aGlobals, "Group deleting coming soon." );
+        const char* question = "Are you sure you want to delete the "
+            "selected group (and any games it contains)? This "
+            "action cannot be undone";
+        const char* buttons[] = { "Ok", "Cancel", };
+
+        if ( 0 == cursesask( aGlobals, VSIZE(buttons), buttons, question ) ) {
+            gmgr_deleteGroup( dutil, NULL_XWE, grp );
+        }
     }
     return XP_TRUE;
 }
@@ -491,7 +516,7 @@ toggleGroupExpanded( void* closure, int XP_UNUSED(key) )
 }
 
 static bool
-renameGroup( void* closure, int XP_UNUSED(key) )
+handleRename( void* closure, int XP_UNUSED(key) )
 {
     CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
     LaunchParams* params = aGlobals->cag.params;
@@ -522,6 +547,38 @@ renameGroup( void* closure, int XP_UNUSED(key) )
 
     XP_LOGFF( "ready to present name \"%s\" for editing", name );
 
+    return true;
+}
+
+static bool
+handleMove( void* closure, int XP_UNUSED(key) )
+{
+    CursesAppGlobals* aGlobals = (CursesAppGlobals*)closure;
+    XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
+
+    GameRef gr = 0;
+    cgl_getSel( aGlobals->gameList, &gr, NULL );
+    if ( !!gr ) {
+        XP_U16 nGroups = gmgr_countGroups( dutil, NULL_XWE );
+        XP_UCHAR buffers[nGroups + 1][32];
+        const XP_UCHAR* buttons[nGroups + 1];
+        GroupRef groups[nGroups+1];
+        buttons[0] ="Cancel";
+        for ( int ii = 0; ii < nGroups; ++ii ) {
+            groups[ii+1] = gmgr_getNthGroup( dutil, NULL_XWE, ii );
+            gmgr_getGroupName( dutil, NULL_XWE, groups[ii+1],
+                               buffers[ii+1], sizeof(buffers[ii+1]) );
+            buttons[ii+1] = buffers[ii+1];
+        }
+
+        const char* question = "Select group to move to";
+        int sel = cursesask( aGlobals, nGroups + 1, buttons, question );
+        if ( 0 < sel ) {
+            gmgr_moveGames( dutil, NULL_XWE, groups[sel], &gr, 1  );
+        }
+    } else {
+        ca_inform( aGlobals, "Move what game?" );
+    }
     return true;
 }
 

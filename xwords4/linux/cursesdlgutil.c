@@ -76,20 +76,19 @@ measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
 
 void
 drawButtons( WINDOW* win, XP_U16 line, short spacePerButton, 
-             short numButtons, short curSelButton, const char** button1 )
+             short numButtons, short curSelButton, const char** buttons )
 {
     for ( int ii = 0; ii < numButtons; ++ii ) {
-        short len = strlen( *button1 );
+        int len = strlen( buttons[ii] );
 
         if ( ii == curSelButton ) {
             wstandout( win );
         }
         mvwprintw( win, line, ((ii+1) * spacePerButton) - (len/2),
-                   "[%s]", *button1 );
+                   "[%s]", buttons[ii] );
         if ( ii == curSelButton ) {
             wstandend( win );
         }
-        ++button1;
     }
     wrefresh( win );
 } /* drawButtons */

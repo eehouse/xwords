@@ -107,6 +107,16 @@ onKey( int ch, void* closure )
     return dismissed;
 }
 
+static int
+measureButtons( const char** buttons, int numButtons )
+{
+    int result = 0;
+    for ( int ii = 0; ii < numButtons; ++ii ) {
+        result += strlen(buttons[ii]) + 2;
+    }
+    return result;
+}
+
 static gint
 askTimerProc( gpointer data )
 {
@@ -144,7 +154,8 @@ cursesaskImpl( CursesAppGlobals* aGlobals, int* resultP, short numButtons,
     getbegyx( win, top, left );
 
     measureAskText( question, as->xx-2, &fi );
-    len = fi.maxLen;
+    int butLen = measureButtons( buttons, numButtons );
+    len = XP_MAX( butLen, fi.maxLen );
     if ( len < MIN_WIDTH ) {
         len = MIN_WIDTH;
     }
