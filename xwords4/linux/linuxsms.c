@@ -69,11 +69,10 @@ static gint check_for_files( gpointer data );
 static gint check_for_files_once( gpointer data );
 
 static void
-formatQueuePath( const XP_UCHAR* phone, gchar* dir, XP_U16 port,
+formatQueuePath( const XP_UCHAR* phone, gchar* dir, XP_U16 XP_UNUSED(port),
                  XP_UCHAR* path, XP_U16 pathlen )
 {
-    // XP_ASSERT( 0 != port );
-    snprintf( path, pathlen, "%s/%s/%s_%d", dir, SMS_DIR, phone, port );
+    snprintf( path, pathlen, "%s/%s/%s_%d", dir, SMS_DIR, phone, 0 );
 }
 
 static void

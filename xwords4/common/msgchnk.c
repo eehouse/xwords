@@ -816,7 +816,10 @@ completeMsgs( MsgChunker* state, XWEnv xwe, ChunkMsgArray* arr,
                               .gameID = gameID,
                               .data = XP_MALLOC( state->mpool, len ),
             };
-            if ( strm_gotBytes( stream, msg.data, len ) && port == wantPort ) {
+            /* I'm getting rid of ports. This code is only used on linux now
+               that Android has (or carriers have) killed NBS. There are
+               problems I'm not going to bother of fix. */
+            if ( strm_gotBytes( stream, msg.data, len ) /*&& port == wantPort*/ ) {
                 arr = appendLocMsg( state, arr, &msg );
             } else {
                 XP_LOGFF( "expected port %d, got %d", wantPort, port );
