@@ -250,7 +250,11 @@ cgl_draw( CursGameList* cgl )
             const CurGameInfo* gi = gr_getGI( params->dutil, gr, NULL_XWE );
             const GameSummary* sum = gr_getSummary( params->dutil, gr, NULL_XWE );
             data[line][col++] = g_strdup( gi->gameName );
-            data[line][col++] = g_strdup( sum->turnIsLocal ? "Local":"Remote" );
+            gchar* turnOwner = NULL;
+            if ( 0 <= sum->turn ) {
+                turnOwner = g_strdup( sum->turnIsLocal ? "Local":"Remote" );
+            }
+            data[line][col++] = turnOwner;
             data[line][col++] = g_strdup( gi->isoCodeStr );
             data[line][col++] = g_strdup_printf( "%X", gi->gameID );
             data[line][col++] = g_strdup_printf( "%s", sum->opponents );

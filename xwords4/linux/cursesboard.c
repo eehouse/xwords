@@ -1581,14 +1581,18 @@ handleHint( void* closure, int XP_UNUSED(key) )
 {
     CursesBoardGlobals* bGlobals = (CursesBoardGlobals*)closure;
     CommonGlobals* cGlobals = &bGlobals->cGlobals;
-    // BoardCtxt* board = gr_getGame(cGlobals->gr)->board;
     XW_DUtilCtxt* dutil = cGlobals->params->dutil;
-    XP_Bool redo;
-    gr_requestHint( dutil, cGlobals->gr, NULL_XWE,
+    if ( 0 <= gr_getCurrentTurn( dutil, cGlobals->gr, NULL_XWE, NULL ) ) {
+        XP_Bool redo;
+        gr_requestHint( dutil, cGlobals->gr, NULL_XWE,
 #ifdef XWFEATURE_SEARCHLIMIT
-                    XP_FALSE,
+                        XP_FALSE,
 #endif
-                    XP_FALSE, &redo );
+                        XP_FALSE, &redo );
+    } else {
+        CursesAppGlobals* aGlobals = (CursesAppGlobals*)cGlobals->params->cag;
+        ca_inform( aGlobals, "Hint not available. Game over?" );
+    }
     return XP_TRUE;
 }
 

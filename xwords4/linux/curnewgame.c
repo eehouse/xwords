@@ -59,14 +59,20 @@ enum {
 };
 
 #define ADDRS_LINE 7
+#define PLYRS_LINE 9
+#define CANCEL_OK_LINE 12
+
+#define NAME_COL 1
+#define ROLE_COL 30
 
 static void
 drawPlayer( NGState* ngs, int indx )
 {
     CurGameInfo* gi = &ngs->gi;
     WINDOW* win = ngs->win;
+    int line = 2 + indx;
 
-    wmove( win, 1 + indx, 1 );
+    wmove( win, line, 1 );
     wclrtoeol( win );
 
     if ( indx < gi->nPlayers ) {
@@ -74,11 +80,11 @@ drawPlayer( NGState* ngs, int indx )
         if ( focussed ) {
             wstandout( win );
         }
-        mvwaddstr( win, 1 + indx, 1, gi->players[indx].name );
+        mvwaddstr( win, line, NAME_COL, gi->players[indx].name );
 
         char role[32];
         roleName( &gi->players[indx], role, VSIZE(role) );
-        mvwaddstr( win, 1 + indx, 30, role );
+        mvwaddstr( win, line, ROLE_COL, role );
 
         if ( focussed ) {
             wstandend( win );
@@ -89,6 +95,8 @@ drawPlayer( NGState* ngs, int indx )
 static void
 updatePlayers( NGState* ngs )
 {
+    mvwaddstr( ngs->win, 1, NAME_COL, " Name:" );
+    mvwaddstr( ngs->win, 1, ROLE_COL, " Role:" );
     for ( int ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         drawPlayer( ngs, ii );
     }
@@ -98,7 +106,7 @@ static void
 updateAddrs( NGState* ngs )
 {
     char buf[32];
-    int offset = snprintf( buf, VSIZE(buf), "conn: " );
+    int offset = snprintf( buf, VSIZE(buf), "Conns:" );
 
     CommsConnType typ;
     for ( XP_U32 state = 0; types_iter( ngs->gi.conTypes, &typ, &state ); ) {
@@ -128,31 +136,45 @@ updateAddrs( NGState* ngs )
 static void
 updateButtons( NGState* ngs )
 {
-    int sel;
+    WINDOW* win = ngs->win;
 
-    switch ( ngs->sel ) {
-    case SEL_MQTT:
-    case SEL_SMS:
-    case SEL_BT:
-        sel = ngs->sel - SEL_MQTT;
-        break;
-    default: sel = -1; break;
+    {
+        int sel = -1;
+        switch ( ngs->sel ) {
+        case SEL_MQTT:
+        case SEL_SMS:
+        case SEL_BT:
+            sel = ngs->sel - SEL_MQTT;
+            break;
+        }
+        const char* conns[] = { "MQTT", "SMS", "BT" };
+        drawButtons( win, ADDRS_LINE+1, 8, VSIZE(conns), sel, conns );
     }
-    const char* conns[] = { "MQTT", "SMS", "BT" };
-    drawButtons( ngs->win, ADDRS_LINE+1, 8, VSIZE(conns), sel, conns );
-    
-    switch ( ngs->sel ) {
-    case SEL_ADD:
-    case SEL_DELETE:
-    case SEL_OK:
-    case SEL_CANCEL:
-        sel = ngs->sel - SEL_ADD;
-        break;
-    default: sel = -1; break;
+ 
+    {
+        int sel = -1;
+        switch ( ngs->sel ) {
+        case SEL_ADD:
+        case SEL_DELETE:
+            sel = ngs->sel - SEL_ADD;
+            break;
+        }
+        const char* buttons[] = { "Add", "Delete" };
+        drawButtons( win, ngs->buttonLine, 8, VSIZE(buttons), sel, buttons );
     }
 
-    const char* buttons[] = { "Add", "Delete", "Cancel", "Ok" };
-    drawButtons( ngs->win, ngs->buttonLine, 8, VSIZE(buttons), sel, buttons );
+    mvwaddstr( win, PLYRS_LINE, 1, "Players:" );
+    {
+        int sel = -1;
+        switch ( ngs->sel ) {
+        case SEL_CANCEL:
+        case SEL_OK:
+            sel = ngs->sel - SEL_CANCEL;
+            break;
+        }
+        const char* buttons[] = { "Cancel", "Ok" };
+        drawButtons( win, CANCEL_OK_LINE, 8, VSIZE(buttons), sel, buttons );
+    }
 }
 
 static void
@@ -263,6 +285,9 @@ initDefaults( NGState* ngs )
         LocalPlayer* lp = &gi->players[ii];
         if ( ii == 1 ) {
             XP_SNPRINTF( lp->name, VSIZE(lp->name), "%s", "Robot" );
+        } else if ( !!ngs->params->localName ) {
+            XP_SNPRINTF( lp->name, VSIZE(lp->name), "%s",
+                         ngs->params->localName );
         } else {
             XP_SNPRINTF( lp->name, VSIZE(lp->name), "LinUser %d", ii + 1 );
         }
@@ -274,8 +299,7 @@ initDefaults( NGState* ngs )
 
 bool
 curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
-                  CommsAddrRec* XP_UNUSED(addr), XP_Bool isNewGame,
-                  XP_Bool XP_UNUSED(fireConnDlg) )
+                  XP_Bool isNewGame, XP_Bool XP_UNUSED(fireConnDlg) )
 {
     bool confirmed = false;
 
@@ -284,14 +308,13 @@ curNewGameDialog( LaunchParams* params, CurGameInfo* gi,
         .params = params,
         .aGlobals = (CursesAppGlobals*)params->cag,
         .gi = *gi,
-        // .addr = *addr,
         .buttonLine = 10,
         .width = 50,
     };
 
     if ( isNewGame ) {
         CursesAppGlobals* aGlobals = (CursesAppGlobals*)params->cag;
-        ngs.win = makeCenteredBox( aGlobals, ngs.width, 20 );
+        ngs.win = makeCenteredBox( aGlobals, ngs.width, 15 );
         ngs.playerLines = 2;
         initDefaults( &ngs );
 

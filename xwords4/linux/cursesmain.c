@@ -330,8 +330,9 @@ handleRematchGame( void* closure, int XP_UNUSED(key) )
     if ( getSelOrWarn( aGlobals, &gr, "Only games can be rematched." ) ) {
         XW_DUtilCtxt* dutil = aGlobals->cag.params->dutil;
         if ( gr_canRematch( dutil, gr, NULL_XWE, NULL ) ) {
+            XP_Bool isOver = gr_getGameIsOver( dutil, gr, NULL_XWE );
             (void)gr_makeRematch( dutil, gr, NULL_XWE, "newName",
-                                  RO_LOW_SCORE_FIRST, XP_TRUE, XP_FALSE );
+                                  RO_LOW_SCORE_FIRST, isOver, XP_FALSE );
         } else {
             ca_timeout_inform( aGlobals, 3000, "Unable to rematch" );
         }
@@ -373,8 +374,7 @@ handleNewGame( void* closure, int XP_UNUSED(key) )
 
     CurGameInfo gi = params->pgi;
     
-    CommsAddrRec addr = {};
-    if ( curNewGameDialog( params, &gi, &addr, XP_TRUE, XP_FALSE ) ) {
+    if ( curNewGameDialog( params, &gi, XP_TRUE, XP_FALSE ) ) {
         LOG_GI( &gi, __func__ );
         /*(void*)*/gmgr_newFor( params->dutil, NULL_XWE, GROUP_DEFAULT, &gi, NULL );
     }

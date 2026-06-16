@@ -934,7 +934,7 @@ def mainLoop(args, devs):
 
     # kill anybody left alive
     for dev in devs:
-        print('killing {}'.format(dev.hostName))
+        print('stopping {}'.format(dev.hostName))
         dev.quit()
 
 # We will build one Device for each player in the set of games, and
