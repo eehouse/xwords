@@ -54,8 +54,8 @@
     <string name="notify_sound">ஒலி விளையாடுங்கள்</string>
     <string name="notify_other_summary">எதிர்ப்பாளர் நகர்வுகள் வரும்போது</string>
     <plurals name="query_trade_fmt">
-        <item quantity="one">தேர்ந்தெடுக்கப்பட்ட ஓடு (%2$s) ஐ பரிமாறிக்கொள்ள விரும்புகிறீர்களா?</item>
-        <item quantity="other">%1$d தேர்ந்தெடுக்கப்பட்ட ஓடுகளை ( %2$s) பரிமாறிக்கொள்ள விரும்புகிறீர்களா?</item>
+        <item quantity="one">தேர்ந்தெடுக்கப்பட்ட டைலை (%2$s) நிச்சயமாக மாற்ற விரும்புகிறீர்களா?</item>
+        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d ஓடுகளை (%2$s) நிச்சயமாக மாற்ற விரும்புகிறீர்களா?</item>
     </plurals>
     <string name="board_menu_undo_last">கடைசி செயல்தவிர்</string>
     <string name="board_menu_game_counts">எண்ணிக்கைகள் மற்றும் மதிப்புகள்</string>
@@ -65,8 +65,8 @@
     <string name="board_menu_game_resend">நகர்வுகள் மீண்டும்அனுப்பு</string>
     <string name="str_robot_moved_fmt">"பொறியன் %1$s இந்த நடவடிக்கையை மேற்கொண்டன: "</string>
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">ஒரு ஓடு பரிமாறிக்கொண்டது.</item>
-        <item quantity="other">%1$d ஓடுகள் பரிமாறிக்கொண்டன.</item>
+        <item quantity="one">ஒரு ஓடு மாற்றப்பட்டது.</item>
+        <item quantity="other">%1$d ஓடுகள் பரிமாறப்பட்டன.</item>
     </plurals>
     <string name="strs_values_header_fmt">%1$s எண்ணிக்கைகள்/மதிப்புகள்:\n</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [மீதமுள்ள அனைத்து ஓடுகளும்]</string>
@@ -86,12 +86,12 @@
     <string name="str_bonus_all_fmt">%1$d ஓடுகளைப் பயன்படுத்துவதற்கான கூடுதல்: 50\n</string>
     <string name="strd_turn_score_fmt">திருப்பத்திற்கான மதிப்பெண்: %1$d\n</string>
     <plurals name="strd_remains_header_fmt">
-        <item quantity="one">ஒரு ஓடு குளத்தில் எஞ்சியிருக்கும்.</item>
-        <item quantity="other">குளத்தில் %1$d ஓடுகள் எஞ்சியுள்ளன.</item>
+        <item quantity="one">குளத்தில் ஒரு ஓடு மீதமுள்ளது.</item>
+        <item quantity="other">குளத்தில் %1$d ஓடுகள் மீதமுள்ளன.</item>
     </plurals>
     <plurals name="strd_remains_expl_fmt">
         <item quantity="one">மறைக்கப்பட்ட தட்டுகளில் ஒரு ஓடு உள்ளது:\n</item>
-        <item quantity="other">குளம் மற்றும் மறைக்கப்பட்ட தட்டுகளில் %1$d ஓடுகள்:\n</item>
+        <item quantity="other">%1$d ஓடுகள் குளத்திலும் மறைக்கப்பட்ட தட்டுகளிலும் உள்ளன:\n</item>
     </plurals>
     <string name="confirm_undo_last">கடைசியாக உறுதியான திருப்பத்தை செயல்தவிர்க்க விரும்புகிறீர்களா? (மீண்டும் விருப்பம் இல்லை.)</string>
     <string name="title_prefs">குறுக்கெழுத்து அமைப்புகள்</string>
@@ -151,7 +151,7 @@
     <string name="change_group">தேர்ந்தெடுக்கப்பட்ட விளையாட்டுகளை நகர்த்தவும்:</string>
     <plurals name="paste_done_fmt">
         <item quantity="one">ஒரு சொல் நகலெடுக்கப்பட்டது</item>
-        <item quantity="other">%1$d சொற்கள் நகலெடுக்கப்பட்டன</item>
+        <item quantity="other">%1$d வார்த்தைகள் நகலெடுக்கப்பட்டன</item>
     </plurals>
     <string name="add_done_fmt">%1$s %2$s படிபட்டியலில் சேர்க்கப்பட்டுள்ளது</string>
     <string name="studylist_title_fmt">%1$s க்கு படிபட்டியல்</string>
@@ -161,8 +161,8 @@
     <string name="slmenu_deselect_all">அனைத்தையும் தேர்வு செய்</string>
     <string name="sel_items_fmt">தேர்ந்தெடுக்கப்பட்டது: %1$d</string>
     <plurals name="new_xlations_fmt">
-        <item quantity="one">ஒரு புதிய மொழிபெயர்ப்பை நிறுவியது</item>
-        <item quantity="other">நிறுவப்பட்ட %1$d புதிய மொழிபெயர்ப்புகள்</item>
+        <item quantity="one">ஒரு புதிய மொழிபெயர்ப்பு நிறுவப்பட்டது</item>
+        <item quantity="other">%1$d புதிய மொழிபெயர்ப்புகள் நிறுவப்பட்டுள்ளன</item>
     </plurals>
     <string name="loc_filters_prompt">மூலம் வடிகட்டி:</string>
     <string name="loc_search_prompt">தேடு:</string>
@@ -377,8 +377,8 @@
     <string name="chat_menu_clear">வரலாற்றை அழி</string>
     <string name="str_two_tiles_first_move">முதல் நகர்வில் இரண்டு அல்லது அதற்கு மேற்பட்ட துண்டுகளை விளையாட வேண்டும்.</string>
     <plurals name="too_many_trade_fmt">
-        <item quantity="one">பல ஓடுகள் தேர்ந்தெடுக்கப்பட்டன. ஒன்றை மட்டும் தேர்ந்தெடு.</item>
-        <item quantity="other">பல ஓடுகள் தேர்ந்தெடுக்கப்பட்டன. தயவுசெய்து %1$d க்கு மேல் தேர்ந்தெடுக்க வேண்டாம்.</item>
+        <item quantity="one">பல ஓடுகள் தேர்ந்தெடுக்கப்பட்டன. ஒன்றை மட்டும் தேர்ந்தெடுக்கவும்.</item>
+        <item quantity="other">பல ஓடுகள் தேர்ந்தெடுக்கப்பட்டன. தயவுசெய்து %1$d ஐத் தேர்ந்தெடுக்க வேண்டாம்.</item>
     </plurals>
     <string name="str_cant_hint_while_disabled">இந்த விளையாட்டுக்கு குறிப்பு நற்பொருத்தம் முடக்கப்பட்டுள்ளது. அமைப்புகள் உரையாடலைப் பயன்படுத்தி புதிய விளையாட்டுக்கு அதை இயக்கு.</string>
     <string name="str_reg_unexpected_user">எதிர்பாராத பயனரை பதிவு செய்வதற்கான முயற்சியை மறுத்துவிட்டது.</string>
@@ -419,8 +419,8 @@
     <string name="warn_mqtt_remove">நீங்கள் இப்போது இணைய விளையாட்டை இயக்கலாம் அல்லது இந்த விளையாட்டிலிருந்து அகற்றலாம்.</string>
     <string name="warn_bt_havegames">ஊடலையை பயன்படுத்தி விளையாட்டை முடக்க விரும்புகிறீர்களா?\n\n நகர்வுகள் மற்றும் குறிப்பாக அழைப்பிதழ்களை பரிமாறிக்கொள்ள ஊடலை பயனுள்ளதாக இருக்கும், சாதனங்கள் உங்களுக்கு உடல் ரீதியாக நெருக்கமாக உள்ளன. அருகிலுள்ள எவருக்கும் எதிராக நீங்கள் விளையாட மாட்டீர்கள் என்பது உங்களுக்குத் தெரியாவிட்டால், அதை விட்டுவிடுவதில் சிறிய தீங்கு இல்லை.</string>
     <plurals name="warn_mqtt_games_fmt">
-        <item quantity="one">\n\n(இப்போது இணையத்தைப் பயன்படுத்தி ஒரு செயலில் விளையாட்டு உள்ளது.)</item>
-        <item quantity="other">\n\n(இப்போது இணையத்தைப் பயன்படுத்தி %1$d செயலில் உள்ள விளையாட்டுகள் உள்ளன.)</item>
+        <item quantity="one">\n\n(இப்போது இணையத்தைப் பயன்படுத்தி ஒரு செயலில் உள்ள கேம் உள்ளது.)</item>
+        <item quantity="other">\n\n(இப்போது இணையத்தில் %1$d கேம்கள் செயலில் உள்ளன.)</item>
     </plurals>
     <string name="button_enable_sms">தரவு குறுஞ்செய்தியை இயக்கு</string>
     <string name="button_enable_bt">ஊடலையை இயக்கு</string>
@@ -513,18 +513,18 @@
     <string name="summary_invites_out_fmt">அறைக்கு அழைக்கப்பட்ட வீரர்கள் “%1$s”</string>
     <plurals name="moves_fmt">
         <item quantity="one">ஒரு நகர்வு விளையாடியது</item>
-        <item quantity="other">%1$d நகர்வுகள் விளையாடியது</item>
+        <item quantity="other">%1$d நகர்வுகள் இயக்கப்பட்டன</item>
     </plurals>
     <string name="button_delete">நீக்கு</string>
     <string name="button_delete_game">விளையாட்டை நீக்கு</string>
     <string name="button_reset">மீட்டமை</string>
     <plurals name="confirm_nameddeletes_fmt">
-        <item quantity="one">%1$s விளையாட்டை நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.</item>
-        <item quantity="other">%1$s விளையாட்டுகளை நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="one">%1$s கேமை நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="other">%1$s கேம்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
     </plurals>
     <plurals name="confirm_seldeletes_fmt">
-        <item quantity="one">தேர்ந்தெடுக்கப்பட்ட விளையாட்டை நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.</item>
-        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d விளையாட்டுகளை நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="one">தேர்ந்தெடுத்த கேமை நிச்சயமாக நீக்க வேண்டுமா? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
+        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d கேம்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.</item>
     </plurals>
     <string name="confirm_del_after_rematch_fmt">மீண்டும்விளையாட வெற்றி.\n\n நிறைவு செய்யப்பட்ட விளையாட்டை %1$s ஐ நீக்க விரும்புகிறீர்களா?\n\n (இந்த செயலை செயல்தவிர்க்க முடியாது.)</string>
     <string name="set_default_message_fmt">சொல்பட்டியல் %1$s புதிய விளையாட்டுகளுக்கு இயல்புநிலையாக இருக்க வேண்டும்? (மொழி %2$s இருவருக்கும் இயல்புநிலையாக இருக்கும்.)</string>
@@ -574,8 +574,8 @@
     <string name="no_moves_made">(இன்னும் நகர்வுகள் இல்லை)</string>
     <string name="invites_unsent">தொலைதூர வீரரை எதிர்பார்க்க இந்த விளையாட்டு கட்டமைக்கப்பட்டுள்ளது.\n\n நீங்கள் ஒருவரை அழைக்க விரும்புகிறீர்களா?</string>
     <plurals name="invite_msg_fmt">
-        <item quantity="one">இந்த விளையாட்டு ஒரு தொலைதூர வீரர் அழைப்பைப் பெற்று பதிலளிக்க காத்திருக்கிறது.\n\nஅழைக்கப்பட்ட வீரர் பதிலளிக்கும் வரை இந்தச் செய்தியைக் காண்பீர்கள்.</item>
-        <item quantity="other">இந்த விளையாட்டு %1$d தொலை வீரர்கள் அழைப்புகளுக்குப் பதிலளிக்க காத்திருக்கிறது.\n\nஎதிர்பார்த்த அனைத்து வீரர்களும் பதிலளிக்கும் வரை இந்தச் செய்தியைக் காண்பீர்கள்.</item>
+        <item quantity="one">ஒரு ரிமோட் பிளேயர் அழைப்பைப் பெறுவதற்கும் பதிலளிப்பதற்கும் இந்த கேம் காத்திருக்கிறது. \n\nஅழைக்கப்பட்ட வீரர் பதிலளிக்கும் வரை இந்தச் செய்தியைப் பார்ப்பீர்கள்.</item>
+        <item quantity="other">%1$d ரிமோட் பிளேயர் அழைப்பிற்கு பதிலளிப்பதற்காக இந்த கேம் காத்திருக்கிறது. \n\nஎதிர்பார்க்கப்படும் அனைத்து வீரர்களும் பதிலளிக்கும் வரை இந்தச் செய்தியைப் பார்ப்பீர்கள்.</item>
     </plurals>
     <string name="invite_msg_extra_norematch">நீங்கள் அனுப்பிய அழைப்பிதழ் இழந்துவிட்டதாக நீங்கள் சந்தேகித்தால், இன்னொன்றை அனுப்புவதில் எந்தத் தீங்கும் இல்லை.</string>
     <string name="robot_label">பொறியன் வீரர்</string>
@@ -593,8 +593,8 @@
     <string name="list_item_delete">விளையாட்டை நீக்கு</string>
     <string name="list_item_reset">மீட்டமை‌</string>
     <plurals name="confirm_reset_fmt">
-        <item quantity="one">தேர்ந்தெடுக்கப்பட்ட விளையாட்டை மீட்டமைக்க விரும்புகிறீர்களா?\n\n (மீட்டமைப்பது அனைத்து நகர்வுகளையும் எந்தவொரு இணைப்பு தகவல்களையும் அழிக்கிறது.)</item>
-        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d விளையாட்டுகளை மீட்டமைக்க விரும்புகிறீர்களா?\n\n (மீட்டமைப்பது அனைத்து நகர்வுகளையும் எந்தவொரு இணைப்பு தகவல்களையும் அழிக்கிறது.)</item>
+        <item quantity="one">தேர்ந்தெடுத்த கேமை நிச்சயமாக மீட்டமைக்க விரும்புகிறீர்களா? \n\n(மீட்டமைப்பு அனைத்து நகர்வுகளையும் எந்த இணைப்புத் தகவலையும் அழிக்கிறது.)</item>
+        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d கேம்களை நிச்சயமாக மீட்டமைக்க விரும்புகிறீர்களா? \n\n(மீட்டமைப்பு அனைத்து நகர்வுகளையும் எந்த இணைப்புத் தகவலையும் அழிக்கிறது.)</item>
     </plurals>
     <string name="download_more">மேலும் பதிவிறக்கு</string>
     <string name="loc_builtin">உள்ளமைக்கப்பட்ட</string>
@@ -602,8 +602,8 @@
     <string name="dicts_item_move">சேமிப்பக இருப்பிடத்தை மாற்று</string>
     <string name="dicts_item_select">இயல்புநிலையாக செய்</string>
     <plurals name="confirm_delete_dict_fmt">
-        <item quantity="one">சொல்பட்டியல் %1$s ஐ நீக்க விரும்புகிறீர்களா?</item>
-        <item quantity="other">சொல்பட்டியல்கள் %1$s ஐ நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="one">%1$s என்ற சொல் பட்டியலை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="other">%1$s என்ற சொல் பட்டியல்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
     </plurals>
     <string name="confirm_deleteonly_dicts_fmt">%1$s ஐ நீக்குவது எந்த %2$s சொற்கள் இல்லாமல் உங்களை விட்டுச்செல்லும். ஒன்று அல்லது அதற்கு மேற்பட்ட விளையாட்டுகள் திறக்க முடியாததாக இருக்கும் (மாற்று பட்டியலை நீங்கள் பதிவிறக்கும் வரை.)</string>
     <string name="invit_expl_sms_fmt">தரவுக் குறுஞ்செய்தி வழியாகத் தொலைபேசி எண் %1$s க்கு %2$s அன்று அனுப்பியது</string>
@@ -617,8 +617,8 @@
     <string name="msg_dev_deleted_fmt">“%1$s” என்று பெயரிடப்பட்ட விளையாட்டு மற்றொரு சாதனத்தில் நீக்கப்பட்டுள்ளது. நீங்கள் மேலும் விளையாட முடியாது.</string>
     <string name="ids_badwords_fmt">சொல்[கள்] %1$s சொல்பட்டியல் %2$s இல் காணப்படவில்லை.</string>
     <plurals name="yesAndMsgFmt">
-        <item quantity="one">(நீங்கள் “%1$s” பொத்தானைத் தேர்வுசெய்தால், இந்த சொல்லைப் பற்றி மீண்டும் கேட்கப்பட மாட்டீர்கள்.)</item>
-        <item quantity="other">(நீங்கள் “%1$s” பொத்தானைத் தேர்வுசெய்தால், இந்த சொற்களைப் பற்றி மீண்டும் கேட்கப்பட மாட்டீர்கள்.)</item>
+        <item quantity="one">(\"%1$s\" பட்டனைத் தேர்வுசெய்தால், இந்த வார்த்தையைப் பற்றி மீண்டும் கேட்கப்பட மாட்டீர்கள்.)</item>
+        <item quantity="other">(\"%1$s\" பட்டனை நீங்கள் தேர்வு செய்தால், இந்த வார்த்தைகள் பற்றி மீண்டும் கேட்கப்படாது.)</item>
     </plurals>
     <string name="board_menu_done">முடிந்தது</string>
     <string name="board_menu_tray_hide">மரசட்டம் மறை</string>
@@ -709,8 +709,8 @@
     <string name="filter_progress_fmt">செயலாக்கம் %1$d சொற்கள்</string>
     <string name="new_feature_filter">எந்த சொற்கள் தொடங்குகின்றன, முடிவடைகின்றன, மற்றும்/அல்லது கொண்டிருப்பதன் மூலம் நீங்கள் சொல் பட்டியல்களை வடிகட்டலாம். சாளரத்தின் மேல்-வலது மூலையில் விரிவாக்க அம்புக்குறியைத் தட்டுவதன் மூலம் வடிகட்டலை அணுகவும்.\n\n கீழே உள்ள பொத்தானைத் தட்டுவதன் மூலம் கேள்விகளில் மேலும் படி.</string>
     <plurals name="bt_scan_progress_fmt">
-        <item quantity="one">குறுக்கெழுத்துக்களுக்கு வருடல்</item>
-        <item quantity="other">%1$d இணை சாதனங்களில் குறுக்கெழுத்துக்களுக்கு வருடல்</item>
+        <item quantity="one">குறுக்கெழுத்துகளை வருடு செய்கிறது</item>
+        <item quantity="other">%1$d இணைக்கப்பட்ட சாதனங்களில் CrossWords ஐ வருடு செய்கிறது</item>
     </plurals>
     <string name="bt_resend_fmt">ஊடலை %1$s க்கு அனுப்பப்பட்டது தோல்வியடைந்தது; %2$d வினாடிகளில் %3$d ஐ மீண்டும் முயற்சி.</string>
     <string name="not_again_traysize">இந்த புதிய அமைப்பு மரசட்டத்தில் உள்ள ஓடுகளின் எண்ணிக்கையை மாற்றுகிறது.\n\n குறிப்பு: உங்கள் பிணையம் விளையாட்டில் உள்ள எவரும் குறுக்கெழுத்துக்களின் பழைய பதிப்பைப் பயன்படுத்தினால், இந்த அமைப்பு விளையாட்டில் உள்ள அனைவருக்கும் 7 ஆக மாறும்.</string>
@@ -733,18 +733,18 @@
     <string name="bt_bad_proto_fmt">“%1$s” இல் உள்ள குறுக்கெழுத்துக்களின் பதிப்பு ஊடலையை பயன்படுத்தி விளையாட்டிற்கு பொருந்தாது. நீங்கள் தொடர முன் உங்களில் ஒருவர் மேம்படுத்த வேண்டியிருக்கலாம்.</string>
     <string name="sms_bad_proto_fmt">“%1$s” என்ற எண்ணைக் கொண்ட தொலைபேசியில் குறுக்கெழுத்துக்களின் பதிப்பு தரவு குறுஞ்செய்தி பயன்படுத்தி விளையாடுவதற்கு இதனுடன் பொருந்தாது. நீங்கள் தொடர முன் உங்களில் ஒருவர் மேம்படுத்த வேண்டியிருக்கலாம்.</string>
     <plurals name="invite_bt_desc_fmt_2">
-        <item quantity="one">இந்த விளையாட்டில் நீங்கள் சேர்க்க விரும்பும் சாதனத்தை சரிபார்.</item>
-        <item quantity="other">இந்த விளையாட்டில் நீங்கள் சேர்க்க விரும்பும் %1$d சாதனங்களை சரிபார்.</item>
+        <item quantity="one">இந்த கேமில் நீங்கள் சேர்க்க விரும்பும் சாதனத்தைச் சரிபார்க்கவும்.</item>
+        <item quantity="other">இந்த கேமில் நீங்கள் சேர்க்க விரும்பும் %1$d சாதனங்கள் வரை சரிபார்க்கவும்.</item>
     </plurals>
     <string name="invite_bt_desc_postscript">\n\n(பட்டியல் ஒரு வருடல் வழியாக குறுக்கெழுத்துக்கள் கண்டறியப்பட்ட இணை சாதனங்களின் பட்டியல்.)</string>
     <plurals name="invite_sms_desc_fmt">
-        <item quantity="one">உங்கள் புதிய விளையாட்டுக்கு நீங்கள் அழைக்க விரும்பும் தொலைபேசி எண்ணை சரிபார், பின்னர் “%2$s” ஐத் தட்டவும்.</item>
-        <item quantity="other">உங்கள் புதிய விளையாட்டுக்கு நீங்கள் அழைக்க விரும்பும் %1$d தொலைபேசி எண்களைச் சரிபார், பின்னர் “ %2$s” ஐத் தட்டவும்.</item>
+        <item quantity="one">உங்கள் புதிய கேமிற்கு நீங்கள் அழைக்க விரும்பும் ஃபோன் எண்ணைச் சரிபார்த்து, \"%2$s\" என்பதைத் தட்டவும்.</item>
+        <item quantity="other">உங்கள் புதிய கேமிற்கு அழைக்க விரும்பும் %1$d ஃபோன் எண்களைச் சரிபார்த்து, \"%2$s\" என்பதைத் தட்டவும்.</item>
     </plurals>
     <string name="invite_nbs_desc">ஒரு தரவு செய்தி பின்னர் அந்த தொலைபேசி எண்ணுடன் சாதனத்திற்கு வழங்கப்படும். குறுக்கெழுத்துக்கள் அங்கு நிறுவப்பட்டு, தேவையான அனுமதிகள் இருந்தால், அது அழைப்பைப் பெறும் மற்றும் விளையாட்டு தொடங்கலாம்.</string>
     <plurals name="invite_p2p_desc_fmt">
-        <item quantity="one">உங்கள் புதிய விளையாட்டுக்கு நீங்கள் அழைக்க விரும்பும் வைஃபைநேரடி சாதனத்தின் பெயரைத் தேர்ந்தெடு, பின்னர் “%2$s” ஐத் தட்டவும்.</item>
-        <item quantity="other">உங்கள் புதிய விளையாட்டுக்கு நீங்கள் அழைக்க விரும்பும் %1$d வைஃபைநேரடி சாதன பெயர்களைத் தேர்ந்தெடு, பின்னர் “ %2$s” ஐத் தட்டவும்.</item>
+        <item quantity="one">உங்கள் புதிய கேமிற்கு நீங்கள் அழைக்க விரும்பும் வைஃபை டைரக்ட் சாதனத்தின் பெயரைத் தேர்ந்தெடுத்து, \"%2$s\" என்பதைத் தட்டவும்.</item>
+        <item quantity="other">உங்கள் புதிய கேமிற்கு நீங்கள் அழைக்க விரும்பும் %1$d WiFiDirect சாதனப் பெயர்களைத் தேர்ந்தெடுத்து, \"%2$s\" என்பதைத் தட்டவும்.</item>
     </plurals>
     <string name="invite_p2p_desc_extra">தற்போது கிடைக்கக்கூடிய சாதனங்கள் மட்டுமே காட்டப்பட்டுள்ளன. அருகிலுள்ள சாதனம் காட்டப்படாவிட்டால், வைஃபை இயக்கப்பட்டிருப்பதை உறுதிசெய்து, அந்த குறுக்கெழுத்துக்கள் நிறுவப்பட்டுள்ளன, மேலும் வைஃபை நேரடி வழியாக அந்த நாடகம் இயக்கப்பட்டது.</string>
     <string name="warn_nomobile_fmt">%2$s க்கு %1$s எண் “மொபைல்” எண் அல்ல. எப்படியும் இறக்குமதி செய்யவா?</string>
@@ -754,12 +754,12 @@
     <string name="get_sms_name">தொடர்பு பெயர் (விரும்பினால்):</string>
     <string name="password_hint">(விரும்பினால்)</string>
     <plurals name="confirm_clear_sms_fmt">
-        <item quantity="one">சரிபார்க்கப்பட்ட தொலைபேசி எண்ணை நீக்க விரும்புகிறீர்களா?</item>
-        <item quantity="other">%1$d சரிபார்க்கப்பட்ட தொலைபேசி எண்களை நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="one">சரிபார்க்கப்பட்ட தொலைபேசி எண்ணை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="other">சரிபார்க்கப்பட்ட %1$d ஃபோன் எண்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
     </plurals>
     <plurals name="confirm_clear_bt_fmt">
-        <item quantity="one">சரிபார்க்கப்பட்ட சாதனத்தை நீங்கள் மறக்க விரும்புகிறீர்களா?</item>
-        <item quantity="other">%1$d சரிபார்க்கப்பட்ட சாதனங்களை நீங்கள் மறக்க விரும்புகிறீர்களா?</item>
+        <item quantity="one">சரிபார்க்கப்பட்ட சாதனத்தை நிச்சயமாக மறக்க விரும்புகிறீர்களா?</item>
+        <item quantity="other">சரிபார்க்கப்பட்ட %1$d சாதனங்களை நிச்சயமாக மறக்க விரும்புகிறீர்களா?</item>
     </plurals>
     <string name="confirm_clear_bt_postscript">\n\n(ஊடலை வரம்பிற்குள் இருக்கும் சாதனங்களை மட்டுமே நீங்கள் மீண்டும் சேர்க்க முடியும்.)</string>
     <string name="connstat_net_noaddr">இந்த பிணையம் விளையாட்டுக்கு இணைக்க வழி இல்லை மற்றும் விளையாட முடியாது.\n\n (இது உங்கள் சாதனம் ஆதரிக்கும் எந்த வழியையும் குறிப்பிடாத ஒரு அழைப்பிலிருந்து உருவாக்கப்பட்டிருக்கலாம், அல்லது நீங்கள் அண்மைக் காலத்தில் அதன் கடைசி வழியை அகற்றியிருக்கலாம்.)</string>
@@ -787,8 +787,8 @@
     <string name="missing_dict_detail">காணாமல் போன சொல் பட்டியலைப் பதிவிறக்க தட்டவும்</string>
     <string name="warn_mqtt_havegames">இணையத்தைப் பயன்படுத்தி விளையாட்டை முடக்க விரும்புகிறீர்களா?\n\n பெரும்பாலான இரண்டு சாதன விளையாட்டுப் பரிமாற்றம் இணையம் வழியாக நகர்வுகள், எனவே இதே சாதனத்தில் ஒரு பொறியன்வுக்கு எதிராக அனைத்து விளையாட்டுகளையும் விளையாட திட்டமிட்டால் மட்டுமே இதைச் செய்.</string>
     <plurals name="warn_bt_games_fmt">
-        <item quantity="one">\n\n(ஊடலையை பயன்படுத்தி ஒரு செயலில் விளையாட்டு உள்ளது.)</item>
-        <item quantity="other">\n\n(ஊடலையை பயன்படுத்தி %1$d செயலில் உள்ள விளையாட்டுகள் உள்ளன.)</item>
+        <item quantity="one">\n\n(புளூடூத் மூலம் செயலில் உள்ள கேம் ஒன்று உள்ளது.)</item>
+        <item quantity="other">\n\n(புளூடூத்தைப் பயன்படுத்தி %1$d கேம்கள் செயலில் உள்ளன.)</item>
     </plurals>
     <string name="button_enable_mqtt">இணைய நாடகத்தை இயக்கு</string>
     <string name="button_disable_mqtt">இணைய நாடகத்தை முடக்கு</string>
@@ -817,7 +817,7 @@
     <string name="download_done">பதிவிறக்கம் முடிந்தது</string>
     <string name="download_failed">தோல்வியுற்ற பதிவிறக்க</string>
     <string name="default_loc">சொல் பட்டியல்களை உள்நாட்டில் சேமி</string>
-    <string name="default_loc_summary">(வெளிப்புற/SDCARD நினைவகத்தில் இல்லை)</string>
+    <string name="default_loc_summary">(வெளிப்புற/sdஅட்டை நினைவகத்தில் இல்லை)</string>
     <string name="download_path_title">பொது அடைவு</string>
     <string name="download_path_hint">எ.கா. மின்னஞ்சல் இணைப்புகள் சேமிக்கப்படும்</string>
     <string name="newgroup_label">உங்கள் புதிய குழுவிற்கு பெயரிடுங்கள்:</string>
@@ -829,18 +829,18 @@
     <string name="group_cur_games">எனது விளையாட்டுகள்</string>
     <string name="group_new_games">புதிய விளையாட்டுகள்</string>
     <plurals name="groups_confirm_del_fmt">
-        <item quantity="one">%1$s குழுவை நீக்க விரும்புகிறீர்களா?</item>
-        <item quantity="other">%1$s குழுக்களை நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="one">%1$s குழுவை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
+        <item quantity="other">%1$s குழுக்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
         <item quantity="one">\n\n(ஒரு விளையாட்டும் நீக்கப்படும்.)</item>
-        <item quantity="other">\n\n(%1$d விளையாட்டுகளும் நீக்கப்படும்.)</item>
+        <item quantity="other">\n\n(%1$d கேம்களும் நீக்கப்படும்.)</item>
     </plurals>
     <string name="rename_group_label">இந்த குழுவின் பெயரை மாற்றவும்:</string>
     <string name="cannot_delete_default_group_fmt">புதிய விளையாட்டுகளுக்கான குழு, %1$s, நீக்க முடியாது.</string>
     <plurals name="group_name_fmt">
-        <item quantity="one">%1$s (%2$d விளையாட்டு)</item>
-        <item quantity="other">%1$s (%2$d விளையாட்டுகள்)</item>
+        <item quantity="one">%1$s (%2$d கேம்)</item>
+        <item quantity="other">%1$s (%2$d கேம்கள்)</item>
     </plurals>
     <string name="button_rematch">மீண்டும்விளையாட</string>
     <string name="checkbox_archive">காப்பகத்திற்கு செல்லுங்கள்</string>
@@ -849,7 +849,7 @@
     <string name="not_again_backclears">வெளியேறுவதற்கு பதிலாக எந்த தேர்வையும் பின் பொத்தான் அழிக்கிறது. பயன்பாட்டிலிருந்து வெளியேற மீண்டும் அதை அழுத்து.</string>
     <plurals name="sel_games_fmt">
         <item quantity="one">ஒரு விளையாட்டு தேர்ந்தெடுக்கப்பட்டது</item>
-        <item quantity="other">%1$d விளையாட்டுகள் தேர்ந்தெடுக்கப்பட்டன</item>
+        <item quantity="other">%1$d கேம்கள் தேர்ந்தெடுக்கப்பட்டன</item>
     </plurals>
     <plurals name="sel_groups_fmt">
         <item quantity="one">ஒரு குழு தேர்ந்தெடுக்கப்பட்டது</item>
@@ -872,8 +872,8 @@
     <string name="slmenu_copy_sel">இடைநிலைப்பலகைக்கு நகலெடு</string>
     <string name="slmenu_clear_sel">தேர்ந்தெடுக்கப்பட்டதை நீக்கு</string>
     <plurals name="confirm_studylist_clear_fmt">
-        <item quantity="one">தேர்ந்தெடுக்கப்பட்ட சொல்லை நீக்க விரும்புகிறீர்களா?\n\n (இந்த செயலை செயல்தவிர்க்க முடியாது.)</item>
-        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d சொற்களை நீக்க விரும்புகிறீர்களா?\n\n (இந்த செயலை செயல்தவிர்க்க முடியாது.)</item>
+        <item quantity="one">தேர்ந்தெடுத்த வார்த்தையை நிச்சயமாக நீக்க வேண்டுமா? \n\n(இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.)</item>
+        <item quantity="other">தேர்ந்தெடுக்கப்பட்ட %1$d வார்த்தைகளை நிச்சயமாக நீக்க விரும்புகிறீர்களா? \n\n(இந்தச் செயலைச் செயல்தவிர்க்க முடியாது.)</item>
     </plurals>
     <string name="default_language">இயல்புநிலை மொழி</string>
     <string name="not_again_dicts">இந்த திரை புதிய சொல்பட்டியல்களை நிறுவவும், உங்களிடம் ஏற்கனவே உள்ளவற்றைக் காணவும் உங்களை அனுமதிக்கிறது.\n\n நீங்கள் நிறுவிய எந்த சொல் பட்டியல்கள் தீர்மானிக்கிறது:\n • நீங்கள் எந்த மொழிகளில் விளையாடலாம்\n • பொறியன் வீரர் எவ்வளவு அறிவாளி\n சொற்கள் என்ன சொற்கள் சட்டபூர்வமானவை\n\n என்ன கிடைக்கிறது என்பதைக் காண மேலே உள்ள “தரவிறக்கம் செய்யக்கூடியதைக் காட்டு” பெட்டியைச் சரிபார்.</string>
@@ -887,7 +887,7 @@
         <item quantity="other">%1$d நிமிடங்கள்</item>
     </plurals>
     <plurals name="nag_hours_fmt">
-        <item quantity="one">%1$d மணி</item>
+        <item quantity="one">%1$d மணிநேரம்</item>
         <item quantity="other">%1$d மணிநேரம்</item>
     </plurals>
     <plurals name="nag_days_fmt">
@@ -899,12 +899,12 @@
     <string name="prev_player">உங்கள் எதிர்ப்பாளர்</string>
     <string name="lmi_pass_fmt">%1$s கடந்து சென்றன (0 புள்ளிகள்)</string>
     <plurals name="lmi_move_fmt">
-        <item quantity="one">%1$s ஒரு புள்ளிக்கு %2$s விளையாடியது</item>
-        <item quantity="other">%1$s %3$d புள்ளிகளுக்கு %2$s விளையாடியது</item>
+        <item quantity="one">%1$s ஒரு புள்ளிக்கு %2$s விளையாடினார்</item>
+        <item quantity="other">%3$d புள்ளிகளுக்கு %1$s %2$s விளையாடியது</item>
     </plurals>
     <plurals name="lmi_trade_fmt">
-        <item quantity="one">%1$s ஒரு ஓடு வணிகம் செய்தன</item>
-        <item quantity="other">%1$s வணிகம் %2$d ஓடுகள்</item>
+        <item quantity="one">%1$s ஒரு ஓடு வணிகம் செய்தார்</item>
+        <item quantity="other">%1$s %2$d ஓடுகளை வணிகம் செய்தார்</item>
     </plurals>
     <string name="lmi_phony_fmt">%1$s ஒரு திருப்பத்தை இழந்தது</string>
     <string name="lmi_tiles_fmt">%1$s க்கு ஒதுக்கப்பட்ட ஓடுகள்</string>
@@ -914,7 +914,7 @@
     <string name="not_again_hidenewgamebuttons">இந்தத் திரையின் அடிப்பகுதியில் உள்ள இரண்டு பொத்தான்கள் மற்றும் அதன் அதிரடி பட்டியில் (அல்லது மெனு) முதல் இரண்டு உருப்படிகள் ஒரே காரியத்தைச் செய்கின்றன. நீங்கள் விரும்பினால், அதிகமான விளையாட்டுகளைக் காண பொத்தான்களை மறைக்க முடியும்.\n\n (நீங்கள் பின்னர் பொத்தான்களை மறைக்க விரும்பினால், பயன்பாட்டு அமைப்புகளின் தோற்றப் பகுதிக்குச் செல்லவும்).</string>
     <plurals name="waiting_title_fmt">
         <item quantity="one">வீரருக்காக காத்திருக்கிறது</item>
-        <item quantity="other">%1$d வீரர்களுக்காக காத்திருக்கிறது</item>
+        <item quantity="other">%1$d வீரர்களுக்காகக் காத்திருக்கிறது</item>
     </plurals>
     <string name="waiting_rematch_title">மீண்டும்விளையாட செய்வதில்</string>
     <string name="waiting_host_title">புரவலனுக்காக காத்திருக்கிறது</string>
@@ -935,8 +935,8 @@
     <string name="not_again_comms_p2p">குறுக்கெழுத்துக்களுடன் நிறுவப்பட்ட அருகிலுள்ள வைஃபை நேரடி திறன் கொண்ட சாதனத்திற்கு எதிராக விளையாட வைஃபை நேரடியைப் பயன்படுத்தவும்.</string>
     <string name="str_no_hint_found">எந்த நகர்வுகளையும் கண்டுபிடிக்க முடியவில்லை</string>
     <plurals name="resent_msgs_fmt">
-        <item quantity="one">ஒரு நகர்வு மறுமுறை அனுப்பியது</item>
-        <item quantity="other">%1$s நகர்வுகள் மறுமுறை அனுப்பியது</item>
+        <item quantity="one">ஒரு நடவடிக்கை சினம்</item>
+        <item quantity="other">அண்மைக் கால %1$sd திரைப்படங்கள்</item>
     </plurals>
     <string name="invite_copied">ஒட்டுவதற்கு அழைப்பு தயாராக உள்ளது</string>
     <string name="clip_label">அழைப்பிதழ் முகவரி</string>
@@ -1065,4 +1065,19 @@
     <string name="show_kaservicedied_body">நகர்வு சரிபார்ப்பு நிறுத்தப்படும் போது ஒரு அறிவிப்பை இடுங்கள் (வழக்கமாக ஒரு நடவடிக்கை அனுப்பப்பட்டதிலிருந்தோ அல்லது பெறப்பட்டதிலிருந்தோ இது நீண்ட காலமாக இருப்பதால்.)</string>
     <string name="ksconfig_running_fmt">மூவ் செக்கர் %1$dh %2$02dm க்கு இயங்குகிறது. இது %3$dh %4$02dm இல் நிறுத்தப்படும்.</string>
     <string name="ksconfig_killed_body_fmt">இது %1$dh %2$02dm க்கு ஓடியது</string>
+    <string name="about_branch_fmt">கிளை: %1$s</string>
+    <string name="pref_item_allowMulti_title">நகல் கேம்ஐடிகளை அனுமதிக்கவும்</string>
+    <string name="pref_item_allowMulti_summary">பொதுவாக இது ஒரே சாதனத்திலிருந்து அழைப்புகளை ஏற்றுக்கொள்வதைக் குறிக்கிறது</string>
+    <string name="warn_mqtt_gone">MQTT மூலம் இணையத்தில் நகர்வுகளை அனுப்பும் திறன் உங்கள் ஆண்ட்ராய்டு பதிப்பில் இனி ஆதரிக்கப்படாது.</string>
+    <string name="warn_mqtt_gone_email_fmt">இந்த எச்சரிக்கையை (கீழே உள்ள “%1$s” பொத்தான் வழியாக) நீங்கள் பார்த்ததை எனக்குத் தெரியப்படுத்தவும். மிகச் சிலரே இன்னும் இந்த ஆண்ட்ராய்டின் பதிப்பைப் பயன்படுத்துகின்றனர், மேலும் அவர்களில் எவரும் நெட்வொர்க்கில் விளையாடுவதற்கு கிராச்வேர்டுகளைப் பயன்படுத்தவில்லை என நம்புகிறேன். இந்த சிக்கல் உண்மையில் ஒருவரை பாதிக்கிறது என்பதை அறிந்தவுடன் நான் அதைச் சமாளிக்க முயற்சி செய்யலாம்.</string>
+    <string name="have_mtqq_games_fmt">என்னிடம் mqttஐப் பயன்படுத்தும் %1$d கேம்கள் உள்ளன.</string>
+    <string name="qos_prefs_default_expl_fmt">MQTT தரகர் பரிந்துரைப்பதைப் பயன்படுத்தவும் (தற்போது %1$s)</string>
+    <string name="gesture_margins_title">வழிசெலுத்தல் சைகைகள் இயக்கத்தில் இருக்கும்போது</string>
+    <string name="gesture_margins_shrink">விளிம்புகளைத் தவிர்க்க பலகையைச் சுருக்கவும்</string>
+    <string name="gesture_margins_ignore">பலகையை முழு அகலத்தில் வரையவும்</string>
+    <string name="not_again_margins_fmt">\"சைகை வழிசெலுத்தல்\" இயக்கப்பட்டால், இந்தச் சாதனத்தில் உள்ளது போல், திரையின் விளிம்பிற்கு அருகே ஓடுகளை இழுப்பது கடினம். எனவே, சைகைகள் தொடங்கும் விளிம்புகளைத் தவிர்த்து, போர்டு மற்றும் ட்ரேயை சற்று குறுகலாக வரைய கிராச்வேர்டுகளை உள்ளமைக்க முடியும். \n\nதற்போதைய அமைப்பு \"%1$s\" ஆகும். %3$s இன் “%2$s” பிரிவில் எப்போது வேண்டுமானாலும் இந்த நடத்தையை மாற்றலாம் அல்லது கீழே உள்ள பொத்தான் வழியாக இப்போது செல்லலாம். (அடுத்த முறை நீங்கள் விளையாட்டைத் திறக்கும்போது மாற்றங்கள் நடைமுறைக்கு வரும்.)</string>
+    <string name="gamel_menu_mqtt">MQTT</string>
+    <string name="games_menu_pingMqtt">பிங்</string>
+    <string name="ping_result_fmt">%1$s வழியாக பிங் %2$d மி.சி.</string>
+    <string name="games_menu_mqttStats">இணைப்பு புள்ளிவிவரங்கள்</string>
 </resources>
