@@ -15,6 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+ifdef TERMUX_VERSION
+	CURSES_ONLY=1
+	NO_BLUETOOTH=1
+endif
+
 BUILD_DIR ?= .
 
 ifeq ($(MEMDEBUG),TRUE)
@@ -155,8 +160,8 @@ ifeq ($(STANDALONE),)
 # Bluetooth support
 ifndef NO_BLUETOOTH
 BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP -DXW_BT_UUID=\"7be0d084-ff89-4d6d-9c78-594773a6f963\"
-
 endif
+
 #BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
 # DEFINES += -DXWFEATURE_IR
 DEFINES += ${BLUETOOTH}
