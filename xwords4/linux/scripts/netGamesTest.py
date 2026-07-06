@@ -357,8 +357,9 @@ class Device():
 
     def sendChat(self):
         success = False
-        if random.randint(0, 99) < self.args.CHAT_PCT:
-            game = random.choice(self._allGames())
+        games = self._allGames()
+        if games and random.randint(0, 99) < self.args.CHAT_PCT:
+            game = random.choice(games)
             if not isinstance(game, SoloGameInfo):
                 response = self._sendWaitReply('sendChat', gid=game.gid,
                                                msg=Device.nextChatMsg(self.hostName))
@@ -425,22 +426,26 @@ class Device():
 
         # # Receive a response from the server
         # self._log('_sendWaitReply({}): calling recv()'.format(cmd))
-        buf = bytes()
-        bufLen = 4 * 1024
-        while True:
-            cur = client.recv(bufLen)
-            if not cur: break
-            buf += cur
-            if len(cur) < bufLen: break
-        response = buf.decode()
-        # self._log('_sendWaitReply({}): recv => str: {}'.format(cmd, response))
-        response = json.loads(response)
-        self._log('_sendWaitReply({}, {}): recv => {}'.format(cmd, kwargs, response))
-        assert 1 == len(response)
-        response = response[0]
-        assert response.get('key', 0) == key
-        assert response.get('cmd') == cmd
-        response = response.get('response')
+        try:
+            buf = bytes()
+            bufLen = 4 * 1024
+            while True:
+                cur = client.recv(bufLen)
+                if not cur: break
+                buf += cur
+                if len(cur) < bufLen: break
+            response = buf.decode()
+            # self._log('_sendWaitReply({}): recv => str: {}'.format(cmd, response))
+            response = json.loads(response)
+            self._log('_sendWaitReply({}, {}): recv => {}'.format(cmd, kwargs, response))
+            assert 1 == len(response)
+            response = response[0]
+            assert response.get('key', 0) == key
+            assert response.get('cmd') == cmd
+            response = response.get('response')
+        except Exception as ex:
+            response = {'success': False}
+            print(f'_sendWaitReply(cmd: {cmd}): exception: {ex}')
 
         client.close()
         return response
@@ -556,6 +561,7 @@ class Device():
         # and then send it the equivalent of an emailed invitation.
 
         nPlayersT = 1 + len(game.guestNames)
+        gotAll = True
         for name in game.guestNames:
             invitee = Device.getForPlayer(name)
 
@@ -566,8 +572,9 @@ class Device():
                                               addr = self._mkAddr(self))
             if response['success']:
                 invitee.expectInvite(game.gid, game.rematchLevel)
+            else: gotAll = False
 
-        game.needsInvite = False
+        game.needsInvite = not gotAll
 
     def inviteInApp(self, game):
         remotes = []
