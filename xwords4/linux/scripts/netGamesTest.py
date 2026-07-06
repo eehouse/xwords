@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 
 import argparse, datetime, glob, json, os, random, shutil, signal, \
-    socket, struct, subprocess, sys, threading, time
+    socket, struct, subprocess, sys, tempfile, threading, time
+from pathlib import Path
 
 g_ROOT_NAMES = ['Brynn', 'Ariela', 'Kati', 'Eric']
 g_INVITE_HOWS = (('OutOfApp', 1), ('Internal', 1), ('KnownPlayer', 1))
-g_REMATCH_PCTS = (('Neither', 80), ('Host', 10), ('Guest', 10))
+g_REMATCH_PCTS = (('Standalone', 10), ('Host', 10), ('Guest', 10))
 # These must correspond to what the linux app is looking for in roFromStr()
 g_ROS = ['same', 'low_score_first', 'high_score_first', 'juggle',]
-gDone = False
+gErr = None
 gGamesMade = 0
 g_LOGFILE = None
+
+gIsTermux = bool(os.environ.get('TERMUX_VERSION'))
+gDevCount = 0
+gEvent = threading.Event()
+gLock = threading.RLock()
 
 def log(args, msg):
     now = datetime.datetime.strftime(datetime.datetime.now(), '%X.%f')
@@ -114,6 +120,7 @@ class HostGameInfo(GameInfo):
         self.guestNames = guestNames
         self.needsInvite = kwargs.get('needsInvite', True)
         self.orderedPlayers = None
+        self.wordlist = None
         global gGamesMade
         gGamesMade += 1
 
@@ -231,7 +238,6 @@ class GameStatus():
 class Device():
     _devs = {}
     _logdir = None
-    _nSteps = 0
     _nextChatID = 0
     _kps = {}
     _stats = None
@@ -241,9 +247,14 @@ class Device():
         Device._logdir = logdir
 
     def __init__(self, args, hostName):
+        with gLock:
+            global gDevCount
+            gDevCount += 1
+
         self.args = args
         self.app = None
         self.endTime = None
+        self.needsConvert = False
         self.mqttDevID = None
         self.smsNumber = args.WITH_SMS and '{}_phone'.format(hostName) or None
         self.hostName = hostName
@@ -252,11 +263,36 @@ class Device():
         self.script = '{}/{}.sh'.format(Device._logdir, hostName)
         self.dbName = '{}/{}.db'.format(Device._logdir, hostName)
         self.logfile = '{}/{}_log.txt'.format(Device._logdir, hostName)
-        self.cmdSocketName = '{}/{}.sock'.format(Device._logdir, hostName)
+        self.cmdSocketName = f'{Device._logdir}/{hostName}.sock'
         self._keyCur = 10000 * (1 + g_NAMES.index(hostName))
 
     def init(self):
         self._checkScript()
+
+    def start(self):
+        threading.Thread(target = self.run).start()
+
+    def run(self):
+        # print(f'{self}.run() called')
+        # Setup device
+        self.init()
+        self.launchIfNot()
+        time.sleep(1)
+        if self.args.WITH_MQTT: self.setDevID()
+        self.makeHostGames()
+        self.quit()
+
+        # Now run until all games are done
+        while not gErr and not self.finished():
+            self.step()
+
+        self.quit()
+
+        with gLock:
+            global gDevCount
+            gDevCount -= 1
+        gEvent.set()
+        # print(f'{self}.run() DONE')
 
     def _getApp(self):
         # first time?
@@ -272,7 +308,7 @@ class Device():
             if pct < self.args.UPGRADE_PCT:
                 self._log('upgrading app')
                 self.app = self.args.APP_NEW
-
+                self.needsConvert = True
         return self.app
 
     def stats(self): return self._stats
@@ -284,6 +320,7 @@ class Device():
             datetime.timedelta(seconds = self.args.MIN_APP_LIFE)
         args = [ self.script, '--close-stdin', '--skip-user-errors' ]
         if not self.args.USE_GTK: args.append('--curses')
+        if not self.args.NO_SKIP_CLEANUP: args.append('--skip-cleanup')
 
         env = os.environ.copy()
         env['APP'] = self._getApp()
@@ -291,13 +328,13 @@ class Device():
         with open( self.logfile, 'a' ) as logfile:
             subprocess.run(args, env=env, stdout = subprocess.DEVNULL,
                            stderr = logfile, universal_newlines = True)
-        self._log('_launchProc() (in thread): subprocess FINISHED')
+        # self._log('_launchProc() (in thread): subprocess FINISHED')
         os.unlink(self.cmdSocketName)
         self.endTime = None
 
     def launchIfNot(self):
         if not self.endTime:
-            self.watcher = threading.Thread(target = Device.runnerStub, args=(self,))
+            self.watcher = threading.Thread(target = self._launchProc)
             self.watcher.isDaemon = True
             self.watcher.start()
 
@@ -321,9 +358,9 @@ class Device():
     def sendChat(self):
         success = False
         if random.randint(0, 99) < self.args.CHAT_PCT:
-            gid = self._pickGid()
-            if gid:
-                response = self._sendWaitReply('sendChat', gid=gid,
+            game = random.choice(self._allGames())
+            if not isinstance(game, SoloGameInfo):
+                response = self._sendWaitReply('sendChat', gid=game.gid,
                                                msg=Device.nextChatMsg(self.hostName))
                 success = response.get('success', False)
         return success
@@ -359,7 +396,9 @@ class Device():
                     val = kp.get(key)
                     if val:
                         if not key in addr: addr[key] = val
-                        else: assert addr[key] == val
+                        elif addr[key] != val:
+                            self._log('checkKPs(): key: {}; {} != {}'.format(key, addr[key], val))
+                            assert False
 
     def _pickGid(self):
         result = None
@@ -373,9 +412,11 @@ class Device():
         self.launchIfNot()
 
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        # print('connecting to: {}'.format(self.cmdSocketName))
-
-        client.connect(self.cmdSocketName)
+        while True:
+            try:
+                client.connect(self.cmdSocketName)
+                break
+            except: time.sleep(0.2)
 
         key = self._nextKey()
         params = [{'cmd': cmd, 'key': key, 'args': {**kwargs}}]
@@ -419,6 +460,7 @@ class Device():
     def makeHostGames(self):
         args = self.args
         for game in self.hostedGames:
+            game.wordlist = random.choice(args.DICTS)
             isSolo = isinstance(game, SoloGameInfo)
             nPlayers = 1 + (isSolo and game.nRobots or len(game.guestNames))
             hostPosn = random.randint(0, nPlayers-1)
@@ -427,7 +469,7 @@ class Device():
             allowSub7 = random.randint(0, 99) < self.args.SUB7_TRADES_PCT
             timerSeconds = self.args.TIMER_SECS
             response = self._sendWaitReply('makeGame', nPlayers=nPlayers,
-                                           hostPosn=hostPosn, dict=args.DICTS[0],
+                                           hostPosn=hostPosn, dict=game.wordlist,
                                            boardSize=boardSize, traySize=traySize,
                                            isSolo=isSolo, allowSub7=allowSub7,
                                            timerSeconds=timerSeconds)
@@ -438,7 +480,7 @@ class Device():
     # This is the heart of things. Do something as long as we have a
     # game that needs to run.
     def step(self):
-        # self._log('step() called for {}'.format(self))
+        # self._log(f'step() called for {self}')
         stepped = False
         for game in self.hostedGames:
             if isinstance(game, HostGameInfo) and game.needsInvite:
@@ -451,6 +493,8 @@ class Device():
                 self.launchIfNot()
             elif datetime.datetime.now() > self.endTime:
                 self.rematchOrQuit()
+            elif self.needsConvert and self.sendConvert():
+                pass
             elif self.sendChat():
                 pass
             elif self.postUndo():
@@ -518,9 +562,8 @@ class Device():
             invitee.launchIfNot()
             response = invitee._sendWaitReply('inviteRcvd', gid=game.gid,
                                               nPlayersT=nPlayersT,
-                                              dict = self.args.DICTS[0],
-                                              addr = self._mkAddr(self),
-                                              )
+                                              dict = game.wordlist,
+                                              addr = self._mkAddr(self))
             if response['success']:
                 invitee.expectInvite(game.gid, game.rematchLevel)
 
@@ -573,20 +616,20 @@ class Device():
         if not ro: ro = random.choice(g_ROS)
         return ro
 
-    # Return true only if all games I host are finished on all games.
+    # Return true only if all games I host are finished on all devices.
     # But: what about games I don't host? For now,  let's make it all
     # games!
     def finished(self):
         allGames = self._allGames()
-        result = 0 < len(allGames)
+        isFinished = 0 < len(allGames)
         for game in allGames:
-            if not result: break
+            if not isFinished: break
             peers = Device.devsWith(game.gid)
             for dev in peers:
-                result = dev.gameOver(game.gid)
-                if not result: break
-        # if result: self._log('finished() => {}'.format(result))
-        return result
+                isFinished = dev.gameOver(game.gid)
+                if not isFinished: break
+        # if isFinished: self._log('finished() => {}'.format(isFinished))
+        return isFinished
 
     def gameOver(self, gid):
         result = False
@@ -642,7 +685,17 @@ class Device():
                 game = self.gameFor(obj.get('gid'))
                 game.state = obj
 
-                if game.gameOver() and 0 < game.rematchLevel and self._rematchAllowed(game) :
+                # if game.gameOver() and 0 < game.rematchLevel and self._rematchAllowed(game) :
+                if not game.gameOver():
+                    # self._log("game not over")
+                    pass
+                elif 0 >= game.rematchLevel:
+                    # self._log("rematch level 0")
+                    pass
+                elif not self._rematchAllowed(game):
+                    # self._log("rematch not allowed")
+                    pass
+                else:
                     self.rematch(game)
                     anyRematched = True
                     game.rematchLevel = 0 # so won't be used again
@@ -652,6 +705,12 @@ class Device():
                 self.watcher.join()
                 self.watcher = None
                 assert not self.endTime
+
+    def sendConvert(self):
+        response = self._sendWaitReply('convert', all=True)
+        success = response.get('success')
+        if success: self.needsConvert = False
+        return success
 
     def quit(self):
         if self.endTime:
@@ -668,16 +727,16 @@ class Device():
             assert not self.endTime
 
     def _rematchAllowed(self, game):
-        pick = pickFromRatios(g_REMATCH_PCTS, self.args.REMATCH_PCTS)
+        pcts = [int(val) for val in self.args.REMATCH_PCTS.split(':')]
+        if isinstance(game, HostGameInfo):
+            pct = pcts[1]
+        elif isinstance(game, GuestGameInfo):
+            pct = pcts[2]
+        else:
+            pct = pcts[0]
 
-        if pick == 'Neither':
-            result = False
-        elif pick == 'Host':
-            result = isinstance(game, HostGameInfo)
-        elif pick == 'Guest':
-            result = isinstance(game, GuestGameInfo)
-        else: assert False
-        # print('_rematchAllowed({}) => {}'.format(game, result))
+        result = random.randint(0, 100) < pct
+        # print('_rematchAllowed({}) => {} (pct={})'.format(game, result, pct))
         return result
 
     def _addStats(self, stats):
@@ -685,7 +744,8 @@ class Device():
         if stats and self._stats:
             for key in stats.keys():
                 if key in self._stats:
-                    assert self._stats[key] <= stats[key]
+                    if not self._stats[key] <= stats[key]:
+                        self._log(f"_addStats(): self key: {self._stats[key]}; stats key: {stats[key]}")
         self._stats = stats
 
     def _checkScript(self):
@@ -704,10 +764,19 @@ class Device():
         scriptArgs += '--cmd-socket-name', self.cmdSocketName
 
         if self.args.WITH_MQTT:
-            scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, '--mqtt-host', self.args.MQTT_HOST ]
+            scriptArgs += [ '--mqtt-port', self.args.MQTT_PORT, ]
+            if self.args.MQTT_HOST: scriptArgs += [ '--mqtt-host', self.args.MQTT_HOST ]
+        else:
+            scriptArgs += [ '--skip-mqtt-add' ]
 
         if self.args.WITH_SMS:
+            datadir = '{}/.smsdata'.format(tempfile.gettempdir())
+            try: os.mkdir(datadir)
+            except: None
             scriptArgs += [ '--sms-number', self.smsNumber ]
+            scriptArgs += [ '--sms-datadir', datadir ]
+        if not self.args.WITH_BT:
+            scriptArgs += [ '--disable-bt' ]
 
         scriptArgs += ['--board-size', '15', '--sort-tiles']
 
@@ -725,22 +794,19 @@ class Device():
 
     @staticmethod
     def printStatus(statusSteps, noPrint):
-        Device._nSteps += 1
-        noPrint or print('.', end='', flush=True)
-        if 0 == Device._nSteps % statusSteps:
-            GameStatus.makeAll()
+        GameStatus.makeAll()
 
-            lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
-            now = datetime.datetime.now()
-            if lines == GameStatus._prevLines:
-                since = str(now - GameStatus._lastChange).split('.')[0]
-                noPrint or print(' no change in {}'.format(since))
-            else:
-                if not noPrint:
-                    print(' ' + GameStatus.summary())
-                    for line in lines: print(line)
-                GameStatus._prevLines = lines
-                GameStatus._lastChange = now
+        lines = [GameStatus.line(ii) for ii in range(GameStatus.numLines())]
+        now = datetime.datetime.now()
+        if lines == GameStatus._prevLines:
+            since = str(now - GameStatus._lastChange).split('.')[0]
+            noPrint or print(f'No change in {since}s')
+        else:
+            if not noPrint:
+                print(GameStatus.summary())
+                for line in lines: print(line)
+            GameStatus._prevLines = lines
+            GameStatus._lastChange = now
         return GameStatus._lastChange
 
     @staticmethod
@@ -819,20 +885,16 @@ class Device():
         return result
 
     @staticmethod
-    def runnerStub(self):
-        self._launchProc()
-
-    @staticmethod
     def nextChatMsg(sender):
         Device._nextChatID += 1
-        return 'chat msg {}: Hi, this is {}'.format(Device._nextChatID, sender)
+        return f'chat msg {Device._nextChatID}: Hi, this is {sender}'
 
 def openOnExit(args):
     devs = Device.getAll()
     for dev in devs:
         appargs = [args.APP_NEW, '--db', dev.dbName]
-        if args.WITH_MQTT:
-            appargs += [ '--mqtt-port', args.MQTT_PORT, '--mqtt-host', args.MQTT_HOST ]
+        if args.WITH_MQTT: appargs += [ '--mqtt-port', args.MQTT_PORT, ]
+        if args.MQTT_HOST: appargs += ['--mqtt-host', args.MQTT_HOST, ]
         subprocess.Popen([str(arg) for arg in appargs], stdout = subprocess.DEVNULL,
                          stderr = subprocess.DEVNULL, universal_newlines = True)
 
@@ -842,63 +904,6 @@ def countCores(args):
     if args.CORE_PAT:
         count = len( glob.glob(args.CORE_PAT) )
     return count
-
-def printKPs():
-    kps = Device._kps
-    print('Known players: {}'.format(kps))
-
-def printStats():
-    for dev in Device.getAll():
-        print('stats for {}: {}'.format(dev.hostName, dev.stats()))
-
-def mainLoop(args, devs):
-    startCount = len(devs)
-    nCores = countCores(args)
-
-    startTime = datetime.datetime.now()
-    nextStallCheck = startTime + datetime.timedelta(seconds = 20)
-
-    while 0 < len(devs):
-        if gDone:
-            print('gDone set; exiting loop')
-            break
-        elif nCores < countCores(args):
-            print('core file count increased; exiting')
-            break
-
-        dev = random.choice(devs)
-        dev.step()
-        if dev.finished():
-            dev.quit()
-            devs.remove(dev)
-            log(args, 'removed dev for {}; {} devs left'.format(dev.hostName, len(devs)))
-
-        now = datetime.datetime.now()
-        if devs and now > nextStallCheck:
-            nextStallCheck = now + datetime.timedelta(seconds = 10)
-            allStalled = True
-            for dev in devs:
-                if not dev.stalled():
-                    allStalled = False
-                    break
-            if allStalled:
-                log(args, 'exiting mainLoop with {} left (of {}) because all stalled' \
-                    .format(len(devs), startCount))
-                break
-
-        lastChange = Device.printStatus(args.STATUS_STEPS, args.VERBOSE)
-        if now - lastChange > datetime.timedelta(seconds=args.NO_CHANGE_SECS):
-            print('exiting mainLoop because no change in {} seconds' \
-                .format(args.NO_CHANGE_SECS))
-            break
-
-    # list info about any remaining games
-    Device.printLiveGames()
-
-    # kill anybody left alive
-    for dev in devs:
-        print('killing {}'.format(dev.hostName))
-        dev.quit()
 
 # We will build one Device for each player in the set of games, and
 # prime each with enough information that when we start running them
@@ -929,7 +934,7 @@ def mkParser():
     parser.add_argument('--status-steps', dest = 'STATUS_STEPS', type = int, default = 20,
                         help = 'how many steps between status dumps (matters only if not --debug)')
 
-    parser.add_argument('--chat-pct', dest = 'CHAT_PCT', type = int, default = 0,
+    parser.add_argument('--chat-pct', dest = 'CHAT_PCT', type = int, default = 5,
                         help = 'odds of sending a chat message')
 
     parser.add_argument('--app-new', dest = 'APP_NEW', default = './obj_linux_memdbg/xwords',
@@ -938,7 +943,7 @@ def mkParser():
                         help = 'the app we\'ll upgrade from')
     parser.add_argument('--old-start-pct', dest = 'OLD_START_PCT', default = 90, type = int,
                         help = 'odds of starting with the old app, 0 <= n < 100')
-    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 0, type = int,
+    parser.add_argument('--upgrade-pct', dest = 'UPGRADE_PCT', default = 5, type = int,
                         help = 'odds of upgrading at any launch, 0 <= n < 100')
 
     parser.add_argument('--solo-pct', dest = 'SOLO_PCT', default = 20, type = int,
@@ -959,6 +964,8 @@ def mkParser():
     #                     help = 'how often a robot should play a phony (only applies when --phonies==2')
     parser.add_argument('--use-gtk', dest = 'USE_GTK', default = False, action = 'store_true',
                         help = 'run games using gtk instead of ncurses')
+    parser.add_argument('--with-save-on-close', dest = 'NO_SKIP_CLEANUP', default = False, action = 'store_true',
+                        help = 'Tell linux client to shut down/save dutil on close (unlike Android)')
 
     # parser.add_argument('--dup-pct', dest = 'DUP_PCT', default = 0, type = int,
     #                     help = 'this fraction played in duplicate mode')
@@ -1016,14 +1023,16 @@ def mkParser():
     parser.add_argument('--min-app-life', dest='MIN_APP_LIFE', default=15, type=int,
                         help='Minimum number of seconds app will run after each launch')
 
-    parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true', default=False)
+    parser.add_argument('--with-sms', dest = 'WITH_SMS', action = 'store_true', default=gIsTermux)
     parser.add_argument('--without-sms', dest = 'WITH_SMS', default=False, action='store_false')
     # parser.add_argument('--sms-fail-pct', dest = 'SMS_FAIL_PCT', default = 0, type = int)
 
-    parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', default = True, action = 'store_true')
+    parser.add_argument('--with-bt', dest = 'WITH_BT', default = True, action = 'store_true')
+    parser.add_argument('--without-bt', dest = 'WITH_BT', action = 'store_false')
+    parser.add_argument('--with-mqtt', dest = 'WITH_MQTT', default = not gIsTermux, action = 'store_true')
     parser.add_argument('--without-mqtt', dest = 'WITH_MQTT', action = 'store_false')
     parser.add_argument('--mqtt-port', dest = 'MQTT_PORT', default = 1883 )
-    parser.add_argument('--mqtt-host', dest = 'MQTT_HOST', default = 'localhost' )
+    parser.add_argument('--mqtt-host', dest = 'MQTT_HOST' )
 
     parser.add_argument('--force-tray', dest = 'TRAY_SIZE', default = 0, type = int,
                         help = 'Always this many tiles per tray')
@@ -1037,7 +1046,7 @@ def mkParser():
     parser.add_argument('--rematch-order', dest = 'REMATCH_ORDER', type = str, default = None,
                         help = 'order rematched games one of these ways: {}'.format(g_ROS))
     dflt = ':'.join([str(tpl[1]) for tpl in g_REMATCH_PCTS])
-    vals = ':'.join([tpl[0] for tpl in g_REMATCH_PCTS])
+    vals = ':'.join(['<{}>'.format(tpl[0]) for tpl in g_REMATCH_PCTS])
     parser.add_argument('--rematch-pcts', dest = 'REMATCH_PCTS', default = dflt,
                         help = 'what percent of games will rematch at game end (fmt {})'.format(vals))
 
@@ -1065,29 +1074,49 @@ def parseArgs():
     return args
     # print(options)
 
+DIRS = ['obj_linux_memdbg_curses', 'obj_linux_memdbg']
+
+def verifyApp(path):
+    if not os.path.exists(path):
+        app = os.path.basename(path)
+        for dir in DIRS:
+            path = './{}/{}'.format(dir, app)
+            if os.path.exists(path): break
+    return path
+
 def assignDefaults(args):
     if len(args.DICTS) == 0: args.DICTS.append('CollegeEng_2to8.xwd')
+    args.APP_NEW = verifyApp(args.APP_NEW)
+    args.APP_OLD = verifyApp(args.APP_OLD)
     assert 1 == (args.BOARD_SIZE_MAX % 2)
     assert 1 == (args.BOARD_SIZE_MIN % 2)
     assert args.BOARD_SIZE_MAX >= args.BOARD_SIZE_MIN
     assert args.BOARD_SIZE_MIN >= 11
     assert args.BOARD_SIZE_MAX <= 23
 
+def setErr(msg):
+    global gErr
+    gErr = msg
+    gEvent.set()
+
 def termHandler(signum, frame):
-    global gDone
-    print('termHandler() called')
-    gDone = True
+    setErr('termHandler() called')
 
 def printError(msg): print( 'ERROR: {}'.format(msg))
 
 def initLogs(args):
     scriptName = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     statedir = scriptName + '_state'
-    if not args.REUSE_DBS and os.path.exists(statedir):
-        shutil.move(statedir, '/tmp/{}_{}'.format(statedir, os.getpid()))
-    if not os.path.exists(statedir): os.mkdir(statedir)
+    dir = Path(statedir)
+    for file in dir.glob('*.sock'):
+        file.unlink(missing_ok=True)
 
-    logfilepath = '{}/{}_logs.txt'.format(statedir, scriptName)
+    if not args.REUSE_DBS and dir.exists():
+        tmpdir = tempfile.gettempdir()
+        shutil.move(statedir, f'{tmpdir}/{statedir}_{os.getpid()}')
+    dir.mkdir(exist_ok=True)
+
+    logfilepath = f'{statedir}/{scriptName}_logs.txt'
     global g_LOGFILE
     g_LOGFILE = open(logfilepath, 'w')
 
@@ -1099,29 +1128,36 @@ def main():
 
     args = parseArgs()
     statedir = initLogs(args)
+    nCores = countCores(args)
 
     if args.SEED: random.seed(args.SEED)
     # Hack: old files confuse things. Remove is simple fix good for now
     if args.WITH_SMS:
-        try: rmtree('/tmp/xw_sms')
+        tmpdir = tempfile.gettempdir()
+        try: rmtree('{}/xw_sms'.format(tmpdir))
         except: None
 
-    Device.setup(statedir)       # deletes old logdif
-    devs = build_devs(args)
-    for dev in devs:
-        dev.init()
-        dev.launchIfNot()
-    time.sleep(1)
-    for dev in devs:
-        if args.WITH_MQTT: dev.setDevID()
-    for dev in devs:
-        dev.makeHostGames()
-        dev.quit()
-    mainLoop(args, devs)
+    Device.setup(statedir)
+    for dev in build_devs(args):
+        dev.start()
+    print(f'Started {gDevCount} device threads...')
 
-    printKPs()
-    printStats()
+    while not gErr:
+        setCalled = gEvent.wait(10)
+        if setCalled: gEvent.clear()
+        with gLock:
+            if 0 == gDevCount: break
+            # print(f'main thread done waiting; gDevCount: {gDevCount}')
+            # print(f'gDevCount: {gDevCount}')
+        lastChange = Device.printStatus(args.STATUS_STEPS, args.VERBOSE)
+        if datetime.datetime.now() - lastChange > datetime.timedelta(seconds=args.NO_CHANGE_SECS):
+             setErr(f'exiting because no change in {args.NO_CHANGE_SECS} seconds')
+        elif not nCores == countCores(args):
+            setErr('core file count increased; exiting')
 
+    print(f'Known players: {Device._kps}')
+    for dev in Device.getAll():
+        print(f'stats for {dev.hostName}: {dev.stats()}')
 
     elapsed = str(datetime.datetime.now() - startTime).split('.')[0]
     print('played {} games in {}'.format(gGamesMade, elapsed))
@@ -1129,6 +1165,8 @@ def main():
     if g_LOGFILE: g_LOGFILE.close()
 
     if args.OPEN_ON_EXIT: openOnExit(args)
+
+    exit(gErr)
 
 ##############################################################################
 if __name__ == '__main__':
