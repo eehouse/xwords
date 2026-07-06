@@ -108,7 +108,7 @@ assertTilesInTiles( const MoveInfo* move, const TrayTileSet* tts,
     XP_ASSERT( move->nTiles <= tts->nTiles );
     for ( int ii = 0; ii < move->nTiles; ++ii ) {
         Tile moveTile = move->tiles[ii].tile;
-        if  ( moveTile & TILE_BLANK_BIT ) {
+        if ( moveTile & TILE_BLANK_BIT ) {
             moveTile = blankTile;
         }
         XP_Bool found = XP_FALSE;

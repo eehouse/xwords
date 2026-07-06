@@ -1548,6 +1548,9 @@ linux_send_invt( XWEnv XP_UNUSED(xwe), const NetLaunchInfo* nli,
         linux_sms_invite( cGlobals->params, nli,
                           destAddr->u.sms.phone, destAddr->u.sms.port );
         break;
+    case COMMS_CONN_BT:
+        XP_LOGFF( "BT not supported..." );
+        break;
     default:
         XP_ASSERT(0);
     }
