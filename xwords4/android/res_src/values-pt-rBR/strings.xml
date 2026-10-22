@@ -680,7 +680,7 @@
     <string name="knowns_bt_fmt">Nome Bluetooth: %1$s</string>
     <string name="bt_pair_settings">Emparelhar mais</string>
     <string name="bt_pick_clear_button">Remover</string>
-    <string name="email_body_rev_fmt">(Se relevante, favor inclua a versão (“%1$s”) do CrossDbg, o modelo (“%2$s”) e versão do sistema operacional (%3$s) do seu telefone ou tablet, além do seu devID (%4$s).)</string>
+    <string name="email_body_rev_fmt">(Se relevante, favor inclua a versão (“%1$s”) do CrossWords, o modelo (“%2$s”) e versão do sistema operacional (%3$s) do seu telefone ou tablet, além do seu devID (%4$s).)</string>
     <string name="email_author_chooser">Enviar comentário via</string>
     <string name="email_author_subject">Comentário sobre CrossWords</string>
     <string name="board_menu_file_email">Autor do e-mail</string>
