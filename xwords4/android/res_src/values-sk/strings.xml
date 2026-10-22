@@ -1044,9 +1044,7 @@
     <string name="bt_pick_clear_button">XLATE ME: Remove checked</string>
     <!--  -->
     <!--  -->
-    <string name="email_body_rev_fmt">XLATE ME: (If relevant, please include the
-      version: \"%1$s\"; and make/model of your phone or
-      tablet.)</string>
+    <string name="email_body_rev_fmt">XLATE ME: (If relevant, please include the version: \"%1$s\"; and make/model of your phone or tablet.)</string>
     <!--  -->
     <string name="email_author_chooser">XLATE ME: Send comment via</string>
     <!--  -->
