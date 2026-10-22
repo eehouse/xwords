@@ -292,7 +292,7 @@
     <string name="gamel_menu_logstore_clear">清除已保存日志</string>
     <string name="rename_label">新游戏名：</string>
     <string name="minutes_label">玩家限时（分）</string>
-    <string name="email_body_rev_fmt">（如果相关，请留下 CrossDbg 的版本（“%1$s”），手机或平板的型号（“%2$s”）与操作系统版本（%3$s），以及你的 devID（%4$s）。）</string>
+    <string name="email_body_rev_fmt">（如果相关，请留下 CrossWords 的版本（“%1$s”），手机或平板的型号（“%2$s”）与操作系统版本（%3$s），以及你的 devID（%4$s）。）</string>
     <string name="invite_subject">来玩 CrossWords 吧</string>
     <string name="title_gamenet_config_fmt">%1$s 的设置（已联网）</string>
     <string name="nethints_allowed_sum">在联机游戏中启用提示</string>
