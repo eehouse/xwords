@@ -1817,7 +1817,7 @@ ligne, les mots qui viennent d\'être joués.</string>
     <string name="email_author_chooser">Envoyer un commentaire par</string>
     <!--  -->
     <!-- Should not be translated -->
-    <string name="email_body_rev_fmt">(Si c\'est pertinent, merci d\'inclure la version (« %1$s ») de CrossDbg, le modèle (« %2$s ») et la version d\'OS (%3$s) de votre téléphone ou votre tablette, et votre devID (%4$s).)</string>
+    <string name="email_body_rev_fmt">(Si c\'est pertinent, merci d\'inclure la version (« %1$s ») de CrossDbg, le modèle (« %2$s ») et la version d\'OS (%3$s) de votre téléphone ou votre tablette, et votre devID (%4$s).)</string>
     <!-- In the Bluetooth invite device dialog -->
     <!--<string name="bt_pick_addall_button">Add all Paired</string>-->
     <!--  -->
